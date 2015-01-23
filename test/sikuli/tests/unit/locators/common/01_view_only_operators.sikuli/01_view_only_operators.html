@@ -1,0 +1,105 @@
+
+<html>
+   <head>
+      <style type="text/css">
+         .sikuli-code {
+            font-size: 20px;
+            font-family: "Osaka-mono", Monospace;
+            line-height: 1.5em;
+            display:table-cell;
+            white-space: pre-wrap;       /* css-3 */
+            white-space: -moz-pre-wrap !important;  /* Mozilla, since 1999 */
+            white-space: -pre-wrap;      /* Opera 4-6 */
+            white-space: -o-pre-wrap;    /* Opera 7 */
+            word-wrap: break-word;       /* Internet Explorer 5.5+ */
+            width: 99%;   /* remove horizontal scroll-bar when viewing in IE7 */
+         }
+         .sikuli-code img {
+            vertical-align: middle;
+            margin: 2px;
+            border: 1px solid #ccc;
+            padding: 2px;
+            -moz-border-radius: 5px;
+            -webkit-border-radius: 5px;
+            -moz-box-shadow: 1px 1px 1px gray;
+            -webkit-box-shadow: 1px 1px 2px gray;
+         }
+         .kw {
+            color: blue;
+         }
+         .skw {
+            color: rgb(63, 127, 127);
+         }
+
+         .str {
+            color: rgb(128, 0, 0);
+         }
+
+         .dig {
+            color: rgb(128, 64, 0);
+         }
+
+         .cmt {
+            color: rgb(200, 0, 200);
+         }
+
+         h2 {
+            display: inline;
+            font-weight: normal;
+         }
+
+         .info {
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 5px;
+            margin-bottom: 20px;
+            display: none;
+         }
+
+         a {
+            color: #9D2900;
+         }
+
+         body {
+            font-family: "Trebuchet MS", Arial, Sans-Serif;
+         }
+
+      </style>
+   </head>
+<body>
+<div class="info">
+<h2>01_view_only_operators.sikuli</h2> <a href="01_view_only_operators.zip">(Download this script)</a>
+</div>
+<pre class="sikuli-code">
+<span class="kw">def</span> showAll():
+    keyDown(Key.ALT); <span class="skw">type</span>(<span class="str">"h"</span>); keyUp(Key.ALT); <span class="skw">type</span>(<span class="str">"a"</span> + Key.ESC); <span class="skw">type</span>(<span class="str">" "</span>);
+
+<span class="kw">def</span> confirmInput():
+    <span class="skw">type</span>(Key.ENTER); <span class="skw">type</span>(Key.ESC)
+
+<span class="kw">import</span> configurator, os
+p = configurator.start_it_up(getBundlePath(), <span class="str">"all_objects.blend"</span>, delete_pix=False)
+<span class="kw">try</span>:
+    <span class="skw">wait</span>(<img src="3dview_all_objects.png" />, <span class="dig">5</span>); hover(<img src="3dview_all_objects.png" />); <span class="skw">type</span>(Key.ESC); <span class="skw">type</span>(<span class="str">" "</span>);
+    <span class="cmt"># PREFAB LOCATORS
+</span>    <span class="skw">type</span>(<span class="str">"Switch Visibility of Prefab Navigation Locators"</span>); confirmInput(); <span class="skw">find</span>(Pattern(<img src="3dview_view_only_prefab_nav.png" />).similar(<span class="dig">0.96</span>)); showAll()
+    <span class="skw">type</span>(<span class="str">"Switch Visibility of Prefab Spawn Locators"</span>); confirmInput(); <span class="skw">find</span>(Pattern(<img src="3dview_view_only_prefab_spawn.png" />).similar(<span class="dig">0.96</span>)); showAll()
+    <span class="skw">type</span>(<span class="str">"Switch Visibility of Prefab Trigger Locators"</span>); confirmInput(); <span class="skw">find</span>(Pattern(<img src="3dview_view_only_prefab_trigger-1.png" />).similar(<span class="dig">0.96</span>)); showAll()
+    <span class="skw">type</span>(<span class="str">"Switch Visibility of Prefab Map Locators"</span>); confirmInput(); <span class="skw">find</span>(Pattern(<img src="3dview_view_only_prefab_map.png" />).similar(<span class="dig">0.96</span>)); showAll()
+    <span class="skw">type</span>(<span class="str">"Switch Visibility of Prefab Control Node Locators"</span>); confirmInput(); <span class="skw">find</span>(Pattern(<img src="3dview_view_only_prefab_controle_node.png" />).similar(<span class="dig">0.96</span>)); showAll()
+    <span class="skw">type</span>(<span class="str">"Switch Visibility of Prefab Traffic Locators"</span>); confirmInput(); <span class="skw">find</span>(Pattern(<img src="3dview_view_only_prefab_traffic.png" />).similar(<span class="dig">0.96</span>)); showAll()
+    <span class="skw">type</span>(<span class="str">"Switch Visibility of Prefab Sign Locators"</span>); confirmInput(); <span class="skw">find</span>(Pattern(<img src="3dview_view_only_prefab_sign.png" />).similar(<span class="dig">0.96</span>)); showAll()
+    <span class="skw">type</span>(<span class="str">"Switch Visibility of Prefab Locators"</span>); confirmInput(); <span class="skw">find</span>(Pattern(<img src="3dview_view_only_prefab.png" />).similar(<span class="dig">0.96</span>)); showAll()
+    <span class="cmt"># COLLISION LOCATORS
+</span>    <span class="skw">type</span>(<span class="str">"Switch Visibility of Collision Locators"</span>); confirmInput(); <span class="skw">find</span>(Pattern(<img src="3dview_view_only_collision.png" />).similar(<span class="dig">0.96</span>)); showAll()
+    <span class="cmt"># MODEL LOCATORS
+</span>    <span class="skw">type</span>(<span class="str">"Switch Visibility of Model Locators"</span>); confirmInput(); <span class="skw">find</span>(Pattern(<img src="3dview_view_only_model.png" />).similar(<span class="dig">0.96</span>)); showAll()
+    <span class="cmt"># ALL LOCATORS
+</span>    <span class="skw">type</span>(<span class="str">"Switch Visibility of All Locators"</span>); confirmInput(); <span class="skw">find</span>(Pattern(<img src="3dview_view_only_locators.png" />).similar(<span class="dig">0.96</span>));
+<span class="kw">except</span>:
+    configurator.save_screenshot(getBundlePath(), Screen())
+    <span class="kw">raise</span>
+<span class="kw">finally</span>:
+    configurator.close_blender(p)
+</pre>
+</body>
+</html>

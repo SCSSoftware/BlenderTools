@@ -1,0 +1,112 @@
+
+<html>
+   <head>
+      <style type="text/css">
+         .sikuli-code {
+            font-size: 20px;
+            font-family: "Osaka-mono", Monospace;
+            line-height: 1.5em;
+            display:table-cell;
+            white-space: pre-wrap;       /* css-3 */
+            white-space: -moz-pre-wrap !important;  /* Mozilla, since 1999 */
+            white-space: -pre-wrap;      /* Opera 4-6 */
+            white-space: -o-pre-wrap;    /* Opera 7 */
+            word-wrap: break-word;       /* Internet Explorer 5.5+ */
+            width: 99%;   /* remove horizontal scroll-bar when viewing in IE7 */
+         }
+         .sikuli-code img {
+            vertical-align: middle;
+            margin: 2px;
+            border: 1px solid #ccc;
+            padding: 2px;
+            -moz-border-radius: 5px;
+            -webkit-border-radius: 5px;
+            -moz-box-shadow: 1px 1px 1px gray;
+            -webkit-box-shadow: 1px 1px 2px gray;
+         }
+         .kw {
+            color: blue;
+         }
+         .skw {
+            color: rgb(63, 127, 127);
+         }
+
+         .str {
+            color: rgb(128, 0, 0);
+         }
+
+         .dig {
+            color: rgb(128, 64, 0);
+         }
+
+         .cmt {
+            color: rgb(200, 0, 200);
+         }
+
+         h2 {
+            display: inline;
+            font-weight: normal;
+         }
+
+         .info {
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 5px;
+            margin-bottom: 20px;
+            display: none;
+         }
+
+         a {
+            color: #9D2900;
+         }
+
+         body {
+            font-family: "Trebuchet MS", Arial, Sans-Serif;
+         }
+
+      </style>
+   </head>
+<body>
+<div class="info">
+<h2>08_modify_trigger.sikuli</h2> <a href="08_modify_trigger.zip">(Download this script)</a>
+</div>
+<pre class="sikuli-code">
+<span class="kw">import</span> configurator, os
+p = configurator.start_it_up(getBundlePath(), <span class="str">"prefab_locator_trigger.blend"</span>)
+<span class="kw">try</span>:
+    <span class="skw">click</span>(Pattern(<img src="3dview_user_persp.png" />).similar(<span class="dig">0.90</span>))  <span class="cmt"># get rid of 3D cursor</span>
+    <span class="skw">wait</span>(<img src="3dview_prefab_loc_trigger.png" />, <span class="dig">5</span>)
+    hover(Location(<span class="dig">400</span>, <span class="dig">400</span>))  <span class="cmt"># move cursor above 3D view</span>
+
+    <span class="skw">type</span>(<span class="str">"g0"</span> + Key.TAB + <span class="str">"0"</span> + Key.TAB + <span class="str">".1"</span> + Key.ENTER)  <span class="cmt"># move locator</span>
+
+    keyDown(Key.SHIFT); <span class="skw">type</span>(<span class="str">"d"</span>); keyUp(Key.SHIFT)  <span class="cmt"># copy locator</span>
+    <span class="skw">type</span>(<span class="str">"1"</span> + Key.TAB + <span class="str">"2"</span> + Key.TAB + <span class="str">"0"</span> + Key.ENTER)  <span class="cmt"># move locator</span>
+
+    keyDown(Key.SHIFT); <span class="skw">type</span>(<span class="str">"d"</span>); keyUp(Key.SHIFT)  <span class="cmt"># copy locator</span>
+    <span class="skw">type</span>(<span class="str">"2-"</span> + Key.TAB + <span class="str">"0"</span> + Key.TAB + <span class="str">"0"</span> + Key.ENTER)  <span class="cmt"># move locator</span>
+
+    <span class="skw">rightClick</span>(Pattern(<img src="3dview_prefab_trigger_select_01-1.png" />).similar(<span class="dig">0.90</span>))
+    keyDown(Key.SHIFT); <span class="skw">rightClick</span>(Pattern(<img src="3dview_prefab_trigger_select_02.png" />).similar(<span class="dig">0.90</span>).targetOffset(<span class="dig">54</span>,-<span class="dig">39</span>)); keyUp(Key.SHIFT)
+    <span class="skw">click</span>(<img src="prefab_connect_trigger_points.png" />)
+    <span class="skw">rightClick</span>(Pattern(<img src="3dview_prefab_trigger_select_03.png" />).similar(<span class="dig">0.90</span>).targetOffset(<span class="dig">63</span>,-<span class="dig">40</span>))
+    keyDown(Key.SHIFT); <span class="skw">rightClick</span>(Pattern(<img src="3dview_prefab_trigger_select_04.png" />).similar(<span class="dig">0.90</span>).targetOffset(<span class="dig">8</span>,-<span class="dig">41</span>)); keyUp(Key.SHIFT)
+    <span class="skw">click</span>(<img src="prefab_connect_map_points.png" />)
+    <span class="skw">find</span>(Pattern(<img src="3dview_prefab_loc_trigger_set_1.png" />).similar(<span class="dig">0.90</span>))  <span class="cmt"># check the result</span>
+    <span class="skw">rightClick</span>(Pattern(<img src="3dview_prefab_trigger_select_05.png" />).similar(<span class="dig">0.90</span>).targetOffset(<span class="dig">8</span>,-<span class="dig">41</span>))
+    keyDown(Key.SHIFT); <span class="skw">rightClick</span>(Pattern(<img src="3dview_prefab_trigger_select_06.png" />).similar(<span class="dig">0.90</span>).targetOffset(-<span class="dig">56</span>,<span class="dig">1</span>)); keyUp(Key.SHIFT)
+    <span class="skw">click</span>(<img src="prefab_connect_map_points.png" />)
+    <span class="skw">rightClick</span>(Pattern(<img src="3dview_prefab_loc_trigger_set_2.png" />).similar(<span class="dig">0.90</span>).targetOffset(-<span class="dig">86</span>,<span class="dig">21</span>))  <span class="cmt"># check the result in the same time</span>
+    <span class="skw">click</span>(Pattern(<img src="prefab_trigger_range.png" />).similar(<span class="dig">0.90</span>)); <span class="skw">type</span>(<span class="str">"1.5"</span> + Key.ENTER)
+    <span class="skw">rightClick</span>(Pattern(<img src="3dview_prefab_trigger_select_07.png" />).similar(<span class="dig">0.90</span>).targetOffset(-<span class="dig">17</span>,<span class="dig">6</span>))
+    <span class="skw">click</span>(Pattern(<img src="prefab_trigger_range.png" />).similar(<span class="dig">0.90</span>)); <span class="skw">type</span>(<span class="str">"1"</span> + Key.ENTER)
+    <span class="skw">rightClick</span>(Pattern(<img src="3dview_prefab_trigger_select_08.png" />).similar(<span class="dig">0.90</span>).targetOffset(<span class="dig">0</span>,<span class="dig">28</span>))
+    <span class="skw">click</span>(Pattern(<img src="prefab_trigger_range.png" />).similar(<span class="dig">0.90</span>)); <span class="skw">type</span>(<span class="str">"1.3"</span> + Key.ENTER)
+    <span class="skw">find</span>(<img src="3dview_prefab_loc_trigger_set_3.png" />)
+<span class="kw">except</span>:
+    configurator.save_screenshot(getBundlePath(), Screen())
+    <span class="kw">raise</span>
+<span class="kw">finally</span>:
+    configurator.close_blender(p)
+</pre>
+</body>
+</html>

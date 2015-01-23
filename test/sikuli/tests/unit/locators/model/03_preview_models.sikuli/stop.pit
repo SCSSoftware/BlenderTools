@@ -1,0 +1,445 @@
+# Look Names:
+#	de
+#	uk
+#	pl
+#	cr
+#	it
+#	sw
+#	nl
+#	be
+#
+# Variant Names:
+#	Default
+#
+Header {
+    FormatVersion: 1
+    Source: "Maya 2010, PIT Exporter: 1.03"
+    Type: "Trait"
+    Name: "stop"
+}
+Global {
+    LookCount: 8
+    VariantCount: 1
+    PartCount: 1
+    MaterialCount: 2
+}
+Look {
+    Name: "de"
+    Material {
+        Alias: "p_road_sings"
+        Effect: "eut2.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.9834799767 0.9834799767 0.9834799767 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 25.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/model/sign/traffic/traffic_signs"
+        }
+    }
+    Material {
+        Alias: "p:shadow_caster"
+        Effect: "eut2.shadowonly"
+        Flags: 0
+        AttributeCount: 1
+        TextureCount: 0
+        Attribute {
+            Format: FLOAT
+            Tag: "shadow_bias"
+            Value: ( 0.0 )
+        }
+    }
+}
+Look {
+    Name: "uk"
+    Material {
+        Alias: "p_road_sings"
+        Effect: "eut2.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.9834799767 0.9834799767 0.9834799767 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 25.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/model/sign/traffic/traffic_signs_uk"
+        }
+    }
+    Material {
+        Alias: "p:shadow_caster"
+        Effect: "eut2.shadowonly"
+        Flags: 0
+        AttributeCount: 1
+        TextureCount: 0
+        Attribute {
+            Format: FLOAT
+            Tag: "shadow_bias"
+            Value: ( 0.0 )
+        }
+    }
+}
+Look {
+    Name: "pl"
+    Material {
+        Alias: "p_road_sings"
+        Effect: "eut2.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.9834799767 0.9834799767 0.9834799767 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 25.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/model/sign/traffic/traffic_signs_pl"
+        }
+    }
+    Material {
+        Alias: "p:shadow_caster"
+        Effect: "eut2.shadowonly"
+        Flags: 0
+        AttributeCount: 1
+        TextureCount: 0
+        Attribute {
+            Format: FLOAT
+            Tag: "shadow_bias"
+            Value: ( 0.0 )
+        }
+    }
+}
+Look {
+    Name: "cr"
+    Material {
+        Alias: "p_road_sings"
+        Effect: "eut2.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.9834799767 0.9834799767 0.9834799767 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 25.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/model/sign/traffic/traffic_signs_cr"
+        }
+    }
+    Material {
+        Alias: "p:shadow_caster"
+        Effect: "eut2.shadowonly"
+        Flags: 0
+        AttributeCount: 1
+        TextureCount: 0
+        Attribute {
+            Format: FLOAT
+            Tag: "shadow_bias"
+            Value: ( 0.0 )
+        }
+    }
+}
+Look {
+    Name: "it"
+    Material {
+        Alias: "p_road_sings"
+        Effect: "eut2.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.9834799767 0.9834799767 0.9834799767 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 25.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/model/sign/traffic/traffic_signs_it"
+        }
+    }
+    Material {
+        Alias: "p:shadow_caster"
+        Effect: "eut2.shadowonly"
+        Flags: 0
+        AttributeCount: 1
+        TextureCount: 0
+        Attribute {
+            Format: FLOAT
+            Tag: "shadow_bias"
+            Value: ( 0.0 )
+        }
+    }
+}
+Look {
+    Name: "sw"
+    Material {
+        Alias: "p_road_sings"
+        Effect: "eut2.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.9834799767 0.9834799767 0.9834799767 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 25.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/model/sign/traffic/traffic_signs_sw"
+        }
+    }
+    Material {
+        Alias: "p:shadow_caster"
+        Effect: "eut2.shadowonly"
+        Flags: 0
+        AttributeCount: 1
+        TextureCount: 0
+        Attribute {
+            Format: FLOAT
+            Tag: "shadow_bias"
+            Value: ( 0.0 )
+        }
+    }
+}
+Look {
+    Name: "nl"
+    Material {
+        Alias: "p_road_sings"
+        Effect: "eut2.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.9834799767 0.9834799767 0.9834799767 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 25.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/model/sign/traffic/traffic_signs_nl"
+        }
+    }
+    Material {
+        Alias: "p:shadow_caster"
+        Effect: "eut2.shadowonly"
+        Flags: 0
+        AttributeCount: 1
+        TextureCount: 0
+        Attribute {
+            Format: FLOAT
+            Tag: "shadow_bias"
+            Value: ( 0.0 )
+        }
+    }
+}
+Look {
+    Name: "be"
+    Material {
+        Alias: "p_road_sings"
+        Effect: "eut2.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.9834799767 0.9834799767 0.9834799767 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 25.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/model/sign/traffic/traffic_signs_be"
+        }
+    }
+    Material {
+        Alias: "p:shadow_caster"
+        Effect: "eut2.shadowonly"
+        Flags: 0
+        AttributeCount: 1
+        TextureCount: 0
+        Attribute {
+            Format: FLOAT
+            Tag: "shadow_bias"
+            Value: ( 0.0 )
+        }
+    }
+}
+Variant {
+    Name: "Default"
+    Part {
+        Name: "DefaultPart"
+        AttributeCount: 1
+        Attribute {
+            Format: INT
+            Tag: "visible"
+            Value: ( 1 )
+        }
+    }
+}

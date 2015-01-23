@@ -1,0 +1,35 @@
+import configurator
+p = configurator.start_it_up(getBundlePath(), "collider_convex.blend")
+try:
+    wait("3dview_collider_convex.png", 5)
+    click("collider_convex_make_convex.png"); find("3dview_collider_convex_created-1.png")
+    click("collider_convex_convert_to_loc.png")
+    click("collider_convex_delete_original_geo.png"); find("3dview_collider_convex_loc_created.png")
+    click(Pattern("collider_convex_faces.png").similar(0.90)); hover("3dview_collider_convex_faces_off-1.png")
+    type(Key.ESC + "z") # esc used to get focus for sure 
+    click("collider_convex_collision_margin.png"); type(".5" + Key.ENTER); hover("3dview_collider_convex_margin_05-1.png")
+    type(Key.ESC + "x" + Key.ENTER); rightClick()
+    keyDown(Key.ALT); type("d"); keyUp(Key.ALT)
+    type(".2"); type(Key.TAB)
+    type("1"); type(Key.TAB)
+    type(".5"); type(Key.ENTER)
+    keyDown(Key.SHIFT); rightClick(); keyUp(Key.SHIFT)
+    click("collider_convex_make_convex.png"); hover("3dview_collider_multiple_convex_created.png")
+    type(Key.ESC + "x" + Key.ENTER)
+    type(Key.ESC + "a"); keyDown(Key.SHIFT); rightClick(); keyUp(Key.SHIFT)
+    click("collider_convex_convert_to_loc.png"); find("3dview_collider_multiple_convex_loc_created.png")
+    click(Pattern("collider_convex_faces.png").similar(0.90)); find("3dview_collider_multiple_convex_faces_off.png")
+    click("collider_convex_delete_original_geo_2.png")
+    click(Pattern("collider_convex_faces.png").similar(0.90)); find("3dview_collider_multiple_convex_faces_off_2.png")
+    click("collider_convex_individual_objects.png"); find("3dview_collider_multiple_convex_loc_created_2.png")
+    click("collider_convex_delete_original_geo.png")
+    click(Pattern("collider_convex_faces.png").similar(0.90))
+    rightClick("3dview_collider_multiple_select_1.png"); type(Key.ESC + "x" + Key.ENTER)
+    rightClick("3dview_collider_convex_loc_created_wire.png")
+    click("collider_convex_convert_to_mesh.png"); find("3dview_collider_convex_created_wire.png")
+    click("collider_convex_convert_to_loc.png"); find("3dview_collider_convex_loc_created_wire_2.png")
+except:
+    configurator.save_screenshot(getBundlePath(), Screen())
+    raise
+finally:
+    configurator.close_blender(p)

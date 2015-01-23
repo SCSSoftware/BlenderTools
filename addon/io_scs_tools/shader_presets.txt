@@ -1,0 +1,1523 @@
+Header {
+    FormatVersion: 1
+    Source: "Blender 2.71.0 (hash: 9337574)"
+    Type: "Presets"
+    Note: "Shader Presets for SCS Blender Tools"
+    Author: "Milos Zajic (4museman)"
+    Version: 1
+    Date: "2014-09-04"
+}
+Shader {
+    PresetName: "model: dif"
+    Alias: "PrismLambert6"
+    Effect: "eut2.dif"
+    Flags: 0
+    AttributeCount: 5
+    TextureCount: 1
+    DataExchangeFormat {
+        NoFlavor: "True"
+    }
+    Attribute {
+        Format: FLOAT3
+        Tag: "diffuse"
+        Value: ( 1.0 1.0 1.0 )
+    }
+    Attribute {
+        Format: FLOAT3
+        Tag: "specular"
+        Value: ( 0.0 0.0 0.0 )
+        Hide: "True"
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "shininess"
+        Value: ( 5.0 )
+        Hide: "True"
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "add_ambient"
+        Value: ( 0.0 )
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "reflection"
+        Value: ( 0.0 )
+    }
+    Texture {
+        Tag: "texture[0]:texture_base"
+        Value: ""
+        TexCoord: ( 0 )
+    }
+}
+Shader {
+    PresetName: "model: dif.spec"
+    Alias: "dif_spec"
+    Effect: "eut2.dif.spec"
+    Attribute {
+        Format: FLOAT3
+        Tag: "diffuse"
+        Value: ( 1.0 1.0 1.0 )
+    }
+    Attribute {
+        Format: FLOAT3
+        Tag: "specular"
+        Value: ( 1.0 1.0 1.0 )
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "shininess"
+        Value: ( 50.0 )
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "add_ambient"
+        Value: ( 0.0 )
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "reflection"
+        Value: ( 0.0 )
+    }
+    Texture {
+        Tag: "texture[0]:texture_base"
+        Value: ""
+        TexCoord: ( 0 )
+    }
+}
+Shader {
+    PresetName: "model: dif.spec.tsnmap"
+    Alias: "dif_spec_nmap"
+    Effect: "eut2.dif.spec.tsnmap"
+    Attribute {
+        Format: FLOAT3
+        Tag: "diffuse"
+        Value: ( 1.0 1.0 1.0 )
+    }
+    Attribute {
+        Format: FLOAT3
+        Tag: "specular"
+        Value: ( 1.0 1.0 1.0 )
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "shininess"
+        Value: ( 50.0 )
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "add_ambient"
+        Value: ( 0.0 )
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "reflection"
+        Value: ( 0.0 )
+    }
+    Texture {
+        Tag: "texture[0]:texture_nmap"
+        Value: ""
+        TexCoord: ( 0 )
+    }
+    Texture {
+        Tag: "texture[1]:texture_base"
+        Value: ""
+        TexCoord: ( 0 )
+    }
+}
+Shader {
+    PresetName: "model: dif.spec.add.env"
+    Alias: "p_aluminium"
+    Effect: "eut2.dif.spec.add.env"
+    Flags: 0
+    AttributeCount: 7
+    TextureCount: 2
+    Attribute {
+        Format: FLOAT3
+        Tag: "diffuse"
+        Value: ( 1.0 1.0 1.0 )
+    }
+    Attribute {
+        Format: FLOAT3
+        Tag: "specular"
+        Value: ( 1.0 1.0 1.0 )
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "shininess"
+        Value: ( 50.0 )
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "add_ambient"
+        Value: ( 0.0 )
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "reflection"
+        Value: ( 0.0 )
+    }
+    Attribute {
+        Format: FLOAT3
+        Tag: "env_factor"
+        Value: ( 0.4 0.4 0.4 )
+    }
+    Attribute {
+        Format: FLOAT2
+        Tag: "fresnel"
+        Value: ( 0.2 0.9 )
+    }
+    Texture {
+        Tag: "texture[0]:texture_base"
+        Value: ""
+        TexCoord: ( 0 )
+    }
+    Texture {
+        Tag: "texture[1]:texture_reflection"
+        Value: "/material/environment/vehicle_reflection"
+        Lock: "True"
+        TexCoord: ( -1 )
+    }
+}
+Shader {
+    PresetName: "model: dif.spec.alpha"
+    Alias: "cgfxShader1"
+    Effect: "eut2.dif.spec.a"
+    Flags: 0
+    AttributeCount: 5
+    TextureCount: 1
+    Attribute {
+        Format: FLOAT3
+        Tag: "diffuse"
+        Value: ( 1.0 1.0 1.0 )
+    }
+    Attribute {
+        Format: FLOAT3
+        Tag: "specular"
+        Value: ( 1.0 1.0 1.0 )
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "shininess"
+        Value: ( 50.0 )
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "add_ambient"
+        Value: ( 0.0 )
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "reflection"
+        Value: ( 0.0 )
+    }
+    Texture {
+        Tag: "texture[0]:texture_base"
+        Value: ""
+        TexCoord: ( 0 )
+    }
+}
+Shader {
+    PresetName: "model: dif.spec.shadow.alpha"
+    Alias: "p_alpha"
+    Effect: "eut2.dif.spec.shadow.a"
+    Flags: 0
+    AttributeCount: 6
+    TextureCount: 1
+    Attribute {
+        Format: FLOAT3
+        Tag: "diffuse"
+        Value: ( 1.0 1.0 1.0 )
+    }
+    Attribute {
+        Format: FLOAT3
+        Tag: "specular"
+        Value: ( 1.0 1.0 1.0 )
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "shininess"
+        Value: ( 50.0 )
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "add_ambient"
+        Value: ( 0.0 )
+        Hide: "True"
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "reflection"
+        Value: ( 0.0 )
+        Hide: "True"
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "shadow_bias"
+        Value: ( 0.0 )
+    }
+    Texture {
+        Tag: "texture[0]:texture_base"
+        Value: ""
+        TexCoord: ( 0 )
+    }
+}
+Shader {
+    PresetName: "model: dif.spec.decal.over"
+    Alias: "p_road_decals"
+    Effect: "eut2.dif.spec.decal.over"
+    Flags: 0
+    AttributeCount: 5
+    TextureCount: 1
+    Attribute {
+        Format: FLOAT3
+        Tag: "diffuse"
+        Value: ( 1.0 1.0 1.0 )
+    }
+    Attribute {
+        Format: FLOAT3
+        Tag: "specular"
+        Value: ( 1.0 1.0 1.0 )
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "shininess"
+        Value: ( 50.0 )
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "add_ambient"
+        Value: ( 0.0 )
+        Hide: "True"
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "reflection"
+        Value: ( 0.0 )
+        Hide: "True"
+    }
+    Texture {
+        Tag: "texture[0]:texture_base"
+        Value: ""
+        TexCoord: ( 0 )
+    }
+}
+Shader {
+    PresetName: "model: lamp (trafic light)"
+    Alias: "p:lamp"
+    Effect: "eut2.lamp"
+    Flags: 0
+    AttributeCount: 4
+    TextureCount: 2
+    Attribute {
+        Format: FLOAT3
+        Tag: "diffuse"
+        Value: ( 1.0 1.0 1.0 )
+        Hide: "True"
+    }
+    Attribute {
+        Format: FLOAT3
+        Tag: "specular"
+        Value: ( 0.7 0.7 0.7 )
+        Hide: "True"
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "shininess"
+        Value: ( 90.0 )
+        Hide: "True"
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "add_ambient"
+        Value: ( 0.0 )
+        Hide: "True"
+    }
+    Texture {
+        Tag: "texture[0]:texture_base"
+        Value: ""
+        TexCoord: ( 0 )
+    }
+    Texture {
+        Tag: "texture[1]:texture_mask"
+        Value: ""
+        TexCoord: ( 1 )
+    }
+}
+Shader {
+    PresetName: "model: shadowonly"
+    Alias: "p1:shadow_caster"
+    Effect: "eut2.shadowonly"
+    Flags: 0
+    AttributeCount: 1
+    TextureCount: 0
+    Attribute {
+        Format: FLOAT
+        Tag: "shadow_bias"
+        Value: ( 0.0 )
+    }
+}
+Shader {
+    PresetName: "prefab: dif.spec.oclu"
+    Alias: "a_interior"
+    Effect: "eut2.dif.spec.oclu"
+    Flags: 0
+    AttributeCount: 5
+    TextureCount: 2
+    Attribute {
+        Format: FLOAT3
+        Tag: "diffuse"
+        Value: ( 1.0 1.0 1.0 )
+    }
+    Attribute {
+        Format: FLOAT3
+        Tag: "specular"
+        Value: ( 0.13 0.13 0.13 )
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "shininess"
+        Value: ( 30.0 )
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "add_ambient"
+        Value: ( 0.0 )
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "reflection"
+        Value: ( 0.0 )
+    }
+    Texture {
+        Tag: "texture[0]:texture_base"
+        Value: ""
+        TexCoord: ( 0 )
+    }
+    Texture {
+        Tag: "texture[1]:texture_oclu"
+        Value: ""
+        TexCoord: ( 1 )
+    }
+}
+Shader {
+    PresetName: "prefab: lightmap.night"
+    Alias: "light_shade"
+    Effect: "eut2.lightmap.night"
+    Flags: 0
+    AttributeCount: 3
+    TextureCount: 1
+    Attribute {
+        Format: FLOAT3
+        Tag: "diffuse"
+        Value: ( 1.0 1.0 1.0 )
+    }
+    Attribute {
+        Format: FLOAT3
+        Tag: "specular"
+        Value: ( 0.0 0.0 0.0 )
+        Hide: "True"
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "shininess"
+        Value: ( 0.0 )
+        Hide: "True"
+    }
+    Texture {
+        Tag: "texture[0]:texture_base"
+        Value: ""
+        TexCoord: ( 0 )
+    }
+}
+Shader {
+    PresetName: "prefab: building.add.env.day"
+    Alias: "p_village"
+    Effect: "eut2.building.add.env.day"
+    Flags: 0
+    AttributeCount: 5
+    TextureCount: 2
+    Attribute {
+        Format: FLOAT3
+        Tag: "diffuse"
+        Value: ( 1.0 1.0 1.0 )
+    }
+    Attribute {
+        Format: FLOAT3
+        Tag: "specular"
+        Value: ( 0.9 0.9 0.9 )
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "shininess"
+        Value: ( 60.0 )
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "add_ambient"
+        Value: ( 0.0 )
+    }
+    Attribute {
+        Format: FLOAT3
+        Tag: "env_factor"
+        Value: ( 0.9 0.9 0.9 )
+    }
+    Texture {
+        Tag: "texture[0]:texture_base"
+        Value: ""
+        TexCoord: ( 0 )
+    }
+    Texture {
+        Tag: "texture[1]:texture_reflection"
+        Value: "/material/environment/building_reflection/building_ref"
+        Lock: "True"
+        TexCoord: ( -1 )
+    }
+}
+Shader {
+    PresetName: "prefab: dif.spec.weight"
+    Alias: "m_grass"
+    Effect: "eut2.dif.spec.weight"
+    Flags: 0
+    AttributeCount: 5
+    TextureCount: 1
+    Attribute {
+        Format: FLOAT3
+        Tag: "diffuse"
+        Value: ( 1.0 1.0 1.0 )
+    }
+    Attribute {
+        Format: FLOAT3
+        Tag: "specular"
+        Value: ( 0.1 0.1 0.1 )
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "shininess"
+        Value: ( 12.0 )
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "add_ambient"
+        Value: ( 0.0 )
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "reflection"
+        Value: ( 0.0 )
+    }
+    Texture {
+        Tag: "texture[0]:texture_base"
+        Value: ""
+        TexCoord: ( 0 )
+    }
+}
+Shader {
+    PresetName: "prefab: dif.spec.weight.weight.dif.spec.weight"
+    Alias: "PrismLambert2"
+    Effect: "eut2.dif.spec.weight.weight.dif.spec.weight"
+    Flags: 0
+    AttributeCount: 7
+    TextureCount: 2
+    Attribute {
+        Format: FLOAT3
+        Tag: "diffuse"
+        Value: ( 1.0 1.0 1.0 )
+    }
+    Attribute {
+        Format: FLOAT3
+        Tag: "specular"
+        Value: ( 0.5 0.5 0.5 )
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "shininess"
+        Value: ( 8.0 )
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "add_ambient"
+        Value: ( 0.0 )
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "reflection"
+        Value: ( 0.0 )
+    }
+    Attribute {
+        Format: FLOAT4
+        Tag: "aux[3]"
+        Value: ( 1.6 1.6 1.6 15.0 )
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "reflection2"
+        Value: ( 1.0 )
+    }
+    Texture {
+        Tag: "texture[0]:texture_base"
+        Value: ""
+        TexCoord: ( 0 )
+    }
+    Texture {
+        Tag: "texture[1]:texture_over"
+        Value: ""
+        TexCoord: ( 1 )
+    }
+}
+Shader {
+    PresetName: "vehicle: dif.spec.add.env.nofresnel (chrome)"
+    Alias: "p1:chrome"
+    Effect: "eut2.dif.spec.add.env.nofresnel"
+    Flags: 0
+    AttributeCount: 6
+    TextureCount: 2
+    Attribute {
+        Format: FLOAT3
+        Tag: "diffuse"
+        Value: ( 1.0 1.0 1.0 )
+        Hide: "True"
+    }
+    Attribute {
+        Format: FLOAT3
+        Tag: "specular"
+        Value: ( 1.0 1.0 1.0 )
+        Hide: "True"
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "shininess"
+        Value: ( 60.0 )
+        Hide: "True"
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "add_ambient"
+        Value: ( 1.0 )
+        Hide: "True"
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "reflection"
+        Value: ( 0.0 )
+        Hide: "True"
+    }
+    Attribute {
+        Format: FLOAT3
+        Tag: "env_factor"
+        Value: ( 0.9 0.9 0.9 )
+        Hide: "True"
+    }
+    Texture {
+        Tag: "texture[0]:texture_base"
+        Value: ""
+        TexCoord: ( 0 )
+    }
+    Texture {
+        Tag: "texture[1]:texture_reflection"
+        Value: "/material/environment/vehicle_reflection"
+        Lock: "True"
+        TexCoord: ( -1 )
+    }
+}
+Shader {
+    PresetName: "vehicle: glass (carglass)"
+    Alias: "p1:p_glass"
+    Effect: "eut2.glass"
+    Flags: 0
+    AttributeCount: 7
+    TextureCount: 2
+    Attribute {
+        Format: FLOAT3
+        Tag: "diffuse"
+        Value: ( 1.0 1.0 1.0 )
+        Hide: "True"
+    }
+    Attribute {
+        Format: FLOAT3
+        Tag: "specular"
+        Value: ( 0.5 0.5 0.5 )
+        Hide: "True"
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "shininess"
+        Value: ( 95.0 )
+        Hide: "True"
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "add_ambient"
+        Value: ( 0.0 )
+        Hide: "True"
+    }
+    Attribute {
+        Format: FLOAT3
+        Tag: "env_factor"
+        Value: ( 3.0 3.0 3.0 )
+        Hide: "True"
+    }
+    Attribute {
+        Format: FLOAT2
+        Tag: "fresnel"
+        Value: ( 1.0 2.0 )
+        Hide: "True"
+    }
+    Attribute {
+        Format: FLOAT3
+        Tag: "tint"
+        Value: ( 0.78 0.8 0.79 )
+        Hide: "True"
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "tint_opacity"
+        Value: ( -0.01 )
+        Hide: "True"
+    }
+    Texture {
+        Tag: "texture[0]:texture_base"
+        Value: "/vehicle/truck/share/glass_ex"
+        TexCoord: ( 0 )
+    }
+    Texture {
+        Tag: "texture[1]:texture_reflection"
+        Value: "/material/environment/vehicle_reflection"
+        Lock: "True"
+        TexCoord: ( -1 )
+    }
+}
+Shader {
+    PresetName: "vehicle: glass (interior glass)"
+    Alias: "p6:p_glass_interior"
+    Effect: "eut2.glass"
+    Flags: 0
+    AttributeCount: 8
+    TextureCount: 2
+    Attribute {
+        Format: FLOAT3
+        Tag: "diffuse"
+        Value: ( 1.0 1.0 1.0 )
+        Hide: "True"
+    }
+    Attribute {
+        Format: FLOAT3
+        Tag: "specular"
+        Value: ( 0.35 0.35 0.35 )
+        Hide: "True"
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "shininess"
+        Value: ( 24.0 )
+        Hide: "True"
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "add_ambient"
+        Value: ( 0.0 )
+        Hide: "True"
+    }
+    Attribute {
+        Format: FLOAT3
+        Tag: "env_factor"
+        Value: ( 0.6 0.6 0.6 )
+        Hide: "True"
+    }
+    Attribute {
+        Format: FLOAT2
+        Tag: "fresnel"
+        Value: ( 0.2 0.9 )
+        Hide: "True"
+    }
+    Attribute {
+        Format: FLOAT3
+        Tag: "tint"
+        Value: ( 0.9 0.9 0.9 )
+        Hide: "True"
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "tint_opacity"
+        Value: ( 0.0 )
+        Hide: "True"
+    }
+    Texture {
+        Tag: "texture[0]:texture_base"
+        Value: "/vehicle/truck/share/glass"
+        Lock: "True"
+        TexCoord: ( 0 )
+    }
+    Texture {
+        Tag: "texture[1]:texture_reflection"
+        Value: "/vehicle/truck/daf_xf/interior/env"
+        Lock: "True"
+        TexCoord: ( -1 )
+    }
+}
+Shader {
+    PresetName: "vehicle: lamp"
+    Alias: "p9:lamp"
+    Effect: "eut2.lamp.add.env"
+    Flags: 0
+    AttributeCount: 6
+    TextureCount: 3
+    Attribute {
+        Format: FLOAT3
+        Tag: "diffuse"
+        Value: ( 1.0 1.0 1.0 )
+        Hide: "True"
+    }
+    Attribute {
+        Format: FLOAT3
+        Tag: "specular"
+        Value: ( 1.0 1.0 1.0 )
+        Hide: "True"
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "shininess"
+        Value: ( 30.0 )
+        Hide: "True"
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "add_ambient"
+        Value: ( 0.0 )
+        Hide: "True"
+    }
+    Attribute {
+        Format: FLOAT3
+        Tag: "env_factor"
+        Value: ( 1.0 1.0 1.0 )
+        Hide: "True"
+    }
+    Attribute {
+        Format: FLOAT2
+        Tag: "fresnel"
+        Value: ( 0.2 0.9 )
+        Hide: "True"
+    }
+    Texture {
+        Tag: "texture[0]:texture_base"
+        Value: ""
+        TexCoord: ( 0 )
+    }
+    Texture {
+        Tag: "texture[1]:texture_mask"
+        Value: ""
+        TexCoord: ( 1 )
+    }
+    Texture {
+        Tag: "texture[2]:texture_reflection"
+        Value: "/material/environment/vehicle_reflection"
+        Lock: "True"
+        TexCoord: ( -1 )
+    }
+}
+Shader {
+    PresetName: "vehicle: dif.spec.add.env.paint (carpaint)"
+    Alias: "p:carpaint"
+    Effect: "eut2.dif.spec.add.env.paint"
+    Flags: 0
+    AttributeCount: 7
+    TextureCount: 2
+    Attribute {
+        Format: FLOAT3
+        Tag: "diffuse"
+        Value: ( 1.0 1.0 1.0 )
+        Hide: "True"
+    }
+    Attribute {
+        Format: FLOAT3
+        Tag: "specular"
+        Value: ( 1.5 1.5 1.5 )
+        Hide: "True"
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "shininess"
+        Value: ( 60.0 )
+        Hide: "True"
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "add_ambient"
+        Value: ( 0.0 )
+        Hide: "True"
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "reflection"
+        Value: ( 0.0 )
+        Hide: "True"
+    }
+    Attribute {
+        Format: FLOAT3
+        Tag: "env_factor"
+        Value: ( 0.3 0.3 0.3 )
+        Hide: "True"
+    }
+    Attribute {
+        Format: FLOAT2
+        Tag: "fresnel"
+        Value: ( 0.2 0.9 )
+        Hide: "True"
+    }
+    Texture {
+        Tag: "texture[0]:texture_base"
+        Value: ""
+        TexCoord: ( 0 )
+    }
+    Texture {
+        Tag: "texture[1]:texture_reflection"
+        Value: "/material/environment/vehicle_reflection"
+        Lock: "True"
+        TexCoord: ( -1 )
+    }
+}
+Shader {
+    PresetName: "vehicle: truckpaint (LODs)"
+    Alias: "p3:truckpaint"
+    Effect: "eut2.truckpaint"
+    Flags: 0
+    AttributeCount: 10
+    TextureCount: 3
+    DataExchangeFormat {
+        Effect: "eut2.truckpaint"
+        AirbrushPaintjob: "True"
+        UseUV2ForPaintjob: "True"
+    }
+    Attribute {
+        Format: FLOAT3
+        Tag: "diffuse"
+        Value: ( 1.0 1.0 1.0 )
+        Hide: "True"
+    }
+    Attribute {
+        Format: FLOAT3
+        Tag: "specular"
+        Value: ( 1.5 1.5 1.5 )
+        Hide: "True"
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "shininess"
+        Value: ( 250.0 )
+        Hide: "True"
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "add_ambient"
+        Value: ( 0.0 )
+        Hide: "True"
+    }
+    Attribute {
+        Format: FLOAT3
+        Tag: "env_factor"
+        Value: ( 0.3 0.3 0.3 )
+        Hide: "True"
+    }
+    Attribute {
+        Format: FLOAT2
+        Tag: "fresnel"
+        Value: ( 0.2 0.9 )
+    }
+    Attribute {
+        Format: FLOAT3
+        Tag: "aux[5]"
+        Value: ( 1.0 0.0 0.0 )
+        Hide: "True"
+    }
+    Attribute {
+        Format: FLOAT3
+        Tag: "aux[6]"
+        Value: ( 0.71 0.61 0.5 )
+        Hide: "True"
+    }
+    Attribute {
+        Format: FLOAT3
+        Tag: "aux[7]"
+        Value: ( 0.33 0.0 0.0 )
+        Hide: "True"
+    }
+    Attribute {
+        Format: FLOAT3
+        Tag: "aux[8]"
+        Value: ( 0.1 0.05 0.05 )
+        Hide: "True"
+    }
+    Texture {
+        Tag: "texture[0]:texture_base"
+        Value: ""
+        TexCoord: ( 0 )
+    }
+    Texture {
+        Tag: "texture[1]:texture_reflection"
+        Value: "/material/environment/vehicle_reflection"
+        Lock: "True"
+        TexCoord: ( -1 )
+    }
+    Texture {
+        Tag: "texture[2]:texture_paintjob"
+        Value: "/vehicle/truck/upgrade/paintjob/empty"
+        TexCoord: ( 1 2 )
+    }
+}
+Shader {
+    PresetName: "vehicle: truckpaint (airbrush.altuv)"
+    Alias: "p3:truckpaint"
+    Effect: "eut2.truckpaint.airbrush.altuv"
+    Flags: 0
+    AttributeCount: 7
+    TextureCount: 3
+    Attribute {
+        Format: FLOAT3
+        Tag: "diffuse"
+        Value: ( 1.0 1.0 1.0 )
+        Hide: "True"
+    }
+    Attribute {
+        Format: FLOAT3
+        Tag: "specular"
+        Value: ( 1.5 1.5 1.5 )
+        Hide: "True"
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "shininess"
+        Value: ( 250.0 )
+        Hide: "True"
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "add_ambient"
+        Value: ( 0.0 )
+        Hide: "True"
+    }
+    Attribute {
+        Format: FLOAT3
+        Tag: "env_factor"
+        Value: ( 0.3 0.3 0.3 )
+        Hide: "True"
+    }
+    Attribute {
+        Format: FLOAT2
+        Tag: "fresnel"
+        Value: ( 0.2 0.9 )
+    }
+    Attribute {
+        Format: FLOAT3
+        Tag: "aux[8]"
+        Value: ( 0.1 0.05 0.05 )
+        Hide: "True"
+    }
+    Texture {
+        Tag: "texture[0]:texture_base"
+        Value: ""
+        TexCoord: ( 0 )
+    }
+    Texture {
+        Tag: "texture[1]:texture_reflection"
+        Value: "/material/environment/vehicle_reflection"
+        Lock: "True"
+        TexCoord: ( -1 )
+    }
+    Texture {
+        Tag: "texture[2]:texture_paintjob"
+        Value: "/vehicle/truck/upgrade/paintjob/empty"
+        TexCoord: ( 1 2 )
+    }
+}
+Shader {
+    PresetName: "vehicle: dif.spec.mult.dif.spec (trailer)"
+    Alias: "paint_generic1"
+    Effect: "eut2.dif.spec.mult.dif.spec"
+    Flags: 0
+    AttributeCount: 5
+    TextureCount: 2
+    Attribute {
+        Format: FLOAT3
+        Tag: "diffuse"
+        Value: ( 1.0 1.0 1.0 )
+    }
+    Attribute {
+        Format: FLOAT3
+        Tag: "specular"
+        Value: ( 0.400000006 0.400000006 0.400000006 )
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "shininess"
+        Value: ( 25.0 )
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "add_ambient"
+        Value: ( 0.0 )
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "reflection"
+        Value: ( 0.0 )
+    }
+    Texture {
+        Tag: "texture[0]:texture_base"
+        Value: ""
+        TexCoord: ( 0 )
+    }
+    Texture {
+        Tag: "texture[1]:texture_mult"
+        Value: ""
+        TexCoord: ( 1 )
+    }
+}
+Shader {
+    PresetName: "vehicle: dif.lum (dashboard display)"
+    Alias: "p_dashboard_display"
+    Effect: "eut2.dif.lum"
+    Flags: 0
+    AttributeCount: 5
+    TextureCount: 1
+    Attribute {
+        Format: FLOAT3
+        Tag: "diffuse"
+        Value: ( 1.0 1.0 1.0 )
+    }
+    Attribute {
+        Format: FLOAT3
+        Tag: "specular"
+        Value: ( 0.35 0.35 0.35 )
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "shininess"
+        Value: ( 64.0 )
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "add_ambient"
+        Value: ( 0.0 )
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "reflection"
+        Value: ( 0.0 )
+    }
+    Texture {
+        Tag: "texture[0]:texture_base"
+        Value: "/vehicle/truck/share/dashboard"
+        Lock: "True"
+        TexCoord: ( 0 )
+    }
+}
+Shader {
+    PresetName: "vehicle: dif.lum (GPS display)"
+    Alias: "gps"
+    Effect: "eut2.dif.lum"
+    Flags: 0
+    AttributeCount: 5
+    TextureCount: 1
+    Attribute {
+        Format: FLOAT3
+        Tag: "diffuse"
+        Value: ( 1.0 1.0 1.0 )
+    }
+    Attribute {
+        Format: FLOAT3
+        Tag: "specular"
+        Value: ( 0.0 0.0 0.0 )
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "shininess"
+        Value: ( 4.0 )
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "add_ambient"
+        Value: ( 0.0 )
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "reflection"
+        Value: ( 0.0 )
+    }
+    Texture {
+        Tag: "texture[0]:texture_base"
+        Value: "/vehicle/truck/share/gps"
+        Lock: "True"
+        TexCoord: ( 0 )
+    }
+}
+Shader {
+    PresetName: "vehicle: dif.lum (dashboard indicators)"
+    Alias: "luminosity"
+    Effect: "eut2.dif.lum.decal.over"
+    Flags: 0
+    AttributeCount: 5
+    TextureCount: 1
+    Attribute {
+        Format: FLOAT3
+        Tag: "diffuse"
+        Value: ( 1.0 1.0 1.0 )
+    }
+    Attribute {
+        Format: FLOAT3
+        Tag: "specular"
+        Value: ( 0.0 0.0 0.0 )
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "shininess"
+        Value: ( 4.0 )
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "add_ambient"
+        Value: ( 0.0 )
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "reflection"
+        Value: ( 0.0 )
+    }
+    Texture {
+        Tag: "texture[0]:texture_base"
+        Value: ""
+        TexCoord: ( 0 )
+    }
+}
+Shader {
+    PresetName: "vehicle: mlaaweight"
+    Alias: "p8:mlaa_remover"
+    Effect: "eut2.mlaaweight"
+    Flags: 0
+    AttributeCount: 0
+    TextureCount: 0
+}
+Shader {
+    PresetName: "vehicle: eut.dif.lum (mirror close)"
+    Alias: "p6:p_mirror_close"
+    Effect: "eut2.dif.lum"
+    Flags: 0
+    AttributeCount: 5
+    TextureCount: 1
+    Attribute {
+        Format: FLOAT3
+        Tag: "diffuse"
+        Value: ( 1.0 1.0 1.0 )
+    }
+    Attribute {
+        Format: FLOAT3
+        Tag: "specular"
+        Value: ( 0.0 0.0 0.0 )
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "shininess"
+        Value: ( 4.0 )
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "add_ambient"
+        Value: ( 0.0 )
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "reflection"
+        Value: ( 0.0 )
+    }
+    Texture {
+        Tag: "texture[0]:texture_base"
+        Value: "/material/environment/close_mirror_reflection"
+        Lock: "True"
+        TexCoord: ( 0 )
+    }
+}
+Shader {
+    PresetName: "vehicle: eut.dif.lum (mirror close small)"
+    Alias: "p6:p_mirror_close_s"
+    Effect: "eut2.dif.lum"
+    Flags: 0
+    AttributeCount: 5
+    TextureCount: 1
+    Attribute {
+        Format: FLOAT3
+        Tag: "diffuse"
+        Value: ( 1.0 1.0 1.0 )
+    }
+    Attribute {
+        Format: FLOAT3
+        Tag: "specular"
+        Value: ( 0.0 0.0 0.0 )
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "shininess"
+        Value: ( 4.0 )
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "add_ambient"
+        Value: ( 0.0 )
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "reflection"
+        Value: ( 0.0 )
+    }
+    Texture {
+        Tag: "texture[0]:texture_base"
+        Value: "/material/environment/close_s_mirror_reflection"
+        Lock: "True"
+        TexCoord: ( 0 )
+    }
+}
+Shader {
+    PresetName: "vehicle: eut.dif.lum (mirror far)"
+    Alias: "p6:p_mirror_far"
+    Effect: "eut2.dif.lum"
+    Flags: 0
+    AttributeCount: 5
+    TextureCount: 1
+    Attribute {
+        Format: FLOAT3
+        Tag: "diffuse"
+        Value: ( 1.0 1.0 1.0 )
+    }
+    Attribute {
+        Format: FLOAT3
+        Tag: "specular"
+        Value: ( 0.0 0.0 0.0 )
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "shininess"
+        Value: ( 4.0 )
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "add_ambient"
+        Value: ( 0.0 )
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "reflection"
+        Value: ( 0.0 )
+    }
+    Texture {
+        Tag: "texture[0]:texture_base"
+        Value: "/material/environment/far_mirror_reflection"
+        Lock: "True"
+        TexCoord: ( 0 )
+    }
+}
+Shader {
+    PresetName: "vehicle: eut.dif.lum (mirror far small)"
+    Alias: "p6:p_mirror_far_s"
+    Effect: "eut2.dif.lum"
+    Flags: 0
+    AttributeCount: 5
+    TextureCount: 1
+    Attribute {
+        Format: FLOAT3
+        Tag: "diffuse"
+        Value: ( 1.0 1.0 1.0 )
+    }
+    Attribute {
+        Format: FLOAT3
+        Tag: "specular"
+        Value: ( 0.0 0.0 0.0 )
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "shininess"
+        Value: ( 4.0 )
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "add_ambient"
+        Value: ( 0.0 )
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "reflection"
+        Value: ( 0.0 )
+    }
+    Texture {
+        Tag: "texture[0]:texture_base"
+        Value: "/material/environment/far_s_mirror_reflection"
+        Lock: "True"
+        TexCoord: ( 0 )
+    }
+}
+Shader {
+    PresetName: "vehicle: eut.dif.lum (mirror front)"
+    Alias: "p6:p_mirror_front"
+    Effect: "eut2.dif.lum"
+    Flags: 0
+    AttributeCount: 5
+    TextureCount: 1
+    Attribute {
+        Format: FLOAT3
+        Tag: "diffuse"
+        Value: ( 1.0 1.0 1.0 )
+    }
+    Attribute {
+        Format: FLOAT3
+        Tag: "specular"
+        Value: ( 0.0 0.0 0.0 )
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "shininess"
+        Value: ( 4.0 )
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "add_ambient"
+        Value: ( 0.0 )
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "reflection"
+        Value: ( 0.0 )
+    }
+    Texture {
+        Tag: "texture[0]:texture_base"
+        Value: "/material/environment/front_mirror_reflection"
+        Lock: "True"
+        TexCoord: ( 0 )
+    }
+}
+Shader {
+    PresetName: "vehicle: eut.dif.lum (mirror side)"
+    Alias: "p7:p_mirror_side"
+    Effect: "eut2.dif.lum"
+    Flags: 0
+    AttributeCount: 5
+    TextureCount: 1
+    Attribute {
+        Format: FLOAT3
+        Tag: "diffuse"
+        Value: ( 1.0 1.0 1.0 )
+    }
+    Attribute {
+        Format: FLOAT3
+        Tag: "specular"
+        Value: ( 0.0 0.0 0.0 )
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "shininess"
+        Value: ( 4.0 )
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "add_ambient"
+        Value: ( 0.0 )
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "reflection"
+        Value: ( 0.0 )
+    }
+    Texture {
+        Tag: "texture[0]:texture_base"
+        Value: "/material/environment/side_mirror_reflection"
+        Lock: "True"
+        TexCoord: ( 0 )
+    }
+}
+Shader {
+    PresetName: " ALL TEST - (DON'T USE IT FOR EXPORT)"
+    Alias: "SCS_Tools_Material_Test" ## Blender Material Name
+    Effect: "eut2.dif.spec.add.env"
+    # Flags: 0 ## NOTE: Mechanism for custom texture settings.
+    Attribute {
+        Format: FLOAT3
+        Tag: "diffuse"
+        Value: ( 1.0 1.0 1.0 ) ## Blender Material Diffuse
+    }
+    Attribute {
+        Format: FLOAT3
+        Tag: "specular"
+        Value: ( 0.0 0.0 0.0 ) ## Blender Material Specular
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "shininess"
+        Value: ( 100.0 ) ## Blender Material Hardness
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "add_ambient" ## Blender Material Ambient
+        Value: ( 0.0 )
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "reflection" ## (!!!)
+        Value: ( 0.0 )
+    }
+    Attribute {
+        Format: FLOAT3
+        Tag: "env_factor"
+        Value: ( 5.0 5.0 5.0 )
+    }
+    Attribute {
+        Format: FLOAT2
+        Tag: "fresnel"
+        Value: ( 0.2 0.9 )
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "dummy" ## (!!!)
+        Value: ( 0.0 )
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "shadow_bias" ## (!!!)
+        Value: ( 0.0 )
+    }
+    Texture {
+        Tag: "texture[0]:texture_base"
+        Value: "/model/bank_conc_sand"
+    }
+    Texture {
+        Tag: "texture[1]:texture_reflection"
+        Value: "/model/bank_metal_stone"
+    }
+    Texture {
+        Tag: "texture[2]:texture_over"
+        Value: ""
+    }
+    Texture {
+        Tag: "texture[3]:texture_oclu"
+        Value: ""
+    }
+    Texture {
+        Tag: "texture[4]:texture_mask"
+        Value: ""
+    }
+    Texture {
+        Tag: "texture[5]:texture_mult"
+        Value: ""
+    }
+    Texture {
+        Tag: "texture[6]:texture_iamod"
+        Value: ""
+    }
+    Texture {
+        Tag: "texture[7]:texture_lightmap"
+        Value: ""
+    }
+    Texture {
+        Tag: "texture[8]:texture_paintjob"
+        Value: ""
+    }
+    Texture {
+        Tag: "texture[9]:texture_flakenoise"
+        Value: ""
+    }
+}

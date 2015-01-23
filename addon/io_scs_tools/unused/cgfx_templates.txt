@@ -1,0 +1,2498 @@
+Header {
+    FormatVersion: 1
+    Source: "Blender 2.68.0 (r58536), Prism Tools (utils.py) 0.2"
+    Type: "Presets"
+    Note: "CgFX Shader Presets for Prism Tools"
+    Author: "Milos Zajic (4museman)"
+    Version: 1
+    Date: "2013-10-03"
+}
+Shader {
+    TemplateName: "background_building"
+    CgFXFile: "eut2.building.add.env.day.cgfx"
+    Item {
+        # (flavor) Normal map
+        # setAttr...
+        Name: "d_NMAP_ENABLE"
+        Type: "enum"
+        Value: "0"
+        # Hide: "False"
+        Enabled: "True"
+    }
+    Item {
+        # (flavor) Shadow caster
+        # setAttr -l on -k on ".define_SHADOW_ENABLE";
+        Name: "d_SHADOW_ENABLE"
+        Type: "bool"
+        Value: "False"
+        Enabled: "False"
+    }
+    Item {
+        # Diffuse
+        # setAttr -l on -k on ".material_diffuse" -type "float3" 1 1 1 ;
+        # setAttr -l on -k on ".material_diffuse";
+        Name: "material_diffuse"
+        Type: "color"
+        Value: (1.0, 1.0, 1.0)
+        Enabled: "False"
+    }
+    Item {
+        # Specular
+        # setAttr -l on -k on ".material_specular" -type "float3" 0.89999998 0.89999998 0.89999998 ;
+        # setAttr -l on -k on ".material_specular";
+        Name: "material_specular"
+        Type: "color"
+        Value: (0.9, 0.9, 0.9)
+        Enabled: "False"
+    }
+    Item {
+        # Shininess
+        # setAttr -l on -k on ".material_shininess" 60;
+        Name: "material_shininess"
+        Type: "float"
+        Value: 60.0
+        Enabled: "False"
+    }
+    Item {
+        # Ambient
+        # setAttr...
+        Name: "material_ambient"
+        Type: "float"
+        Value: 0.0
+        Enabled: "True"
+    }
+    Item {
+        # Env_factor
+        # setAttr -l on -k on ".material_reflectivity" -type "float3" 0.69999999 0.69999999 0.69999999 ;
+        # setAttr -l on -k on ".material_reflectivity";
+        Name: "material_reflectivity"
+        Type: "color"
+        Value: (0.7, 0.7, 0.7)
+        Enabled: "False"
+    }
+    Item {
+        # Fresnel (bias, scale)
+        # setAttr -l on -k on ".material_fresnel" -type "float2" 0.2 0.89999998 ;
+        # setAttr -l on -k on ".material_fresnel";
+        Name: "material_fresnel"
+        Type: "float2"
+        Value: (0.2, 0.9)
+        Enabled: "False"
+    }
+    Item {
+        # dif_speclum
+        # setAttr...
+        Name: "texture_base"
+        Type: "sampler2D"
+        Value: ""
+        Enabled: "True"
+    }
+    Item {
+        # (preview only) clamp to edge
+        # setAttr...
+        Name: "d_TEXTURE_BASE_CLAMP"
+        Type: "bool"
+        Value: "False"
+        Enabled: "True"
+    }
+    Item {
+        # (preview only) enable mipmaps
+        # setAttr...
+        Name: "d_TEXTURE_BASE_FILTER"
+        Type: "bool"
+        Value: "False"
+        Enabled: "True"
+    }
+    Item {
+        # environment
+        # setAttr...
+        Name: "texture_reflection"
+        Type: "samplerCUBE"
+        Value: ""
+        Enabled: "True"
+    }
+}
+Shader {
+    TemplateName: "brushed_metal"
+    CgFXFile: "eut2.dif.spec.weight.add.env.cgfx"
+    Item {
+        # (flavor) Depth mode
+        # setAttr -l on -k on ".define_DEPTH_ENABLE";
+        Name: "d_DEPTH_ENABLE"
+        Type: "enum"
+        Value: "1"
+        Enabled: "False"
+    }
+    Item {
+        # (flavor) Blend mode
+        # setAttr -l on -k on ".define_BLEND_ENABLE";
+        Name: "d_BLEND_ENABLE"
+        Type: "enum"
+        Value: "10"
+        Enabled: "False"
+    }
+    Item {
+        # (flavor) Texgen 0
+        # setAttr -l on -k on ".define_TEXGEN0_ENABLE";
+        Name: "d_TEXGEN0_ENABLE"
+        Type: "bool"
+        Value: "False"
+        Enabled: "False"
+    }
+    Item {
+        # (flavor) Normal map
+        # setAttr...
+        Name: "d_NMAP_ENABLE"
+        Type: "enum"
+        Value: "0"
+        Enabled: "True"
+    }
+    Item {
+        # (flavor) Alpha Test
+        # setAttr -l on -k on ".define_ALPHA_ENABLE";
+        Name: "d_ALPHA_ENABLE"
+        Type: "bool"
+        Value: "False"
+        Enabled: "False"
+    }
+    Item {
+        # (flavor) Shadow caster
+        # setAttr -l on -k on ".define_SHADOW_ENABLE";
+        Name: "d_SHADOW_ENABLE"
+        Type: "bool"
+        Value: "False"
+        Enabled: "False"
+    }
+    Item {
+        # (flavor) Paintable
+        # setAttr -l on -k on ".define_PAINT_ENABLE";
+        Name: "d_PAINT_ENABLE"
+        Type: "bool"
+        Value: "False"
+        Enabled: "False"
+    }
+    Item {
+        # Diffuse
+        # setAttr -l on -k on ".material_diffuse" -type "float3" 0.5 0.5 0.5 ;
+        # setAttr -l on -k on ".material_diffuse";
+        Name: "material_diffuse"
+        Type: "color"
+        Value: (0.5, 0.5, 0.5)
+        Enabled: "False"
+    }
+    Item {
+        # Specular
+        # setAttr -l on -k on ".material_specular" -type "float3" 0.99000001 0.99960834 1 ;
+        # setAttr -l on -k on ".material_specular";
+        Name: "material_specular"
+        Type: "color"
+        Value: (1.0, 1.0, 1.0)
+        Enabled: "False"
+    }
+    Item {
+        # Shininess
+        # setAttr -l on -k on ".material_shininess" 15;
+        Name: "material_shininess"
+        Type: "float"
+        Value: 15.0
+        Enabled: "False"
+    }
+    Item {
+        # Ambient
+        # setAttr -l on -k on ".material_ambient";
+        Name: "material_ambient"
+        Type: "float"
+        Value: 0.0
+        Enabled: "False"
+    }
+    Item {
+        # Reflection
+        # setAttr -l on -k on ".material_reflection";
+        Name: "material_reflection"
+        Type: "float"
+        Value: 0.0
+        Enabled: "False"
+    }
+    Item {
+        # Env_factor
+        # setAttr -l on -k on ".material_reflectivity" -type "float3" 0.40000001 0.40000001 0.40000001 ;
+        # setAttr -l on -k on ".material_reflectivity";
+        Name: "material_reflectivity"
+        Type: "color"
+        Value: (0.4, 0.4, 0.4)
+        Enabled: "False"
+    }
+    Item {
+        # Fresnel (bias, scale)
+        # setAttr -l on -k on ".material_fresnel" -type "float2" 0.2 0.89999998 ;
+        # setAttr -l on -k on ".material_fresnel";
+        Name: "material_fresnel"
+        Type: "float2"
+        Value: (0.2, 0.9)
+        Enabled: "False"
+    }
+    Item {
+        # dif_spec
+        # setAttr...
+        Name: "texture_base"
+        Type: "sampler2D"
+        Value: ""
+        Enabled: "True"
+    }
+    Item {
+        # (preview only) clamp to edge
+        # setAttr -l on -k on ".define_TEXTURE_BASE_CLAMP";
+        Name: "d_TEXTURE_BASE_CLAMP"
+        Type: "bool"
+        Value: "False"
+        Enabled: "False"
+    }
+    Item {
+        # (preview only) enable mipmaps
+        # setAttr -l on -k on ".define_TEXTURE_BASE_FILTER";
+        Name: "d_TEXTURE_BASE_FILTER"
+        Type: "bool"
+        Value: "False"
+        Enabled: "False"
+    }
+    Item {
+        # environment
+        # setAttr...
+        Name: "texture_reflection"
+        Type: "samplerCUBE"
+        Value: ""
+        Enabled: "True"
+    }
+}
+Shader {
+    TemplateName: "carglass"
+    CgFXFile: "eut2.glass.cgfx"
+    Item {
+        # Diffuse
+        # setAttr -l on -k on ".material_diffuse" -type "float3" 1 1 1 ;
+        # setAttr -l on -k on ".material_diffuse";
+        Name: "material_diffuse"
+        Type: "color"
+        Value: (1.0, 1.0, 1.0)
+        Enabled: "False"
+    }
+    Item {
+        # Specular
+        # setAttr -l on -k on ".material_specular" -type "float3" 0.5 0.5 0.5 ;
+        # setAttr -l on -k on ".material_specular";
+        Name: "material_specular"
+        Type: "color"
+        Value: (0.5, 0.5, 0.5)
+        Enabled: "False"
+    }
+    Item {
+        # Shininess
+        # setAttr -l on -k on ".material_shininess" 95;
+        Name: "material_shininess"
+        Type: "float"
+        Value: 95.0
+        Enabled: "False"
+    }
+    Item {
+        # Ambient
+        # setAttr -l on -k on ".material_ambient";
+        Name: "material_ambient"
+        Type: "float"
+        Value: 0.0
+        Enabled: "False"
+    }
+    Item {
+        # Env_factor
+        # setAttr -l on -k on ".material_reflectivity" -type "float3" 3 3 3 ;
+        # setAttr -l on -k on ".material_reflectivity";
+        Name: "material_reflectivity"
+        Type: "color"
+        Value: (3.0, 3.0, 3.0)
+        Enabled: "False"
+    }
+    Item {
+        # Fresnel (bias, scale)
+        # setAttr -l on -k on ".material_fresnel" -type "float2" 0 1 ;
+        # setAttr -l on -k on ".material_fresnel";
+        Name: "material_fresnel"
+        Type: "float2"
+        Value: (0.0, 1.0)
+        Enabled: "False"
+    }
+    Item {
+        # Tint
+        # setAttr -l on -k on ".material_tint" -type "float3" 0.77600002 0.80000001 0.78896403 ;
+        # setAttr -l on -k on ".material_tint";
+        Name: "material_tint"
+        Type: "color"
+        Value: (0.776, 0.8, 0.79)
+        Enabled: "False"
+    }
+    Item {
+        # Tint Opacity
+        # setAttr -l on -k on ".material_tint_opacity" -0.0099999997764825821;
+        Name: "material_tint_opacity"
+        Type: "float"
+        Value: -0.01
+        Enabled: "False"
+    }
+    Item {
+        # none_spec
+        # setAttr...
+        Name: "texture_base"
+        Type: "sampler2D"
+        Value: ""
+        Enabled: "True"
+    }
+    Item {
+        # (preview only) clamp to edge
+        # setAttr...
+        Name: "d_TEXTURE_BASE_CLAMP"
+        Type: "bool"
+        Value: "False"
+        Enabled: "True"
+    }
+    Item {
+        # (preview only) enable mipmaps
+        # setAttr...
+        Name: "d_TEXTURE_BASE_FILTER"
+        Type: "bool"
+        Value: "False"
+        Enabled: "True"
+    }
+    Item {
+        # environment
+        # setAttr...
+        Name: "texture_reflection"
+        Type: "samplerCUBE"
+        Value: ""
+        Enabled: "True"
+    }
+}
+Shader {
+    TemplateName: "carpaint"
+    CgFXFile: "eut2.dif.spec.add.env.cgfx"
+    Item {
+        # (flavor) Depth mode
+        # setAttr -l on -k on ".define_DEPTH_ENABLE";
+        Name: "d_DEPTH_ENABLE"
+        Type: "enum"
+        Value: "1"
+        Enabled: "False"
+    }
+    Item {
+        # (flavor) Blend mode
+        # setAttr -l on -k on ".define_BLEND_ENABLE";
+        Name: "d_BLEND_ENABLE"
+        Type: "enum"
+        Value: "10"
+        Enabled: "False"
+    }
+    Item {
+        # (flavor) Texgen 0
+        # setAttr -l on -k on ".define_TEXGEN0_ENABLE";
+        Name: "d_TEXGEN_ENABLE"
+        Type: "bool"
+        Value: "False"
+        Enabled: "False"
+    }
+    Item {
+        # (flavor) Normal map
+        # setAttr...
+        Name: "d_NMAP_ENABLE"
+        Type: "enum"
+        Value: "0"
+        Enabled: "True"
+    }
+    Item {
+        # (flavor) Invert opacity
+        # setAttr...
+        Name: "d_INVERTOPAC_ENABLE"
+        Type: "bool"
+        Value: "False"
+        Enabled: "True"
+    }
+    Item {
+        # (flavor) Alpha Test
+        # setAttr -l on -k on ".define_ALPHA_ENABLE";
+        Name: "d_ALPHA_ENABLE"
+        Type: "bool"
+        Value: "False"
+        Enabled: "False"
+    }
+    Item {
+        # (flavor) Shadow caster
+        # setAttr...
+        Name: "d_SHADOW_ENABLE"
+        Type: "bool"
+        Value: "False"
+        Enabled: "True"
+    }
+    Item {
+        # (flavor) Paintable
+        # setAttr -l on -k on ".define_PAINT_ENABLE" yes;
+        Name: "d_PAINT_ENABLE"
+        Type: "bool"
+        Value: "True"
+        Enabled: "False"
+    }
+    Item {
+        # Diffuse
+        # setAttr -l on -k on ".material_diffuse" -type "float3" 1 1 1 ;
+        # setAttr -l on -k on ".material_diffuse";
+        Name: "material_diffuse"
+        Type: "color"
+        Value: (1.0, 1.0, 1.0)
+        Enabled: "False"
+    }
+    Item {
+        # Specular
+        # setAttr -l on -k on ".material_specular" -type "float3" 1.5 1.5 1.5 ;
+        # setAttr -l on -k on ".material_specular";
+        Name: "material_specular"
+        Type: "color"
+        Value: (1.5, 1.5, 1.5)
+        Enabled: "False"
+    }
+    Item {
+        # Shininess
+        # setAttr -l on -k on ".material_shininess" 60;
+        Name: "material_shininess"
+        Type: "float"
+        Value: 60.0
+        Enabled: "False"
+    }
+    Item {
+        # Ambient
+        # setAttr -l on -k on ".material_ambient";
+        Name: "material_ambient"
+        Type: "float"
+        Value: 0.0
+        Enabled: "False"
+    }
+    Item {
+        # Reflection
+        # setAttr...
+        Name: "material_reflection"
+        Type: "float"
+        Value: 0.0
+        Enabled: "True"
+    }
+    Item {
+        # Env_factor
+        # setAttr -l on -k on ".material_reflectivity" -type "float3" 0.30000001 0.30000001 0.30000001 ;
+        # setAttr -l on -k on ".material_reflectivity";
+        Name: "material_reflectivity"
+        Type: "color"
+        Value: (0.3, 0.3, 0.3)
+        Enabled: "False"
+    }
+    Item {
+        # Fresnel (bias, scale)
+        # setAttr -l on -k on ".material_fresnel" -type "float2" 0.2 0.89999998 ;
+        # setAttr -l on -k on ".material_fresnel";
+        Name: "material_fresnel"
+        Type: "float2"
+        Value: (0.2, 0.9)
+        Enabled: "False"
+    }
+    Item {
+        # dif_spec
+        # setAttr...
+        Name: "texture_base"
+        Type: "sampler2D"
+        Value: ""
+        Enabled: "True"
+    }
+    Item {
+        # (preview only) clamp to edge
+        # setAttr...
+        Name: "d_TEXTURE_BASE_CLAMP"
+        Type: "bool"
+        Value: "False"
+        Enabled: "True"
+    }
+    Item {
+        # (preview only) enable mipmaps
+        # setAttr...
+        Name: "d_TEXTURE_BASE_FILTER"
+        Type: "bool"
+        Value: "False"
+        Enabled: "True"
+    }
+    Item {
+        # environment - NOT FOUND!!!
+        # setAttr...
+        Name: "texture_reflection"
+        Type: "samplerCUBE"
+        Value: ""
+        Enabled: "True"
+    }
+    # setAttr -k on ".texgen0_scale" -type "float2" 10 10 ; # Texgen0 (scaleX, scaleZ) - NOT FOUND!!!
+}
+Shader {
+    TemplateName: "car_truck_traffic_lamp"
+    CgFXFile: "eut2.lamp.cgfx"
+    Item {
+        # (flavor) Test Mode
+        # setAttr...
+        Name: "d_TEST_ENABLE"
+        Type: "enum"
+        Value: "-1"
+        Enabled: "True"
+    }
+    Item {
+        # (flavor) Enable envmap
+        # setAttr -k on ".define_ENVMAP_ENABLE" yes;
+        Name: "d_ENVMAP_ENABLE"
+        Type: "bool"
+        Value: "True"
+        Enabled: "True"
+    }
+    Item {
+        # (flavor) Normal map
+        # setAttr...
+        Name: "d_NMAP_ENABLE"
+        Type: "enum"
+        Value: "0"
+        Enabled: "True"
+    }
+    Item {
+        # (flavor) Shadow caster
+        # setAttr...
+        Name: "d_SHADOW_ENABLE"
+        Type: "bool"
+        Value: "False"
+        Enabled: "True"
+    }
+    Item {
+        # Diffuse
+        # setAttr -k on ".material_diffuse" -type "float3" 1 1 1 ;
+        Name: "material_diffuse"
+        Type: "color"
+        Value: (1.0, 1.0, 1.0)
+        Enabled: "True"
+    }
+    Item {
+        # Specular
+        # setAttr -k on ".material_specular" -type "float3" 0.30000001 0.30000001 0.30000001 ;
+        Name: "material_specular"
+        Type: "color"
+        Value: (0.3, 0.3, 0.3)
+        Enabled: "True"
+    }
+    Item {
+        # Shininess
+        # setAttr -k on ".material_shininess" 80;
+        Name: "material_shininess"
+        Type: "float"
+        Value: 80.0
+        Enabled: "True"
+    }
+    Item {
+        # Ambient
+        # setAttr...
+        Name: "material_ambient"
+        Type: "float"
+        Value: 0.0
+        Enabled: "True"
+    }
+    Item {
+        # Env_factor
+        # setAttr -k on ".material_reflectivity" -type "float3" 1 1 1 ;
+        # !!! NOTE - Shouldn't be visible (according to compiled data), but in Maya it is in UI !!!
+        Name: "material_reflectivity"
+        Type: "color"
+        Value: (1.0, 1.0, 1.0)
+        Enabled: "True"
+    }
+    Item {
+        # Fresnel (bias, scale)
+        # setAttr -k on ".material_fresnel" -type "float2" 0.30000001 0.89999998 ;
+        # !!! NOTE - Shouldn't be visible (according to compiled data), but in Maya it is in UI !!!
+        Name: "material_fresnel"
+        Type: "float2"
+        Value: (0.3, 0.9)
+        Enabled: "True"
+    }
+    Item {
+        # dif_spec
+        # setAttr...
+        Name: "texture_base"
+        Type: "sampler2D"
+        Value: ""
+        Enabled: "True"
+    }
+    Item {
+        # (preview only) clamp to edge
+        # setAttr...
+        Name: "d_TEXTURE_BASE_CLAMP"
+        Type: "bool"
+        Value: "False"
+        Enabled: "True"
+    }
+    Item {
+        # (preview only) enable mipmaps
+        # setAttr...
+        Name: "d_TEXTURE_BASE_FILTER"
+        Type: "bool"
+        Value: "False"
+        Enabled: "True"
+    }
+    Item {
+        # Lamp Masks
+        # setAttr...
+        Name: "texture_mask"
+        Type: "sampler2D"
+        Value: ""
+        Enabled: "True"
+    }
+    Item {
+        # (preview only) enable mipmaps
+        # setAttr...
+        Name: "d_TEXTURE_MASK_FILTER"
+        Type: "bool"
+        Value: "False"
+        Enabled: "True"
+    }
+    Item {
+        # environment
+        # setAttr...
+        Name: "texture_reflection"
+        Type: "samplerCUBE"
+        Value: ""
+        Enabled: "True"
+    }
+}
+Shader {
+    TemplateName: "chrome"
+    CgFXFile: "eut2.dif.spec.add.env.nofresnel.cgfx"
+    Item {
+        # (flavor) Depth mode
+        # setAttr -l on -k on ".define_DEPTH_ENABLE";
+        Name: "d_DEPTH_ENABLE"
+        Type: "enum"
+        Value: "1"
+        Enabled: "False"
+    }
+    Item {
+        # (flavor) Blend mode
+        # setAttr -l on -k on ".define_BLEND_ENABLE";
+        Name: "d_BLEND_ENABLE"
+        Type: "enum"
+        Value: "10"
+        Enabled: "False"
+    }
+    Item {
+        # (flavor) Texgen 0
+        # setAttr -l on -k on ".define_TEXGEN0_ENABLE";
+        Name: "d_TEXGEN0_ENABLE"
+        Type: "bool"
+        Value: "False"
+        Enabled: "False"
+    }
+    Item {
+        # (flavor) Normal map
+        # setAttr...
+        Name: "d_NMAP_ENABLE"
+        Type: "enum"
+        Value: "0"
+        Enabled: "True"
+    }
+    Item {
+        # (flavor) Alpha Test
+        # setAttr -l on -k on ".define_ALPHA_ENABLE";
+        Name: "d_ALPHA_ENABLE"
+        Type: "bool"
+        Value: "False"
+        Enabled: "False"
+    }
+    Item {
+        # (flavor) Shadow caster
+        # setAttr...
+        Name: "d_SHADOW_ENABLE"
+        Type: "bool"
+        Value: "False"
+        Enabled: "True"
+    }
+    Item {
+        # (flavor) Paintable
+        # setAttr -l on -k on ".define_PAINT_ENABLE";
+        Name: "d_PAINT_ENABLE"
+        Type: "bool"
+        Value: "False"
+        Enabled: "False"
+    }
+    Item {
+        # Diffuse
+        # setAttr -l on -k on ".material_diffuse" -type "float3" 1 1 1 ;
+        # setAttr -l on -k on ".material_diffuse";
+        Name: "material_diffuse"
+        Type: "color"
+        Value: (1.0, 1.0, 1.0)
+        Enabled: "False"
+    }
+    Item {
+        # Specular
+        # setAttr -l on -k on ".material_specular" -type "float3" 1 1 1 ;
+        # setAttr -l on -k on ".material_specular";
+        Name: "material_specular"
+        Type: "color"
+        Value: (1.0, 1.0, 1.0)
+        Enabled: "False"
+    }
+    Item {
+        # Shininess
+        # setAttr -l on -k on ".material_shininess" 60;
+        Name: "material_shininess"
+        Type: "float"
+        Value: 60.0
+        Enabled: "False"
+    }
+    Item {
+        # Ambient
+        # setAttr...
+        Name: "material_ambient"
+        Type: "float"
+        Value: 0.0
+        Enabled: "True"
+    }
+    Item {
+        # Reflection
+        # setAttr...
+        Name: "material_reflection"
+        Type: "float"
+        Value: 0.0
+        Enabled: "True"
+    }
+    Item {
+        # Env_factor
+        # setAttr -l on -k on ".material_reflectivity" -type "float3" 0.89999998 0.89999998 0.89999998 ;
+        # setAttr -l on -k on ".material_reflectivity";
+        Name: "material_reflectivity"
+        Type: "color"
+        Value: (0.9, 0.9, 0.9)
+        Enabled: "False"
+    }
+    Item {
+        # dif_spec
+        # setAttr...
+        Name: "texture_base"
+        Type: "sampler2D"
+        Value: ""
+        Enabled: "True"
+    }
+    Item {
+        # (preview only) clamp to edge
+        # setAttr...
+        Name: "d_TEXTURE_BASE_CLAMP"
+        Type: "bool"
+        Value: "False"
+        Enabled: "True"
+    }
+    Item {
+        # (preview only) enable mipmaps
+        # setAttr...
+        Name: "d_TEXTURE_BASE_FILTER"
+        Type: "bool"
+        Value: "False"
+        Enabled: "True"
+    }
+    Item {
+        # environment
+        # setAttr...
+        Name: "texture_reflection"
+        Type: "samplerCUBE"
+        Value: ""
+        Enabled: "True"
+    }
+}
+Shader {
+    TemplateName: "interior_carglass"
+    CgFXFile: "eut2.glass.cgfx"
+    Item {
+        # Diffuse
+        # setAttr -l on -k on ".material_diffuse" -type "float3" 1 1 1 ;
+        # setAttr -l on -k on ".material_diffuse";
+        Name: "material_diffuse"
+        Type: "color"
+        Value: (1.0, 1.0, 1.0)
+        Enabled: "False"
+    }
+    Item {
+        # Specular
+        # setAttr -l on -k on ".material_specular" -type "float3" 0.34999999 0.34999999 0.34999999 ;
+        # setAttr -l on -k on ".material_specular";
+        Name: "material_specular"
+        Type: "color"
+        Value: (0.35, 0.35, 0.35)
+        Enabled: "False"
+    }
+    Item {
+        # Shininess
+        # setAttr -l on -k on ".material_shininess" 24;
+        Name: "material_shininess"
+        Type: "float"
+        Value: 24.0
+        Enabled: "False"
+    }
+    Item {
+        # Ambient
+        # setAttr -l on -k on ".material_ambient";
+        Name: "material_ambient"
+        Type: "float"
+        Value: 0.0
+        Enabled: "False"
+    }
+    Item {
+        # Env_factor
+        # setAttr -l on -k on ".material_reflectivity" -type "float3" 0.60000002 0.60000002 0.60000002 ;
+        # setAttr -l on -k on ".material_reflectivity";
+        Name: "material_reflectivity"
+        Type: "color"
+        Value: (0.6, 0.6, 0.6)
+        Enabled: "False"
+    }
+    Item {
+        # Fresnel (bias, scale)
+        # setAttr -l on -k on ".material_fresnel" -type "float2" 0.2 0.89999998 ;
+        # setAttr -l on -k on ".material_fresnel";
+        Name: "material_fresnel"
+        Type: "float2"
+        Value: (0.2, 0.9)
+        Enabled: "False"
+    }
+    Item {
+        # Tint
+        # setAttr -l on -k on ".material_tint" -type "float3" 0.89999998 0.89999998 0.89999998 ;
+        # setAttr -l on -k on ".material_tint";
+        Name: "material_tint"
+        Type: "color"
+        Value: (0.9, 0.9, 0.9)
+        Enabled: "False"
+    }
+    Item {
+        # Tint Opacity
+        # setAttr -l on -k on ".material_tint_opacity";
+        Name: "material_tint_opacity"
+        Type: "float"
+        Value: 0.0
+        Enabled: "False"
+    }
+    Item {
+        # none_spec
+        # setAttr...
+        Name: "texture_base"
+        Type: "sampler2D"
+        Value: ""
+        Enabled: "True"
+    }
+    Item {
+        # (preview only) clamp to edge
+        # setAttr -l on -k on ".define_TEXTURE_BASE_CLAMP";
+        Name: "d_TEXTURE_BASE_CLAMP"
+        Type: "bool"
+        Value: "False"
+        Enabled: "False"
+    }
+    Item {
+        # (preview only) enable mipmaps
+        # setAttr...
+        Name: "d_TEXTURE_BASE_FILTER"
+        Type: "bool"
+        Value: "False"
+        Enabled: "True"
+    }
+    Item {
+        # environment
+        # setAttr...
+        Name: "texture_reflection"
+        Type: "samplerCUBE"
+        Value: ""
+        Enabled: "True"
+    }
+}
+Shader {
+    TemplateName: "interior mirrors: p_mirror_front"
+    CgFXFile: "eut2.dif.lum.cgfx"
+    Item {
+        # (flavor) Depth mode
+        # setAttr -l on -k on ".define_DEPTH_ENABLE";
+        Name: "d_DEPTH_ENABLE"
+        Type: "enum"
+        Value: "1"
+        Enabled: "False"
+    }
+    Item {
+        # (flavor) Blend mode
+        # setAttr -l on -k on ".define_BLEND_ENABLE";
+        Name: "d_BLEND_ENABLE"
+        Type: "enum"
+        Value: "10"
+        Enabled: "False"
+    }
+    Item {
+        # (flavor) Texgen 0
+        # setAttr -l on -k on ".define_TEXGEN0_ENABLE";
+        Name: "d_TEXGEN0_ENABLE"
+        Type: "bool"
+        Value: "False"
+        Enabled: "False"
+    }
+    Item {
+        # (flavor) Alpha Test
+        # setAttr -l on -k on ".define_ALPHA_ENABLE";
+        Name: "d_ALPHA_ENABLE"
+        Type: "bool"
+        Value: "False"
+        Enabled: "False"
+    }
+    Item {
+        # (flavor) Shadow caster
+        # setAttr...
+        Name: "d_SHADOW_ENABLE"
+        Type: "bool"
+        Value: "False"
+        Enabled: "True"
+    }
+    Item {
+        # (flavor) Paintable
+        # setAttr -l on -k on ".define_PAINT_ENABLE";
+        Name: "d_PAINT_ENABLE"
+        Type: "bool"
+        Value: "False"
+        Enabled: "False"
+    }
+    Item {
+        # Diffuse
+        # setAttr -l on -k on ".material_diffuse" -type "float3" 1 1 1 ;
+        # setAttr -l on -k on ".material_diffuse";
+        Name: "material_diffuse"
+        Type: "color"
+        Value: (1.0, 1.0, 1.0)
+        Enabled: "False"
+    }
+    Item {
+        # Specular
+        # setAttr -l on -k on ".material_specular";
+        Name: "material_specular"
+        Type: "color"
+        Value: (0.0, 0.0, 0.0)
+        Enabled: "False"
+    }
+    Item {
+        # Shininess
+        # setAttr -l on -k on ".material_shininess" 4;
+        Name: "material_shininess"
+        Type: "float"
+        Value: 4.0
+        Enabled: "False"
+    }
+    Item {
+        # Ambient
+        # setAttr...
+        Name: "material_ambient"
+        Type: "float"
+        Value: 0.0
+        Enabled: "True"
+    }
+    Item {
+        # Reflection
+        # setAttr...
+        Name: "material_reflection"
+        Type: "float"
+        Value: 0.0
+        Enabled: "True"
+    }
+    Item {
+        # dif_lum
+        # setAttr...
+        Name: "texture_base"
+        Type: "sampler2D"
+        Value: ""
+        Enabled: "True"
+    }
+    Item {
+        # (preview only) clamp to edge
+        # setAttr -l on -k on ".define_TEXTURE_BASE_CLAMP";
+        Name: "d_TEXTURE_BASE_CLAMP"
+        Type: "bool"
+        Value: "False"
+        Enabled: "False"
+    }
+    Item {
+        # (preview only) enable mipmaps
+        # setAttr...
+        Name: "d_TEXTURE_BASE_FILTER"
+        Type: "bool"
+        Value: "False"
+        Enabled: "True"
+    }
+}
+Shader {
+    TemplateName: "interior mirrors: p_mirror_close"
+    CgFXFile: "eut2.dif.lum.cgfx"
+    Item {
+        # (flavor) Depth mode
+        # setAttr -l on -k on ".define_DEPTH_ENABLE";
+        Name: "d_DEPTH_ENABLE"
+        Type: "enum"
+        Value: "1"
+        Enabled: "False"
+    }
+    Item {
+        # (flavor) Blend mode
+        # setAttr -l on -k on ".define_BLEND_ENABLE";
+        Name: "d_BLEND_ENABLE"
+        Type: "enum"
+        Value: "10"
+        Enabled: "False"
+    }
+    Item {
+        # (flavor) Texgen 0
+        # setAttr -l on -k on ".define_TEXGEN0_ENABLE";
+        Name: "d_TEXGEN0_ENABLE"
+        Type: "bool"
+        Value: "False"
+        Enabled: "False"
+    }
+    Item {
+        # (flavor) Alpha Test
+        # setAttr -l on -k on ".define_ALPHA_ENABLE";
+        Name: "d_ALPHA_ENABLE"
+        Type: "bool"
+        Value: "False"
+        Enabled: "False"
+    }
+    Item {
+        # (flavor) Shadow caster
+        # setAttr...
+        Name: "d_SHADOW_ENABLE"
+        Type: "bool"
+        Value: "False"
+        Enabled: "True"
+    }
+    Item {
+        # (flavor) Paintable
+        # setAttr -l on -k on ".define_PAINT_ENABLE";
+        Name: "d_PAINT_ENABLE"
+        Type: "bool"
+        Value: "False"
+        Enabled: "False"
+    }
+    Item {
+        # Diffuse
+        # setAttr -l on -k on ".material_diffuse" -type "float3" 1 1 1 ;
+        # setAttr -l on -k on ".material_diffuse";
+        Name: "material_diffuse"
+        Type: "color"
+        Value: (1.0, 1.0, 1.0)
+        Enabled: "False"
+    }
+    Item {
+        # Specular
+        # setAttr -l on -k on ".material_specular";
+        Name: "material_specular"
+        Type: "color"
+        Value: (0.0, 0.0, 0.0)
+        Enabled: "False"
+    }
+    Item {
+        # Shininess
+        # setAttr -l on -k on ".material_shininess" 4;
+        Name: "material_shininess"
+        Type: "float"
+        Value: 4.0
+        Enabled: "False"
+    }
+    Item {
+        # Ambient
+        # setAttr...
+        Name: "material_ambient"
+        Type: "float"
+        Value: 0.0
+        Enabled: "True"
+    }
+    Item {
+        # Reflection
+        # setAttr...
+        Name: "material_reflection"
+        Type: "float"
+        Value: 0.0
+        Enabled: "True"
+    }
+    Item {
+        # dif_lum
+        # setAttr...
+        Name: "texture_base"
+        Type: "sampler2D"
+        Value: ""
+        Enabled: "True"
+    }
+    Item {
+        # (preview only) clamp to edge
+        # setAttr -l on -k on ".define_TEXTURE_BASE_CLAMP";
+        Name: "d_TEXTURE_BASE_CLAMP"
+        Type: "bool"
+        Value: "False"
+        Enabled: "False"
+    }
+    Item {
+        # (preview only) enable mipmaps
+        # setAttr...
+        Name: "d_TEXTURE_BASE_FILTER"
+        Type: "bool"
+        Value: "False"
+        Enabled: "True"
+    }
+}
+Shader {
+    TemplateName: "interior mirrors: p_mirror_far"
+    CgFXFile: "eut2.dif.lum.cgfx"
+    Item {
+        # (flavor) Depth mode
+        # setAttr -l on -k on ".define_DEPTH_ENABLE";
+        Name: "d_DEPTH_ENABLE"
+        Type: "enum"
+        Value: "1"
+        Enabled: "False"
+    }
+    Item {
+        # (flavor) Blend mode
+        # setAttr -l on -k on ".define_BLEND_ENABLE";
+        Name: "d_BLEND_ENABLE"
+        Type: "enum"
+        Value: "10"
+        Enabled: "False"
+    }
+    Item {
+        # (flavor) Texgen 0
+        # setAttr -l on -k on ".define_TEXGEN0_ENABLE";
+        Name: "d_TEXGEN0_ENABLE"
+        Type: "bool"
+        Value: "False"
+        Enabled: "False"
+    }
+    Item {
+        # (flavor) Alpha Test
+        # setAttr -l on -k on ".define_ALPHA_ENABLE";
+        Name: "d_ALPHA_ENABLE"
+        Type: "bool"
+        Value: "False"
+        Enabled: "False"
+    }
+    Item {
+        # (flavor) Shadow caster
+        # setAttr...
+        Name: "d_SHADOW_ENABLE"
+        Type: "bool"
+        Value: "False"
+        Enabled: "True"
+    }
+    Item {
+        # (flavor) Paintable
+        # setAttr -l on -k on ".define_PAINT_ENABLE";
+        Name: "d_PAINT_ENABLE"
+        Type: "bool"
+        Value: "False"
+        Enabled: "False"
+    }
+    Item {
+        # Diffuse
+        # setAttr -l on -k on ".material_diffuse" -type "float3" 1 1 1 ;
+        # setAttr -l on -k on ".material_diffuse";
+        Name: "material_diffuse"
+        Type: "color"
+        Value: (1.0, 1.0, 1.0)
+        Enabled: "False"
+    }
+    Item {
+        # Specular
+        # setAttr -l on -k on ".material_specular";
+        Name: "material_specular"
+        Type: "color"
+        Value: (0.0, 0.0, 0.0)
+        Enabled: "False"
+    }
+    Item {
+        # Shininess
+        # setAttr -l on -k on ".material_shininess" 4;
+        Name: "material_shininess"
+        Type: "float"
+        Value: 4.0
+        Enabled: "False"
+    }
+    Item {
+        # Ambient
+        # setAttr...
+        Name: "material_ambient"
+        Type: "float"
+        Value: 0.0
+        Enabled: "True"
+    }
+    Item {
+        # Reflection
+        # setAttr...
+        Name: "material_reflection"
+        Type: "float"
+        Value: 0.0
+        Enabled: "True"
+    }
+    Item {
+        # dif_lum
+        # setAttr...
+        Name: "texture_base"
+        Type: "sampler2D"
+        Value: ""
+        Enabled: "True"
+    }
+    Item {
+        # (preview only) clamp to edge
+        # setAttr -l on -k on ".define_TEXTURE_BASE_CLAMP";
+        Name: "d_TEXTURE_BASE_CLAMP"
+        Type: "bool"
+        Value: "False"
+        Enabled: "False"
+    }
+    Item {
+        # (preview only) enable mipmaps
+        # setAttr...
+        Name: "d_TEXTURE_BASE_FILTER"
+        Type: "bool"
+        Value: "False"
+        Enabled: "True"
+    }
+}
+Shader {
+    TemplateName: "interior mirrors: p_mirror_side"
+    CgFXFile: "eut2.dif.lum.cgfx"
+    Item {
+        # (flavor) Depth mode
+        # setAttr -l on -k on ".define_DEPTH_ENABLE";
+        Name: "d_DEPTH_ENABLE"
+        Type: "enum"
+        Value: "1"
+        Enabled: "False"
+    }
+    Item {
+        # (flavor) Blend mode
+        # setAttr -l on -k on ".define_BLEND_ENABLE";
+        Name: "d_BLEND_ENABLE"
+        Type: "enum"
+        Value: "10"
+        Enabled: "False"
+    }
+    Item {
+        # (flavor) Texgen 0
+        # setAttr -l on -k on ".define_TEXGEN0_ENABLE";
+        Name: "d_TEXGEN0_ENABLE"
+        Type: "bool"
+        Value: "False"
+        Enabled: "False"
+    }
+    Item {
+        # (flavor) Alpha Test
+        # setAttr -l on -k on ".define_ALPHA_ENABLE";
+        Name: "d_ALPHA_ENABLE"
+        Type: "bool"
+        Value: "False"
+        Enabled: "False"
+    }
+    Item {
+        # (flavor) Shadow caster
+        # setAttr...
+        Name: "d_SHADOW_ENABLE"
+        Type: "bool"
+        Value: "False"
+        Enabled: "True"
+    }
+    Item {
+        # (flavor) Paintable
+        # setAttr -l on -k on ".define_PAINT_ENABLE";
+        Name: "d_PAINT_ENABLE"
+        Type: "bool"
+        Value: "False"
+        Enabled: "False"
+    }
+    Item {
+        # Diffuse
+        # setAttr -l on -k on ".material_diffuse" -type "float3" 1 1 1 ;
+        # setAttr -l on -k on ".material_diffuse";
+        Name: "material_diffuse"
+        Type: "color"
+        Value: (1.0, 1.0, 1.0)
+        Enabled: "False"
+    }
+    Item {
+        # Specular
+        # setAttr -l on -k on ".material_specular";
+        Name: "material_specular"
+        Type: "color"
+        Value: (0.0, 0.0, 0.0)
+        Enabled: "False"
+    }
+    Item {
+        # Shininess
+        # setAttr -l on -k on ".material_shininess" 4;
+        Name: "material_shininess"
+        Type: "float"
+        Value: 4.0
+        Enabled: "False"
+    }
+    Item {
+        # Ambient
+        # setAttr...
+        Name: "material_ambient"
+        Type: "float"
+        Value: 0.0
+        Enabled: "True"
+    }
+    Item {
+        # Reflection
+        # setAttr...
+        Name: "material_reflection"
+        Type: "float"
+        Value: 0.0
+        Enabled: "True"
+    }
+    Item {
+        # dif_lum
+        # setAttr...
+        Name: "texture_base"
+        Type: "sampler2D"
+        Value: ""
+        Enabled: "True"
+    }
+    Item {
+        # (preview only) clamp to edge
+        # setAttr -l on -k on ".define_TEXTURE_BASE_CLAMP";
+        Name: "d_TEXTURE_BASE_CLAMP"
+        Type: "bool"
+        Value: "False"
+        Enabled: "False"
+    }
+    Item {
+        # (preview only) enable mipmaps
+        # setAttr...
+        Name: "d_TEXTURE_BASE_FILTER"
+        Type: "bool"
+        Value: "False"
+        Enabled: "True"
+    }
+}
+Shader {
+    TemplateName: "interior mirrors: p_mirror_close_s"
+    CgFXFile: "eut2.dif.lum.cgfx"
+    Item {
+        # (flavor) Depth mode
+        # setAttr -l on -k on ".define_DEPTH_ENABLE";
+        Name: "d_DEPTH_ENABLE"
+        Type: "enum"
+        Value: "1"
+        Enabled: "False"
+    }
+    Item {
+        # (flavor) Blend mode
+        # setAttr -l on -k on ".define_BLEND_ENABLE";
+        Name: "d_BLEND_ENABLE"
+        Type: "enum"
+        Value: "10"
+        Enabled: "False"
+    }
+    Item {
+        # (flavor) Texgen 0
+        # setAttr -l on -k on ".define_TEXGEN0_ENABLE";
+        Name: "d_TEXGEN0_ENABLE"
+        Type: "bool"
+        Value: "False"
+        Enabled: "False"
+    }
+    Item {
+        # (flavor) Alpha Test
+        # setAttr -l on -k on ".define_ALPHA_ENABLE";
+        Name: "d_ALPHA_ENABLE"
+        Type: "bool"
+        Value: "False"
+        Enabled: "False"
+    }
+    Item {
+        # (flavor) Shadow caster
+        # setAttr...
+        Name: "d_SHADOW_ENABLE"
+        Type: "bool"
+        Value: "False"
+        Enabled: "False"
+    }
+    Item {
+        # (flavor) Paintable
+        # setAttr -l on -k on ".define_PAINT_ENABLE";
+        Name: "d_PAINT_ENABLE"
+        Type: "bool"
+        Value: "False"
+        Enabled: "False"
+    }
+    Item {
+        # Diffuse
+        # setAttr -l on -k on ".material_diffuse" -type "float3" 1 1 1 ;
+        # setAttr -l on -k on ".material_diffuse";
+        Name: "material_diffuse"
+        Type: "color"
+        Value: (1.0, 1.0, 1.0)
+        Enabled: "False"
+    }
+    Item {
+        # Specular
+        # setAttr -l on -k on ".material_specular";
+        Name: "material_specular"
+        Type: "color"
+        Value: (0.0, 0.0, 0.0)
+        Enabled: "False"
+    }
+    Item {
+        # Shininess
+        # setAttr -l on -k on ".material_shininess" 4;
+        Name: "material_shininess"
+        Type: "float"
+        Value: 4.0
+        Enabled: "False"
+    }
+    Item {
+        # Ambient
+        # setAttr...
+        Name: "material_ambient"
+        Type: "float"
+        Value: 0.0
+        Enabled: "False"
+    }
+    Item {
+        # Reflection
+        # setAttr...
+        Name: "material_reflection"
+        Type: "float"
+        Value: 0.0
+        Enabled: "False"
+    }
+    Item {
+        # dif_lum
+        # setAttr...
+        Name: "texture_base"
+        Type: "sampler2D"
+        Value: ""
+        Enabled: "True"
+    }
+    Item {
+        # (preview only) clamp to edge
+        # setAttr -l on -k on ".define_TEXTURE_BASE_CLAMP";
+        Name: "d_TEXTURE_BASE_CLAMP"
+        Type: "bool"
+        Value: "False"
+        Enabled: "False"
+    }
+    Item {
+        # (preview only) enable mipmaps
+        # setAttr...
+        Name: "d_TEXTURE_BASE_FILTER"
+        Type: "bool"
+        Value: "False"
+        Enabled: "False"
+    }
+}
+Shader {
+    TemplateName: "interior mirrors: p_mirror_far_s"
+    CgFXFile: "eut2.dif.lum.cgfx"
+    Item {
+        # (flavor) Depth mode
+        # setAttr -l on -k on ".define_DEPTH_ENABLE";
+        Name: "d_DEPTH_ENABLE"
+        Type: "enum"
+        Value: "1"
+        Enabled: "False"
+    }
+    Item {
+        # (flavor) Blend mode
+        # setAttr -l on -k on ".define_BLEND_ENABLE";
+        Name: "d_BLEND_ENABLE"
+        Type: "enum"
+        Value: "10"
+        Enabled: "False"
+    }
+    Item {
+        # (flavor) Texgen 0
+        # setAttr -l on -k on ".define_TEXGEN0_ENABLE";
+        Name: "d_TEXGEN0_ENABLE"
+        Type: "bool"
+        Value: "False"
+        Enabled: "False"
+    }
+    Item {
+        # (flavor) Alpha Test
+        # setAttr -l on -k on ".define_ALPHA_ENABLE";
+        Name: "d_ALPHA_ENABLE"
+        Type: "bool"
+        Value: "False"
+        Enabled: "False"
+    }
+    Item {
+        # (flavor) Shadow caster
+        # setAttr...
+        Name: "d_SHADOW_ENABLE"
+        Type: "bool"
+        Value: "False"
+        Enabled: "False"
+    }
+    Item {
+        # (flavor) Paintable
+        # setAttr -l on -k on ".define_PAINT_ENABLE";
+        Name: "d_PAINT_ENABLE"
+        Type: "bool"
+        Value: "False"
+        Enabled: "False"
+    }
+    Item {
+        # Diffuse
+        # setAttr -l on -k on ".material_diffuse" -type "float3" 1 1 1 ;
+        # setAttr -l on -k on ".material_diffuse";
+        Name: "material_diffuse"
+        Type: "color"
+        Value: (1.0, 1.0, 1.0)
+        Enabled: "False"
+    }
+    Item {
+        # Specular
+        # setAttr -l on -k on ".material_specular";
+        Name: "material_specular"
+        Type: "color"
+        Value: (0.0, 0.0, 0.0)
+        Enabled: "False"
+    }
+    Item {
+        # Shininess
+        # setAttr -l on -k on ".material_shininess" 4;
+        Name: "material_shininess"
+        Type: "float"
+        Value: 4.0
+        Enabled: "False"
+    }
+    Item {
+        # Ambient
+        # setAttr...
+        Name: "material_ambient"
+        Type: "float"
+        Value: 0.0
+        Enabled: "False"
+    }
+    Item {
+        # Reflection
+        # setAttr...
+        Name: "material_reflection"
+        Type: "float"
+        Value: 0.0
+        Enabled: "False"
+    }
+    Item {
+        # dif_lum
+        # setAttr...
+        Name: "texture_base"
+        Type: "sampler2D"
+        Value: ""
+        Enabled: "True"
+    }
+    Item {
+        # (preview only) clamp to edge
+        # setAttr -l on -k on ".define_TEXTURE_BASE_CLAMP";
+        Name: "d_TEXTURE_BASE_CLAMP"
+        Type: "bool"
+        Value: "False"
+        Enabled: "False"
+    }
+    Item {
+        # (preview only) enable mipmaps
+        # setAttr...
+        Name: "d_TEXTURE_BASE_FILTER"
+        Type: "bool"
+        Value: "False"
+        Enabled: "False"
+    }
+}
+Shader {
+    TemplateName: "low_reflective_glass"
+    CgFXFile: "eut2.glass.cgfx"
+    Item {
+        # Diffuse
+        # setAttr -l on -k on ".material_diffuse" -type "float3" 1 1 1 ;
+        # setAttr -l on -k on ".material_diffuse";
+        Name: "material_diffuse"
+        Type: "color"
+        Value: (1.0, 1.0, 1.0)
+        Enabled: "False"
+    }
+    Item {
+        # Specular
+        # setAttr -l on -k on ".material_specular" -type "float3" 0.5 0.5 0.5 ;
+        # setAttr -l on -k on ".material_specular";
+        Name: "material_specular"
+        Type: "color"
+        Value: (0.5, 0.5, 0.5)
+        Enabled: "False"
+    }
+    Item {
+        # Shininess
+        # setAttr -l on -k on ".material_shininess" 95;
+        Name: "material_shininess"
+        Type: "float"
+        Value: 95.0
+        Enabled: "False"
+    }
+    Item {
+        # Ambient
+        # setAttr -l on -k on ".material_ambient";
+        Name: "material_ambient"
+        Type: "float"
+        Value: 0.0
+        Enabled: "False"
+    }
+    Item {
+        # Env_factor
+        # setAttr -l on -k on ".material_reflectivity" -type "float3" 0.5 0.5 0.5 ;
+        # setAttr -l on -k on ".material_reflectivity";
+        Name: "material_reflectivity"
+        Type: "color"
+        Value: (0.5, 0.5, 0.5)
+        Enabled: "False"
+    }
+    Item {
+        # Fresnel (bias, scale)
+        # setAttr -l on -k on ".material_fresnel" -type "float2" 0 1 ;
+        # setAttr -l on -k on ".material_fresnel";
+        Name: "material_fresnel"
+        Type: "float2"
+        Value: (0.0, 1.0)
+        Enabled: "False"
+    }
+    Item {
+        # Tint
+        # setAttr -l on -k on ".material_tint" -type "float3" 0.77600002 0.80000001 0.78896403 ;
+        # setAttr -l on -k on ".material_tint";
+        Name: "material_tint"
+        Type: "color"
+        Value: (0.776, 0.8, 0.788964)
+        Enabled: "False"
+    }
+    Item {
+        # Tint Opacity
+        # setAttr -l on -k on ".material_tint_opacity" -0.0099999997764825821;
+        Name: "material_tint_opacity"
+        Type: "float"
+        Value: -0.01
+        Enabled: "False"
+    }
+    Item {
+        # none_spec
+        # setAttr...
+        Name: "texture_base"
+        Type: "sampler2D"
+        Value: ""
+        Enabled: "True"
+    }
+    Item {
+        # (preview only) clamp to edge
+        # setAttr -l on -k on ".define_TEXTURE_BASE_CLAMP";
+        Name: "d_TEXTURE_BASE_CLAMP"
+        Type: "bool"
+        Value: "False"
+        Enabled: "False"
+    }
+    Item {
+        # (preview only) enable mipmaps
+        # setAttr...
+        Name: "d_TEXTURE_BASE_FILTER"
+        Type: "bool"
+        Value: "False"
+        Enabled: "False"
+    }
+    Item {
+        # environment
+        # setAttr...
+        Name: "texture_reflection"
+        Type: "samplerCUBE"
+        Value: ""
+        Enabled: "True"
+    }
+}
+Shader {
+    TemplateName: "mlaa_remover"
+    CgFXFile: "eut2.mlaaweight.cgfx"
+    Item {
+        # (flavor) No vertex color
+        # setAttr...
+        Name: "d_SIMPLE_ENABLE"
+        Type: "bool"
+        Value: "False"
+        Enabled: "True"
+    }
+}
+Shader {
+    TemplateName: "prefab_terrain"
+    CgFXFile: "eut2.dif.spec.weight.cgfx"
+    Item {
+        # (flavor) Depth mode
+        # setAttr...
+        Name: "d_DEPTH_ENABLE"
+        Type: "enum"
+        Value: "1"
+        Enabled: "True"
+    }
+    Item {
+        # (flavor) Blend mode
+        # setAttr...
+        Name: "d_BLEND_ENABLE"
+        Type: "enum"
+        Value: "10"
+        Enabled: "True"
+    }
+    Item {
+        # (flavor) Texgen 0
+        # setAttr -k on ".define_TEXGEN0_ENABLE" yes;
+        Name: "d_TEXGEN0_ENABLE"
+        Type: "bool"
+        Value: "True"
+        Enabled: "True"
+    }
+    Item {
+        # (flavor) Alpha Test
+        # setAttr...
+        Name: "d_ALPHA_ENABLE"
+        Type: "bool"
+        Value: "False"
+        Enabled: "True"
+    }
+    Item {
+        # (flavor) Shadow caster
+        # setAttr...
+        Name: "d_SHADOW_ENABLE"
+        Type: "bool"
+        Value: "False"
+        Enabled: "True"
+    }
+    Item {
+        # (flavor) Paintable
+        # setAttr...
+        Name: "d_PAINT_ENABLE"
+        Type: "bool"
+        Value: "False"
+        Enabled: "True"
+    }
+    Item {
+        # Diffuse
+        # setAttr -k on ".material_diffuse" -type "float3" 1 1 1 ;
+        Name: "material_diffuse"
+        Type: "color"
+        Value: (1.0, 1.0, 1.0)
+        Enabled: "True"
+    }
+    Item {
+        # Specular
+        # setAttr -k on ".material_specular" -type "float3" 0.1 0.1 0.1 ;
+        Name: "material_specular"
+        Type: "color"
+        Value: (0.1, 0.1, 0.1)
+        Enabled: "True"
+    }
+    Item {
+        # Shininess
+        # setAttr -k on ".material_shininess" 13;
+        Name: "material_shininess"
+        Type: "float"
+        Value: 13.0
+        Enabled: "True"
+    }
+    Item {
+        # Ambient
+        # setAttr...
+        Name: "material_ambient"
+        Type: "float"
+        Value: 0.0
+        Enabled: "True"
+    }
+    Item {
+        # Reflection
+        # setAttr...
+        Name: "material_reflection"
+        Type: "float"
+        Value: 0.0
+        Enabled: "True"
+    }
+    Item {
+        # Texgen0 (scaleX, scaleZ)
+        # setAttr -k on ".texgen0_scale" -type "float2" 13 13 ;
+        # !!! NOTE - Shouldn't be visible (according to compiled data), but in Maya it is in UI !!!
+        Name: "texgen0_scale"
+        Type: "float2"
+        Value: (13.0, 13.0)
+        Enabled: "True"
+    }
+    Item {
+        # dif_spec
+        # setAttr...
+        Name: "texture_base"
+        Type: "sampler2D"
+        Value: ""
+        Enabled: "True"
+    }
+    Item {
+        # (preview only) clamp to edge
+        # setAttr...
+        Name: "d_TEXTURE_BASE_CLAMP"
+        Type: "bool"
+        Value: "False"
+        Enabled: "True"
+    }
+    Item {
+        # (preview only) enable mipmaps
+        # setAttr...
+        Name: "d_TEXTURE_BASE_CLAMP"
+        Type: "bool"
+        Value: "False"
+        Enabled: "True"
+    }
+}
+Shader {
+    TemplateName: "rumblestripe_sound"
+    CgFXFile: "eut2.none.cgfx"
+    Item {
+        # (flavor) dummy
+        # setAttr...
+        Name: "d_DUMMY_ENABLE"
+        Type: "bool"
+        Value: "False"
+        Enabled: "True"
+    }
+}
+Shader {
+    TemplateName: "shadow_caster"
+    CgFXFile: "eut2.shadowonly.cgfx"
+    Item {
+        # (flavor) Alpha Test
+        # setAttr -l on -k on ".define_ALPHA_ENABLE";
+        Name: "d_ALPHA_ENABLE"
+        Type: "bool"
+        Value: "False"
+        Enabled: "False"
+    }
+    Item {
+        # (flavor) Double sided
+        # setAttr...
+        Name: "d_NOCULL_ENABLE"
+        Type: "bool"
+        Value: "False"
+        Enabled: "True"
+    }
+    Item {
+        # Shadowmap bias
+        # setAttr...
+        Name: "shadowmap_bias"
+        Type: "float"
+        Value: 0.0
+        Enabled: "True"
+    }
+}
+Shader {
+    TemplateName: "transition"
+    CgFXFile: "eut2.dif.spec.weight.weight.dif.spec.weight.cgfx"
+    Item {
+        # (flavor) Depth mode
+        # setAttr...
+        Name: "d_DEPTH_ENABLE"
+        Type: "enum"
+        Value: "1"
+        Enabled: "True"
+    }
+    Item {
+        # (flavor) Blend mode
+        # setAttr...
+        Name: "d_BLEND_ENABLE"
+        Type: "enum"
+        Value: "10"
+        Enabled: "True"
+    }
+    Item {
+        # (flavor) Texgen 0
+        # setAttr -k on ".define_TEXGEN0_ENABLE" yes;
+        Name: "d_TEXGEN0_ENABLE"
+        Type: "bool"
+        Value: "True"
+        Enabled: "True"
+    }
+    Item {
+        # (flavor) Texgen 1
+        # setAttr...
+        Name: "d_TEXGEN1_ENABLE"
+        Type: "bool"
+        Value: "False"
+        Enabled: "True"
+    }
+    Item {
+        # (flavor) Alpha Test
+        # setAttr...
+        Name: "d_ALPHA_ENABLE"
+        Type: "bool"
+        Value: "False"
+        Enabled: "True"
+    }
+    Item {
+        # (flavor) Shadow caster
+        # setAttr...
+        Name: "d_SHADOW_ENABLE"
+        Type: "bool"
+        Value: "False"
+        Enabled: "True"
+    }
+    Item {
+        # Diffuse
+        # setAttr -k on ".material_diffuse" -type "float3" 1 1 1 ;
+        Name: "material_diffuse"
+        Type: "color"
+        Value: (1.0, 1.0, 1.0)
+        Enabled: "True"
+    }
+    Item {
+        # Specular
+        # setAttr -k on ".material_specular" -type "float3" 0.1 0.1 0.1 ;
+        Name: "material_specular"
+        Type: "color"
+        Value: (0.1, 0.1, 0.1)
+        Enabled: "True"
+    }
+    Item {
+        # Shininess
+        # setAttr -k on ".material_shininess" 12;
+        Name: "material_shininess"
+        Type: "float"
+        Value: 12.0
+        Enabled: "True"
+    }
+    Item {
+        # Ambient
+        # setAttr...
+        Name: "material_ambient"
+        Type: "float"
+        Value: 0.0
+        Enabled: "True"
+    }
+    Item {
+        # Reflection
+        # setAttr...
+        Name: "material_reflection"
+        Type: "float"
+        Value: 0.0
+        Enabled: "True"
+    }
+    Item {
+        # Secondary specular
+        # setAttr -k on ".material_specular_secondary" -type "float3" 1.6 1.6 1.6 ;
+        Name: "material_specular_secondary"
+        Type: "color"
+        Value: (1.6, 1.6, 1.6)
+        Enabled: "True"
+    }
+    Item {
+        # Secondary Shininess
+        # setAttr -k on ".material_shininess_secondary" 15;
+        Name: "material_shininess_secondary"
+        Type: "float"
+        Value: 15.0
+        Enabled: "True"
+    }
+    Item {
+        # Secondary reflection
+        # setAttr...
+        Name: "material_reflection_secondary"
+        Type: "float"
+        Value: 0.0
+        Enabled: "True"
+    }
+    Item {
+        # Texgen0 (scaleX, scaleZ)
+        # setAttr -k on ".texgen0_scale" -type "float2" 13 13 ;
+        # !!! NOTE - Shouldn't be visible (according to compiled data), but in Maya it is in UI !!!
+        Name: "texgen0_scale"
+        Type: "float2"
+        Value: (13.0, 13.0)
+        Enabled: "True"
+    }
+    Item {
+        # diffuse_lo
+        # setAttr...
+        Name: "texture_base"
+        Type: "sampler2D"
+        Value: ""
+        Enabled: "True"
+    }
+    Item {
+        # (preview only) clamp to edge
+        # setAttr...
+        Name: "d_TEXTURE_BASE_CLAMP"
+        Type: "bool"
+        Value: "False"
+        Enabled: "True"
+    }
+    Item {
+        # (preview only) enable mipmaps
+        # setAttr...
+        Name: "d_TEXTURE_BASE_FILTER"
+        Type: "bool"
+        Value: "False"
+        Enabled: "True"
+    }
+    Item {
+        # diffuse_hi
+        # setAttr...
+        Name: "texture_over"
+        Type: "sampler2D"
+        Value: ""
+        Enabled: "True"
+    }
+    Item {
+        # (preview only) clamp to edge
+        # setAttr...
+        Name: "d_TEXTURE_OVER_CLAMP"
+        Type: "bool"
+        Value: "False"
+        Enabled: "True"
+    }
+    Item {
+        # (preview only) enable mipmaps
+        # setAttr...
+        Name: "d_TEXTURE_OVER_FILTER"
+        Type: "bool"
+        Value: "False"
+        Enabled: "True"
+    }
+}
+Shader {
+    TemplateName: "tree_bark"
+    CgFXFile: "eut2.leaves.cgfx"
+    Item {
+        # (flavor) Shadow caster
+        # setAttr -k on ".define_SHADOW_ENABLE" yes;
+        Name: "d_SHADOW_ENABLE"
+        Type: "bool"
+        Value: "True"
+        Enabled: "False"
+    }
+    Item {
+        # (flavor) Uniform Model
+        # setAttr...
+        Name: "d_UNIFORM_ENABLE"
+        Type: "bool"
+        Value: "False"
+        Enabled: "True"
+    }
+    Item {
+        # Diffuse
+        # setAttr -k on ".material_diffuse" -type "float3" 1 1 1 ;
+        Name: "material_diffuse"
+        Type: "color"
+        Value: (1.0, 1.0, 1.0)
+        Enabled: "False"
+    }
+    Item {
+        # Specular
+        # setAttr -k on ".material_specular" -type "float3" 0.30000001 0.30000001 0.30000001 ;
+        Name: "material_specular"
+        Type: "color"
+        Value: (0.3, 0.3, 0.3)
+        Enabled: "False"
+    }
+    Item {
+        # Shininess
+        # setAttr -k on ".material_shininess" 30;
+        Name: "material_shininess"
+        Type: "float"
+        Value: 30.0
+        Enabled: "False"
+    }
+    Item {
+        # Ambient
+        # setAttr...
+        Name: "material_ambient"
+        Type: "float"
+        Value: 0.0
+        Enabled: "False"
+    }
+    Item {
+        # Shadow Offset
+        # setAttr...
+        Name: "shadow_offset"
+        Type: "float"
+        Value: 0.0
+        Enabled: "False"
+    }
+    Item {
+        # Phase Randomization
+        # setAttr...
+        Name: "phase_randomization"
+        Type: "float"
+        Value: 0.0
+        Enabled: "False"
+    }
+    Item {
+        # LOD Select
+        # setAttr -k on ".lod_selector" -type "float3" 1 0 0 ;
+        Name: "lod_selector"
+        Type: "float3"
+        Value: (1.0, 0.0, 0.0)
+        Enabled: "False"
+    }
+    Item {
+        # dif_alpha
+        # setAttr...
+        Name: "texture_base"
+        Type: "sampler2D"
+        Value: ""
+        Enabled: "True"
+    }
+    Item {
+        # (preview only) clamp to edge
+        # setAttr...
+        Name: "d_TEXTURE_BASE_CLAMP"
+        Type: "bool"
+        Value: "False"
+        Enabled: "False"
+    }
+    Item {
+        # (preview only) enable mipmaps
+        # setAttr...
+        Name: "d_TEXTURE_BASE_FILTER"
+        Type: "bool"
+        Value: "False"
+        Enabled: "False"
+    }
+    Item {
+        # leaf_mask
+        # setAttr...
+        Name: "texture_mask"
+        Type: "sampler2D"
+        Value: ""
+        Enabled: "True"
+    }
+    Item {
+        # (preview only) clamp to edge
+        # setAttr...
+        Name: "d_TEXTURE_MASK_CLAMP"
+        Type: "bool"
+        Value: "False"
+        Enabled: "False"
+    }
+    Item {
+        # (preview only) enable mipmaps
+        # setAttr...
+        Name: "d_TEXTURE_MASK_FILTER"
+        Type: "bool"
+        Value: "False"
+        Enabled: "False"
+    }
+}
+Shader {
+    TemplateName: "tree_leaves"
+    CgFXFile: "eut2.leaves.cgfx"
+    Item {
+        # (flavor) Shadow caster
+        # setAttr -l on -k on ".define_SHADOW_ENABLE" yes;
+        Name: "d_SHADOW_ENABLE"
+        Type: "bool"
+        Value: "True"
+        Enabled: "False"
+    }
+    Item {
+        # (flavor) Uniform Model
+        # setAttr...
+        Name: "d_UNIFORM_ENABLE"
+        Type: "bool"
+        Value: "False"
+        Enabled: "True"
+    }
+    Item {
+        # Diffuse
+        # setAttr -l on -k on ".material_diffuse" -type "float3" 1 1 1 ;
+        # setAttr -l on -k on ".material_diffuse";
+        Name: "material_diffuse"
+        Type: "color"
+        Value: (1.0, 1.0, 1.0)
+        Enabled: "False"
+    }
+    Item {
+        # Specular
+        # setAttr -l on -k on ".material_specular" -type "float3" 0.5 0.5 0.5 ;
+        # setAttr -l on -k on ".material_specular";
+        Name: "material_specular"
+        Type: "color"
+        Value: (0.5, 0.5, 0.5)
+        Enabled: "False"
+    }
+    Item {
+        # Shininess
+        # setAttr -k on ".material_shininess" 20;
+        Name: "material_shininess"
+        Type: "float"
+        Value: 20.0
+        Enabled: "False"
+    }
+    Item {
+        # Ambient
+        # setAttr -l on -k on ".material_ambient" 2;
+        Name: "material_ambient"
+        Type: "float"
+        Value: 2.0
+        Enabled: "False"
+    }
+    Item {
+        # Shadow Offset
+        # setAttr -l on -k on ".shadow_offset" 1;
+        Name: "shadow_offset"
+        Type: "float"
+        Value: 1.0
+        Enabled: "False"
+    }
+    Item {
+        # Phase Randomization
+        # setAttr -l on -k on ".phase_randomization";
+        Name: "phase_randomization"
+        Type: "float"
+        Value: 0.0
+        Enabled: "False"
+    }
+    Item {
+        # LOD Select
+        # setAttr -l on -k on ".lod_selector" -type "float3" 1 0 0 ;
+        # setAttr -l on -k on ".lod_selector";
+        Name: "lod_selector"
+        Type: "float3"
+        Value: (1.0, 0.0, 0.0)
+        Enabled: "False"
+    }
+    Item {
+        # dif_alpha
+        # setAttr...
+        Name: "texture_base"
+        Type: "sampler2D"
+        Value: ""
+        Enabled: "True"
+    }
+    Item {
+        # (preview only) clamp to edge
+        # setAttr...
+        Name: "d_TEXTURE_BASE_CLAMP"
+        Type: "bool"
+        Value: "False"
+        Enabled: "False"
+    }
+    Item {
+        # (preview only) enable mipmaps
+        # setAttr...
+        Name: "d_TEXTURE_BASE_FILTER"
+        Type: "bool"
+        Value: "False"
+        Enabled: "False"
+    }
+    Item {
+        # leaf_mask
+        # setAttr...
+        Name: "texture_mask"
+        Type: "sampler2D"
+        Value: ""
+        Enabled: "True"
+    }
+    Item {
+        # (preview only) clamp to edge
+        # setAttr...
+        Name: "d_TEXTURE_MASK_CLAMP"
+        Type: "bool"
+        Value: "False"
+        Enabled: "False"
+    }
+    Item {
+        # (preview only) enable mipmaps
+        # setAttr...
+        Name: "d_TEXTURE_MASK_FILTER"
+        Type: "bool"
+        Value: "False"
+        Enabled: "False"
+    }
+}
+Shader {
+    TemplateName: "truck_paintjob"
+    CgFXFile: "eut2.truckpaint.cgfx"
+    Item {
+        # (flavor) Normal map
+        # setAttr...
+        Name: "d_NMAP_ENABLE"
+        Type: "enum"
+        Value: "0"
+        Enabled: "True"
+    }
+    Item {
+        # (flavor) Shadow caster
+        # setAttr...
+        Name: "d_SHADOW_ENABLE"
+        Type: "bool"
+        Value: "False"
+        Enabled: "True"
+    }
+    Item {
+        # (flavor) (preview only) Disable paintjob
+        # setAttr...
+        Name: "d_STRIP_PAINTJOB_ENABLE"
+        Type: "bool"
+        Value: "False"
+        Enabled: "True"
+    }
+    Item {
+        # (flavor) Airbrush paintjob
+        # setAttr...
+        Name: "d_AIRBRUSH_ENABLE"
+        Type: "bool"
+        Value: "False"
+        Enabled: "True"
+    }
+    Item {
+        # Diffuse
+        # setAttr -l on -k on ".material_diffuse" -type "float3" 1 1 1 ;
+        # setAttr -l on -k on ".material_diffuse";
+        Name: "material_diffuse"
+        Type: "color"
+        Value: (1.0, 1.0, 1.0)
+        Enabled: "False"
+    }
+    Item {
+        # Specular
+        # setAttr -l on -k on ".material_specular" -type "float3" 1.5 1.5 1.5 ;
+        # setAttr -l on -k on ".material_specular";
+        Name: "material_specular"
+        Type: "color"
+        Value: (1.5, 1.5, 1.5)
+        Enabled: "False"
+    }
+    Item {
+        # Shininess
+        # setAttr -l on -k on ".material_shininess" 60;
+        Name: "material_shininess"
+        Type: "float"
+        Value: 60.0
+        Enabled: "False"
+    }
+    Item {
+        # Ambient
+        # setAttr -l on -k on ".material_ambient";
+        Name: "material_ambient"
+        Type: "float"
+        Value: 0.0
+        Enabled: "False"
+    }
+    Item {
+        # Env_factor
+        # setAttr -l on -k on ".material_reflectivity" -type "float3" 0.30000001 0.30000001 0.30000001 ;
+        # setAttr -l on -k on ".material_reflectivity";
+        Name: "material_reflectivity"
+        Type: "color"
+        Value: (0.3, 0.3, 0.3)
+        Enabled: "False"
+    }
+    Item {
+        # Fresnel (bias, scale)
+        # setAttr -l on -k on ".material_fresnel" -type "float2" 0.2 0.89999998 ;
+        # setAttr -l on -k on ".material_fresnel";
+        Name: "material_fresnel"
+        Type: "float2"
+        Value: (0.2, 0.9)
+        Enabled: "False"
+    }
+    Item {
+        # Paintjob R color
+        # setAttr -k on ".paintjob_r_color" -type "float3" 1 0 0 ;
+        Name: "paintjob_r_color"
+        Type: "color"
+        Value: (1.0, 0.0, 0.0)
+        Enabled: "True"
+    }
+    Item {
+        # Paintjob G color
+        # setAttr -k on ".paintjob_g_color" -type "float3" 0 1 0 ;
+        Name: "paintjob_g_color"
+        Type: "color"
+        Value: (0.0, 1.0, 0.0)
+        Enabled: "True"
+    }
+    Item {
+        # Paintjob B color
+        # setAttr -k on ".paintjob_b_color" -type "float3" 0 0 1 ;
+        Name: "paintjob_b_color"
+        Type: "color"
+        Value: (0.0, 0.0, 1.0)
+        Enabled: "True"
+    }
+    Item {
+        # Paintjob Base color
+        # setAttr -k on ".paintjob_base_color" -type "float3" 1 1 1 ;
+        Name: "paintjob_base_color"
+        Type: "color"
+        Value: (1.0, 1.0, 1.0)
+        Enabled: "True"
+    }
+    Item {
+        # dif_spec
+        # setAttr...
+        Name: "texture_base"
+        Type: "sampler2D"
+        Value: ""
+        Enabled: "True"
+    }
+    Item {
+        # (preview only) clamp to edge
+        # setAttr...
+        Name: "d_TEXTURE_BASE_CLAMP"
+        Type: "bool"
+        Value: "False"
+        Enabled: "True"
+    }
+    Item {
+        # (preview only) enable mipmaps
+        # setAttr...
+        Name: "d_TEXTURE_BASE_FILTER"
+        Type: "bool"
+        Value: "False"
+        Enabled: "True"
+    }
+    Item {
+        # environment
+        # setAttr...
+        Name: "texture_reflection"
+        Type: "samplerCUBE"
+        Value: ""
+        Enabled: "True"
+    }
+    Item {
+        # paintjob
+        # setAttr...
+        Name: "texture_paintjob"
+        Type: "sampler2D"
+        Value: ""
+        Enabled: "True"
+    }
+    Item {
+        # (preview only) clamp to edge
+        # setAttr...
+        Name: "d_TEXTURE_PAINTJOB_CLAMP"
+        Type: "bool"
+        Value: "False"
+        Enabled: "True"
+    }
+    Item {
+        # (preview only) enable mipmaps
+        # setAttr...
+        Name: "d_TEXTURE_PAINTJOB_FILTER"
+        Type: "bool"
+        Value: "False"
+        Enabled: "True"
+    }
+}
