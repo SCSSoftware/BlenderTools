@@ -1,0 +1,19 @@
+SiiNunit
+{
+beacon_vehicle: flare.trailer.beacon
+{
+	rot_speed: 720
+	dir_type: narrow
+	light_type: beacon
+	
+	diffuse_color: (1.0, 0.40, 0.1)
+	range: 14.0
+	inner_angle: 10.0
+	outer_angle: 60.0
+	pitch_offset: 6
+	type: spot
+	forward_distance: false
+	visual_offset: 0.1
+	model: "/model/flare/vehicle_beacon.pmd" 
+}
+}

@@ -1,0 +1,110 @@
+# Look Names:
+#	Default
+#
+# Variant Names:
+#	default
+#
+Header {
+    FormatVersion: 1
+    Source: "Blender 2.73.0 (hash: bbf09d9), SCS Blender Tools: 0.4"
+    Type: "Trait"
+    Name: "village_cz_4_sample"
+}
+Global {
+    LookCount: 1
+    VariantCount: 1
+    PartCount: 1
+    MaterialCount: 2
+}
+Look {
+    Name: "Default"
+    Material {
+        Alias: "alpha"
+        Effect: "eut2.dif.spec.a"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.0 0.0 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 4.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/model/village_far/village_cz/village_cz"
+        }
+    }
+    Material {
+        Alias: "building"
+        Effect: "eut2.building.add.env.day"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 2
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.8999999761581421 0.8999999761581421 0.8999999761581421 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 60.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "env_factor"
+            Value: ( 0.699999988079071 0.699999988079071 0.699999988079071 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/model/village_far/village_cz/village_cz"
+        }
+        Texture {
+            Tag: "texture[1]:texture_reflection"
+            Value: "/material/environment/building_reflection/building_ref"
+        }
+    }
+}
+Variant {
+    Name: "default"
+    Part {
+        Name: "vis"
+        AttributeCount: 1
+        Attribute {
+            Format: INT
+            Tag: "visible"
+            Value: ( 1 )
+        }
+    }
+}
+

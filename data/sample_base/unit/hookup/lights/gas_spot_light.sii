@@ -1,0 +1,19 @@
+SiiNunit
+{
+light_source : lamp.gas.spot.light
+{
+	ambient_color: (0.0000, 0.0000, 0.0000)
+	diffuse_color: (0.9047, 0.8632, 0.6038)
+	specular_color: (0.0, 0.0, 0.0)
+
+	range: 4
+	cut_range: 8
+	inner_angle: 30
+	outer_angle: 150
+
+	dir_type: all
+	model: "/model/flare/gas_lamp_flare_small.pmd"
+	scale_factor: 2
+}
+
+}

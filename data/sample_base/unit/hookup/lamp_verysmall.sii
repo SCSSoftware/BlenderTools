@@ -1,0 +1,8 @@
+SiiNunit
+{
+flare_lamp : flare.lamp.verysmall
+{
+	dir_type: all
+	model: "/model/flare/lamp_flare_verysmall.pmd"
+}
+}

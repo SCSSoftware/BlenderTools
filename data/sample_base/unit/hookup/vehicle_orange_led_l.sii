@@ -1,0 +1,9 @@
+SiiNunit
+{
+flare_vehicle: flare.vehicle.orangeledl
+{
+	dir_type: wide
+	light_type: parking
+	model: "/model/flare/vehicle_orange_led_l.pmd" 
+}
+}

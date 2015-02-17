@@ -21,42 +21,12 @@ What tools are included:
  - Special tool-shelf with additional tools
 
 
-Installation:
+Installation and Usage:
 -------------
-All the files needed for tools installation are contained within "addon"
-directory in a single folder named "io_scs_tools". 
-This folder must be placed in a location, where Blender can find it and 
-read it as an Addon. It is possible to use an installation method, 
-where you can just point Blender to the Addon location
-(e.g. if you want to run the tools right from GIT repository).
-
-You can use one the following installation possibilities:
-
-1. LOCAL INSTALLATION:
-   Place the folder "io_scs_tools" to your installation of Blender to
-   a location "<Blender_installation>\<version_number>\scripts\addons\". 
-   The Addon will be used only by this particular installation of Blender.
-2. GLOBAL INSTALLATION:
-   Place the folder "io_scs_tools" in your profile to the location
-   "<user_profile>\blender\<version_number>\scripts\addons\".
-   Addon will be used by any Blender installation of specified version.
-3. INSTALLATION TO THE USER DIRECTORY:
-   In "User Preferences" within "File" section is the "Scripts" item
-   where you can set the path to any Addon location. This way, for
-   example, you can use any Addon directly from data repository and your
-   tools will always be of the current version in all of your Blender
-   installations. It is necessary, that the Addon folder was placed inside
-   a folder named "addons_contrib" and Blender needs to be directed to its
-   parent folder. Therefore the resulting path to the folder Addons should
-   look like "<folder>\addons_contrib\io_scs_tools", but the path under
-   Scripts will only be "<folder>".
-4. INSTALL FROM FILE:
-   Tools can also be installed using the "Install from File..." button,
-   which you can find in "User Preferences" in the "Addons" section on the
-   bottom bar.
-
-NOTE: For more information see "Blender’s Configuration & Data Paths" at:
-"http://wiki.blender.org/index.php/Doc:2.6/Manual/Introduction/Installing_Blender/DirectoryLayout"
+Addon is located in "addon/io_scs_tools" folder.
+Use standard Blender addon installation procedure for installing it.
+For more information visit wiki at
+"https://github.com/SCSSoftware/BlenderTools/wiki".
 
 
 Notes:
@@ -83,8 +53,8 @@ go to "Blender Tools > Bugs" sub-forums.
 
 License:
 --------
-SCS Blender Tools are developed and distributed under GNU GPL v3.
-http://www.gnu.org/licenses/gpl-3.0.html
+SCS Blender Tools are developed and distributed under GNU GPL v2.
+http://www.gnu.org/licenses/gpl-2.0.html
 
 
 SCS Blender Tools Team

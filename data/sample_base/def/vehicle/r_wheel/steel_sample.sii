@@ -1,0 +1,12 @@
+SiiNunit
+{
+accessory_wheel_data : steel_sample.rwheel
+{
+	name: "@@standard@@ - Sample"
+	price: 9600
+	unlock: 0
+	model: "/vehicle/wheel/steel/rear_sample.pmd"
+	icon: "r_wheel_steel"
+	front_wheel: false
+}
+}

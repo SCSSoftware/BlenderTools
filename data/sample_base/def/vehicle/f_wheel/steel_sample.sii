@@ -1,0 +1,12 @@
+SiiNunit
+{
+accessory_wheel_data : steel_sample.fwheel
+{
+	name: "@@standard@@ - Sample"
+	price: 2400
+	unlock: 0
+	model: "/vehicle/wheel/steel/front_sample.pmd"
+	icon: "f_wheel_steel"
+	front_wheel:true
+}
+}

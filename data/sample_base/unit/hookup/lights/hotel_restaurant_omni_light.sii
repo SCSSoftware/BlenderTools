@@ -1,0 +1,15 @@
+SiiNunit
+{
+light_source : hotel.restaurant.omni.light
+{
+	ambient_color: (0.0, 0.0000, 0.0000)
+	diffuse_color: (0.514, 0.759, 0.936)
+	specular_color: (0.498, 0.602, 0.936)
+
+	type: point
+	range: 11
+
+
+}
+
+}

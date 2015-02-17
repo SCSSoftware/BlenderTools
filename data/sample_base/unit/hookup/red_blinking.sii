@@ -1,0 +1,11 @@
+SiiNunit
+{
+flare_blink : flare.model.red.blink
+{
+	dir_type: all
+	blink_delay_on: 0.5
+	blink_delay_off: 1.0
+	blink_desync:0.0
+	model: "/model/flare/lamp_flare_red.pmd"
+}
+}

@@ -168,15 +168,15 @@ class ExportSCS(bpy.types.Operator, ExportHelper):
         filepath = os.path.dirname(self.filepath)
 
         export_type = _get_scs_globals().content_type
-        init_obj_list = []
+        init_obj_list = {}
         if export_type == "selection":
             for obj in bpy.context.selected_objects:
                 root = _object_utils.get_scs_root(obj)
                 if root:
-                    if root != obj:
-                        if not root.select:
-                            init_obj_list.append(root)
-                    else:
+                    if root != obj:  # add only selected children
+                        init_obj_list[obj.name] = obj
+                        init_obj_list[root.name] = root
+                    else:  # add every children if all are unselected
                         children = _object_utils.get_children(obj)
                         local_reselected_objs = []
                         for child_obj in children:
@@ -185,8 +185,11 @@ class ExportSCS(bpy.types.Operator, ExportHelper):
                             if child_obj.select:
                                 local_reselected_objs = []
                                 break
-                        init_obj_list.extend(local_reselected_objs)
-            init_obj_list = tuple(init_obj_list)
+
+                        for reselected_obj in local_reselected_objs:
+                            init_obj_list[reselected_obj.name] = reselected_obj
+
+            init_obj_list = tuple(init_obj_list.values())
         elif export_type == "scene":
             init_obj_list = tuple(bpy.context.scene.objects)
         elif export_type == 'scenes':

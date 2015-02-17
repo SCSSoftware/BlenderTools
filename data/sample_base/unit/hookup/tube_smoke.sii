@@ -1,0 +1,44 @@
+SiiNunit
+{
+model_particle : model.particle.tube {
+ active_distance: &4b189680
+ gen_array: 1
+ gen_array[0]: _nameless.0284.9370
+ auto_disable_delay: 0
+}
+
+particle_gen : _nameless.0284.9370 {
+ list_order_up: false
+ blend_alpha: true
+ gen_pos: (0, 0, 0)
+ scale_acc: 0
+ rotation_speed: 35
+ alpha_blend_coef: &3e99999a
+ base_alpha: &3f4ccccd
+ alpha_attack_time: 1
+ flow_speed: (2, 4, 2)
+ flow_speed_acc: (2, 5, 2)
+ particle_size: (3, 3)
+ particle_size_var: (&3e4ccccc, &3e4ccccc)
+ particle_displacement: (2, 2, 2)
+ color_multiplier: nil
+ key_pos: 5
+ key_pos[0]: 0
+ key_pos[1]: 70
+ key_pos[2]: 109
+ key_pos[3]: 151
+ key_pos[4]: 255
+ key_color: 5
+ key_color[0]: 7566195
+ key_color[1]: 4605510
+ key_color[2]: 12632256
+ key_color[3]: 3026478
+ key_color[4]: 12961221
+ time_to_live: 6
+ particles_max_count: 47
+ relative_space: false
+ model_path: "/model/particle/smoke.pmd"
+ model_look: pipe
+}
+
+}

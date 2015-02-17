@@ -1,0 +1,17 @@
+SiiNunit
+{
+flare_vehicle: flare.vehicle.brakel
+{
+	dir_type: wide
+	light_type: brake
+
+	diffuse_color: (0.20, 0.0, 0.0)
+	range: 3.0
+	inner_angle: 80.0
+	outer_angle: 100.0
+	type: spot
+	forward_distance: false
+	model: "/model/flare/vehicle_brakel.pmd" 
+	scale_factor: 2
+}
+}

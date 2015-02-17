@@ -1,0 +1,47 @@
+SiiNunit
+{
+
+parked_car: car.parked
+{
+	low_poly_only: true
+}
+
+parked_car: car.parked.physics
+{
+	low_poly_only: false
+}
+
+parked_car: truck.parked.physics
+{
+	truck_model: true
+	low_poly_only: false
+}
+
+parked_car: truck_only.parked.physics
+{
+	truck_model: true
+	low_poly_only: false
+	no_trailer: true
+}
+
+parked_car: brand_truck.parked.physics
+{
+	find_brand: true
+	truck_model: true
+	low_poly_only: false
+	no_trailer: true
+}
+
+parked_car: truck.always.parked.physics
+{
+	truck_model: true
+	low_poly_only: false
+	always_visible: true
+}
+
+parked_car: car.always.parked.physics
+{
+	low_poly_only: false
+	always_visible: true
+}
+}

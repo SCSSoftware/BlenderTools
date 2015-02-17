@@ -1,0 +1,8 @@
+SiiNunit
+{
+no_weather_area: no_weather.13x19
+{
+	size_x: 13
+	size_y: 19
+}
+}

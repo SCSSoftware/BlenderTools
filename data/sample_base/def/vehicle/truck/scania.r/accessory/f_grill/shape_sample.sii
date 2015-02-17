@@ -1,0 +1,11 @@
+SiiNunit
+{
+accessory_addon_data : shape_sample.scania.r.f_grill
+{
+	name: "Wrestler - Sample"
+	price: 23940
+	unlock: 26
+	icon: "f_grill_09"
+	exterior_model: "/vehicle/truck/upgrade/frontgrill/scania_rcab_2009/frontgrill_09_sample.pmd"
+}
+}

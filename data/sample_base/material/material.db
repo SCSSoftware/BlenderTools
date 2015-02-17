@@ -1,0 +1,155 @@
+SiiNunit
+{
+# 0:static
+# 1:road
+# 2:road_snow
+# 3:dirt
+# 4:snow
+# 5:grass
+# 6:road_dirt
+# 7:invis
+# 8:ice
+# 9:metal
+# 10:rubber
+# 11:rumble_stripe
+# 12:plastic
+# EOF
+
+game_substance : .0 
+{
+	name: "static"
+
+	friction:	1.0
+	restitution:	0.0
+	wheel_particles[0]: ""				# dry
+	wheel_particles[1]: "wheel.particle.rain"	# rain
+	wheel_particles[2]: ""				# snow
+}
+
+game_substance : .1 
+{
+	name: "road"
+
+#	pt_dynamic_friction:	(0.75f, 0.79f)
+#	pt_static_friction:	(1.24f, 1.18f)
+	pt_crr:		0.02
+	friction:	2.0
+	restitution:	0.0
+	wheel_particles[0]: ""				# dry
+	wheel_particles[1]: "wheel.particle.rain"	# rain
+	wheel_particles[2]: ""				# snow
+}
+
+
+game_substance : .2 
+{
+	name: "road_snow"
+
+	pt_dynamic_friction:	(0.2, 0.2)
+	pt_static_friction:	(0.3, 0.3)
+	pt_crr:		0.2
+	friction:	1.0
+	restitution:	0.0
+	wheel_particles[0]: "wheel.particle.snow"	# dry
+	wheel_particles[1]: "wheel.particle.snow"	# rain
+	wheel_particles[2]: "wheel.particle.snow"	# snow
+}
+
+
+game_substance : .3 
+{
+	name: "dirt"
+
+	pt_dynamic_friction:	(0.45, 0.45)
+	pt_static_friction:	(0.55, 0.55)
+	pt_crr:		0.05
+	friction:	3.0
+	restitution:	0.0
+	wheel_particles[0]: "wheel.particle.dirt"	# dry
+	wheel_particles[1]: "wheel.particle.rain"	# rain
+	wheel_particles[2]: "wheel.particle.snow"	# snow
+}
+
+
+game_substance : .4 
+{
+	name: "snow"
+	pt_dynamic_friction:	(0.1, 0.1)
+	pt_static_friction:	(0.2, 0.2)
+	pt_crr:		0.4
+	friction:	0.5
+	restitution:	0.0
+	wheel_particles[0]: "wheel.particle.snow"	# dry
+	wheel_particles[1]: "wheel.particle.snow"	# rain
+	wheel_particles[2]: "wheel.particle.snow"	# snow
+}
+
+game_substance : .5 
+{
+	name: "grass"
+
+	pt_dynamic_friction:	(0.4, 0.4)
+	pt_static_friction:	(0.5, 0.5)
+	pt_crr:		0.15
+	friction:	3.5
+	restitution:	0.0
+	wheel_particles[0]: "wheel.particle.dirt"
+	wheel_particles[1]: "wheel.particle.rain"
+	wheel_particles[2]: "wheel.particle.snow"
+}
+
+
+game_substance : .6 
+{
+	name: "road_dirt"
+
+	pt_dynamic_friction:	(0.55, 0.55)
+	pt_static_friction:	(0.65, 0.65)
+	pt_crr:		0.05
+	friction:	2.5
+	restitution:	0.0
+	wheel_particles[0]: "wheel.particle.dirt"
+	wheel_particles[1]: "wheel.particle.rain"
+	wheel_particles[2]: "wheel.particle.snow"
+}
+
+game_substance : .7 
+{
+	name: "invis"
+}
+
+game_substance : .8 
+{
+	name: "ice"
+	pt_crr:		0.02
+}
+
+game_substance : .9 
+{
+	name: "metal"
+	friction: 	0.4
+	restitution: 	0.0
+}
+
+game_substance : .10 
+{
+	name: "rubber"
+	friction:	1.0
+	restitution: 	0.5
+}
+
+game_substance : .11 
+{
+	name: "rumble_stripe"
+	pt_crr:		0.06
+	friction:	2.0
+	restitution:	0.0
+}
+
+game_substance : .12 
+{
+	name: "plastic"
+	friction:	0.2
+	restitution:	1.0
+}
+}

@@ -1,0 +1,15 @@
+SiiNunit
+{
+light_source : amsterdam.port.omni.light
+{
+	ambient_color: (0.0, 0.0000, 0.0000)
+	diffuse_color: (0.249, 0.223, 0.148)
+	specular_color: (0.268, 0.251, 0.148)
+
+	type: point
+	range: 50
+
+
+}
+
+}

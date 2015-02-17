@@ -1,0 +1,17 @@
+SiiNunit
+{
+light_source : tunnel.light.3lane.hw1
+{
+	ambient_color: (0.0000, 0.0000, 0.0000)
+	diffuse_color: (0.9131, 0.8963, 0.7605)
+	specular_color: (0.9911, 0.9823, 0.8879)
+
+	range: 30.0
+	cut_range: 14.0
+	inner_angle: 20.0
+	outer_angle: 95.0
+  
+  always_on: true
+}
+
+}

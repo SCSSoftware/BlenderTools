@@ -1,0 +1,9 @@
+SiiNunit
+{
+
+showroom_vehicle: showroom.vehicle5
+{
+	pos_idx: 5
+}
+
+}

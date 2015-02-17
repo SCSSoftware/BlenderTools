@@ -1,0 +1,17 @@
+SiiNunit
+{
+flare_vehicle: flare.vehicle.parkl
+{
+	dir_type: wide
+	light_type: parking
+
+	diffuse_color: (0.1, 0.05, 0.03)
+	range: 2
+	inner_angle: 20.0
+	outer_angle: 150.0
+	type: spot
+	forward_distance: false
+
+	model: "/model/flare/vehicle_parkl.pmd" 
+}
+}

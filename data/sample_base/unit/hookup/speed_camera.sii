@@ -1,0 +1,15 @@
+SiiNunit
+{
+
+speed_camera: speedcam.20
+{
+	trigger_distance: 8.0
+	measurement_distance: 20.0
+}
+speed_camera: speedcam.r
+{
+	trigger_distance: 8.0
+	measurement_distance: 20.0
+	reverse_direction: true
+}
+}

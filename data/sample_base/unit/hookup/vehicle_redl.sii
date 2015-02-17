@@ -1,0 +1,9 @@
+SiiNunit
+{
+flare_vehicle: flare.vehicle.redl
+{
+	dir_type: wide
+	light_type: parking
+	model: "/model/flare/vehicle_redl.pmd" 
+}
+}

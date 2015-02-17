@@ -1,0 +1,11 @@
+SiiNunit
+{
+flare_blink : flare.model.orange.blink
+{
+	dir_type: wide
+	blink_delay_on: 0.5
+	blink_delay_off: 1.0
+	blink_desync:0.0
+	model: "/model/flare/roadwork_sign_flare.pmd"
+}
+}

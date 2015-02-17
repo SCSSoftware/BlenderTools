@@ -1,0 +1,250 @@
+SiiNunit
+{
+# For modders: Please do not modify this file if you want to add a new entry. Create in
+# this directory a new file "<base_name>.<idofyourmod>.sii" where <base_name> is name of
+# base file without the extension (e.g. "city" for "/def/city.sii") and <idofyourmod> is
+# some string which is unlikely to conflict with other mod.
+#
+# Warning: Even if the units are specified in more than one source file, they share the
+# same namespace so suffixes or prefixes should be used to avoid conflicts.
+
+
+traffic_rule_data : traffic_rule.major_road
+{
+	name: "Priority road"
+
+	rule: "priority"
+	num_params[]: 0
+	num_params[]: 0
+	num_params[]: 1
+}
+
+traffic_rule_data : traffic_rule.give_way
+{
+	name: "Give way"
+
+	rule: "priority"
+	num_params[]: 0
+	num_params[]: 0
+	num_params[]: -1
+}
+
+traffic_rule_data : traffic_rule.stop
+{
+	# Use this rule for both horizontal (road text) and vertical (traffic signs) 'stop' traffic rules
+	# The actual vehicle stop position is moved toa  nearby intersection or 'traffic_rule.cross_line' (if any)
+
+	name: "Stop"
+
+	rule: "stop"
+	num_params[]: 0.5
+	num_params[]: 0.7
+}
+
+traffic_rule_data : traffic_rule.cross_line
+{
+	# Use this rule for (horizontal) crossroad traffic lines
+	# NOTE: This rule does nothing by itself!
+	# It only makes vehicles stop at the line if there is 'traffic_rule.stop' nearby or an intersection ahead
+
+	name: "Crossroad stop line"
+
+	rule: "lane_rule"
+	num_params[]: 7
+}
+
+traffic_rule_data : traffic_rule.cross_line_s
+{
+	# Combined crossroad line and stop rule
+
+	name: "Crossroad line + stop rule"
+
+	additional_rules[]: traffic_rule.cross_line
+	additional_rules[]: traffic_rule.stop
+}
+
+traffic_rule_data : traffic_rule.rblock_left
+{
+	rule: "road_block"
+	num_params[]: -1
+}
+
+traffic_rule_data : traffic_rule.rblock_right
+{
+	rule: "road_block"
+	num_params[]: 1
+}
+
+traffic_rule_data : traffic_rule.limit_end
+{
+	name: "End of speed limit"
+
+	rule: "speed_limit"
+	num_params[]: 0
+}
+
+traffic_rule_data : traffic_rule.cross_end
+{
+	name: "Crossroad end (reset speed limit)"
+
+	rule: "speed_limit"
+	num_params[]: -10
+}
+
+traffic_rule_data : traffic_rule.limit_30
+{
+	name: "Speed limit 30"
+
+	rule: "speed_limit"
+	num_params[]: 30
+}
+
+traffic_rule_data : traffic_rule.limit_40
+{
+	name: "Speed limit 40"
+
+	rule: "speed_limit"
+	num_params[]: 40
+}
+
+traffic_rule_data : traffic_rule.limit_50
+{
+	name: "Speed limit 50"
+
+	rule: "speed_limit"
+	num_params[]: 50
+}
+
+traffic_rule_data : traffic_rule.limit_60
+{
+	name: "Speed limit 60"
+
+	rule: "speed_limit"
+	num_params[]: 60
+}
+
+traffic_rule_data : traffic_rule.limit_70
+{
+	name: "Speed limit 70"
+
+	rule: "speed_limit"
+	num_params[]: 70
+}
+
+traffic_rule_data : traffic_rule.limit_80
+{
+	name: "Speed limit 80"
+
+	rule: "speed_limit"
+	num_params[]: 80
+}
+
+traffic_rule_data : traffic_rule.limit_90
+{
+	name: "Speed limit 90"
+
+	rule: "speed_limit"
+	num_params[]: 90
+}
+
+traffic_rule_data : traffic_rule.limit_100
+{
+	name: "Speed limit 100"
+
+	rule: "speed_limit"
+	num_params[]: 100
+}
+
+traffic_rule_data : traffic_rule.limit_110
+{
+	name: "Speed limit 110"
+
+	rule: "speed_limit"
+	num_params[]: 110
+}
+
+traffic_rule_data : traffic_rule.limit_120
+{
+	name: "Speed limit 120"
+
+	rule: "speed_limit"
+	num_params[]: 120
+}
+
+traffic_rule_data : traffic_rule.limit_130
+{
+	name: "Speed limit 130"
+
+	rule: "speed_limit"
+	num_params[]: 130
+}
+
+traffic_rule_data : traffic_rule.limit_city
+{
+	# name: "Force 'city' speed limit"
+
+	rule: "speed_limit"
+	num_params[]: -1
+}
+
+traffic_rule_data : traffic_rule.limit_nocity
+{
+	# name: "Force 'outside city' speed limit"
+
+	rule: "speed_limit"
+	num_params[]: -2
+}
+
+traffic_rule_data : traffic_rule.limit_hw
+{
+	# name: "Force 'motorway' speed limit"
+
+	rule: "speed_limit"
+	num_params[]: -3
+}
+
+traffic_rule_data : traffic_rule.no_trucks
+{
+	name: "No trucks area"
+	rule: "lane_rule"
+	num_params[]: 4
+}
+
+traffic_rule_data : traffic_rule.city_area
+{
+	name: "City area"
+	rule: "lane_rule"
+	num_params[]: 5
+}
+
+traffic_rule_data : traffic_rule.city_start
+{
+	name: "City start"
+	rule: "lane_rule"
+	num_params[]: 11
+	additional_rules[]: traffic_rule.limit_end
+}
+
+traffic_rule_data : traffic_rule.city_end
+{
+	name: "City end"
+	rule: "lane_rule"
+	num_params[]: 6
+	additional_rules[]: traffic_rule.limit_end
+}
+
+traffic_rule_data : traffic_rule.motorway
+{
+	name: "Motorway start"
+	rule: "lane_rule"
+	num_params[]: 8
+}
+
+traffic_rule_data : traffic_rule.motorway_end
+{
+	name: "Motorway end"
+	rule: "lane_rule"
+	num_params[]: 9
+}
+
+}

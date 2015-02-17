@@ -1,0 +1,17 @@
+SiiNunit
+{
+light_source : ferry.interior.backlight.north
+{
+	ambient_color: (0.0000, 0.0000, 0.0000)
+	diffuse_color: (0.1400, 0.1326, 0.0800)
+	specular_color: (0.0000, 0.0000, 0.0000)
+
+	range: 20.0
+	cut_range: 20.0
+	inner_angle: 65.0
+	outer_angle: 80.0
+	attenuation_start_range: 10
+
+}
+
+}
