@@ -18,20 +18,23 @@
 
 # Copyright (C) 2013-2014: SCS Software
 
+from io_scs_tools.consts import Icons as _ICONS_consts
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
-from io_scs_tools.utils.icon import get_icon
-from io_scs_tools.utils.icon import IconTypes
+from io_scs_tools.internals.icons.wrapper import get_icon
+
+_ICON_TYPES = _ICONS_consts.Types
 
 
 class HeaderIconPanel:
     """
     Holds the function for drawing icon in header section of Panel
     """
+
     def draw_header(self, context):
-        self.layout.label('', icon_value=get_icon(IconTypes.SCS_LOGO))
+        self.layout.label('', icon_value=get_icon(_ICON_TYPES.scs_logo))
 
 
-def draw_export_panel(layout, exporter_version=False):
+def draw_export_panel(layout):
     box1 = layout.box()
     row = box1.row()
     row.prop(_get_scs_globals(), 'export_scale')
@@ -92,15 +95,14 @@ def draw_export_panel(layout, exporter_version=False):
         row = box3.row()
         row.prop(_get_scs_globals(), 'sign_export')
     '''
+
+
+def draw_debug_settings(layout):
     box4 = layout.box()
     row = box4.row()
-    row.label("Test & Debug Settings:", icon='MOD_EXPLODE')
+    row.label("Printout Settings:", icon='MOD_EXPLODE')
     row = box4.row()
-    row.prop(_get_scs_globals(), 'dump_level')
-
-    if exporter_version:
-        row = layout.row()
-        row.label("exporter version: " + str(exporter_version), icon='SOLO_ON')
+    row.prop(_get_scs_globals(), 'dump_level', text="Dump Level")
 
 
 '''

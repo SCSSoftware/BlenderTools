@@ -355,15 +355,6 @@ class GlobalSCSProps(bpy.types.PropertyGroup):
         _config_container.update_item_in_file('Import.ImportScale', float(self.import_scale))
         return None
 
-    def source_data_type_update(self, context):
-        _config_container.update_item_in_file('Import.SourceDataType', self.source_data_type)
-        # TODO: Dynamic change of filtering - can it work?
-        # if self.source_data_type == 'mf':
-        # self.filename_ext = "*.pim"
-        # else:
-        # self.filename_ext = "*.pmg"
-        return None
-
     def import_pim_file_update(self, context):
         _config_container.update_item_in_file('Import.ImportPimFile', int(self.import_pim_file))
         return None
@@ -406,10 +397,6 @@ class GlobalSCSProps(bpy.types.PropertyGroup):
 
     def search_subdirs_for_pia_update(self, context):
         _config_container.update_item_in_file('Import.IncludeSubdirsForPia', int(self.include_subdirs_for_pia))
-        return None
-
-    def import_pmg_file_update(self, context):
-        _config_container.update_item_in_file('Import.ImportPmgFile', int(self.import_pmg_file))
         return None
 
     def mesh_creation_type_update(self, context):
@@ -523,27 +510,11 @@ class GlobalSCSProps(bpy.types.PropertyGroup):
         default=1.0,
         update=import_scale_update,
     )
-    source_data_type = EnumProperty(
-        name="Source Data Type",
-        description="Switches setting options for selected data type",
-        items=(
-            ('mf', "Mid-Format", "For PIM data type import (recommended)"),
-            ('bin', "Binaries", "For PMG data type import (WIP)"),
-        ),
-        default='mf',
-        update=source_data_type_update,
-    )
     import_pim_file = BoolProperty(
         name="Import Model (PIM)",
         description="Import Model data from PIM file",
         default=True,
         update=import_pim_file_update,
-    )
-    import_pmg_file = BoolProperty(
-        name="Import Model (PMG)",
-        description="Import Model data from PMG file",
-        default=True,
-        update=import_pmg_file_update,
     )
     auto_welding = BoolProperty(
         name="Auto Welding",

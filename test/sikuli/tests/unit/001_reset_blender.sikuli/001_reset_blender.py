@@ -6,6 +6,7 @@ configurator.delete_scs_tools_config()
 # RESAVE USER PREFERENCES
 p = configurator.start_it_up(getBundlePath(), "userpref.blend")
 try:
+    mouseMove(Location(0,0))
     wait(Pattern("3d_view_icon.png").similar(0.50), 5)
     click("3d_view_icon.png")
     click("user_pref_menu_item.png")

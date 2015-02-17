@@ -21,12 +21,12 @@
 bl_info = {
     "name": "SCS Tools",
     "description": "Setup models, Import-Export SCS data format",
-    "author": "Milos Zajic (4museman)",
+    "author": "Milos Zajic (4museman), Simon Lusenc (50keda)",
     "version": (0, 4),
     "blender": (2, 70, 0),
     "location": "File > Import-Export",
-    "warning": "WIP - not final version!",
-    "wiki_url": "http://wiki.scs/cgi-bin/twiki/view/Documentation/SCSBlenderTools(EN)",
+    "warning": "WIP - beta version, doesn't include all features!",
+    "wiki_url": "https://github.com/SCSSoftware/BlenderTools/wiki",
     "tracker_url": "",
     "support": "COMMUNITY",
     "category": "Import-Export"}
@@ -36,7 +36,6 @@ import os
 import traceback
 from bpy.props import CollectionProperty, StringProperty, PointerProperty
 from bpy_extras.io_utils import ImportHelper, ExportHelper
-from io_scs_tools.exp import pix as _pix_export
 from io_scs_tools.imp import pix as _pix_import
 from io_scs_tools.internals.callbacks import open_gl as _open_gl_callback
 from io_scs_tools.internals.callbacks import persistent as _persistent_callback
@@ -62,7 +61,7 @@ class ImportSCS(bpy.types.Operator, ImportHelper):
                                type=bpy.types.OperatorFileListElement)
 
     directory = StringProperty()
-    filename_ext = "*.pim;*.pmg"
+    filename_ext = "*.pim"
     filter_glob = StringProperty(default=filename_ext, options={'HIDDEN'})
 
     def execute(self, context):
@@ -117,13 +116,10 @@ class ImportSCS(bpy.types.Operator, ImportHelper):
 
         row = box1.row()
         row.prop(scs_globals, "import_scale")
-        # row = box1.row()
-        # row.prop(_get_scs_globals(), "scs_lod_definition_type", expand=True)
+
         box2 = layout.box()
+
         row = box2.row()
-        row.prop(scs_globals, "source_data_type", expand=True)
-        row = box2.row()
-        if scs_globals.source_data_type == 'mf':
             row.prop(scs_globals, "import_pim_file", toggle=True)
             if scs_globals.import_pim_file:
                 row = box2.row()
@@ -149,18 +145,8 @@ class ImportSCS(bpy.types.Operator, ImportHelper):
                 if scs_globals.import_pia_file:
                     row = box2.row()
                     row.prop(scs_globals, "include_subdirs_for_pia")
-        else:
-            row.prop(scs_globals, "import_pmg_file", toggle=True)
 
-        box3 = layout.box()
-        row = box3.row()
-        row.label("Test & Debug Settings:", icon='MOD_EXPLODE')
-        row = box3.row()
-        row.prop(scs_globals, "mesh_creation_type")
-        row = box3.row()
-        row.prop(scs_globals, "dump_level")
-        # row = layout.row()
-        # row.label("importer version: " + str(importer_version), icon='SOLO_ON')
+        ui.shared.draw_debug_settings(layout)
 
 
 class ExportSCS(bpy.types.Operator, ExportHelper):
@@ -173,15 +159,55 @@ class ExportSCS(bpy.types.Operator, ExportHelper):
     filename_ext = ".pim"
     filter_glob = StringProperty(default=str("*" + filename_ext), options={'HIDDEN'})
 
-    @classmethod
-    def poll(cls, context):
-        return context.active_object is not None
-
     def execute(self, context):
-        filepath = self.filepath
-        filepath = bpy.path.ensure_ext(filepath, self.filename_ext)
-        keywords = self.as_keywords(ignore=("check_existing", "filter_glob"))
-        return _pix_export.export_from_menu(context, **keywords)
+        lprint('D Export From Menu...')
+
+        from io_scs_tools import exp as _export
+        from io_scs_tools.utils import object as _object_utils
+
+        filepath = os.path.dirname(self.filepath)
+
+        export_type = _get_scs_globals().content_type
+        init_obj_list = []
+        if export_type == "selection":
+            for obj in bpy.context.selected_objects:
+                root = _object_utils.get_scs_root(obj)
+                if root:
+                    if root != obj:
+                        if not root.select:
+                            init_obj_list.append(root)
+                    else:
+                        children = _object_utils.get_children(obj)
+                        local_reselected_objs = []
+                        for child_obj in children:
+                            local_reselected_objs.append(child_obj)
+                            # if some child is selected this means we won't reselect nothing in this game object
+                            if child_obj.select:
+                                local_reselected_objs = []
+                                break
+                        init_obj_list.extend(local_reselected_objs)
+            init_obj_list = tuple(init_obj_list)
+        elif export_type == "scene":
+            init_obj_list = tuple(bpy.context.scene.objects)
+        elif export_type == 'scenes':
+            init_obj_list = tuple(bpy.data.objects)
+
+        try:
+            result = _export.batch_export(self, init_obj_list, export_type != "selection", filepath)
+        except Exception as e:
+
+            result = {"CANCELLED"}
+            context.window.cursor_modal_restore()
+
+            import traceback
+
+            traceback.print_exc()
+            lprint("E Unexpected %r accured during batch export, see stack trace above.",
+                   (type(e).__name__,),
+                   report_errors=1,
+                   report_warnings=1)
+
+        return result
 
     def draw(self, context):
         box0 = self.layout.box()
@@ -191,12 +217,11 @@ class ExportSCS(bpy.types.Operator, ExportHelper):
 
 
 def menu_func_import(self, context):
-    # self.layout.operator(ImportSCS.bl_idname, text="SCS (.pim/.pit/.pic/.pip/.pis/.pia/.pobj/.tga)")
-    self.layout.operator(ImportSCS.bl_idname, text="SCS Formats (.pim/.pmg ...)")
+    self.layout.operator(ImportSCS.bl_idname, text="SCS Formats (.pim)")
 
 
 def menu_func_export(self, context):
-    self.layout.operator(ExportSCS.bl_idname, text="SCS (.pim/.pit/.pic/.pip/.pis/.pia/.pobj/.tga)")
+    self.layout.operator(ExportSCS.bl_idname, text="SCS Formats (.pim)")
 
 
 # #################################################

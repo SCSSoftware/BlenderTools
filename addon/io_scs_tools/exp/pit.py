@@ -165,6 +165,9 @@ def _get_texture_path_from_material(material, texture_type):
         else:
             lprint("W Texture file '%s' specified in material '%s' doesn't exists, TOBJ can not be exported!", (texture_path, material.name))
 
+    # make sure that Windows users will export proper paths
+    tobj_rel_filepath = tobj_rel_filepath.replace("\\", "/")
+
     return tobj_rel_filepath
 
 

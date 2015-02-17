@@ -373,11 +373,12 @@ class MaterialSCSTools(bpy.types.PropertyGroup):
     texture_settings = [
         ('u_repeat', "U Repeat", "Repeat texture in U direction"),
         ('v_repeat', "V Repeat", "Repeat texture in V direction"),
-        ('rgb_only', "RGB Only", "When texture has an Alpha channel, use RGB channels only"),
+        # ('rgb_only', "RGB Only", "When texture has an Alpha channel, use RGB channels only"),
         ('tsnormal', "TS Normal", "Tangent Space Normal for the texture"),
         # ('bias', "Bias", "MIP Maps Bias..."),
         ('nomips', "No MIP Maps", "Don't use MIP Maps for the texture"),
         ('nocompress', "No Compress", "Don't use compression on texture"),
+        # ('quality:high', "High Quality", "") # TODO: ask around
     ]
 
     def update_shader_texture_base(self, context):

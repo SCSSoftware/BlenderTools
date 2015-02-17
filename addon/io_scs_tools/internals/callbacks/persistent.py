@@ -21,6 +21,7 @@
 import bpy
 from io_scs_tools.internals.persistent import initialization as _persistent_init
 from io_scs_tools.internals.persistent import loop_check as _persistent_loop
+from io_scs_tools.internals.persistent import file_save as _persistent_file_save
 
 
 def enable():
@@ -28,6 +29,7 @@ def enable():
     Used for:
      1. initialization of SCS Tools
      2. checking object data (unique naming etc.)
+     3. removing of custom icons datablock before saving blend file
     """
     # covers: start-up, reload, enable/disable
     bpy.app.handlers.scene_update_post.append(_persistent_init.initialise_scs_dict)
@@ -35,6 +37,7 @@ def enable():
     bpy.app.handlers.load_post.append(_persistent_init.initialise_scs_dict)
 
     bpy.app.handlers.scene_update_post.append(_persistent_loop.object_data_check)
+    bpy.app.handlers.save_pre.append(_persistent_file_save.pre_save)
 
 
 def disable():
@@ -43,4 +46,5 @@ def disable():
     if _persistent_init.initialise_scs_dict in bpy.app.handlers.load_post:
         bpy.app.handlers.load_post.remove(_persistent_init.initialise_scs_dict)
     if _persistent_loop.object_data_check in bpy.app.handlers.scene_update_post:
-        bpy.app.handlers.scene_update_post.remove(_persistent_loop.object_data_check)
+        bpy.app.handlers.scene_update_post.remove(_persistent_loop.object_data_check)    if _persistent_file_save.pre_save in bpy.app.handlers.save_pre:
+        bpy.app.handlers.save_pre.remove(_persistent_file_save.pre_save)

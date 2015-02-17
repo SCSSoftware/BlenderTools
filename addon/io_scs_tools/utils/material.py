@@ -23,6 +23,7 @@ import bpy
 from io_scs_tools.internals import inventory as _invetory
 from io_scs_tools.internals.containers import pix as _pix_container
 from io_scs_tools.utils import path as _path
+from io_scs_tools.utils import object as _object
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
 from io_scs_tools.utils.printout import lprint
 
@@ -232,6 +233,11 @@ def update_texture_slots(material, texture_path, texture_type):
         if texture_type == 'base':
             new_texture_slot.texture_coords = 'UV'
             new_texture_slot.use_map_color_diffuse = True
+
+            if material.scs_props.mat_effect_name.endswith(".a"):
+                new_texture_slot.use_map_alpha = True
+                new_image.use_alpha = True
+
         else:
             new_texture_slot.use_map_color_diffuse = False
 
@@ -383,6 +389,9 @@ def set_shader_data_to_material(material, section, preset_effect, is_import=Fals
     """
 
     defined_tex_types = ("base", "flakenoise", "iamod", "lightmap", "mask", "mult", "oclu", "over", "paintjob", "reflection", "nmap")
+
+    material.use_transparency = preset_effect.endswith(".a")
+    _object.set_attr_if_different(material, "transparency_method", "MASK")
 
     attributes = {}
     textures = {}

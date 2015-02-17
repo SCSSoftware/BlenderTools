@@ -22,7 +22,6 @@ import bpy
 import os
 from collections import OrderedDict
 from io_scs_tools.utils.printout import lprint
-from io_scs_tools.utils.printout import handle_unused_arg
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
 from io_scs_tools.exp import pia as _pia
 from io_scs_tools.exp import pic as _pic
@@ -95,27 +94,6 @@ def _get_initial_selection(content_type):
         init_obj_list = bpy.context.selected_objects
         lprint('W Unkown "Selection type" - %r. Using "Selection Only".', content_type)
     return init_obj_list
-
-
-def export_from_menu(context, filepath):
-    handle_unused_arg(__file__, export_from_menu.__name__, "context", context)
-    handle_unused_arg(__file__, export_from_menu.__name__, "filepath", filepath)
-
-    scs_globals = _get_scs_globals()
-
-    # MAKE INITIAL SELECTION
-    init_obj_list = _get_initial_selection(scs_globals.content_type)
-    lprint("D initial number of objects: %i" % len(init_obj_list))
-
-    # SORT OUT OBJECTS
-    # game_objects_dict = _object_utils.sort_out_game_objects_for_export(init_obj_list)
-    # export(context, filepath, filepath, init_obj_list)
-
-    # ## EXPORT OBJECTS
-    # ## TODO: Export from menu TURNED OF TEMPORARILY!
-    # for root_object in game_objects_dict:
-    # game_object_list = game_objects_dict[root_object]
-    # status = export(context, filepath, filepath, root_object, game_object_list)
 
 
 def export(dirpath, root_object, game_object_list):

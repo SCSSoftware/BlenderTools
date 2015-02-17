@@ -26,7 +26,7 @@ from io_scs_tools.internals import preview_models as _preview_models
 from io_scs_tools.internals.callbacks import open_gl as _open_gl_callback
 from io_scs_tools.internals.containers import config as _config_container
 from io_scs_tools.internals.connections.wrappers import group as _connections_group_wrapper
-from io_scs_tools.utils import icon as _icons_utils
+from io_scs_tools.internals.icons import wrapper as _icons_wrapper
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
 from io_scs_tools.utils.printout import lprint
 
@@ -63,7 +63,7 @@ def initialise_scs_dict(scene):
         _connections_group_wrapper.init()
 
         # TRIGGER RELOAD OF CUSTOM ICONS
-        _icons_utils.invalidate()
+        _icons_wrapper.init()
 
         # USE SETTINGS FROM CONFIG...
         # NOTE: Reapplying the settings from config file to the currently opened Blender file datablock.

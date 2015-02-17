@@ -20,6 +20,7 @@
 
 import bpy
 from io_scs_tools.internals.containers import pix as _pix_container
+from io_scs_tools.utils import name as _name_utils
 from io_scs_tools.utils import material as _material_utils
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
 from io_scs_tools.utils.printout import lprint
@@ -187,7 +188,7 @@ def _get_variant(section):
 
                 if var_part_format == "INT" and var_part_tag == "visible":
                     if var_part_value[0] == 1:
-                        variantparts.append(part_name)
+                        variantparts.append(_name_utils.tokenize_name(part_name))
                 else:
                     print('---var_part_value: %s' % str(var_part_value))
     return variant_name, variantparts

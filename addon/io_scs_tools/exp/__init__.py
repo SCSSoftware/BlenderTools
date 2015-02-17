@@ -30,9 +30,19 @@ from io_scs_tools.utils import get_scs_globals as _get_scs_globals
 from io_scs_tools.utils.printout import lprint
 
 
-def batch_export(self, init_obj_list, exclude_switched_off=True):
+def batch_export(operator_instance, init_obj_list, exclude_switched_off=True, menu_filepath=None):
     """This function calls other sorting functions and depending on the resulting output
-    dictionary it exports all available 'SCS Game Objects' into specified locations."""
+    dictionary it exports all available 'SCS Game Objects' into specified locations.
+
+    :param operator_instance: operator from within this function is called (used for report)
+    :type operator_instance: bpy.types.Operator
+    :param init_obj_list: initial object list which should be exported
+    :type init_obj_list: tuple of Blender objects
+    :param exclude_switched_off: exlude game object wich root is excplicity exluded by property
+    :type exclude_switched_off: bool
+    :param menu_filepath: filepath used from menu export
+    :type menu_filepath: str
+    """
 
     lprint("", report_errors=-1, report_warnings=-1)  # Clear the 'error_messages' and 'warning_messages'
     game_objects_dict = _object.sort_out_game_objects_for_export(init_obj_list)
@@ -57,7 +67,9 @@ def batch_export(self, init_obj_list, exclude_switched_off=True):
 
             # MAKE FINAL FILEPATH
             filepath = None
-            if scs_root_object_export_filepath and custom_filepath and root_object.scs_props.scs_root_object_allow_custom_path:
+            if menu_filepath:
+                filepath = menu_filepath
+            elif scs_root_object_export_filepath and custom_filepath and root_object.scs_props.scs_root_object_allow_custom_path:
                 filepath = custom_filepath
             elif global_filepath:
                 filepath = global_filepath
@@ -71,7 +83,7 @@ def batch_export(self, init_obj_list, exclude_switched_off=True):
             else:
                 message = "No valid export path found! Please check the export path."
                 lprint('E ' + message)
-                self.report({'ERROR'}, message)
+                operator_instance.report({'ERROR'}, message)
                 return {'CANCELLED'}
 
         if scs_game_objects_exported:
@@ -83,13 +95,13 @@ def batch_export(self, init_obj_list, exclude_switched_off=True):
         else:
             message = "Nothing to export! Please set at least one 'SCS Root Object'."
             lprint('E ' + message)
-            self.report({'ERROR'}, message)
+            operator_instance.report({'ERROR'}, message)
             return {'CANCELLED'}
     else:
         message = "Please create at least one 'SCS Root Object' and parent your objects to it in order to export a 'SCS Game Object'!\n" \
                   "(For more information, please refer to 'SCS Blender Tools' documentation.)"
         lprint('E ' + message)
-        self.report({'ERROR'}, message)
+        operator_instance.report({'ERROR'}, message)
         return {'CANCELLED'}
 
     return {'FINISHED'}

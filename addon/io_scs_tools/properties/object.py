@@ -25,6 +25,7 @@ from bpy.props import (StringProperty,
                        IntProperty,
                        EnumProperty,
                        FloatProperty)
+from io_scs_tools.consts import Icons as _ICONS_consts
 from io_scs_tools.consts import Part as _PART_consts
 from io_scs_tools.consts import Variant as _VARIANT_consts
 from io_scs_tools.internals import inventory as _inventory
@@ -32,9 +33,10 @@ from io_scs_tools.internals import preview_models as _preview_models
 from io_scs_tools.utils import animation as _animation_utils
 from io_scs_tools.utils import object as _object_utils
 from io_scs_tools.utils import name as _name_utils
-from io_scs_tools.utils.icon import get_icon
-from io_scs_tools.utils.icon import IconTypes
+from io_scs_tools.internals.icons.wrapper import get_icon
 from io_scs_tools.utils.printout import lprint
+
+_ICON_TYPES = _ICONS_consts.Types
 
 
 class ObjectPartInventory(bpy.types.PropertyGroup):
@@ -223,8 +225,8 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
     def empty_object_type_items(self, context):
         return [
             ('None', "None", "Normal Blender Empty object", 'X_VEC', 0),
-            ('SCS_Root', "Root Object", "Empty object will become a 'SCS Root Object'", get_icon(IconTypes.SCS_ROOT), 1),
-            ('Locator', "Locator", "Empty object will become a 'Locator'", get_icon(IconTypes.LOC), 2),
+            ('SCS_Root', "Root Object", "Empty object will become a 'SCS Root Object'", get_icon(_ICON_TYPES.scs_root), 1),
+            ('Locator', "Locator", "Empty object will become a 'Locator'", get_icon(_ICON_TYPES.loc), 2),
         ]
 
     # EMPTY OBJECT TYPE
@@ -496,9 +498,9 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
     def locator_type_items(self, context):
         return [
             ('None', "None", "Object is not locator", 'X_VEC', 0),
-            ('Prefab', "Prefab", "Prefab locator", get_icon(IconTypes.LOC_PREFAB), 1),
-            ('Model', "Model", "Model locator", get_icon(IconTypes.LOC_MODEL), 2),
-            ('Collision', "Collision", "Collision locator", get_icon(IconTypes.LOC_COLLIDER), 3),
+            ('Prefab', "Prefab", "Prefab locator", get_icon(_ICON_TYPES.loc_prefab), 1),
+            ('Model', "Model", "Model locator", get_icon(_ICON_TYPES.loc_model), 2),
+            ('Collision', "Collision", "Collision locator", get_icon(_ICON_TYPES.loc_collider), 3),
         ]
 
     def locator_type_update(self, context):
@@ -552,11 +554,11 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
 
     def locator_collider_type_items(self, context):
         return [
-            ('Box', "Box", "Box collider type", get_icon(IconTypes.LOC_COLLIDER_BOX), 0),
-            ('Sphere', "Sphere", "Sphere collider type", get_icon(IconTypes.LOC_COLLIDER_SPHERE), 1),
-            ('Capsule', "Capsule", "Capsule collider type", get_icon(IconTypes.LOC_COLLIDER_CAPSULE), 2),
-            ('Cylinder', "Cylinder", "Cylinder collider type", get_icon(IconTypes.LOC_COLLIDER_CYLINDER), 3),
-            ('Convex', "Convex", "Convex collider type", get_icon(IconTypes.LOC_COLLIDER_CONVEX), 4),
+            ('Box', "Box", "Box collider type", get_icon(_ICON_TYPES.loc_collider_box), 0),
+            ('Sphere', "Sphere", "Sphere collider type", get_icon(_ICON_TYPES.loc_collider_sphere), 1),
+            ('Capsule', "Capsule", "Capsule collider type", get_icon(_ICON_TYPES.loc_collider_capsule), 2),
+            ('Cylinder', "Cylinder", "Cylinder collider type", get_icon(_ICON_TYPES.loc_collider_cylinder), 3),
+            ('Convex', "Convex", "Convex collider type", get_icon(_ICON_TYPES.loc_collider_convex), 4),
         ]
 
     # LOCATORS - COLLIDERS
@@ -677,15 +679,15 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
 
     def locator_prefab_type_items(self, context):
         return [
-            ('Control Node', "Control Node", "Control node locator type", get_icon(IconTypes.LOC_PREFAB_NODE), 0),
-            ('Sign', "Sign", "Sign locator type", get_icon(IconTypes.LOC_PREFAB_SIGN), 1),
-            ('Spawn Point', "Spawn Point", "Spawn point locator type", get_icon(IconTypes.LOC_PREFAB_SPAWN), 2),
-            ('Traffic Semaphore', "Traffic Semaphore", "Traffic light locator type", get_icon(IconTypes.LOC_PREFAB_SEMAPHORE), 3),
+            ('Control Node', "Control Node", "Control node locator type", get_icon(_ICON_TYPES.loc_prefab_node), 0),
+            ('Sign', "Sign", "Sign locator type", get_icon(_ICON_TYPES.loc_prefab_sign), 1),
+            ('Spawn Point', "Spawn Point", "Spawn point locator type", get_icon(_ICON_TYPES.loc_prefab_spawn), 2),
+            ('Traffic Semaphore', "Traffic Semaphore", "Traffic light locator type", get_icon(_ICON_TYPES.loc_prefab_semaphore), 3),
             # ('cob', "Colbox", "Colbox locator type", 'X_VEC', 4),
-            ('Navigation Point', "Navigation Point", "Navigation point locator type", get_icon(IconTypes.LOC_PREFAB_NAVIGATION), 5),
+            ('Navigation Point', "Navigation Point", "Navigation point locator type", get_icon(_ICON_TYPES.loc_prefab_navigation), 5),
             # ('nac', "Navigation Curve", "Navigation curve locator type", 'X_VEC', 6),
-            ('Map Point', "Map Point", "Map point locator type", get_icon(IconTypes.LOC_PREFAB_MAP), 7),
-            ('Trigger Point', "Trigger Point", "Trigger point locator type", get_icon(IconTypes.LOC_PREFAB_TRIGGER), 8),
+            ('Map Point', "Map Point", "Map point locator type", get_icon(_ICON_TYPES.loc_prefab_map), 7),
+            ('Trigger Point', "Trigger Point", "Trigger point locator type", get_icon(_ICON_TYPES.loc_prefab_trigger), 8),
         ]
 
     def locator_prefab_type_update(self, context):

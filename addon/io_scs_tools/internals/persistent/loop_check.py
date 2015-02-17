@@ -27,7 +27,6 @@ from io_scs_tools.internals import preview_models as _preview_models
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
 from io_scs_tools.utils import object as _object_utils
 from io_scs_tools.utils import view3d as _view3d_utils
-from io_scs_tools.utils import icon as _icon_utils
 from io_scs_tools.utils.printout import lprint
 
 
@@ -46,9 +45,6 @@ class _Timer:
 
 @persistent
 def object_data_check(scene):
-    # make sure to initialize icons
-    _icon_utils.init()
-
     active_obj = bpy.context.active_object
     selected_objs = bpy.context.selected_objects
 

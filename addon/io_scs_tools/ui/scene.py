@@ -279,6 +279,9 @@ def _draw_global_settings_panel(scene, layout, scs_globals):
 
         # DISPLAY SETTINGS PANEL
         _draw_display_settings_panel(scene, layout_box.row())
+
+        _shared.draw_debug_settings(layout_box)
+
     else:
         layout_box_row = layout_box.row()
         layout_box_row.prop(

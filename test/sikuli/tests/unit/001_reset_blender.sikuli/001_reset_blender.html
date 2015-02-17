@@ -78,6 +78,7 @@ configurator.delete_scs_tools_config()
 <span class="cmt"># RESAVE USER PREFERENCES
 </span>p = configurator.start_it_up(getBundlePath(), <span class="str">"userpref.blend"</span>)
 <span class="kw">try</span>:
+    mouseMove(Location(<span class="dig">0</span>,<span class="dig">0</span>))
     <span class="skw">wait</span>(Pattern(<img src="3d_view_icon.png" />).similar(<span class="dig">0.50</span>), <span class="dig">5</span>)
     <span class="skw">click</span>(<img src="3d_view_icon.png" />)
     <span class="skw">click</span>(<img src="user_pref_menu_item.png" />)

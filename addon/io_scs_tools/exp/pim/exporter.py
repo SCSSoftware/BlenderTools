@@ -91,6 +91,16 @@ def execute(dirpath, root_object, mesh_objects, model_locators, used_parts, used
         _mesh_utils.bm_triangulate(mesh)
         mesh.calc_normals_split()
 
+        # calculate transformation matrices for this object
+        pos_transf_mat = (Matrix.Scale(scs_globals.export_scale, 4) *
+                          _scs_to_blend_matrix().inverted() *
+                          root_object.matrix_world.inverted() *
+                          mesh_obj.matrix_world)
+
+        nor_transf_mat = (_scs_to_blend_matrix().inverted() *
+                          root_object.matrix_world.inverted().to_quaternion().to_matrix().to_4x4() *
+                          mesh_obj.matrix_world.to_quaternion().to_matrix().to_4x4())
+
         missing_uv_layers = {}  # stores missing uvs specified by materials of this object
         missing_vcolor = False  # indicates if object is missing vertex colors
 
@@ -135,15 +145,10 @@ def execute(dirpath, root_object, mesh_objects, model_locators, used_parts, used
 
                 # get data of current vertex
                 # 1. position -> mesh.vertices[loop.vertex_index].co
-                position = tuple(Matrix.Scale(scs_globals.export_scale, 4) *
-                                 _scs_to_blend_matrix().inverted() *
-                                 root_object.matrix_world.inverted() *
-                                 mesh_obj.matrix_world *
-                                 mesh.vertices[vert_i].co)
+                position = tuple(pos_transf_mat * mesh.vertices[vert_i].co)
 
                 # 2. normal -> loop.normal -> calc_normals_split() has to be called before
-                normal = (_scs_to_blend_matrix().inverted() *
-                          loop.normal)
+                normal = nor_transf_mat * loop.normal
                 normal = tuple(Vector(normal).normalized())
 
                 # 3. uvs -> uv_lay = mesh.uv_layers[0].data; uv_lay[loop_i].uv
@@ -195,8 +200,7 @@ def execute(dirpath, root_object, mesh_objects, model_locators, used_parts, used
 
                 # 5. tangent -> loop.tangent; loop.bitangent_sign -> calc_tangents() has to be called before
                 if pim_materials[pim_mat_name].get_nmap_uv_name():  # calculate tangents only if needed
-                    tangent = tuple(_scs_to_blend_matrix().inverted() *
-                                    loop.tangent)
+                    tangent = tuple(nor_transf_mat * loop.tangent)
                     tangent = tuple(Vector(tangent).normalized())
                     tangent = (tangent[0], tangent[1], tangent[2], loop.bitangent_sign)
                 else:

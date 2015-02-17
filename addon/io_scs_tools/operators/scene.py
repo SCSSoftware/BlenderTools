@@ -327,7 +327,6 @@ class Export:
             :return: succes of batch export
             :rtype: {'FINISHED'} | {'CANCELLED'}
             """
-            if _get_scs_globals().content_type != 'selection':
                 _get_scs_globals().content_type = 'selection'  # NOTE: I'm not sure if this is still necessary.
 
             try:
@@ -393,35 +392,11 @@ class Export:
 
         def execute(self, context):
             lprint('D Export Scene...')
-            _get_scs_globals().content_type = 'scene'  # NOTE: I'm not sure if this is still necessary.
-            # dump_level = int(_get_scs_globals().dump_level)
+            _get_scs_globals().content_type = 'scene'
             init_obj_list = tuple(bpy.context.scene.objects)  # Get all objects from current Scene
 
-            # game_objects_dict = _utils.sort_out_game_objects_for_export(init_obj_list, dump_level)
-            # game_objects_dict = _utils.exclude_switched_off(game_objects_dict)
-
-            '''
-            if game_objects_dict:
-                filepath = get_blenderfilewise_abs_filepath(raw_filepath)
-                print(' filepath: %s' % str(filepath))
-                if filepath:
-                    # result = export_pix.export(context, filepath, "", init_obj_list)
-                    result = export_pix.export(context, filepath, "", game_objects_dict)
-                    if result != {'FINISHED'}:
-                        return {'CANCELLED'}
-                else:
-                    return {'CANCELLED'}
-                return {'FINISHED'}
-            else:
-                message = "Please create at least one 'SCS Root Object' and parent your objects to it in order to export a 'SCS Game Object'!\n(For
-                more information, please refer to 'SCS Blender Tools' documentation.)"
-                lrint('E ' + message)
-                self.report({'ERROR'}, message)
-            return {'CANCELLED'}
-            '''
-
             try:
-                result = _export.batch_export(self, init_obj_list, exclude_switched_off=True)
+                result = _export.batch_export(self, init_obj_list)
             except Exception as e:
 
                 result = {"CANCELLED"}
@@ -445,18 +420,11 @@ class Export:
 
         def execute(self, context):
             lprint('D Export All...')
-            _get_scs_globals().content_type = 'scenes'  # NOTE: I'm not sure if this is still necessary.
+            _get_scs_globals().content_type = 'scenes'
             init_obj_list = tuple(bpy.data.objects)  # Get all objects from all Scenes
 
-            '''
-            result = export_pix.export(context, get_blenderfilewise_abs_filepath(raw_filepath), "", list(bpy.data.objects))
-            if result != {'FINISHED'}:
-                return {'CANCELLED'}
-            return {'FINISHED'}
-            '''
-
             try:
-                result = _export.batch_export(self, init_obj_list, exclude_switched_off=True)
+                result = _export.batch_export(self, init_obj_list)
             except Exception as e:
 
                 result = {"CANCELLED"}
@@ -908,13 +876,16 @@ class Paths:
         def execute(self, context):
             """Set 'SCS Game Object' custom export path."""
             if self.rel_path:
-                rel_filepath = bpy.path.relpath(self.directory, start=None).strip('.')
-                # print(' SET REL path:\n\t"%s"' % rel_filepath)
-                # print(' SET BLD path:\n\t"%s"' % bpy.data.filepath)
+
                 if not bpy.data.filepath:
-                    # context.active_object.scs_props.scs_root_object_export_filepath = str(self.directory)
                     context.active_object.scs_props.scs_root_object_export_filepath = _path_utils.repair_path(self.directory)
                 else:
+                    # if the blender file and selected dir has the same starting point, create relative path
+                    if bpy.data.filepath[0] == self.directory[0]:
+                        rel_filepath = bpy.path.relpath(self.directory, start=None).strip('.')
+                    else:
+                        rel_filepath = _path_utils.repair_path(self.directory)
+
                     context.active_object.scs_props.scs_root_object_export_filepath = rel_filepath
             else:
                 # print(' SET ABS path:\n\t"%s"' % self.directory)

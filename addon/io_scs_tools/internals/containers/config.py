@@ -84,24 +84,6 @@ def update_item_in_file(item_pointer, new_value):
     return True
 
 
-'''
-def get_item_from_config_file(filepath, item_pointer):  # NOTE: UNUSED!
-    """Returns requested value from "config.txt" file..."""
-    value = ""
-    ind = '    '
-    config_container = get_data_container_from_file(filepath, ind)
-    if config_container:
-        item_pointer_split = item_pointer.split('.', 1)
-        for section in config_container:
-            if section.type == item_pointer_split[0]:
-                for prop in section.props:
-                    if prop[0] == item_pointer_split[1]:
-                        value = prop[1]
-                        print('%s - %s: "%s"' % (item_pointer_split[0], item_pointer_split[1], value))
-    return value
-'''
-
-
 def update_shader_presets_path(scs_shader_presets_inventory, shader_presets_filepath):
     """The function deletes and populates again a list of Shader Preset items in inventory. It also updates corresponding record in config file.
 
@@ -392,9 +374,7 @@ def gather_default():
         """Fills up "Import" section."""
         section = _SectionData("Import")
         section.props.append(("ImportScale", _property.get_default(bpy.types.GlobalSCSProps.import_scale)))
-        section.props.append(("SourceDataType", _property.get_default(bpy.types.GlobalSCSProps.source_data_type)))
         section.props.append(("ImportPimFile", int(_property.get_default(bpy.types.GlobalSCSProps.import_pim_file))))
-        section.props.append(("ImportPmgFile", int(_property.get_default(bpy.types.GlobalSCSProps.import_pmg_file))))
         section.props.append(("AutoWelding", int(_property.get_default(bpy.types.GlobalSCSProps.auto_welding))))
         section.props.append(("ImportPitFile", int(_property.get_default(bpy.types.GlobalSCSProps.import_pit_file))))
         section.props.append(("LoadTextures", int(_property.get_default(bpy.types.GlobalSCSProps.load_textures))))
@@ -552,12 +532,8 @@ def apply_settings():
                         pass
                     elif prop[0] == "ImportScale":
                         _get_scs_globals().import_scale = float(prop[1])
-                    elif prop[0] == "SourceDataType":
-                        _get_scs_globals().source_data_type = prop[1]
                     elif prop[0] == "ImportPimFile":
                         _get_scs_globals().import_pim_file = prop[1]
-                    elif prop[0] == "ImportPmgFile":
-                        _get_scs_globals().import_pmg_file = prop[1]
                     elif prop[0] == "AutoWelding":
                         _get_scs_globals().auto_welding = prop[1]
                     elif prop[0] == "ImportPitFile":
