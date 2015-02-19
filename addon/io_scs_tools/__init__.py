@@ -120,31 +120,31 @@ class ImportSCS(bpy.types.Operator, ImportHelper):
         box2 = layout.box()
 
         row = box2.row()
-            row.prop(scs_globals, "import_pim_file", toggle=True)
-            if scs_globals.import_pim_file:
-                row = box2.row()
-                row.prop(scs_globals, "auto_welding")
+        row.prop(scs_globals, "import_pim_file", toggle=True)
+        if scs_globals.import_pim_file:
             row = box2.row()
-            row.prop(scs_globals, "import_pit_file", toggle=True)
-            if scs_globals.import_pit_file:
-                row = box2.row()
-                row.prop(scs_globals, "load_textures")
+            row.prop(scs_globals, "auto_welding")
+        row = box2.row()
+        row.prop(scs_globals, "import_pit_file", toggle=True)
+        if scs_globals.import_pit_file:
             row = box2.row()
-            row.prop(scs_globals, "import_pic_file", toggle=True)
+            row.prop(scs_globals, "load_textures")
+        row = box2.row()
+        row.prop(scs_globals, "import_pic_file", toggle=True)
+        row = box2.row()
+        row.prop(scs_globals, "import_pip_file", toggle=True)
+        row = box2.row()
+        row.prop(scs_globals, "import_pis_file", toggle=True)
+        if scs_globals.import_pis_file:
+            # row = box2.row()
+            # row.prop(_get_scs_globals(), "connected_bones")
             row = box2.row()
-            row.prop(scs_globals, "import_pip_file", toggle=True)
+            row.prop(scs_globals, "bone_import_scale")
             row = box2.row()
-            row.prop(scs_globals, "import_pis_file", toggle=True)
-            if scs_globals.import_pis_file:
-                # row = box2.row()
-                # row.prop(_get_scs_globals(), "connected_bones")
+            row.prop(scs_globals, "import_pia_file", toggle=True)
+            if scs_globals.import_pia_file:
                 row = box2.row()
-                row.prop(scs_globals, "bone_import_scale")
-                row = box2.row()
-                row.prop(scs_globals, "import_pia_file", toggle=True)
-                if scs_globals.import_pia_file:
-                    row = box2.row()
-                    row.prop(scs_globals, "include_subdirs_for_pia")
+                row.prop(scs_globals, "include_subdirs_for_pia")
 
         ui.shared.draw_debug_settings(layout)
 

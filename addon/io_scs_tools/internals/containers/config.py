@@ -202,7 +202,6 @@ def update_tsem_library_rel_path(scs_tsem_profile_inventory, tsem_library_rel_pa
 
         else:
             print('   tsem_library_rel_path: "%s"' % str(tsem_library_rel_path))
-        # print('  tsem_library_filepath:\n%s' % str(tsem_library_filepath))
 
         update_item_in_file('Paths.TSemProfileRelFilePath', tsem_library_rel_path)
 
@@ -237,7 +236,6 @@ def update_traffic_rules_library_rel_path(scs_traffic_rules_inventory, traffic_r
 
         else:
             print('   traffic_rules_library_rel_path: "%s"' % str(traffic_rules_library_rel_path))
-        # print('  traffic_rules_library_filepath:\n%s' % str(traffic_rules_library_filepath))
 
         update_item_in_file('Paths.TrafficRulesRelFilePath', traffic_rules_library_rel_path)
 
@@ -331,7 +329,6 @@ def update_matsubs_inventory(scs_matsubs_inventory, matsubs_library_rel_path):
 
         else:
             print('   matsubs_library_rel_path: "%s"' % str(matsubs_library_rel_path))
-        # print('  matsubs_library_filepath:\n%s' % str(matsubs_library_filepath))
 
         update_item_in_file('Paths.MatSubsRelFilePath', matsubs_library_rel_path)
 
@@ -476,8 +473,6 @@ def get_config_filepath():
     # SEARCH FOR CONFIG...
     scs_config_file = ''
     for i, location in enumerate(scs_installation_dirs):
-        if len(scs_installation_dirs) > 1:
-            print('\tSCS Blender Tools Installation %i:\n\t  "%s"\n\n' % (i + 1, location))
         test_path = os.path.join(location, 'config.txt')
         if os.path.isfile(test_path):
             scs_config_file = test_path
@@ -525,7 +520,7 @@ def apply_settings():
                     elif prop[0] == "MatSubsRelFilePath":
                         _get_scs_globals().matsubs_library_rel_path = prop[1]
                     else:
-                        print('WARNING - Unrecognised item "%s" has been found in setting file! Skipping...' % str(prop[0]))
+                        lprint('W Unrecognised item "%s" has been found in setting file! Skipping...', (str(prop[0]),))
             elif section.type == "Import":
                 for prop in section.props:
                     if prop[0] in ("", "#"):
@@ -614,7 +609,7 @@ def apply_settings():
                 elif prop[0] == "DisplayTextInfo":
                     bpy.context.scene.scs_props.display_info = prop[1]
                 else:
-                    print('WARNING - Unrecognised item "%s" has been found in setting file! Skipping...' % str(prop[0]))
+                    lprint('W Unrecognised item "%s" has been found in setting file! Skipping...', (str(prop[0]),))
             elif section.type == "GlobalColors":
                 for prop in section.props:
                     if prop[0] in ("", "#"):
@@ -636,7 +631,7 @@ def apply_settings():
                     elif prop[0] == "InfoText":
                         bpy.context.scene.scs_props.info_text_color = prop[1]
                     else:
-                        print('WARNING - Unrecognised item "%s" has been found in setting file! Skipping...' % str(prop[0]))
+                        lprint('W Unrecognised item "%s" has been found in setting file! Skipping...', (str(prop[0]),))
             elif section.type == "Various":
                 for prop in section.props:
                     # if prop[0] == "#":

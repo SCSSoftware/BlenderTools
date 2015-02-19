@@ -310,7 +310,7 @@ Shader {
         Tag: "shadow_bias"
         Value: ( 0.0 )
     }
-    }
+}
 Shader {
     PresetName: "shadowonly"
     Alias: "shadow_caster"

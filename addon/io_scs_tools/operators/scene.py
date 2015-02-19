@@ -327,7 +327,7 @@ class Export:
             :return: succes of batch export
             :rtype: {'FINISHED'} | {'CANCELLED'}
             """
-                _get_scs_globals().content_type = 'selection'  # NOTE: I'm not sure if this is still necessary.
+            _get_scs_globals().content_type = 'selection'  # NOTE: I'm not sure if this is still necessary.
 
             try:
                 result = _export.batch_export(self, tuple(bpy.context.selected_objects), exclude_switched_off=False)

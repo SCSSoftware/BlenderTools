@@ -34,4 +34,3 @@ def pre_save(scene):
             img.user_clear()
 
             bpy.data.images.remove(img)
-            print("Removing image:", icon)

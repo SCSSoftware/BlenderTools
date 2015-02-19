@@ -312,7 +312,7 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
             ('anim', "Animated Model", ""),
             ('rigid', "Rigid Model", ""),
         ),
-        default='anim',
+        default='rigid',
     )
     scs_root_object_allow_custom_path = BoolProperty(
         name="Allow Custom Export File Path",

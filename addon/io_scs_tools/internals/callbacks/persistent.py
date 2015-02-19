@@ -46,5 +46,6 @@ def disable():
     if _persistent_init.initialise_scs_dict in bpy.app.handlers.load_post:
         bpy.app.handlers.load_post.remove(_persistent_init.initialise_scs_dict)
     if _persistent_loop.object_data_check in bpy.app.handlers.scene_update_post:
-        bpy.app.handlers.scene_update_post.remove(_persistent_loop.object_data_check)    if _persistent_file_save.pre_save in bpy.app.handlers.save_pre:
+        bpy.app.handlers.scene_update_post.remove(_persistent_loop.object_data_check)
+    if _persistent_file_save.pre_save in bpy.app.handlers.save_pre:
         bpy.app.handlers.save_pre.remove(_persistent_file_save.pre_save)

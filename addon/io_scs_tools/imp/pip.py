@@ -841,7 +841,7 @@ def load(filepath):
             # print('  tsem_position: %s' % tsem_position)
             # print('  tsem_rotation: %s' % str(tsem_rotation))
             # print('  tsem_type: %s' % tsem_type)
-            print('  tsem_id: %s' % tsem_id)
+            # print('  tsem_id: %s' % tsem_id)
             # print('  tsem_intervals: %s' % tsem_intervals)
             # print('  tsem_cycle: %s' % tsem_cycle)
             # print('  tsem_model: %s' % tsem_model)
@@ -1293,7 +1293,7 @@ def load(filepath):
                 start_node = mp_locs[connection[0]]
                 end_node = mp_locs[connection[1]]
             else:
-                print('   Err - map connection out of range: %s' % str(connection))
+                lprint('E Map connection out of range: %s', (str(connection),))
                 continue
 
             _group_connections_wrapper.create_connection(start_node, end_node)
@@ -1303,7 +1303,7 @@ def load(filepath):
     for loc_index, tr_point in enumerate(trigger_points_data):
         # print('      name: %s' % tr_point[0])
         if len(tr_point[9]) != 2:
-            print('WARNING - Unexpected number of connections (%i) for Trigger Point "%s"!' % (len(tr_point[9]), tr_point[0]))
+            lprint('W Unexpected number of connections (%i) for Trigger Point "%s"!', (len(tr_point[9]), tr_point[0]))
 
         for loc_neighbour_index in tr_point[9]:
             connections.append((loc_index, loc_neighbour_index))
@@ -1342,7 +1342,7 @@ def load(filepath):
                 start_node = tp_locs[connection[0]]
                 end_node = tp_locs[connection[1]]
             else:
-                print('   Err - trigger connection: %s' % str(connection))
+                print('E Trigger connection: %s', (str(connection),))
                 continue
 
             _group_connections_wrapper.create_connection(start_node, end_node)

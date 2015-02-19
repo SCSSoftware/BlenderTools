@@ -190,7 +190,7 @@ def _get_variant(section):
                     if var_part_value[0] == 1:
                         variantparts.append(_name_utils.tokenize_name(part_name))
                 else:
-                    print('---var_part_value: %s' % str(var_part_value))
+                    lprint('D ---var_part_value: %s', (str(var_part_value),))
     return variant_name, variantparts
 
 

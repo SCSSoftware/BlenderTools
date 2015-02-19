@@ -1149,9 +1149,6 @@ class SceneSCSProps(bpy.types.PropertyGroup):
             else:
                 return False
 
-        def println(self):
-            print('  ShaderPresetContainer.preset: %s' % self.preset)
-
     @staticmethod
     def get_shader_icon_str(preset_name):
         """

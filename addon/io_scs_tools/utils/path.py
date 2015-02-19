@@ -49,10 +49,10 @@ def relative_path(base_path, path):
             # print('rel_path:\n\t"%s"' % rel_path)
             return rel_path
         else:
-            print('''WARNING - Not possible to create a relative path! Returning absolute path (%s)''' % repaired_path)
+            lprint("W Not possible to create a relative path! Returning absolute path (%s)", (repaired_path,))
             return repaired_path
     else:
-        print('''WARNING - No base path specified! It's not possible to create a relative path! Returning absolute path (%s)''' % repaired_path)
+        lprint("W No base path specified! It's not possible to create a relative path! Returning absolute path (%s)", (repaired_path,))
         return repaired_path
 
 
@@ -287,6 +287,10 @@ def get_bitmap_filepath(texture_tobj_string):
     def get_tobj_filepath(texture_data_value):
         # print(' texture_data_value: %r' % texture_data_value)
         if texture_data_value != '':
+
+            # exception for Windows so os.path.join can correctly join paths
+            texture_data_value = texture_data_value.replace("/", os.sep)
+
             base_path = _get_scs_globals().scs_project_path
             if os.path.isdir(base_path):
                 # print(' base_path: %r' % base_path)
@@ -303,9 +307,9 @@ def get_bitmap_filepath(texture_tobj_string):
                 if os.path.isfile(tobj_path):
                     return tobj_path
                 else:
-                    print("ERROR! - Texture file %r not found!" % tobj_path)
+                    lprint("E Texture file %r not found!", (tobj_path,))
             else:
-                print("ERROR! No 'base' directory!")
+                lprint("E No 'base' directory!")
         return None
 
     def get_tobj_data(tobj_path):

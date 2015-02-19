@@ -39,7 +39,7 @@ Notes:
 Help, questions, troubleshooting:
 ---------------------------------
 If you encounter any problems or have questions regarding SCS Blender Tools,
-please visit "Blender Tools" forum at "http://forum.scssoft.com" and 
+please visit forum at "http://forum.scssoft.com/viewforum.php?f=159" and
 don't hesitate to ask if your problem wasn't addressed already. Also
 don't miss the wiki ("https://github.com/SCSSoftware/BlenderTools/wiki")
 for many useful tips and docs.
@@ -47,14 +47,14 @@ for many useful tips and docs.
 
 Bugs:
 -----
-For reporting bugs please visit our forum at "http://forum.scssoft.com" and
-go to "Blender Tools > Bugs" sub-forums.
+For reporting bugs please visit forum at
+"http://forum.scssoft.com/viewforum.php?f=163".
 
 
 License:
 --------
-SCS Blender Tools are developed and distributed under GNU GPL v2.
-http://www.gnu.org/licenses/gpl-2.0.html
+SCS Blender Tools are developed and distributed under GNU GPL v2
+("http://www.gnu.org/licenses/gpl-2.0.html").
 
 
 SCS Blender Tools Team

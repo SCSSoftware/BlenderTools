@@ -47,7 +47,7 @@ def lprint(string, values=(), report_errors=0, report_warnings=0):
             prech += string[0]
             string = string[1:]
         if string[0] == 'E':
-            message = str(prech + 'ERROR!\t-  ' + string[2:] % values)
+            message = str(prech + 'ERROR\t-  ' + string[2:] % values)
             print(message)
             error_messages.append(message.strip('\n'))
             # raise Exception('ERROR - ' + string[2:])

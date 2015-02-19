@@ -794,9 +794,10 @@ def _draw_scs_part_panel(layout, scene, active_object, scs_root_object):
         else:  # more roots or active object is root object
 
             # DEBUG
-            if not active_object is scs_root_object:
+            if int(_get_scs_globals().dump_level) > 2 and not active_object is scs_root_object:
 
                 row = layout_box.row(align=True)
+                row.enabled = False
                 row.label("DEBUG - active obj part:")
                 row.prop(active_object.scs_props, 'scs_part', text="")
 

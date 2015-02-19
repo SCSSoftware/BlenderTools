@@ -20,6 +20,7 @@
 
 import bpy
 import os
+import shutil
 from io_scs_tools.consts import Variant as _VARIANT_consts
 from io_scs_tools.exp import tobj as _tobj
 from io_scs_tools.internals.structure import SectionData as _SectionData
@@ -123,7 +124,7 @@ def _default_material(alias):
     return material_export_data
 
 
-def _get_texture_path_from_material(material, texture_type):
+def _get_texture_path_from_material(material, texture_type, export_path):
     """Get's relative path for Texture section of tobj from given texture_type.
     If tobj is not yet created it also creates tobj for it.
 
@@ -148,12 +149,41 @@ def _get_texture_path_from_material(material, texture_type):
                         return tex_entry["Value"]
 
     # TEXTURE PATH
-    texture_path = getattr(material.scs_props, "shader_" + texture_type, "NO PATH")
-    texture_abs_filepath = _path_utils.get_abs_path(texture_path)
+    texture_raw_path = getattr(material.scs_props, "shader_" + texture_type, "NO PATH")
+    texture_abs_filepath = _path_utils.get_abs_path(texture_raw_path)
 
     # TOBJ PATH
-    tobj_rel_filepath = os.path.splitext(texture_path)[0][1:]
-    tobj_abs_filepath = str(os.path.splitext(texture_abs_filepath)[0] + ".tobj")
+    scs_project_path = _get_scs_globals().scs_project_path
+    if os.path.isfile(scs_project_path + os.sep + texture_raw_path):  # relative within base
+
+        tobj_rel_filepath = os.path.splitext(texture_raw_path)[0][1:]
+        tobj_abs_filepath = str(os.path.splitext(texture_abs_filepath)[0] + ".tobj")
+
+    elif os.path.isfile(texture_raw_path):  # absolute
+
+        # if we are exporting somewhere into SCS Project Base Path texture still can be saved
+        if scs_project_path != "" and export_path.startswith(scs_project_path):
+
+            tex_dir, tex_filename = os.path.split(texture_raw_path)
+
+            # copy texture beside exported files
+            shutil.copy2(texture_raw_path, os.path.join(export_path, tex_filename))
+
+            tobj_filename = tex_filename.split(".")[0]
+            export_rel_path = os.path.relpath(export_path, scs_project_path)
+            tobj_rel_filepath = os.sep + export_rel_path + os.sep + tobj_filename
+            tobj_abs_filepath = os.path.join(export_path, tobj_filename + ".tobj")
+
+        else:
+            lprint("E Can not properly export texture %r from material %r!\n\t   " +
+                   "Make sure you are exporting somewhere into Project Base Path and texture is properly set!",
+                   (texture_raw_path, material.name))
+            return ""
+
+    else:
+        lprint("E Texture file %r from material %r doesn't exists inside current Project Base Path, TOBJ can not be exported!",
+               (texture_raw_path, material.name))
+        return ""
 
     # CREATE TOBJ FILE
     if not os.path.isfile(tobj_abs_filepath) or getattr(material.scs_props, "shader_" + texture_type + "_export_tobj", False):
@@ -161,9 +191,10 @@ def _get_texture_path_from_material(material, texture_type):
         # export tobj only if file of texture exists
         if os.path.isfile(texture_abs_filepath):
             settings = getattr(material.scs_props, "shader_" + texture_type + "_settings", set())
-            _tobj.export(tobj_abs_filepath, os.path.split(texture_path)[1], settings)
+            _tobj.export(tobj_abs_filepath, os.path.split(texture_raw_path)[1], settings)
         else:
-            lprint("W Texture file '%s' specified in material '%s' doesn't exists, TOBJ can not be exported!", (texture_path, material.name))
+            lprint("E Texture file %r from material %r doesn't exists, TOBJ can not be exported!",
+                   (texture_raw_path, material.name))
 
     # make sure that Windows users will export proper paths
     tobj_rel_filepath = tobj_rel_filepath.replace("\\", "/")
@@ -302,7 +333,7 @@ def export(root_object, used_parts, used_materials, scene, filepath):
 
                 # SUBSTANCE
                 if material.scs_props.substance != 'None':
-                    print('material.name: %r\tmat.scs_props.substance: "%s"' % (material.name, str(material.scs_props.substance)))
+                    lprint('D material.name: %r\tmat.scs_props.substance: "%s"', (material.name, str(material.scs_props.substance)))
                     # TODO: Substance Export...
 
                 # MATERIAL EFFECT
@@ -433,7 +464,8 @@ def export(root_object, used_parts, used_materials, scene, filepath):
                                                                 # print('         tag_prop: %r' % str(tag_prop))
 
                                                                 # create and get path to tobj
-                                                                tobj_rel_path = _get_texture_path_from_material(material, tag_prop)
+                                                                tobj_rel_path = _get_texture_path_from_material(material, tag_prop,
+                                                                                                                os.path.dirname(filepath))
 
                                                                 texture_data.props.append((rec[0], tobj_rel_path))
 
@@ -508,7 +540,7 @@ def export(root_object, used_parts, used_materials, scene, filepath):
 
                             if tex_prop == "Value" and tag_id_string != "":
 
-                                tobj_rel_path = _get_texture_path_from_material(material, tag_id_string)
+                                tobj_rel_path = _get_texture_path_from_material(material, tag_id_string, os.path.dirname(filepath))
                                 texture_section.props.append((tex_prop, tobj_rel_path))
 
                             else:

@@ -341,16 +341,19 @@ def get_material_info(obj):
     if obj.type == 'MESH':
         for slot in obj.material_slots:
 
-            effect_name = slot.material.scs_props.mat_effect_name.lower()
+            if slot.material:
 
-            if "shadowonly" in effect_name or "fakeshadow" in effect_name or "shadowmap" in effect_name:
-                has_shadow = True
-            elif ".shadow" in effect_name and not ("shadowmap" in effect_name):
-                has_shadow = True
-                is_other = True
+                effect_name = slot.material.scs_props.mat_effect_name.lower()
 
-            if "glass" in effect_name:
-                has_glass = True
+                if "shadowonly" in effect_name or "fakeshadow" in effect_name or "shadowmap" in effect_name:
+                    has_shadow = True
+                elif ".shadow" in effect_name and not ("shadowmap" in effect_name):
+                    has_shadow = True
+                    is_other = True
+
+                if "glass" in effect_name:
+                    has_glass = True
+
         if not has_shadow and not has_glass:
             is_other = True
     return has_shadow, has_glass, is_other
@@ -526,8 +529,11 @@ def set_shader_data_to_material(material, section, preset_effect, is_import=Fals
 
                     if is_import:
                         update_texture_slots(material, bitmap_filepath, slot_id)
-                        setattr(material.scs_props, "shader_texture_" + slot_id + "_use_imported", True)
-                        setattr(material.scs_props, "shader_texture_" + slot_id + "_imported_tobj", texture_data['Value'])
+
+                        # only if shader is imported then make sure that by default imported values will be used
+                        if material.scs_props.active_shader_preset_name == "<imported>":
+                            setattr(material.scs_props, "shader_texture_" + slot_id + "_use_imported", True)
+                            setattr(material.scs_props, "shader_texture_" + slot_id + "_imported_tobj", texture_data['Value'])
 
                     texture_slot = get_texture_slot(material, slot_id)
                     if slot_id == 'base' and texture_slot:

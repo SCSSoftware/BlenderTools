@@ -275,7 +275,6 @@ def __object_rename__(old_name, new_name):
     """
 
     # send rename notify into connections storage
-    print(old_name, new_name)
     if _connections_group_wrapper.rename_locator(old_name, new_name):
         _view3d_utils.tag_redraw_all_view3d()
 

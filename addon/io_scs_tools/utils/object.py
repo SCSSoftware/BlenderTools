@@ -191,7 +191,7 @@ def exclude_switched_off(game_objects_dict):
     for scs_root_object in game_objects_dict:
         if scs_root_object.scs_props.empty_object_type == 'SCS_Root':
             if scs_root_object.scs_props.scs_root_object_export_enabled:
-            new_game_objects_dict[scs_root_object] = game_objects_dict[scs_root_object]
+                new_game_objects_dict[scs_root_object] = game_objects_dict[scs_root_object]
     return new_game_objects_dict
 
 

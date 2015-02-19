@@ -75,18 +75,27 @@ def batch_export(operator_instance, init_obj_list, exclude_switched_off=True, me
                 filepath = global_filepath
 
             # print(' filepath (%r):\n%r' % (root_object.name, str(filepath)))
-
-            if filepath:
+            scs_project_path = _get_scs_globals().scs_project_path
+            if filepath and filepath.startswith(scs_project_path) and scs_project_path != "":
                 pix.export(filepath, root_object, game_object_list)
                 scs_game_objects_exported += 1
                 # if result != {'FINISHED'}: return {'CANCELLED'}
             else:
-                message = "No valid export path found! Please check the export path."
+                if filepath:
+                    message = (
+                        "No valid export inside SCS Project Base Path found!\n\t   "
+                        "Make sure that SCS Project Base Path is properly set and\n\t   " +
+                        "that you are exporting somewhere inside that path!\n\t   " +
+                        "SCS Project Base Path:\n\t   \"" + scs_project_path + "\"\n\t   " +
+                        "SCS Game Object export path:\n\t   \"" + filepath + "\""
+                    )
+                else:
+                    message = "No valid export path found! Please check the export path."
                 lprint('E ' + message)
-                operator_instance.report({'ERROR'}, message)
+                operator_instance.report({'ERROR'}, message.replace("\t", "").replace("   ", ""))
                 return {'CANCELLED'}
 
-        if scs_game_objects_exported:
+        if scs_game_objects_exported > 0:
             if scs_game_objects_exported == 1:
                 message = "Single 'SCS Game Object' exported."
             else:
