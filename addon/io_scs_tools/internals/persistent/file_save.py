@@ -20,7 +20,9 @@
 
 import bpy
 from bpy.app.handlers import persistent
+from io_scs_tools.internals.containers import config as _config_container
 from io_scs_tools.consts import Icons as _ICONS_consts
+from io_scs_tools.utils import get_scs_globals as _get_scs_globals
 
 
 @persistent
@@ -34,3 +36,43 @@ def pre_save(scene):
             img.user_clear()
 
             bpy.data.images.remove(img)
+
+    # clear all not needed inventories
+    scs_globals = _get_scs_globals()
+    scs_globals.scs_hookup_inventory.clear()
+    scs_globals.scs_matsubs_inventory.clear()
+    scs_globals.scs_sign_model_inventory.clear()
+    scs_globals.scs_traffic_rules_inventory.clear()
+    scs_globals.scs_tsem_profile_inventory.clear()
+
+
+@persistent
+def post_save(scene):
+    # reaload inventories
+    readonly = True
+    scs_globals = _get_scs_globals()
+    _config_container.update_hookup_library_rel_path(
+        scs_globals.scs_hookup_inventory,
+        scs_globals.hookup_library_rel_path,
+        readonly
+    )
+    _config_container.update_matsubs_inventory(
+        scs_globals.scs_matsubs_inventory,
+        scs_globals.matsubs_library_rel_path,
+        readonly
+    )
+    _config_container.update_traffic_rules_library_rel_path(
+        scs_globals.scs_traffic_rules_inventory,
+        scs_globals.traffic_rules_library_rel_path,
+        readonly
+    )
+    _config_container.update_tsem_library_rel_path(
+        scs_globals.scs_tsem_profile_inventory,
+        scs_globals.tsem_library_rel_path,
+        readonly
+    )
+    _config_container.update_sign_library_rel_path(
+        scs_globals.scs_sign_model_inventory,
+        scs_globals.sign_library_rel_path,
+        readonly
+    )

@@ -77,6 +77,11 @@ def start_it_up(bundle_path, blend_file, delete_pix=True):
             if file[-4:-1] == ".pi":
                 os.remove(os.path.join(bundle_path, file))
                 print("[log] -> PIX file removed: " + file)
+        scs_base = get_path_property("SCSBasePath")
+        for file in os.listdir(scs_base):
+            if file[-4:-1] == ".pi":
+                os.remove(os.path.join(scs_base, file))
+                print("[log] -> PIX file removed: " + file)
 
     start_cmd, log_file = __get_startup_command(bundle_path, blend_file)
     log = open(log_file, 'w')

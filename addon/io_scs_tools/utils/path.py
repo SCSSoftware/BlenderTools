@@ -25,6 +25,29 @@ from io_scs_tools.utils.printout import lprint
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
 
 
+def fix_sep_by_platform(obj, prop):
+    """Fix separators in path depending on the current platform.
+    :param obj: object which should get fixed value
+    :type obj: object
+    :param prop: property which should be fixed
+    :type prop: str
+    """
+    if os.sep == "\\":
+        setattr(obj, prop, getattr(obj, prop).replace("/", "\\"))
+    elif os.sep == "/":
+        setattr(obj, prop, getattr(obj, prop).replace("\\", "/"))
+
+
+def strip_sep(path):
+    """Strips double path separators (slashes and backslashes) on the start and the end of the given path
+    :param path: path to strip separators from
+    :type path: str
+    :return: new stripped path
+    :rtype: str
+    """
+    return path.strip("\\\\").strip("//")
+
+
 def repair_path(filepath):
     """Takes a Blender filepath and tries to make it a valid absolute path."""
     if filepath != '':
@@ -355,53 +378,3 @@ def get_bitmap_filepath(texture_tobj_string):
                 pass
             rec_i += 1
     return filepath
-
-
-def get_blenderfilewise_abs_filepath(raw_filepath, data_type="Global export"):
-    """Takes a file path and path type and returns the same file path as absolute
-    (relatively to the current saved Blender file) or None (if no/invalid path has
-    been set and Blender file wasn't saved yet).
-
-    :param raw_filepath: Filepath as obtained from a source
-    :type raw_filepath: str
-    :param data_type: Type of filepath (optional - only for messages)
-    :type data_type: str
-    :return: Absolute filepath or None
-    :rtype: str
-    """
-    # print(' RAW filepath:\n%r' % str(raw_filepath))
-
-    blend_dir = os.path.split(str(bpy.data.filepath))[0]
-
-    if raw_filepath == str(os.sep + os.sep):
-        filepath = str(blend_dir + os.sep)
-        # print(' ABS filepath:\n%r' % str(filepath))
-        return filepath
-    else:
-        if os.path.isdir(raw_filepath):
-            filepath = raw_filepath
-            # print(' ABS filepath:\n%r' % str(filepath))
-        else:
-            if raw_filepath == "":
-                if blend_dir == "":
-                    filepath = ""
-                else:
-                    filepath = str(blend_dir + os.sep)
-            else:
-                filepath = str(blend_dir + os.sep + raw_filepath.strip(os.sep) + os.sep)
-                # print(' REL filepath:\n%r' % str(filepath))
-
-        # NOTE: The following condition is just a quick solution for this to make it work in various OS
-        # (on Linux the valid path can be theoretically only "/", but on Windows the shortest path can be "C:\").
-        if len(filepath) > 3:
-            if os.path.isdir(filepath):
-                return filepath
-            else:
-                # message = str("%s path %r is not valid!" % (data_type, str(filepath).replace("\\", "/")))
-                # lprint(0, 'E ' + message)
-                return None
-        else:
-            # message = str("Please set a valid %s path (%r doesn't appear to be valid)"
-            # " or save the Blender file!" % (data_type, str(filepath).replace("\\", "/")))
-            # lprint(0, 'E ' + message)
-            return None

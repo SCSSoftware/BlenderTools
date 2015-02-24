@@ -167,9 +167,7 @@ def export(dirpath, root_object, game_object_list):
     # FINAL FEEDBACK
     context.window.cursor_modal_restore()
     if export_success:
-        lprint('\nI Export compleeted in %.3f sec. Files were saved to folder:\n\t   %r\n', (time.time() - t, dirpath),
-               report_errors=True,
-               report_warnings=True)
+        lprint('\nI Export compleeted in %.3f sec. Files were saved to folder:\n\t   %r\n', (time.time() - t, dirpath))
     else:
         lprint("E Nothing to export! Please set a 'SCS Root Object'...", report_errors=True)
 

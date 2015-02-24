@@ -8,7 +8,8 @@ try:
     click(Pattern("second_layer_button.png").exact())
     hover(Location(300, 400))  # move cursor to 3D view
     type(Key.SPACE + "SCS Import" + Key.ENTER)
-    find(Pattern("filebrowser_import_button.png").exact()).left().paste(Pattern("empty_input_field.png").exact(), getBundlePath())
+    scs_base = configurator.get_path_property("SCSBasePath")
+    find(Pattern("filebrowser_import_button.png").exact()).left().paste(Pattern("empty_input_field.png").exact(), scs_base)
     type(Key.ENTER)
     click(Pattern("5_locators_model.png").similar(0.95))
     type(Key.ENTER)

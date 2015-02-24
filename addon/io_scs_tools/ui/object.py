@@ -920,21 +920,30 @@ def _draw_scs_root_panel(layout, scene, obj):
             icon = "X_VEC"
         col.prop(obj.scs_props, 'scs_root_object_export_enabled', text="Export Inclusion", icon=icon, toggle=True)
         row = col.row(align=True)
-        if not obj.scs_props.scs_root_object_export_enabled:
-            row.enabled = False
+        row.enabled = obj.scs_props.scs_root_object_export_enabled
         row.prop(obj.scs_props, 'scs_root_animated', expand=True)
         col = box.column()
-        if not obj.scs_props.scs_root_object_export_enabled:
-            col.enabled = False
+        col.enabled = obj.scs_props.scs_root_object_export_enabled
 
         # Global Export Filepath (DIR_PATH - absolute)
         row = col.row(align=True)
         row.prop(obj.scs_props, 'scs_root_object_allow_custom_path', text='', icon='NONE')
         row2 = row.row(align=True)
-        if obj.scs_props.scs_root_object_allow_custom_path:
-            row2.enabled = True
-        else:
-            row2.enabled = False
+        row2.enabled = obj.scs_props.scs_root_object_allow_custom_path
+        if row2.enabled:
+            root_export_path = obj.scs_props.scs_root_object_export_filepath
+            row2.alert = ((root_export_path != "" and not root_export_path.startswith(os.sep * 2)) or
+                          not os.path.isdir(os.path.join(_get_scs_globals().scs_project_path,
+                                                         obj.scs_props.scs_root_object_export_filepath.strip(os.sep * 2))))
+            if row2.alert:
+                _shared.draw_warning_operator(
+                    row2,
+                    "Custom Export Path Warning",
+                    str("Current custom SCS Game Object filepath is unreachable, which may result into an error on export!\n" +
+                        "Make sure you did following:\n" +
+                        "1. Properly set \"SCS Project Base Path\"\n" +
+                        "2. Properly set this custom export path which must be relative on \"SCS Project Base Path\"")
+                )
         row2.prop(obj.scs_props, 'scs_root_object_export_filepath', text='', icon='EXPORT')
         row2.operator('scene.select_game_object_custom_export_filepath', text='', icon='FILESEL')
         # row2.prop(obj.scs_props, 'scs_root_object_animations', icon='NONE')

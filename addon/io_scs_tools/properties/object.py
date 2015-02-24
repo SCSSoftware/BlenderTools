@@ -19,6 +19,7 @@
 # Copyright (C) 2013-2014: SCS Software
 
 import bpy
+import os
 from bpy.props import (StringProperty,
                        BoolProperty,
                        CollectionProperty,
@@ -208,15 +209,12 @@ class ObjectAnimationInventory(bpy.types.PropertyGroup):
         precision=6,
         update=length_update,
     )
-    # parts = CollectionProperty(type=ObjectVariantPartInclusion)
 
 
 class ObjectSCSTools(bpy.types.PropertyGroup):
     """
     SCS Tools Object Variables - ...Object.scs_props...
     """
-    # global sign_items
-    # sign_items = []
 
     # HELPER VARIABLES
     locators_orig_draw_size = FloatProperty(name="Locator Original Draw Size")
@@ -317,12 +315,12 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
     scs_root_object_allow_custom_path = BoolProperty(
         name="Allow Custom Export File Path",
         description="Allow use of custom export file path for this 'SCS Game Object'",
-        default=True,
+        default=False,
     )
     scs_root_object_export_filepath = StringProperty(
         name="Custom Export File Path",
         description="Custom export file path for this 'SCS Game Object'",
-        default="",
+        default=os.sep * 2,
         # subtype="FILE_PATH",
         subtype='NONE',
     )
@@ -725,13 +723,6 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
         subtype='NONE',
         # update=locator_prefab_sign_model_update,
     )
-    # locator_prefab_sign_pref_part = EnumProperty(
-    # name="Prefab Part",
-    # description="Prefab part",
-    # items=(('0', "", ""),
-    # ),
-    # default='0',
-    # )
     locator_prefab_sign_pref_part = StringProperty(
         name="Prefab Part",
         description="Prefab part",
@@ -775,12 +766,6 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
         items=it,
         default='none',
     )
-    # locator_prefab_tsem_model = StringProperty(
-    # name="Model",
-    # description="Model",
-    # default="",
-    # subtype="FILE_PATH",
-    # )
     # Following String property is fed from TRAFFIC SEMAPHORE PROFILES data list, which is usually loaded from
     # "//base/def/world/semaphore_profile.sii" file and stored at "scs_globals.scs_tsem_profile_inventory".
     locator_prefab_tsem_profile = StringProperty(
@@ -867,15 +852,6 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
         subtype='DISTANCE',
         unit='LENGTH',
     )
-    # locator_prefab_tsem_om2 = FloatProperty(
-    # name="O",
-    # description="Distance where the after-red Orange light turns on",
-    # default=300.0,
-    # min=-1.0,
-    # options={'HIDDEN'},
-    # subtype='DISTANCE',
-    # unit='LENGTH',
-    # )
     locator_prefab_tsem_cyc_delay = FloatProperty(
         name="Cycle Delay",
         description="Cycle Delay",
@@ -900,44 +876,6 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
         description="Artificial intelligence only",
         default=False,
     )
-    # LOCATORS - PREFAB - COLBOXES (OBSOLETE)
-    # locator_prefab_colbox_size = FloatVectorProperty(
-    # name="Colbox Size",
-    # description="Colbox Size",
-    # default=(0.0, 0.0, 0.0),
-    # min=0, max=24,
-    # soft_min=0.1,
-    # soft_max=1,
-    # step=3,
-    # precision=2,
-    # options={'HIDDEN'},
-    # subtype='XYZ',
-    # size=3,
-    # )
-    # locator_prefab_colbox_size_w = FloatProperty(
-    # name="W",
-    # description="Colbox width",
-    # default=0.0,
-    # options={'HIDDEN'},
-    # subtype='DISTANCE',
-    # unit='LENGTH',
-    # )
-    # locator_prefab_colbox_size_h = FloatProperty(
-    # name="H",
-    # description="Colbox height",
-    # default=0.0,
-    # options={'HIDDEN'},
-    # subtype='DISTANCE',
-    # unit='LENGTH',
-    # )
-    # locator_prefab_colbox_size_d = FloatProperty(
-    # name="D",
-    # description="Colbox depth",
-    # default=0.0,
-    # options={'HIDDEN'},
-    # subtype='DISTANCE',
-    # unit='LENGTH',
-    # )
     # LOCATORS - PREFAB - NAVIGATION POINTS
     locator_prefab_np_tl_activ = BoolProperty(
         name="Traffic Semaphore Activator",

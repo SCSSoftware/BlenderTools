@@ -117,12 +117,12 @@ def update_shader_presets_path(scs_shader_presets_inventory, shader_presets_file
                             new_shader_preset = scs_shader_presets_inventory.add()
                             new_shader_preset.name = preset_name
     else:
-        lprint('\nW The file path "%s" is not valid!', shader_presets_abs_path)
+        lprint('\nW The file path "%s" is not valid!', (shader_presets_abs_path,))
 
     update_item_in_file('Paths.ShaderPresetsFilePath', shader_presets_filepath)
 
 
-def update_sign_library_rel_path(scs_sign_model_inventory, sign_library_rel_path):
+def update_sign_library_rel_path(scs_sign_model_inventory, sign_library_rel_path, readonly=False):
     """The function deletes and populates again a list of Sign names in inventory. It also updates corresponding record in config file.
 
     :param sign_library_rel_path: Relative path to the directory with Sign files
@@ -164,12 +164,12 @@ def update_sign_library_rel_path(scs_sign_model_inventory, sign_library_rel_path
 
         else:
             print('   sign_library_rel_path: "%s"' % str(sign_library_rel_path))
-        # print('  sign_library_filepath:\n%s' % str(sign_library_filepath))
 
+    if not readonly:
         update_item_in_file('Paths.SignRelFilePath', sign_library_rel_path)
 
 
-def update_tsem_library_rel_path(scs_tsem_profile_inventory, tsem_library_rel_path):
+def update_tsem_library_rel_path(scs_tsem_profile_inventory, tsem_library_rel_path, readonly=False):
     """The function deletes and populates again a list of Traffic Semaphore Profile names in inventory. It also updates corresponding record in
     config file.
 
@@ -203,10 +203,11 @@ def update_tsem_library_rel_path(scs_tsem_profile_inventory, tsem_library_rel_pa
         else:
             print('   tsem_library_rel_path: "%s"' % str(tsem_library_rel_path))
 
+    if not readonly:
         update_item_in_file('Paths.TSemProfileRelFilePath', tsem_library_rel_path)
 
 
-def update_traffic_rules_library_rel_path(scs_traffic_rules_inventory, traffic_rules_library_rel_path):
+def update_traffic_rules_library_rel_path(scs_traffic_rules_inventory, traffic_rules_library_rel_path, readonly=False):
     """The function deletes and populates again a list of Traffic Rules names in inventory. It also updates corresponding record in config file.
 
     :param traffic_rules_library_rel_path: Relative path to the directory with Traffic Rules files
@@ -237,10 +238,11 @@ def update_traffic_rules_library_rel_path(scs_traffic_rules_inventory, traffic_r
         else:
             print('   traffic_rules_library_rel_path: "%s"' % str(traffic_rules_library_rel_path))
 
+    if not readonly:
         update_item_in_file('Paths.TrafficRulesRelFilePath', traffic_rules_library_rel_path)
 
 
-def update_hookup_library_rel_path(scs_hookup_inventory, hookup_library_rel_path):
+def update_hookup_library_rel_path(scs_hookup_inventory, hookup_library_rel_path, readonly=False):
     """The function deletes and populates again a list of Hookup names in inventory. It also updates corresponding record in config file.
 
     :param hookup_library_rel_path: Relative path to the directory with Hookup files
@@ -291,10 +293,11 @@ def update_hookup_library_rel_path(scs_hookup_inventory, hookup_library_rel_path
             if '.svn' in dirs:
                 dirs.remove('.svn')  # ignore SVN
 
-    update_item_in_file('Paths.HookupRelDirPath', hookup_library_rel_path)
+    if not readonly:
+        update_item_in_file('Paths.HookupRelDirPath', hookup_library_rel_path)
 
 
-def update_matsubs_inventory(scs_matsubs_inventory, matsubs_library_rel_path):
+def update_matsubs_inventory(scs_matsubs_inventory, matsubs_library_rel_path, readonly=False):
     """The function deletes and populates again a list of Material Substance names in inventory. It also updates corresponding record in config file.
 
     :param matsubs_library_rel_path: Relative path to the directory with Material Substance files
@@ -330,6 +333,7 @@ def update_matsubs_inventory(scs_matsubs_inventory, matsubs_library_rel_path):
         else:
             print('   matsubs_library_rel_path: "%s"' % str(matsubs_library_rel_path))
 
+    if not readonly:
         update_item_in_file('Paths.MatSubsRelFilePath', matsubs_library_rel_path)
 
 
@@ -341,9 +345,7 @@ def gather_default():
         section = _SectionData("Header")
         section.props.append(("FormatVersion", 1))
         blender_version, blender_build = _info.get_blender_version()
-        section.props.append(("Source", "Blender " + blender_version + blender_build + ", SCS Blender Tools " + str(_info.get_tools_version(
-
-        ))))
+        section.props.append(("Source", "Blender " + blender_version + blender_build + ", SCS Blender Tools " + str(_info.get_tools_version())))
         section.props.append(("Type", "Configuration"))
         section.props.append(("Note", "User settings of SCS Blender Tools"))
         author = bpy.context.user_preferences.system.author

@@ -27,6 +27,7 @@ from io_scs_tools.internals.callbacks import open_gl as _open_gl_callback
 from io_scs_tools.internals.containers import config as _config_container
 from io_scs_tools.internals.connections.wrappers import group as _connections_group_wrapper
 from io_scs_tools.internals.icons import wrapper as _icons_wrapper
+from io_scs_tools.utils import path as _path_utils
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
 from io_scs_tools.utils.printout import lprint
 
@@ -77,6 +78,17 @@ def initialise_scs_dict(scene):
             if not os.path.isdir(_get_scs_globals().scs_project_path):
                 lprint("\nW The Project Path %r is NOT VALID!\n\tPLEASE SELECT A VALID PATH TO THE PROJECT BASE FOLDER.\n",
                        (_get_scs_globals().scs_project_path,))
+
+        # FIX PLATFORM RELATED PATHS
+        for obj in bpy.data.objects:
+            if obj.scs_props.empty_object_type == "SCS_Root":
+                _path_utils.fix_sep_by_platform(obj.scs_props, "scs_root_object_export_filepath")
+
+        for material in bpy.data.materials:
+            for prop in material.scs_props.get_shader_texture_types():
+                _path_utils.fix_sep_by_platform(material.scs_props, prop)
+
+        _path_utils.fix_sep_by_platform(bpy.context.scene.scs_props, "default_export_filepath")
 
         # CREATE PREVIEW MODEL LIBRARY
         _preview_models.init()

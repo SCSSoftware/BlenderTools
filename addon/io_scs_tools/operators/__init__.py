@@ -21,3 +21,4 @@
 from io_scs_tools.operators import object
 from io_scs_tools.operators import scene
 from io_scs_tools.operators import material
+from io_scs_tools.operators import wm

@@ -534,11 +534,6 @@ class Paths:
         bl_description = "Open a Texture file browser"
 
         shader_texture = bpy.props.StringProperty(options={'HIDDEN'})
-        rel_path = BoolProperty(
-            name='Relative Path',
-            description='Select the file relative to SCS Project directory',
-            default=True,
-        )
         filepath = StringProperty(
             name="Shader Texture File",
             description="Shader texture relative or absolute file path",
@@ -546,7 +541,7 @@ class Paths:
             subtype='FILE_PATH',
         )
         filter_glob = StringProperty(
-            default="*.tga;*.png;*.dds",
+            default="*.tga",
             options={'HIDDEN'},
         )
 
@@ -554,20 +549,25 @@ class Paths:
             """Set shader texture file path."""
             scs_globals = _get_scs_globals()
             material = context.active_object.active_material
-            if self.rel_path:
-                base_path = scs_globals.scs_project_path
-                setattr(material.scs_props, self.shader_texture, _path_utils.relative_path(base_path, self.filepath))
+
+            scs_base = scs_globals.scs_project_path
+            if self.filepath.startswith(scs_base):
+                setattr(material.scs_props, self.shader_texture, _path_utils.relative_path(scs_base, self.filepath))
             else:
                 setattr(material.scs_props, self.shader_texture, str(self.filepath))
+
             return {'FINISHED'}
 
         def invoke(self, context, event):
             """Invoke a file path selector."""
             filepath = getattr(bpy.context.active_object.active_material.scs_props, self.shader_texture)
-            if filepath.startswith(str(os.sep + os.sep)):
-                self.filepath = _path_utils.get_abs_path(filepath)
-            else:
+            if filepath.startswith(str(os.sep + os.sep)) and os.path.isdir(_get_scs_globals().scs_project_path):
+                self.filepath = os.path.join(_get_scs_globals().scs_project_path, _path_utils.strip_sep(filepath))
+            elif os.path.isfile(filepath):
                 self.filepath = filepath
+            else:
+                self.filepath = _get_scs_globals().scs_project_path
+
             context.window_manager.fileselect_add(self)
             return {'RUNNING_MODAL'}
 
@@ -806,17 +806,12 @@ class Paths:
             context.window_manager.fileselect_add(self)
             return {'RUNNING_MODAL'}
 
-    class GlobalExportFilePathSelector(bpy.types.Operator):
+    class DefaultExportFilePathSelector(bpy.types.Operator):
         """Operator for setting relative or absolute path to Global Export file."""
-        bl_label = "Select Global Export Directory"
-        bl_idname = "scene.select_global_export_filepath"
+        bl_label = "Select Default Export Directory"
+        bl_idname = "scene.select_default_export_filepath"
         bl_description = "Open a directory browser"
 
-        rel_path = BoolProperty(
-            name="Relative Path",
-            description="Select the file relative to current Blender file",
-            default=True,
-        )
         directory = StringProperty(
             name="Global Export Path",
             description="Global export path (relative or absolute)",
@@ -828,29 +823,19 @@ class Paths:
         def execute(self, context):
             """Set global export path."""
             scs_globals = _get_scs_globals()
-            if self.rel_path:
-                rel_filepath = bpy.path.relpath(self.directory, start=None).strip('.')
-                # print(' SET REL path:\n\t"%s"' % rel_filepath)
-                # print(' SET BLD path:\n\t"%s"' % bpy.data.filepath)
-                if not bpy.data.filepath:
-                    # scs_globals.global_export_filepath = str(self.directory)
-                    scs_globals.global_export_filepath = _path_utils.repair_path(self.directory)
-                else:
-                    scs_globals.global_export_filepath = rel_filepath
+            scene_scs_props = context.scene.scs_props
+            if self.directory.startswith(scs_globals.scs_project_path):
+                scene_scs_props.default_export_filepath = os.sep * 2 + os.path.relpath(self.directory, start=scs_globals.scs_project_path)
             else:
-                # print(' SET ABS path:\n\t"%s"' % self.directory)
-                # scs_globals.global_export_filepath = str(self.directory)
-                scs_globals.global_export_filepath = _path_utils.repair_path(self.directory)
+                scene_scs_props.default_export_filepath = os.path.sep * 2
+                self.report({'ERROR'}, "Selected path is not within SCS Project Base Path,\npath will be reset to SCS Project Base Path instead.")
+                return {'CANCELLED'}
+
             return {'FINISHED'}
 
         def invoke(self, context, event):
             """Invoke a path selector."""
-            global_export_filepath = _get_scs_globals().global_export_filepath
-            # print('  * global_export_filepath: %s' % str(global_export_filepath))
-            directory = _path_utils.get_blenderfilewise_abs_filepath(global_export_filepath)
-            # print('  * directory: %s' % str(directory))
-            if directory:
-                self.directory = directory
+            self.directory = _get_scs_globals().scs_project_path
             context.window_manager.fileselect_add(self)
             return {'RUNNING_MODAL'}
 
@@ -860,11 +845,6 @@ class Paths:
         bl_idname = "scene.select_game_object_custom_export_filepath"
         bl_description = "Open a directory browser"
 
-        rel_path = BoolProperty(
-            name="Relative Path",
-            description="Select the file relative to current Blender file",
-            default=True,
-        )
         directory = StringProperty(
             name="'SCS Game Object' Custom Export Path",
             description="'SCS Game Object' custom export path (relative or absolute)",
@@ -875,32 +855,21 @@ class Paths:
 
         def execute(self, context):
             """Set 'SCS Game Object' custom export path."""
-            if self.rel_path:
 
-                if not bpy.data.filepath:
-                    context.active_object.scs_props.scs_root_object_export_filepath = _path_utils.repair_path(self.directory)
-                else:
-                    # if the blender file and selected dir has the same starting point, create relative path
-                    if bpy.data.filepath[0] == self.directory[0]:
-                        rel_filepath = bpy.path.relpath(self.directory, start=None).strip('.')
-                    else:
-                        rel_filepath = _path_utils.repair_path(self.directory)
-
-                    context.active_object.scs_props.scs_root_object_export_filepath = rel_filepath
+            scs_globals = _get_scs_globals()
+            obj_scs_props = context.active_object.scs_props
+            if self.directory.startswith(scs_globals.scs_project_path):
+                obj_scs_props.scs_root_object_export_filepath = os.sep * 2 + os.path.relpath(self.directory, start=scs_globals.scs_project_path)
             else:
-                # print(' SET ABS path:\n\t"%s"' % self.directory)
-                # context.active_object.scs_props.scs_root_object_export_filepath = str(self.directory)
-                context.active_object.scs_props.scs_root_object_export_filepath = _path_utils.repair_path(self.directory)
+                obj_scs_props.scs_root_object_export_filepath = os.path.sep * 2
+                self.report({'ERROR'}, "Selected path is not within SCS Project Base Path,\npath will be reset to SCS Project Base Path instead.")
+                return {'CANCELLED'}
+
             return {'FINISHED'}
 
         def invoke(self, context, event):
             """Invoke a path selector."""
-            scs_root_object_export_filepath = context.active_object.scs_props.scs_root_object_export_filepath
-            # print('  * scs_root_object_export_filepath: %s' % str(scs_root_object_export_filepath))
-            directory = _path_utils.get_blenderfilewise_abs_filepath(scs_root_object_export_filepath, data_type="'SCS Game Object' custom export")
-            # print('  * directory: %s' % str(directory))
-            if directory:
-                self.directory = directory
+            self.directory = _get_scs_globals().scs_project_path
             context.window_manager.fileselect_add(self)
             return {'RUNNING_MODAL'}
 

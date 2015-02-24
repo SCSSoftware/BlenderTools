@@ -105,43 +105,17 @@ def draw_debug_settings(layout):
     row.prop(_get_scs_globals(), 'dump_level', text="Dump Level")
 
 
-'''
-def draw_look_panel(layout, scene, mat):
-    """Creates Look settings sub-panel."""
-    lookBox = layout.box()
-    if scene.scs_props.look_settings_expand:
-        lookHeader = lookBox.split(percentage=0.5)
-        lookHeader1 = lookHeader.row()
-        lookHeader1.prop(scene.scs_props, 'look_settings_expand', text="Look Settings:", icon='TRIA_DOWN', icon_only=True, emboss=False)
-        lookHeader2 = lookHeader.row(align=True)
-        lookHeader2.alignment = 'RIGHT'
-        lookHeader2a = lookHeader2.row()
-        lookHeader2a.prop(scene.scs_props, 'look_list_sorted', text='', icon='SORTALPHA', expand=True, toggle=True)
-        # lookSetting = lookBox.row()
-        # lookSetting.operator('scene.print_look_inventory', text='Print Look Data (debug)')
-        lookSetting = lookBox.row()
-        lookSetting.prop(scene.scs_props, 'material_looks', text='', icon='NONE')  # , expand=True, toggle=True)
-        lookSetting = lookBox.row(align=True)
-        lookSetting.operator('scene.add_look', text='Add')
-        lookSetting.operator('scene.rename_look', text='Rename')
-        lookSetting.operator('scene.delete_look', text='Delete')
-        # lookSetting = lookBox.row()
-        # lookToolBox = lookSetting.box()
-        # lookTools = lookToolBox.row()
-        # if scene.scs_props.look_tools_expand:
-        # lookTools.prop(scene.scs_props, 'look_tools_expand', text="Additional Look Tools", icon='TRIA_DOWN', icon_only=True, emboss=False)
-        # # lookTools = lookToolBox.row()
-        #     # lookTools.operator('object.select_look', text="Select Active Look", icon='RESTRICT_SELECT_OFF')
-        #     # lookTools = lookToolBox.row()
-        #     # lookTools.operator('object.view_look_only', text="View Active Look Only")
-        #     # lookTools.operator('object.hide_look', text="Hide Active Look")
-        #     lookTools = lookToolBox.row()
-        #     lookTools.operator('object.view_all_objects', text="View All")
-        #     lookTools.operator('object.invert_visibility', text="Invert Visibility")
-        # else:
-        #     lookTools.prop(scene.scs_props, 'look_tools_expand', text="Additional Look Tools", icon='TRIA_RIGHT', icon_only=True, emboss=False)
-    else:
-        lookSetting = lookBox.row()
-        lookSetting.prop(scene.scs_props, 'look_settings_expand', text="Look Settings:", icon='TRIA_RIGHT', icon_only=True, emboss=False)
-        lookSetting.prop(scene.scs_props, 'material_looks', text='', icon='NONE')  # , expand=True, toggle=True)
-'''
+def draw_warning_operator(layout, title, message):
+    """Draws operator for showing popup window with given title and message.
+
+    :param layout: Blender UI layout to draw operator to
+    :type layout: UILayout
+    :param title: title used in popup window
+    :type title: str
+    :param message: message used in popup window
+    :type message: str
+    """
+    props = layout.operator('wm.show_warning_message', text="", icon="ERROR")
+    props.title = title
+    props.message = message
+    props.is_modal = False

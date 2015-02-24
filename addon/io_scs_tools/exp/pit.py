@@ -153,7 +153,7 @@ def _get_texture_path_from_material(material, texture_type, export_path):
     texture_abs_filepath = _path_utils.get_abs_path(texture_raw_path)
 
     # TOBJ PATH
-    scs_project_path = _get_scs_globals().scs_project_path
+    scs_project_path = _get_scs_globals().scs_project_path.rstrip("\\").rstrip("/")
     if os.path.isfile(scs_project_path + os.sep + texture_raw_path):  # relative within base
 
         tobj_rel_filepath = os.path.splitext(texture_raw_path)[0][1:]
@@ -191,7 +191,8 @@ def _get_texture_path_from_material(material, texture_type, export_path):
         # export tobj only if file of texture exists
         if os.path.isfile(texture_abs_filepath):
             settings = getattr(material.scs_props, "shader_" + texture_type + "_settings", set())
-            _tobj.export(tobj_abs_filepath, os.path.split(texture_raw_path)[1], settings)
+            texture_name = os.path.basename(_path_utils.strip_sep(texture_raw_path))
+            _tobj.export(tobj_abs_filepath, texture_name, settings)
         else:
             lprint("E Texture file %r from material %r doesn't exists, TOBJ can not be exported!",
                    (texture_raw_path, material.name))

@@ -76,11 +76,12 @@ p = configurator.start_it_up(getBundlePath(), <span class="str">"4_locators_coll
 <span class="kw">try</span>:
     <span class="skw">wait</span>(Pattern(<img src="3dview_4_locators_collision.png" />).similar(<span class="dig">0.90</span>), <span class="dig">5</span>); hover(Pattern(<img src="3dview_4_locators_collision.png" />).similar(<span class="dig">0.90</span>)); <span class="skw">type</span>(Key.ESC)
     <span class="skw">click</span>(Pattern(<img src="export_scene_button.png" />).similar(<span class="dig">0.90</span>))
-    <span class="skw">wait</span>(<span class="dig">3</span>)
+    <span class="skw">wait</span>(<span class="dig">1.5</span>); <span class="skw">type</span>(Key.ENTER)
     <span class="skw">click</span>(Pattern(<img src="second_layer_button.png" />).exact())
     hover(Location(<span class="dig">300</span>, <span class="dig">400</span>))  <span class="cmt"># move cursor to 3D view</span>
     <span class="skw">type</span>(Key.SPACE + <span class="str">"SCS Import"</span> + Key.ENTER)
-    <span class="skw">find</span>(Pattern(<img src="filebrowser_import_button.png" />).exact()).left().paste(Pattern(<img src="empty_input_field.png" />).exact(), getBundlePath())
+    scs_base = configurator.get_path_property(<span class="str">"SCSBasePath"</span>)
+    <span class="skw">find</span>(Pattern(<img src="filebrowser_import_button.png" />).exact()).left().paste(Pattern(<img src="empty_input_field.png" />).exact(), scs_base)
     <span class="skw">type</span>(Key.ENTER)
     <span class="skw">click</span>(Pattern(<img src="4_locators_collision.png" />).similar(<span class="dig">0.95</span>))
     <span class="skw">type</span>(Key.ENTER)

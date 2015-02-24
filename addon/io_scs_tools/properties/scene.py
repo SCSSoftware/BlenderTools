@@ -156,19 +156,6 @@ class GlobalSCSProps(bpy.types.PropertyGroup):
         options={'SKIP_SAVE'},
     )
 
-    '''
-    # SCS TOOLS GLOBAL SETTINGS
-    # scs_lod_definition_type = EnumProperty(
-    # name="LOD Definition Type",
-    #         description="The way LODs (Level Of Details) are defined in the Blend file",
-    #         items=(('scenes', "LODs in Scenes", "LODs are defined in individual Scenes"),
-    #                ('objects', "LODs as Hierarchies", "LODs are defined by parenting elements to LOD Empty objects"),
-    #                ),
-    #         default='objects',
-    #         # update=scs_lod_definition_type_update,
-    #         )
-    '''
-
     # SCS TOOLS GLOBAL PATHS
     def scs_project_path_update(self, context):
         # Update all related paths so their libraries gets reloaded from new "SCS Project Path" location.
@@ -243,14 +230,6 @@ class GlobalSCSProps(bpy.types.PropertyGroup):
                                                    self.matsubs_library_rel_path)
         return None
 
-    '''
-    def global_export_filepath_update(self, context):  ## Always make the path absolute...
-        new_path = utils.repair_path(self.global_export_filepath)
-        if new_path != self.global_export_filepath:
-            self.global_export_filepath = new_path
-        return None
-    '''
-
     os_rs = str(os.sep + os.sep)  # OS WISE RELATIVE PATH SIGN
     scs_project_path = StringProperty(
         name="SCS Project Main Directory",
@@ -317,15 +296,6 @@ class GlobalSCSProps(bpy.types.PropertyGroup):
         default=str(os_rs + 'material' + os.sep + 'material.db'),
         subtype='NONE',
         update=matsubs_library_rel_path_update,
-    )
-    global_export_filepath = StringProperty(
-        name="Global Export Path",
-        description="Global path for all exported files (absolute path)",
-        # default=utils.get_cgfx_templates_filepath(),
-        default="",
-        # subtype="FILE_PATH",
-        subtype='NONE',
-        # update=global_export_filepath_update,
     )
 
     # UPDATE LOCKS (FOR AVOIDANCE OF RECURSION)
@@ -670,41 +640,6 @@ class GlobalSCSProps(bpy.types.PropertyGroup):
         default='rgbda',
         update=export_vertex_color_type_7_update,
     )
-    # export_anim_file = EnumProperty(
-    # name="Animation Output",
-    # description="Animation Output",
-    # items=(('anim', "Export Animations", ""),
-    # ('rigid', "Rigid Model", ""),
-    # ),
-    # default='rigid',
-    # update=export_anim_file_update,
-    # )
-    # export_animations = BoolProperty(
-    # name="Export Animations",
-    # description="Export animations automatically with file save",
-    # default=False,
-    # )
-    # rigid_model = BoolProperty(
-    # name="Rigid Model",
-    # description="Rigid model",
-    # default=True,
-    # )
-    # chunk_size = FloatProperty(
-    # name="Chunk Size",
-    # description="Chunk Size",
-    # options={'HIDDEN'},
-    # subtype='NONE',
-    # unit='NONE',
-    # )
-    # chunk_style = EnumProperty(
-    # name="Chunk Style",
-    # description="Chunk style",
-    # items=(('none', "None", ""),
-    # ('xz', "XZ", ""),
-    # ('xyz', "XYZ", ""),
-    # ),
-    # default='none',
-    # )
     export_pim_file = BoolProperty(
         name="Export Model",
         description="Export model automatically with file save",
@@ -771,86 +706,6 @@ class SceneSCSProps(bpy.types.PropertyGroup):
     SCS Tools Scene Variables - ...Scene.scs_props...
     :return:
     """
-
-    '''
-    PARTS
-    def update_part_items(self, context):
-    """
-    Returns the actual Part name list from "scs_part_inventory".
-    It also updates "parts_container", so the UI could contain all
-    the items with no error. (necessary hack :-/)
-    :param context:
-    :return:
-    """
-    global parts_container
-
-    def append_part(items, act_part, part_i):
-    """
-    Appends Part with "Default" or standard icon.
-    :param items:
-    :param act_part:
-    :param part_i:
-    :return:
-    """
-    if act_part == "DefaultPart":
-    items.append((act_part, act_part, "", 'NODE_SEL', part_i), )
-    else:
-    items.append((act_part, act_part, "", 'NODE', part_i), )
-    return items
-
-    items = []
-    if context.scene.scs_props.part_list_sorted:
-    inventory = {}
-    for part_i, part in enumerate(context.scene.scs_part_inventory):
-    inventory[part.name] = part_i
-    for part in sorted(inventory):
-    part_i = inventory[part]
-    # act_part = parts_container.add(part)
-    items = append_part(items, act_part, part_i)
-        else:
-            for part_i, part in enumerate(context.scene.scs_part_inventory):
-                # act_part = parts_container.add(part.name)
-                items = append_part(items, act_part, part_i)
-        return tuple(items)
-
-    def get_part_items(self):
-        """
-        Returns menu index of a Part name of actual object to set
-        the right name in UI drop-down menu.
-        :return:
-        """
-        result = 0
-        for part_i, part in enumerate(bpy.context.scene.scs_part_inventory):
-            if part.name == bpy.context.object.scs_props.scs_part:
-                part.active = True
-                result = part_i
-            else:
-                part.active = False
-        return result
-
-    def set_part_items(self, value):
-        """
-        Receives an actual index of currently selected Part name in
-        the drop-down menu, sets that Part name as active in Part Inventory
-        and sets the same Part name in all selected objects.
-        :param value:
-        :return:
-        """
-        for part_i, part in enumerate(bpy.context.scene.scs_part_inventory):
-            if value == part_i:
-                part.active = True
-                utils.set_part_for_selected_objects(part.name)
-            else:
-                part.active = False
-
-    model_parts = EnumProperty(
-        name="Current Part",
-        description="Current part",
-        items=update_part_items,
-        get=get_part_items,
-        set=set_part_items,
-    )
-    '''
 
     part_settings_expand = BoolProperty(
         name="Expand Part Settings",
@@ -955,95 +810,6 @@ class SceneSCSProps(bpy.types.PropertyGroup):
     )
 
     '''
-    LOOKS
-    def update_look_items(self, context):
-    """Returns the actual Look name list from "scs_look_inventory".
-    It also updates "looks_container", so the UI could contain all
-    the items with no error. (necessary hack :-/)"""
-        global looks_container
-
-        def append_look(items, act_look, look_i):
-            """Appends Look with "Default" or standard icon."""
-            if act_look == "Default":
-                items.append((act_look, act_look, "", 'COLOR_RED', look_i), ) ## alt icon: 'NODE_SEL'
-            else:
-                items.append((act_look, act_look, "", 'COLOR', look_i), ) ## alt icon: 'NODE'
-            return items
-
-        items = []
-        if context.scene.scs_props.look_list_sorted:
-            inventory = {}
-            for look_i, look in enumerate(context.scene.scs_look_inventory):
-                inventory[look.name] = look_i
-            for look in sorted(inventory):
-                look_i = inventory[look]
-                act_look = looks_container.add(look)
-                items = append_look(items, act_look, look_i)
-        else:
-            for look_i, look in enumerate(context.scene.scs_look_inventory):
-                act_look = looks_container.add(look.name)
-                items = append_look(items, act_look, look_i)
-        return tuple(items)
-
-    def get_look_items(self):
-        """Returns menu index of a Look name of actual object to set
-        the right name in UI drop-down menu."""
-        result = 0
-        for look_i, look in enumerate(bpy.context.scene.scs_look_inventory):
-            if look.active:
-                result = look_i
-                break
-        return result
-
-    def set_look_items(self, value):
-        """Receives an actual index of currently selected Look name in the drop-down menu,
-        sets that Look name as active in Look Inventory."""
-        for look_i, look in enumerate(bpy.context.scene.scs_look_inventory):
-            if value == look_i:
-                look.active = True
-                print('\nNew active Look: "%s"\n' % look.name)
-                material = bpy.context.active_object.active_material
-                #output, vertex_data = cgfx_utils.recompile_cgfx_shader(material)
-
-                if len(material.scs_cgfx_looks[look.name].cgfx_data) == 0:
-                    ## If not compiled, recompile... ...really???
-                    print('RECOMPILE...')
-                    output, vertex_data = cgfx_utils.recompile_cgfx_shader(material)
-                    ###cgfx_utils.register_cgfx_ui(material, actual_look)
-                else:
-                    ## Or just load settings from Material Look to UI...
-                    print('REGISTERING CgFX UI...')
-                    cgfx_utils.register_cgfx_ui(material, look.name)
-
-                ## ...
-                #for rec in material.scs_cgfx_looks[look.name].cgfx_data:
-                    #print('rec.name: "%s" - %s' % (rec.name, rec.bool))
-            else:
-                look.active = False
-
-    material_looks = EnumProperty(
-            name="Current Look",
-            description="Current look",
-            items=update_look_items,
-            get=get_look_items,
-            set=set_look_items,
-            )
-    look_settings_expand = BoolProperty(
-            name="Expand Look Settings",
-            description="Expand Look settings panel",
-            default=True,
-            )
-    look_tools_expand = BoolProperty(
-            name="Expand Look Tools",
-            description="Expand Look tools panel",
-            default=False,
-            )
-    look_list_sorted = BoolProperty(
-            name="Look List Sorted Alphabetically",
-            description="Sort Look list alphabetically",
-            default=True,
-            )
-
     CGFX SHADERS
     def update_cgfx(self, context):
         """Returns the actual CgFX name list from "scs_cgfx_inventory".
@@ -1239,7 +1005,6 @@ class SceneSCSProps(bpy.types.PropertyGroup):
         :param value:
         :return:
         """
-        print('  > set_shader_presets_items...')
 
         scene = bpy.context.scene
         material = bpy.context.active_object.active_material
@@ -1247,7 +1012,6 @@ class SceneSCSProps(bpy.types.PropertyGroup):
             material.scs_props.active_shader_preset_name = "<none>"
             material.scs_props.mat_effect_name = "None"
             material["scs_shader_attributes"] = {}
-            print('    No shader preset...')
         else:
             for preset_i, preset in enumerate(scene.scs_shader_presets_inventory):
                 if value == preset_i:
@@ -1263,8 +1027,6 @@ class SceneSCSProps(bpy.types.PropertyGroup):
                         material.scs_props.mat_effect_name = preset_effect
 
                         if preset_name:
-                            print('  Set Preset: "%s"' % preset_name)
-                            # print('    preset_name: "%s"' % preset_name)
                             _material_utils.set_shader_data_to_material(material, preset_section, preset_effect)
                         else:
                             material.scs_props.active_shader_preset_name = "<none>"
@@ -1578,6 +1340,14 @@ class SceneSCSProps(bpy.types.PropertyGroup):
         description="Expand animation player panel",
         default=True,
     )
+    default_export_filepath = StringProperty(
+        name="Default Export Path",
+        description="Relative export path (relative to SCS Project Base Path) for all SCS Game Objects without custom export path "
+                    "(this path does not apply when exporting via menu)",
+        default="",
+        # subtype="FILE_PATH",
+        subtype='NONE',
+    )
     export_panel_expand = BoolProperty(
         name="Expand Export Panel",
         description="Expand Export panel",
@@ -1709,20 +1479,6 @@ class SceneSCSProps(bpy.types.PropertyGroup):
     def info_text_color_update(self, context):
         _config_container.update_item_in_file('GlobalColors.InfoText', tuple(self.info_text_color))
         return None
-
-    '''
-    SCS TOOLS GLOBAL SETTINGS
-    scs_lod_definition_type = EnumProperty(
-        name="LOD Definition Type",
-        description="The way LODs (Level Of Details) are defined in the Blend file",
-        items=(
-            ('scenes', "LODs in Scenes", "LODs are defined in individual Scenes"),
-            ('objects', "LODs as Hierarchies", "LODs are defined by parenting elements to LOD Empty objects"),
-        ),
-        default='objects',
-        # update=scs_lod_definition_type_update,
-    )
-    '''
 
     # SCS TOOLS GLOBAL SETTINGS - DISPLAY SETTINGS
     display_locators = BoolProperty(
