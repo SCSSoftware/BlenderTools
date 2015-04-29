@@ -21,10 +21,11 @@
 import bpy
 import os
 from io_scs_tools.internals import inventory as _inventory
-from io_scs_tools.utils.printout import lprint
-from io_scs_tools.utils import object as _object_utils
-from io_scs_tools.utils import name as _name_utils
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
+from io_scs_tools.utils import material as _material_utils
+from io_scs_tools.utils import name as _name_utils
+from io_scs_tools.utils import object as _object_utils
+from io_scs_tools.utils.printout import lprint
 
 from io_scs_tools.imp import pia as _pia
 from io_scs_tools.imp import pic as _pic
@@ -34,7 +35,46 @@ from io_scs_tools.imp import pis as _pis
 from io_scs_tools.imp import pit as _pit
 
 
-def _create_scs_root_object(name, loaded_variants, objects, skinned_objects, locators, armature):
+def _get_shader_data(material_data):
+    """Returns Material's Effect, Attributes and Textures.
+
+    :param material_data: Material data
+    :type material_data: list
+    :return: Material's Effect, Attributes, Textures
+    :rtype: tuple
+    """
+    material_effect = material_data[0]
+    material_attributes = material_data[2]
+    material_textures = material_data[3]
+    material_section = material_data[4]
+    return material_effect, material_attributes, material_textures, material_section
+
+
+def _find_preset(material_effect):
+    """Tries to find suitable Shader Preset (as defined in shader_presets.txt file) for imported shader. If it cannot be found, it will return None.
+
+    :param material_effect: Name of the requested Look
+    :type material_effect: str
+    :return: Preset index and name or None
+    :rtype: (int, str) | None
+    """
+
+    scs_shader_presets_inventory = bpy.context.scene.scs_shader_presets_inventory
+    for i, shader_preset in enumerate(scs_shader_presets_inventory):
+
+        if shader_preset.name != "<none>":
+            preset_section = _material_utils.get_shader_preset(_get_scs_globals().shader_presets_filepath, shader_preset.name)
+            for preset_prop in preset_section.props:
+                if preset_prop[0] == "Effect":
+
+                    if preset_prop[1] == material_effect:
+
+                        return i, shader_preset.name
+
+    return None, None
+
+
+def _create_scs_root_object(name, loaded_variants, loaded_looks, mats_info, objects, skinned_objects, locators, armature):
     """Creates an 'SCS Root Object' (Empty Object) for currently imported
     'SCS Game Object' and parent all import content to it.
 
@@ -42,6 +82,10 @@ def _create_scs_root_object(name, loaded_variants, objects, skinned_objects, loc
     :type name: str
     :param loaded_variants: X
     :type loaded_variants: list
+    :param loaded_looks: X
+    :type loaded_looks: list
+    :param mats_info: list of material info, one material info consists of list: [ blend_mat_name, mat_effect, original_mat_alias ]
+    :type mats_info: list of list
     :param objects: X
     :type objects: list
     :param skinned_objects: X
@@ -62,7 +106,6 @@ def _create_scs_root_object(name, loaded_variants, objects, skinned_objects, loc
 
     # CREATE EMPTY OBJECT
     bpy.ops.object.empty_add(
-        type='PLAIN_AXES',
         view_align=False,
         location=(0.0, 0.0, 0.0),
         # rotation=rot,
@@ -72,8 +115,6 @@ def _create_scs_root_object(name, loaded_variants, objects, skinned_objects, loc
     # MAKE A PROPER SETTINGS TO THE 'SCS Game Object' OBJECT
     scs_root_object = context.active_object
     scs_root_object.name = name
-    scs_root_object.show_name = True
-    scs_root_object.show_x_ray = True
     scs_root_object.scs_props.scs_root_object_export_enabled = True
     scs_root_object.scs_props.empty_object_type = 'SCS_Root'
 
@@ -134,6 +175,66 @@ def _create_scs_root_object(name, loaded_variants, objects, skinned_objects, loc
             else:
                 part.include = False
 
+    # MAKE LOOK RECORDS
+    for look_i, look in enumerate(loaded_looks):
+
+        look_name = look[0]
+        look_mat_settings = look[1]
+
+        # SETUP ALL THE MATERIALS, NOTE: They should be already created by PIM import.
+        for mat_info in mats_info:
+            mat = bpy.data.materials[mat_info[0]]
+            if mat_info[2] in look_mat_settings:
+
+                # ASSIGN IMPORTED SHADER DATA
+                material_effect, material_attributes, material_textures, material_section = _get_shader_data(look_mat_settings[mat_info[2]])
+
+                # TRY TO FIND SUITABLE PRESET
+                (preset_index, preset_name) = _find_preset(material_effect)
+
+                if preset_index:  # preset name is found within presets shaders
+
+                    mat.scs_props.active_shader_preset_name = preset_name
+                    preset_section = _material_utils.get_shader_preset(_get_scs_globals().shader_presets_filepath, preset_name)
+
+                    if preset_section:
+
+                        preset_effect = preset_section.get_prop_value("Effect")
+                        mat.scs_props.mat_effect_name = preset_effect
+
+                        if look_i == 0:
+                            # apply default shader settings
+                            _material_utils.set_shader_data_to_material(mat, preset_section, preset_effect,
+                                                                        is_import=True)
+
+                        # reapply settings from material
+                        _material_utils.set_shader_data_to_material(mat, material_section, material_effect,
+                                                                    is_import=True, override_back_data=False)
+
+                        lprint("I Using shader preset on material %r.", (mat.name,))
+
+                    else:
+                        print('''NO "preset_section"! (Shouldn't happen!)''')
+
+                else:  # import shader directly from material and mark it as imported
+
+                    mat.scs_props.active_shader_preset_name = "<imported>"
+                    _material_utils.set_shader_data_to_material(mat, material_section, material_effect,
+                                                                is_import=True)
+
+                    lprint("I Using imported shader on material %r.", (mat.name,))
+
+                if look_i == len(loaded_looks) - 1:
+                    # delete not needed data on material
+                    if "scs_tex_aliases" in mat:
+                        del mat["scs_tex_aliases"]
+
+        # CREATE NEW LOOK ENTRY ON ROOT
+        bpy.ops.object.add_scs_look(look_name=look_name, instant_apply=False)
+
+    # apply first look after everything is done
+    scs_root_object.scs_props.active_scs_look = 0
+
     # fix scs root children objects count so it won't trigger persistent cycle
     scs_root_object.scs_cached_num_children = len(scs_root_object.children)
 
@@ -164,6 +265,7 @@ def load(context, filepath):
     collision_locators = []
     prefab_locators = []
     loaded_variants = []
+    loaded_looks = []
     objects = []
     skinned_objects = []
     locators = []
@@ -194,7 +296,7 @@ def load(context, filepath):
         if os.path.isfile(pit_filepath):
             lprint('\nD PIT filepath:\n  %s', (pit_filepath,))
             # print('PIT filepath:\n  %s' % pit_filepath)
-            result, loaded_variants = _pit.load(pit_filepath, mats_info)
+            result, loaded_variants, loaded_looks = _pit.load(pit_filepath)
         else:
             lprint('\nI No PIT file.')
             # print('INFO - No PIT file.')
@@ -230,7 +332,7 @@ def load(context, filepath):
     # print('  path: %r\n  file: %r' % (path, file))
     lod_name, ext = os.path.splitext(file)
     if objects or locators or (armature and skeleton):
-        scs_root_object = _create_scs_root_object(lod_name, loaded_variants, objects, skinned_objects, locators, armature)
+        scs_root_object = _create_scs_root_object(lod_name, loaded_variants, loaded_looks, mats_info, objects, skinned_objects, locators, armature)
 
     # IMPORT PIS
     if scs_globals.import_pis_file:

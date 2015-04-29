@@ -1,0 +1,13 @@
+SiiNunit
+{
+accessory_wheel_data : 3_sample.ftire
+{
+	name: "Runner sample"
+	price: 1365
+	unlock: 9
+	model: "/vehicle/truck/upgrade/tire/front_1_sample.pmd"
+	icon: "f_tire_03"
+	front_wheel:true
+	look: goodyears
+}
+}

@@ -92,12 +92,13 @@ def switch_layers_visibility(storage_list, show):
     :return: states of layers visibilites for scene and local layers of views
     :rtype: list of list(bool*20)
     """
+
     for space in get_all_spaces():
         if show:
             storage_list.append(list(space.layers))
             space.layers = [True] * 20
             lprint("D Layers visibility set to True")
-        else:
+        elif len(storage_list) > 0:
             space.layers = storage_list[0]
             storage_list = storage_list[1:]
 
@@ -105,7 +106,7 @@ def switch_layers_visibility(storage_list, show):
     if show:
         storage_list.append(list(scene.layers))
         scene.layers = [True] * 20
-    else:
+    elif len(storage_list) > 0:
         scene.layers = storage_list[0]
         storage_list = storage_list[1:]
 

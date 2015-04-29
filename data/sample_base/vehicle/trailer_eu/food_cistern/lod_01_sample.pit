@@ -1,0 +1,947 @@
+# Look Names:
+#	plain
+#	euroacres
+#	trameri
+#	fcp
+#
+# Variant Names:
+#	default
+#
+Header {
+    FormatVersion: 1
+    Source: "Blender 2.74.0 (hash: 000dfc0), SCS Blender Tools: 0.5"
+    Type: "Trait"
+    Name: "lod_01_sample"
+}
+Global {
+    LookCount: 4
+    VariantCount: 1
+    PartCount: 3
+    MaterialCount: 7
+}
+Look {
+    Name: "plain"
+    Material {
+        Alias: "main_spec"
+        Effect: "eut2.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.9338799715042114 0.9338799715042114 0.9338799715042114 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 35.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/vehicle/trailer_eu/food_cistern/plain"
+        }
+    }
+    Material {
+        Alias: "p:shadow_caster"
+        Effect: "eut2.shadowonly"
+        Flags: 0
+        AttributeCount: 1
+        TextureCount: 0
+        Attribute {
+            Format: FLOAT
+            Tag: "shadow_bias"
+            Value: ( 0.0 )
+        }
+    }
+    Material {
+        Alias: "WheelRubber"
+        Effect: "eut2.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.5 0.5 0.5 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 20.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/vehicle/wheel/steel/rear_trailer_new"
+        }
+    }
+    Material {
+        Alias: "lamp"
+        Effect: "eut2.lamp.add.env"
+        Flags: 0
+        AttributeCount: 6
+        TextureCount: 3
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.800000011920929 0.800000011920929 0.800000011920929 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 60.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "env_factor"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT2
+            Tag: "fresnel"
+            Value: ( 0.20000000298023224 0.8999999761581421 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/vehicle/trailer_eu/food_cistern/plain"
+        }
+        Texture {
+            Tag: "texture[1]:texture_mask"
+            Value: "/vehicle/trailer_eu/food_cistern/lamp_mask"
+        }
+        Texture {
+            Tag: "texture[2]:texture_reflection"
+            Value: "/material/environment/vehicle_reflection"
+        }
+    }
+    Material {
+        Alias: "paint"
+        Effect: "eut2.dif.spec.mult.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 2
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.9338799715042114 0.9338799715042114 0.9338799715042114 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 35.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/vehicle/trailer_eu/food_cistern/plain"
+        }
+        Texture {
+            Tag: "texture[1]:texture_mult"
+            Value: "/vehicle/trailer_eu/company/empty"
+        }
+    }
+    Material {
+        Alias: "transp"
+        Effect: "eut2.dif.over"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.1735599935054779 0.1735599935054779 0.1735599935054779 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 35.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/vehicle/trailer_eu/food_cistern/plain"
+        }
+    }
+    Material {
+        Alias: "p2:shadow_caster"
+        Effect: "eut2.shadowonly"
+        Flags: 0
+        AttributeCount: 1
+        TextureCount: 0
+        Attribute {
+            Format: FLOAT
+            Tag: "shadow_bias"
+            Value: ( 0.0 )
+        }
+    }
+}
+Look {
+    Name: "euroacres"
+    Material {
+        Alias: "main_spec"
+        Effect: "eut2.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.9338799715042114 0.9338799715042114 0.9338799715042114 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 35.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/vehicle/trailer_eu/food_cistern/plain"
+        }
+    }
+    Material {
+        Alias: "p:shadow_caster"
+        Effect: "eut2.shadowonly"
+        Flags: 0
+        AttributeCount: 1
+        TextureCount: 0
+        Attribute {
+            Format: FLOAT
+            Tag: "shadow_bias"
+            Value: ( 0.0 )
+        }
+    }
+    Material {
+        Alias: "WheelRubber"
+        Effect: "eut2.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.5 0.5 0.5 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 20.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/vehicle/wheel/steel/rear_trailer_new"
+        }
+    }
+    Material {
+        Alias: "lamp"
+        Effect: "eut2.lamp.add.env"
+        Flags: 0
+        AttributeCount: 6
+        TextureCount: 3
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.800000011920929 0.800000011920929 0.800000011920929 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 60.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "env_factor"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT2
+            Tag: "fresnel"
+            Value: ( 0.20000000298023224 0.8999999761581421 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/vehicle/trailer_eu/food_cistern/plain"
+        }
+        Texture {
+            Tag: "texture[1]:texture_mask"
+            Value: "/vehicle/trailer_eu/food_cistern/lamp_mask"
+        }
+        Texture {
+            Tag: "texture[2]:texture_reflection"
+            Value: "/material/environment/vehicle_reflection"
+        }
+    }
+    Material {
+        Alias: "paint"
+        Effect: "eut2.dif.spec.mult.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 2
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.9338799715042114 0.9338799715042114 0.9338799715042114 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 35.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/vehicle/trailer_eu/food_cistern/plain"
+        }
+        Texture {
+            Tag: "texture[1]:texture_mult"
+            Value: "/vehicle/trailer_eu/company/euroacres"
+        }
+    }
+    Material {
+        Alias: "transp"
+        Effect: "eut2.dif.over"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.1735599935054779 0.1735599935054779 0.1735599935054779 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 35.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/vehicle/trailer_eu/food_cistern/plain"
+        }
+    }
+    Material {
+        Alias: "p2:shadow_caster"
+        Effect: "eut2.shadowonly"
+        Flags: 0
+        AttributeCount: 1
+        TextureCount: 0
+        Attribute {
+            Format: FLOAT
+            Tag: "shadow_bias"
+            Value: ( 0.0 )
+        }
+    }
+}
+Look {
+    Name: "trameri"
+    Material {
+        Alias: "main_spec"
+        Effect: "eut2.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.9338799715042114 0.9338799715042114 0.9338799715042114 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 35.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/vehicle/trailer_eu/food_cistern/plain"
+        }
+    }
+    Material {
+        Alias: "p:shadow_caster"
+        Effect: "eut2.shadowonly"
+        Flags: 0
+        AttributeCount: 1
+        TextureCount: 0
+        Attribute {
+            Format: FLOAT
+            Tag: "shadow_bias"
+            Value: ( 0.0 )
+        }
+    }
+    Material {
+        Alias: "WheelRubber"
+        Effect: "eut2.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.5 0.5 0.5 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 20.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/vehicle/wheel/steel/rear_trailer_new"
+        }
+    }
+    Material {
+        Alias: "lamp"
+        Effect: "eut2.lamp.add.env"
+        Flags: 0
+        AttributeCount: 6
+        TextureCount: 3
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.800000011920929 0.800000011920929 0.800000011920929 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 60.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "env_factor"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT2
+            Tag: "fresnel"
+            Value: ( 0.20000000298023224 0.8999999761581421 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/vehicle/trailer_eu/food_cistern/plain"
+        }
+        Texture {
+            Tag: "texture[1]:texture_mask"
+            Value: "/vehicle/trailer_eu/food_cistern/lamp_mask"
+        }
+        Texture {
+            Tag: "texture[2]:texture_reflection"
+            Value: "/material/environment/vehicle_reflection"
+        }
+    }
+    Material {
+        Alias: "paint"
+        Effect: "eut2.dif.spec.mult.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 2
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.9338799715042114 0.9338799715042114 0.9338799715042114 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 35.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/vehicle/trailer_eu/food_cistern/plain"
+        }
+        Texture {
+            Tag: "texture[1]:texture_mult"
+            Value: "/vehicle/trailer_eu/company/trameri"
+        }
+    }
+    Material {
+        Alias: "transp"
+        Effect: "eut2.dif.over"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.1735599935054779 0.1735599935054779 0.1735599935054779 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 35.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/vehicle/trailer_eu/food_cistern/plain"
+        }
+    }
+    Material {
+        Alias: "p2:shadow_caster"
+        Effect: "eut2.shadowonly"
+        Flags: 0
+        AttributeCount: 1
+        TextureCount: 0
+        Attribute {
+            Format: FLOAT
+            Tag: "shadow_bias"
+            Value: ( 0.0 )
+        }
+    }
+}
+Look {
+    Name: "fcp"
+    Material {
+        Alias: "main_spec"
+        Effect: "eut2.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.9338799715042114 0.9338799715042114 0.9338799715042114 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 35.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/vehicle/trailer_eu/food_cistern/plain"
+        }
+    }
+    Material {
+        Alias: "p:shadow_caster"
+        Effect: "eut2.shadowonly"
+        Flags: 0
+        AttributeCount: 1
+        TextureCount: 0
+        Attribute {
+            Format: FLOAT
+            Tag: "shadow_bias"
+            Value: ( 0.0 )
+        }
+    }
+    Material {
+        Alias: "WheelRubber"
+        Effect: "eut2.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.5 0.5 0.5 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 20.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/vehicle/wheel/steel/rear_trailer_new"
+        }
+    }
+    Material {
+        Alias: "lamp"
+        Effect: "eut2.lamp.add.env"
+        Flags: 0
+        AttributeCount: 6
+        TextureCount: 3
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.800000011920929 0.800000011920929 0.800000011920929 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 60.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "env_factor"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT2
+            Tag: "fresnel"
+            Value: ( 0.20000000298023224 0.8999999761581421 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/vehicle/trailer_eu/food_cistern/plain"
+        }
+        Texture {
+            Tag: "texture[1]:texture_mask"
+            Value: "/vehicle/trailer_eu/food_cistern/lamp_mask"
+        }
+        Texture {
+            Tag: "texture[2]:texture_reflection"
+            Value: "/material/environment/vehicle_reflection"
+        }
+    }
+    Material {
+        Alias: "paint"
+        Effect: "eut2.dif.spec.mult.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 2
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.9338799715042114 0.9338799715042114 0.9338799715042114 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 35.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/vehicle/trailer_eu/food_cistern/plain"
+        }
+        Texture {
+            Tag: "texture[1]:texture_mult"
+            Value: "/vehicle/trailer_eu/company/fcp"
+        }
+    }
+    Material {
+        Alias: "transp"
+        Effect: "eut2.dif.over"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.1735599935054779 0.1735599935054779 0.1735599935054779 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 35.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/vehicle/trailer_eu/food_cistern/plain"
+        }
+    }
+    Material {
+        Alias: "p2:shadow_caster"
+        Effect: "eut2.shadowonly"
+        Flags: 0
+        AttributeCount: 1
+        TextureCount: 0
+        Attribute {
+            Format: FLOAT
+            Tag: "shadow_bias"
+            Value: ( 0.0 )
+        }
+    }
+}
+Variant {
+    Name: "default"
+    Part {
+        Name: "brace_on"
+        AttributeCount: 1
+        Attribute {
+            Format: INT
+            Tag: "visible"
+            Value: ( 1 )
+        }
+    }
+    Part {
+        Name: "brace_off"
+        AttributeCount: 1
+        Attribute {
+            Format: INT
+            Tag: "visible"
+            Value: ( 0 )
+        }
+    }
+    Part {
+        Name: "vis"
+        AttributeCount: 1
+        Attribute {
+            Format: INT
+            Tag: "visible"
+            Value: ( 1 )
+        }
+    }
+}

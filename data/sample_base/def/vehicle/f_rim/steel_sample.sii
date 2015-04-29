@@ -1,0 +1,12 @@
+SiiNunit
+{
+accessory_rim_data : steel_sample.frim
+{
+	name: "@@standard@@ sample"
+	price: 1440
+	unlock: 0
+	model: "/vehicle/truck/upgrade/rim/front_steel_sample.pmd"
+	icon: "f_rim_steel"
+	front_rim:true
+}
+}

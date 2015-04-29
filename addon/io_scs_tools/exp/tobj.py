@@ -18,6 +18,8 @@
 
 # Copyright (C) 2013-2014: SCS Software
 
+from io_scs_tools.utils.printout import lprint
+
 
 def export(filepath, texture_name, settings):
     """Exports TOBJ with settings.
@@ -28,43 +30,48 @@ def export(filepath, texture_name, settings):
     :type texture_name: str
     :param settings: settings of texture saved in material.scs_props
     :type settings: set
+    :return: True if file was written successfully; False otherwise
     """
 
-    file = open(filepath, "w", encoding="utf8", newline="\n")
-    fw = file.write
+    try:
 
-    # MAP
-    fw("map\t2d\t%s\n" % texture_name)
+        file = open(filepath, "w", encoding="utf8", newline="\n")
+        fw = file.write
 
-    # ADDR
-    if "u_repeat" in settings:
-        addr_u = "repeat"
-    else:
-        addr_u = "clamp_to_edge"
+        # MAP
+        fw("map\t2d\t%s\n" % texture_name)
 
-    if "v_repeat" in settings:
-        addr_v = "repeat"
-    else:
-        addr_v = "clamp_to_edge"
+        # ADDR
+        if "u_repeat" in settings:
+            addr_u = "repeat"
+        else:
+            addr_u = "clamp_to_edge"
 
-    fw("addr\t%s\t%s\n" % (addr_u, addr_v))
+        if "v_repeat" in settings:
+            addr_v = "repeat"
+        else:
+            addr_v = "clamp_to_edge"
 
-    # USAGE
-    if "rgb_only" in settings:
-        fw("usage\trgb_only\n")
-    if "tsnormal" in settings:
-        fw("usage\ttsnormal\n")
+        fw("addr\t%s\t%s\n" % (addr_u, addr_v))
 
-    # NO MIPS
-    if "nomips" in settings:
-        fw("nomips\n")
+        # USAGE
+        if "tsnormal" in settings:
+            fw("usage\ttsnormal\n")
 
-    # NO COMPRESS
-    if "nocompress" in settings:
-        fw("nocompress\n")
+        # NO MIPS
+        if "nomips" in settings:
+            fw("nomips\n")
 
-    # COLOR SPACE
-    if "color_space:linear" in settings:
-        fw("color_space\tlinear\n")
+        # NO COMPRESS
+        if "nocompress" in settings:
+            fw("nocompress\n")
 
-    file.close()
+        file.close()
+
+        return True
+
+    except IOError:
+
+        lprint("W Can't write TOBJ file into path:\n\t   %r", (filepath,))
+
+    return False

@@ -27,9 +27,11 @@ from bpy.props import (StringProperty,
                        EnumProperty,
                        FloatProperty)
 from io_scs_tools.consts import Icons as _ICONS_consts
+from io_scs_tools.consts import Look as _LOOK_consts
 from io_scs_tools.consts import Part as _PART_consts
 from io_scs_tools.consts import Variant as _VARIANT_consts
 from io_scs_tools.internals import inventory as _inventory
+from io_scs_tools.internals import looks as _looks
 from io_scs_tools.internals import preview_models as _preview_models
 from io_scs_tools.utils import animation as _animation_utils
 from io_scs_tools.utils import object as _object_utils
@@ -38,6 +40,35 @@ from io_scs_tools.internals.icons.wrapper import get_icon
 from io_scs_tools.utils.printout import lprint
 
 _ICON_TYPES = _ICONS_consts.Types
+
+
+class ObjectLooksInventory(bpy.types.PropertyGroup):
+    def name_update(self, context):
+
+        lprint("D SCS Look inventory name update: %s", (self.name,))
+
+        # convert name to game engine like name
+        tokenized_name = _name_utils.tokenize_name(self.name)
+        if self.name != tokenized_name:
+            self.name = tokenized_name
+
+        # always get scs root to have access to look inventory
+        scs_root_obj = _object_utils.get_scs_root(context.active_object)
+
+        # if there is more of variants with same name, make postfixed name (this will cause another name update)
+        if len(_inventory.get_indices(scs_root_obj.scs_object_look_inventory, self.name)) == 2:  # duplicate
+
+            i = 1
+            new_name = _name_utils.tokenize_name(self.name + "_" + str(i).zfill(2))
+            while _inventory.get_index(scs_root_obj.scs_object_look_inventory, new_name) != -1:
+                new_name = _name_utils.tokenize_name(self.name + "_" + str(i).zfill(2))
+                i += 1
+
+            if new_name != self.name:
+                self.name = new_name
+
+    name = StringProperty(name="Look Name", default=_LOOK_consts.default_name, update=name_update)
+    id = IntProperty(name="Unique ID of this look")
 
 
 class ObjectPartInventory(bpy.types.PropertyGroup):
@@ -227,11 +258,25 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
             ('Locator', "Locator", "Empty object will become a 'Locator'", get_icon(_ICON_TYPES.loc), 2),
         ]
 
+    def update_empty_object_type(self, context):
+
+        if context.object:
+
+            if self.empty_object_type == "SCS_Root":
+                context.object.empty_draw_size = 5.0
+                context.object.empty_draw_type = "ARROWS"
+                context.object.show_name = True
+            else:
+                context.object.empty_draw_size = 1.0
+                context.object.empty_draw_type = "PLAIN_AXES"
+                context.object.show_name = False
+
     # EMPTY OBJECT TYPE
     empty_object_type = EnumProperty(
         name="SCS Object Type",
         description="Settings for Special SCS Objects",
-        items=empty_object_type_items
+        items=empty_object_type_items,
+        update=update_empty_object_type
     )
 
     # SCS GAME OBJECTS
@@ -374,6 +419,33 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
         subtype='NONE',
         get=active_scs_part_get,
         set=active_scs_part_set
+    )
+
+    def get_active_scs_look(self):
+
+        if "active_scs_look" not in self:
+            return -1
+
+        return self["active_scs_look"]
+
+    def set_active_scs_look(self, value):
+
+        if value != self.get_active_scs_look():
+
+            self["active_scs_look"] = value
+
+            if bpy.context.active_object:
+
+                scs_root = _object_utils.get_scs_root(bpy.context.active_object)
+                if scs_root:
+                    _looks.apply_active_look(scs_root)
+
+    active_scs_look = IntProperty(
+        name="Active SCS Look",
+        description="Active SCS Look for current SCS Game Object",
+        options={'HIDDEN'},
+        get=get_active_scs_look,
+        set=set_active_scs_look
     )
     active_scs_variant = IntProperty(
         name="Active SCS Variant",
@@ -653,8 +725,9 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
         :type context: bpy.types.Context
         :return: None
         """
-        _object_utils.update_convex_hull_margins(context.active_object)
-        return None
+
+        if context.active_object:
+            _object_utils.update_convex_hull_margins(context.active_object)
 
     locator_collider_margin = FloatProperty(
         name="Collision Margin",

@@ -1,5 +1,7 @@
 # Look Names:
-#	Default
+#	look1
+#	look2
+#	look3
 #
 # Variant Names:
 #	default
@@ -11,15 +13,15 @@ Header {
     Name: "corner_sample"
 }
 Global {
-    LookCount: 1
+    LookCount: 3
     VariantCount: 1
     PartCount: 2
     MaterialCount: 5
 }
 Look {
-    Name: "Default"
+    Name: "look1"
     Material {
-        Alias: "corner_color"
+        Alias: "spec"
         Effect: "eut2.dif.spec"
         Flags: 0
         AttributeCount: 5
@@ -32,7 +34,7 @@ Look {
         Attribute {
             Format: FLOAT3
             Tag: "specular"
-            Value: ( 0.30000001192092896 0.30000001192092896 0.30000001192092896 )
+            Value: ( 0.6000000238418579 0.6000000238418579 0.6000000238418579 )
         }
         Attribute {
             Format: FLOAT
@@ -55,7 +57,7 @@ Look {
         }
     }
     Material {
-        Alias: "corner_windows"
+        Alias: "windows"
         Effect: "eut2.building.add.env.day"
         Flags: 0
         AttributeCount: 5
@@ -164,6 +166,332 @@ Look {
         Texture {
             Tag: "texture[0]:texture_base"
             Value: "/material/road/small_starblock_pavement"
+        }
+    }
+    Material {
+        Alias: "shadow_caster"
+        Effect: "eut2.shadowonly"
+        Flags: 0
+        AttributeCount: 1
+        TextureCount: 0
+        Attribute {
+            Format: FLOAT
+            Tag: "shadow_bias"
+            Value: ( 0.0 )
+        }
+    }
+}
+Look {
+    Name: "look2"
+    Material {
+        Alias: "spec"
+        Effect: "eut2.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.6000000238418579 0.6000000238418579 0.6000000238418579 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 20.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/model/building/administration/corner_2"
+        }
+    }
+    Material {
+        Alias: "windows"
+        Effect: "eut2.building.add.env.day"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 2
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.8999999761581421 0.8999999761581421 0.8999999761581421 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 60.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "env_factor"
+            Value: ( 0.8999999761581421 0.8999999761581421 0.8999999761581421 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/model/building/administration/corner_2"
+        }
+        Texture {
+            Tag: "texture[1]:texture_reflection"
+            Value: "/material/environment/building_reflection/building_ref"
+        }
+    }
+    Material {
+        Alias: "curb"
+        Effect: "eut2.dif.spec.weight"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 8.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/road/kerb_tile"
+        }
+    }
+    Material {
+        Alias: "pavement"
+        Effect: "eut2.dif.spec.weight"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 8.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/road/small_block_pavement"
+        }
+    }
+    Material {
+        Alias: "shadow_caster"
+        Effect: "eut2.shadowonly"
+        Flags: 0
+        AttributeCount: 1
+        TextureCount: 0
+        Attribute {
+            Format: FLOAT
+            Tag: "shadow_bias"
+            Value: ( 0.0 )
+        }
+    }
+}
+Look {
+    Name: "look3"
+    Material {
+        Alias: "spec"
+        Effect: "eut2.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.6000000238418579 0.6000000238418579 0.6000000238418579 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 20.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/model/building/administration/corner_3"
+        }
+    }
+    Material {
+        Alias: "windows"
+        Effect: "eut2.building.add.env.day"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 2
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.8999999761581421 0.8999999761581421 0.8999999761581421 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 60.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "env_factor"
+            Value: ( 0.8999999761581421 0.8999999761581421 0.8999999761581421 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/model/building/administration/corner_3"
+        }
+        Texture {
+            Tag: "texture[1]:texture_reflection"
+            Value: "/material/environment/building_reflection/building_ref"
+        }
+    }
+    Material {
+        Alias: "curb"
+        Effect: "eut2.dif.spec.weight"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 8.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/road/kerb_tile"
+        }
+    }
+    Material {
+        Alias: "pavement"
+        Effect: "eut2.dif.spec.weight"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 8.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/road/rough_asphalt"
         }
     }
     Material {

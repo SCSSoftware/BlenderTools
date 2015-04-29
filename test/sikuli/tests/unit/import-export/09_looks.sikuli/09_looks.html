@@ -1,0 +1,99 @@
+
+<html>
+   <head>
+      <style type="text/css">
+         .sikuli-code {
+            font-size: 20px;
+            font-family: "Osaka-mono", Monospace;
+            line-height: 1.5em;
+            display:table-cell;
+            white-space: pre-wrap;       /* css-3 */
+            white-space: -moz-pre-wrap !important;  /* Mozilla, since 1999 */
+            white-space: -pre-wrap;      /* Opera 4-6 */
+            white-space: -o-pre-wrap;    /* Opera 7 */
+            word-wrap: break-word;       /* Internet Explorer 5.5+ */
+            width: 99%;   /* remove horizontal scroll-bar when viewing in IE7 */
+         }
+         .sikuli-code img {
+            vertical-align: middle;
+            margin: 2px;
+            border: 1px solid #ccc;
+            padding: 2px;
+            -moz-border-radius: 5px;
+            -webkit-border-radius: 5px;
+            -moz-box-shadow: 1px 1px 1px gray;
+            -webkit-box-shadow: 1px 1px 2px gray;
+         }
+         .kw {
+            color: blue;
+         }
+         .skw {
+            color: rgb(63, 127, 127);
+         }
+
+         .str {
+            color: rgb(128, 0, 0);
+         }
+
+         .dig {
+            color: rgb(128, 64, 0);
+         }
+
+         .cmt {
+            color: rgb(200, 0, 200);
+         }
+
+         h2 {
+            display: inline;
+            font-weight: normal;
+         }
+
+         .info {
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 5px;
+            margin-bottom: 20px;
+            display: none;
+         }
+
+         a {
+            color: #9D2900;
+         }
+
+         body {
+            font-family: "Trebuchet MS", Arial, Sans-Serif;
+         }
+
+      </style>
+   </head>
+<body>
+<div class="info">
+<h2>09_looks.sikuli</h2> <a href="09_looks.zip">(Download this script)</a>
+</div>
+<pre class="sikuli-code">
+<span class="kw">import</span> configurator, subprocess
+reload(configurator)
+p = configurator.start_it_up(getBundlePath(), <span class="str">"looks.blend"</span>)
+
+<span class="kw">try</span>:
+    <span class="skw">wait</span>(Pattern(<img src="3dview_first_look.png" />).similar(<span class="dig">0.95</span>),<span class="dig">5</span>)
+    <span class="skw">click</span>(Pattern(<img src="looks_entries.png" />).similar(<span class="dig">0.92</span>).targetOffset(-<span class="dig">3</span>,<span class="dig">10</span>)); <span class="skw">wait</span>(Pattern(<img src="3dview_second_look.png" />).similar(<span class="dig">0.91</span>))
+    <span class="skw">click</span>(Pattern(<img src="export_selected_button.png" />).similar(<span class="dig">0.91</span>));
+    <span class="skw">wait</span>(<span class="dig">1</span>); <span class="skw">type</span>(Key.ESC)
+    hover(Pattern(<img src="3dview_second_look.png" />).similar(<span class="dig">0.91</span>)); <span class="skw">type</span>(<span class="str">"2"</span>)
+    <span class="skw">type</span>(Key.SPACE + <span class="str">"SCS Import"</span>); <span class="skw">type</span>(Key.ENTER)
+    scs_base = configurator.get_path_property(<span class="str">"SCSBasePath"</span>)
+    <span class="skw">find</span>(Pattern(<img src="filebrowser_import_button.png" />).exact()).left().paste(Pattern(<img src="empty_input_field.png" />).exact(), scs_base)
+    <span class="skw">type</span>(Key.ENTER)
+    <span class="skw">click</span>(<img src="game_object_file.png" />)
+    <span class="skw">type</span>(Key.ENTER)
+    <span class="skw">wait</span>(Pattern(<img src="3dview_first_look.png" />).similar(<span class="dig">0.95</span>))
+    <span class="skw">click</span>(Pattern(<img src="looks_entries.png" />).similar(<span class="dig">0.92</span>).targetOffset(-<span class="dig">3</span>,<span class="dig">10</span>));
+    <span class="skw">wait</span>(Pattern(<img src="3dview_second_look.png" />).similar(<span class="dig">0.91</span>))
+<span class="kw">except</span>:
+    configurator.save_screenshot(getBundlePath(), Screen())
+    <span class="kw">raise</span>
+<span class="kw">finally</span>:
+    configurator.close_blender(p)
+</pre>
+</body>
+</html>

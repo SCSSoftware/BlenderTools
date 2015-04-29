@@ -374,7 +374,8 @@ def gather_default():
         section = _SectionData("Import")
         section.props.append(("ImportScale", _property.get_default(bpy.types.GlobalSCSProps.import_scale)))
         section.props.append(("ImportPimFile", int(_property.get_default(bpy.types.GlobalSCSProps.import_pim_file))))
-        section.props.append(("AutoWelding", int(_property.get_default(bpy.types.GlobalSCSProps.auto_welding))))
+        section.props.append(("UseWelding", int(_property.get_default(bpy.types.GlobalSCSProps.use_welding))))
+        section.props.append(("WeldingPrecision", int(_property.get_default(bpy.types.GlobalSCSProps.welding_precision))))
         section.props.append(("ImportPitFile", int(_property.get_default(bpy.types.GlobalSCSProps.import_pit_file))))
         section.props.append(("LoadTextures", int(_property.get_default(bpy.types.GlobalSCSProps.load_textures))))
         section.props.append(("ImportPicFile", int(_property.get_default(bpy.types.GlobalSCSProps.import_pic_file))))
@@ -531,8 +532,10 @@ def apply_settings():
                         _get_scs_globals().import_scale = float(prop[1])
                     elif prop[0] == "ImportPimFile":
                         _get_scs_globals().import_pim_file = prop[1]
-                    elif prop[0] == "AutoWelding":
-                        _get_scs_globals().auto_welding = prop[1]
+                    elif prop[0] == "UseWelding":
+                        _get_scs_globals().use_welding = prop[1]
+                    elif prop[0] == "WeldingPrecision":
+                        _get_scs_globals().welding_precision = prop[1]
                     elif prop[0] == "ImportPitFile":
                         _get_scs_globals().import_pit_file = prop[1]
                     elif prop[0] == "LoadTextures":

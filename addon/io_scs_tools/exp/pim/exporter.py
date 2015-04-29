@@ -86,20 +86,25 @@ def execute(dirpath, root_object, mesh_objects, model_locators, used_parts, used
 
         mesh_pieces = collections.OrderedDict()
 
-        # get initial mesh
-        mesh = _object_utils.get_mesh(mesh_obj)
-        _mesh_utils.bm_triangulate(mesh)
-        mesh.calc_normals_split()
+        # calculate faces flip state from all ancestors of current object
+        scale_sign = 1
+        for scale_axis in mesh_obj.scale:
+            scale_sign *= scale_axis
+        face_flip = scale_sign < 0
+
+        # calculate transformation matrix for current object (root object transforms are always subtracted!)
+        mesh_transf_mat = root_object.matrix_world.inverted() * mesh_obj.matrix_world
 
         # calculate transformation matrices for this object
         pos_transf_mat = (Matrix.Scale(scs_globals.export_scale, 4) *
-                          _scs_to_blend_matrix().inverted() *
-                          root_object.matrix_world.inverted() *
-                          mesh_obj.matrix_world)
+                          _scs_to_blend_matrix().inverted())
 
-        nor_transf_mat = (_scs_to_blend_matrix().inverted() *
-                          root_object.matrix_world.inverted().to_quaternion().to_matrix().to_4x4() *
-                          mesh_obj.matrix_world.to_quaternion().to_matrix().to_4x4())
+        nor_transf_mat = _scs_to_blend_matrix().inverted()
+
+        # get initial mesh
+        mesh = _object_utils.get_mesh(mesh_obj)
+        _mesh_utils.bm_prepare_mesh_for_export(mesh, mesh_transf_mat, face_flip)
+        mesh.calc_normals_split()
 
         missing_uv_layers = {}  # stores missing uvs specified by materials of this object
         missing_vcolor = False  # indicates if object is missing vertex colors
@@ -196,7 +201,7 @@ def execute(dirpath, root_object, mesh_objects, model_locators, used_parts, used
                 else:
                     multiplier = mesh_obj.data.scs_props.vertex_color_multiplier
                     color = mesh.vertex_colors[0].data[loop_i].color
-                    vcol = (color[0] * multiplier, color[1] * multiplier, color[2] * multiplier, 1.0)
+                    vcol = (color[0] * 2 * multiplier, color[1] * 2 * multiplier, color[2] * 2 * multiplier, 1.0)
 
                 # 5. tangent -> loop.tangent; loop.bitangent_sign -> calc_tangents() has to be called before
                 if pim_materials[pim_mat_name].get_nmap_uv_name():  # calculate tangents only if needed
@@ -211,6 +216,9 @@ def execute(dirpath, root_object, mesh_objects, model_locators, used_parts, used
                 piece_vert_indices.append(piece_vert_index)
 
             mesh_piece.add_triangle(tuple(piece_vert_indices[::-1]))  # invert indices because of normals flip
+
+        # free normals calculations
+        _mesh_utils.cleanup_mesh(mesh)
 
         # create part if it doesn't exists yet
         part_name = mesh_obj.scs_props.scs_part
@@ -233,9 +241,9 @@ def execute(dirpath, root_object, mesh_objects, model_locators, used_parts, used
                 lprint("W Object '%s' is missing UV layer '%s' specified by materials: %s\n",
                        (mesh_obj.name, uv_lay_name, missing_uv_layers[uv_lay_name]))
         if missing_vcolor:
-            lprint("W Object '%s' is missing vertex color layer! Default color will be exported (1, 1, 1, 1)!", (mesh_obj.name,))
+            lprint("W Object '%s' is missing vertex color layer! Default RGB color will be exported (0.5, 0.5, 0.5)!", (mesh_obj.name,))
 
-    # report mising data for whole model
+    # report missing data for whole model
     if len(missing_mappings_data) > 0:
         for material_name in missing_mappings_data:
             lprint("W Material '%s' is missing mapping data! Objects using it are exported with default UV:\n\t   %s",
@@ -246,6 +254,14 @@ def execute(dirpath, root_object, mesh_objects, model_locators, used_parts, used
 
     # create locators data sections
     for loc_obj in model_locators:
+
+        pos, qua, sca = _get_scs_transformation_components(root_object.matrix_world.inverted() * loc_obj.matrix_world)
+
+        if sca[0] * sca[1] * sca[2] < 0:
+            lprint("W Model locator %r inside SCS Root Object %r not exported because of invalid scale.\n\t   " +
+                   "Model locators must have positive scale!", (loc_obj.name, root_object.name))
+            continue
+
         name = _name_utils.tokenize_name(loc_obj.name)
         hookup_string = loc_obj.scs_props.locator_model_hookup
         if hookup_string != "" and ":" in hookup_string:
@@ -254,7 +270,6 @@ def execute(dirpath, root_object, mesh_objects, model_locators, used_parts, used
             if hookup_string != "":
                 lprint("W The Hookup %r has no expected value!", hookup_string)
             hookup = None
-        pos, qua, sca = _get_scs_transformation_components(loc_obj.matrix_world)
 
         # create locator object for export
         locator = Locator(len(pim_locators), name, hookup)

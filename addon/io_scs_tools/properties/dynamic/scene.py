@@ -23,6 +23,7 @@ import bpy
 
 def register():
     bpy.types.Scene.scs_cached_num_objects = property(_get_num_objects, _set_num_objects)
+    bpy.types.Scene.scs_cached_active_scs_root = property(_get_active_scs_root, _set_active_scs_root)
 
 
 def _get_num_objects(self):
@@ -34,3 +35,14 @@ def _get_num_objects(self):
 
 def _set_num_objects(self, value):
     self["scs_cached_num_objects"] = value
+
+
+def _get_active_scs_root(self):
+    if "scs_cached_active_scs_root" not in self:
+        _set_active_scs_root(self, self.objects.active.name)
+
+    return self["scs_cached_active_scs_root"]
+
+
+def _set_active_scs_root(self, value):
+    self["scs_cached_active_scs_root"] = value

@@ -68,48 +68,62 @@ def lprint(string, values=(), report_errors=0, report_warnings=0):
         if string[0] not in 'EWIDS':
             print(prech + '!!! UNKNOWN MESSAGE SIGN !!! - "' + string + '"' % values)
 
-    # ERROR REPORTS
-    if report_errors == 1 and error_messages:
-        print('\n\nERROR SUMMARY:\n==============')
-        for message_i, message in enumerate(error_messages):
-            print(message)
-    elif report_errors == -1:
+    # CLEAR ERROR AND WARNING STACK IF REQUESTED
+    if report_errors == -1:
         error_messages = []
-
-    # WARNING REPORTS
-    if report_warnings == 1 and warning_messages:
-        print('\n\nWARNING SUMMARY:\n================')
-        for message_i, message in enumerate(warning_messages):
-            print(message)
-    elif report_warnings == -1:
+    if report_warnings == -1:
         warning_messages = []
 
     # ERROR AND WARNING REPORTS
     title = ""
     text = "\n"
     if report_errors == 1 and error_messages:
+
+        # print error summary
+        print('\n\nERROR SUMMARY:\n==============')
+        printed_messages = []
+        for message_i, message in enumerate(error_messages):
+            if message not in printed_messages:
+                printed_messages.append(message)
+                print(message)
+
+        # create dialog title and message
         title = "ERRORS"
 
-        if len(error_messages) == 1:
+        if len(printed_messages) == 1:
             text += "An ERROR occurred during process!\n"
         else:
-            text += "%i ERRORS occurred during process!\n" % len(error_messages)
+            text += "%i ERRORS occurred during process!\n" % len(printed_messages)
         error_messages = []
 
     if report_warnings == 1 and warning_messages:
+
+        # print warning summary
+        print('\n\nWARNING SUMMARY:\n================')
+        printed_messages = []
+        for message_i, message in enumerate(warning_messages):
+            # print only unique messages
+            if message not in printed_messages:
+                printed_messages.append(message)
+                print(message)
+
+        # create dialog title and message
         if title != "":
             title += " AND "
         title += "WARNINGS DURING PROCESS"
 
-        if len(warning_messages) == 1:
+        if len(printed_messages) == 1:
             text += "A WARNING is printed to the console!\n"
         else:
-            text += "%i WARNINGS were printed to the console!\n" % len(warning_messages)
+            text += "%i WARNINGS were printed to the console!\n" % len(printed_messages)
         warning_messages = []
 
     if title != "":
         text += "Please checkout the printings."
         bpy.ops.wm.show_warning_message('INVOKE_DEFAULT', title=title, message=text, is_modal=True)
+        return True
+    else:
+        return False
 
 
 def print_section(section, ind):

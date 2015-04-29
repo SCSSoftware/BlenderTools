@@ -45,10 +45,18 @@ def pre_save(scene):
     scs_globals.scs_traffic_rules_inventory.clear()
     scs_globals.scs_tsem_profile_inventory.clear()
 
+    # clear unused materials, this has to be done because of usage of same material inside nodes
+    for material in bpy.data.materials:
+        if material.node_tree and material.users == 1:
+            for node in material.node_tree.nodes:
+                if node.type in ("MATERIAL_EXT", "MATERIAL"):
+                    if node.material == material:
+                        material.user_clear()
+
 
 @persistent
 def post_save(scene):
-    # reaload inventories
+    # reload inventories
     readonly = True
     scs_globals = _get_scs_globals()
     _config_container.update_hookup_library_rel_path(

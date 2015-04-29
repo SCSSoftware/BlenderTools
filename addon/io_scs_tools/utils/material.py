@@ -16,19 +16,22 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2013-2014: SCS Software
+# Copyright (C) 2013-2015: SCS Software
 
 import os
+
 import bpy
+from io_scs_tools.consts import Material as _MAT_consts
+from io_scs_tools.imp import tobj as _tobj_imp
 from io_scs_tools.internals import inventory as _invetory
 from io_scs_tools.internals.containers import pix as _pix_container
+from io_scs_tools.internals.shaders import shader as _shader
 from io_scs_tools.utils import path as _path
-from io_scs_tools.utils import object as _object
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
 from io_scs_tools.utils.printout import lprint
 
 
-def is_valid_shader_texture_path(shader_texture):
+def is_valid_shader_texture_path(shader_texture, tobj_check=False):
     """It returns True if there is valid Shader Texture file, otherwise False.
 
     :param shader_texture: SCS texture path, can be absolute or relative
@@ -37,6 +40,10 @@ def is_valid_shader_texture_path(shader_texture):
     :rtype: bool
     """
     if shader_texture != "":
+
+        if tobj_check and (shader_texture.endswith(".tga") or shader_texture.endswith(".png")):
+            shader_texture = shader_texture[:-4] + ".tobj"
+
         if shader_texture.startswith(str(os.sep + os.sep)):  # RELATIVE PATH
             shader_texture_abs_path = _path.get_abs_path(shader_texture)
             if shader_texture_abs_path:
@@ -45,52 +52,8 @@ def is_valid_shader_texture_path(shader_texture):
         else:  # ABSOLUTE PATH
             if os.path.isfile(shader_texture):
                 return True
-    else:
-        return True  # NOTE: This is because we don't want to have all empty slots marked as invalid.
+
     return False
-
-
-def clear_texture_slots(material, texture_type):
-    """Clears texture slots with given texture_type.
-
-    :param texture_type: Type of SCS texture
-    :type texture_type: str
-    :return: True if any slots were deleted or False if none
-    :rtype: bool
-    """
-    texture_slots = material.texture_slots
-    for texture_slot_i, texture_slot in enumerate(texture_slots):
-        # print('  texture_slot[%.2i]: %s' % (texture_slot_i, str(texture_slot)))
-        if texture_slot:
-            # print('   texture_slot.name: %r' % str(texture_slot.name))
-            if texture_slot.name.startswith(str("scs_" + texture_type + "_")):
-                tex = texture_slots[texture_slot_i].texture
-                texture_slots.clear(texture_slot_i)
-                if tex.users == 0:
-                    bpy.data.textures.remove(tex)
-
-                return True
-    return False
-
-
-def get_texture_slot(material, texture_type):
-    """Takes texture type and returns texture slot from active Material or None.
-
-    :param material: Blender material object
-    :type material: Material
-    :param texture_type: SCS texture type
-    :type texture_type: str
-    :return: Material Texture Slot or None
-    :rtype: MaterialTextureSlot
-    """
-    texture_slots = material.texture_slots
-    for texture_slot_i, texture_slot in enumerate(texture_slots):
-        # print('  texture_slot[%.2i]: %s' % (texture_slot_i, str(texture_slot)))
-        if texture_slot:
-            # print('   texture_slot.name: %r' % str(texture_slot.name))
-            if texture_slot.name.startswith(str("scs_" + texture_type + "_")):
-                return texture_slot
-    return None
 
 
 def correct_image_filepath(texture_slot, abs_texture_filepath):
@@ -98,7 +61,7 @@ def correct_image_filepath(texture_slot, abs_texture_filepath):
     Then the function performs image reload.
 
     :param texture_slot: Texture Slot in active Material
-    :type texture_slot: TextureSlot
+    :type texture_slot: bpy.types.TextureSlot
     :param abs_texture_filepath: New absolute texture path
     :type abs_texture_filepath: str
     """
@@ -111,11 +74,9 @@ def correct_image_filepath(texture_slot, abs_texture_filepath):
     texture_slot.texture.image_user.use_auto_refresh = False
 
 
-def update_texture_slots(material, texture_path, texture_type):
+def get_texture(texture_path, texture_type):
     """Creates and setup Texture and Image data on active Material.
 
-    :param material: Blender material
-    :type material: Material
     :param texture_path: Texture path
     :type texture_path: str
     :param texture_type: Texture type keyword
@@ -124,136 +85,77 @@ def update_texture_slots(material, texture_path, texture_type):
     # print(' texture_path: %s' % str(texture_path))
 
     # CREATE TEXTURE/IMAGE ID NAME
-    teximag_id_name = str("scs_" + texture_type + "_" + os.path.splitext(os.path.basename(texture_path))[0])
-    # print(' teximag_id_name: %r' % str(teximag_id_name))
+    teximag_id_name = str(os.path.splitext(os.path.basename(texture_path))[0])
 
-    # PROVIDE A TEXTURE SLOT
-    slot_found = None
-    texture_slots = material.texture_slots
-
-    # A. Check all Texture slots for existing Image Textures (OLD WAY)
-    # NOTE: This method often results in arbitrary order of Image Textures
-    # within Texture Slots. In such circumstances it is very hard to ensure
-    # uniform way of Material appearance in 3D viewport, because of
-    # different mixing order of Textures.
-    # for texture_slot_i, texture_slot in enumerate(texture_slots):
-
-    # B. Fixed slots for Textures...
-    fixed_slots_dict = {'base': 5, 'reflection': 6, 'over': 7, 'oclu': 8,
-                        'mask': 9, 'mult': 10, 'iamod': 11, 'lightmap': 12,
-                        'paintjob': 13, 'flakenoise': 14, 'nmap': 15}
-    if texture_type in fixed_slots_dict:
-        texture_slot_i = fixed_slots_dict[texture_type]
-        texture_slot = texture_slots[texture_slot_i]
-        # print('  texture_slot[%.2i]: %s' % (texture_slot_i, str(texture_slot)))
-
-        if texture_slot:
-            # print('   texture_slot.name: %r' % str(texture_slot.name))
-            if texture_slot.name.startswith(str("scs_" + texture_type + "_")):
-                if texture_slot.name == teximag_id_name:
-                    slot_found = texture_slot
-                else:
-                    texture_slots.clear(texture_slot_i)
-                    # break # Needed for "A. Method" above...
-
-    # CREATE ABSOLUT FILEPATH
+    # CREATE ABSOLUTE FILEPATH
     abs_texture_filepath = _path.get_abs_path(texture_path)
-    # print(' Set texture base filepath: %r' % abs_texture_filepath)
 
     if abs_texture_filepath and os.path.isfile(abs_texture_filepath):
-        # IF SLOT EXISTS, INSPECT IT FOR VALIDITY
-        # NOTE: If Blend file contains Image links from another,
-        # currently unexisting location, it is needed to correct these links.
-        if slot_found:
-            # print(' "SLOT_FOUND" - texture_path: %r' % str(texture_path))
-            # print(' "SLOT_FOUND" - abs_texture_filepath:\n\t%r' % str(abs_texture_filepath))
-            # print(' "SLOT_FOUND" - teximag_id_name: %r' % str(teximag_id_name))
-            # print(' "SLOT_FOUND" - texture_slot:\n\t%r' % str(texture_slot))
-            correct_image_filepath(texture_slot, abs_texture_filepath)
 
-            return
+        texture = None
 
-        # CREATE/FIND NEW TEXTURE
+        # find existing texture with this image
         if teximag_id_name in bpy.data.textures:
 
-            if os.path.abspath(bpy.data.textures[teximag_id_name].image.filepath) == abs_texture_filepath:
-                # REUSE EXISTING IMAGE TEXTURE
-                new_texture = bpy.data.textures[teximag_id_name]
-            else:  # also check all the duplicates
-                postfix = 1
+            # reuse existing image texture if possible
+            postfix = 0
+            postfixed_tex = teximag_id_name
+            while postfixed_tex in bpy.data.textures:
+
+                if _path.repair_path(bpy.data.textures[postfixed_tex].image.filepath) == abs_texture_filepath:
+                    texture = bpy.data.textures[postfixed_tex]
+                    break
+
+                postfix += 1
                 postfixed_tex = teximag_id_name + "." + str(postfix).zfill(3)
-                while postfixed_tex in bpy.data.textures:
 
-                    if os.path.abspath(bpy.data.textures[postfixed_tex].image.filepath) == abs_texture_filepath:
-                        # REUSE EXISTING IMAGE TEXTURE
-                        new_texture = bpy.data.textures[postfixed_tex]
-                        break
+        # if texture wasn't found create new one
+        if not texture:
 
-                    postfix += 1
-                    postfixed_tex = teximag_id_name + "." + str(postfix).zfill(3)
-                else:
-                    # CREATE NEW IMAGE TEXTURE
-                    new_texture = bpy.data.textures.new(teximag_id_name, 'IMAGE')
+            texture = bpy.data.textures.new(teximag_id_name, 'IMAGE')
+            image = None
+
+            # reuse existing image if possible
+            postfix = 0
+            postfixed_img = teximag_id_name
+            while postfixed_img in bpy.data.images:
+
+                if _path.repair_path(bpy.data.images[postfixed_img].filepath) == abs_texture_filepath:
+                    image = bpy.data.images[postfixed_img]
+                    break
+
+                postfix += 1
+                postfixed_img = teximag_id_name + "." + str(postfix).zfill(3)
+
+            # if image wasn't found load it
+            if not image:
+                image = bpy.data.images.load(abs_texture_filepath)
+                image.name = teximag_id_name
+
+                # try to get relative path to the Blender file and set it to the image
+                if bpy.data.filepath != '':  # empty file path means blender file is not saved
+                    try:
+                        rel_path = os.path.relpath(abs_texture_filepath, os.path.dirname(bpy.data.filepath))
+                    except ValueError:  # catch different mount paths: "path is on mount 'C:', start on mount 'E:'"
+                        rel_path = None
+
+                    if rel_path:
+                        rel_path = os.sep + os.sep + rel_path
+                        image.filepath = rel_path
+
+            # finally link image to texture
+            texture.image = image
+            image.use_alpha = True
+
+        # normal map related settings
+        if texture_type == "nmap":
+            texture.image.colorspace_settings.name = "Raw"
+            texture.use_normal_map = True
         else:
-            # CREATE NEW IMAGE TEXTURE
-            new_texture = bpy.data.textures.new(teximag_id_name, 'IMAGE')
-        # print('   new_texture: %s' % str(new_texture))
+            texture.image.colorspace_settings.name = "sRGB"
+            texture.use_normal_map = False
 
-        # CREATE/FIND NEW IMAGE
-        if teximag_id_name in bpy.data.images.keys() and os.path.abspath(bpy.data.images[teximag_id_name].filepath) == abs_texture_filepath:
-            # REUSE EXISTING IMAGE
-            new_image = bpy.data.images[teximag_id_name]
-        else:
-            # CREATE NEW IMAGE
-            new_image = bpy.data.images.load(abs_texture_filepath)
-            new_image.name = teximag_id_name
-        # print('   new_image: %s' % str(new_image))
-
-        # LINK IMAGE TO IMAGE TEXTURE
-        new_texture.image = new_image
-
-        # CREATE AND SETUP NEW TEXTURE SLOT
-        # for texture_slot_i, texture_slot in enumerate(texture_slots):  # Needed for "A. Method" above...
-        # print('  texture_slot[%.2i]: %s' % (texture_slot_i, str(texture_slot)))
-        # if not texture_slot:
-
-        new_texture_slot = texture_slots.create(texture_slot_i)
-
-        # LINK IMAGE TEXTURE TO TEXTURE SLOT
-        new_texture_slot.texture = new_texture
-
-        # MAKE VISUAL SETTINGS
-        new_texture_slot.color = (1.0, 1.0, 1.0)
-        new_image.use_alpha = False
-
-        texture_mappings = getattr(material.scs_props, "shader_texture_" + texture_type + "_uv")
-        if texture_mappings and len(texture_mappings) > 0:
-            new_texture_slot.uv_layer = texture_mappings[0].value
-
-        if texture_type == 'base':
-            new_texture_slot.texture_coords = 'UV'
-            new_texture_slot.use_map_color_diffuse = True
-
-            if material.scs_props.mat_effect_name.endswith(".a"):
-                new_texture_slot.use_map_alpha = True
-                new_image.use_alpha = True
-
-        else:
-            new_texture_slot.use_map_color_diffuse = False
-
-        if texture_type == 'reflection':
-            new_texture_slot.texture_coords = 'REFLECTION'
-            new_texture_slot.use_map_emit = True
-
-        if texture_type == "mult":
-            new_texture_slot.use_map_color_diffuse = True
-            new_texture_slot.blend_type = "MULTIPLY"
-
-        if texture_type == 'nmap':
-            new_texture_slot.texture_coords = 'UV'
-            new_texture_slot.use_map_normal = True
-            new_texture_slot.normal_map_space = 'TANGENT'
-            new_texture.use_normal_map = True
+        return texture
 
 
 def get_shader_preset(shader_presets_filepath, template_name):
@@ -282,42 +184,8 @@ def get_shader_preset(shader_presets_filepath, template_name):
                                 preset_section = section
                                 break
     else:
-        lprint('\nW The file path "%s" is not valid!', shader_presets_filepath)
+        lprint('\nW The file path "%s" is not valid!', (shader_presets_filepath,))
     return preset_section
-
-
-def set_env_factor(texture_slot, env_factor):
-    """Sets Environment factor properties on given Material Texture Slot.
-
-    :param texture_slot: Material Texture Slot
-    :type texture_slot: MaterialTextureSlot
-    :param env_factor: Environment factor attribute (3x float)
-    :type env_factor: FloatVectorProperty
-    """
-    # texture_slot.use_map_color_diffuse = False
-    # texture_slot.diffuse_color_factor = env_factor.v
-
-    texture_slot.use_map_emit = True
-    texture_slot.emit_factor = env_factor.v
-    # texture_slot.emit_factor = 1.0
-
-    texture_slot.blend_type = 'ADD'
-    texture_slot.use_rgb_to_intensity = True
-    texture_slot.color = env_factor
-
-
-def set_diffuse(texture_slot, material, diffuse_attr):
-    """Sets Diffuse color on given Material.
-
-    :param texture_slot: Material Texture Slot
-    :type texture_slot: MaterialTextureSlot
-    :param material: Blender material
-    :type material: Material
-    :param diffuse_attr: Diffuse attribute (3x float)
-    :type diffuse_attr: FloatVectorProperty
-    """
-    material.diffuse_color = diffuse_attr
-    texture_slot.blend_type = 'MULTIPLY'
 
 
 def get_material_from_context(context):
@@ -367,14 +235,13 @@ def correct_blender_texture_paths():
     lprint('D Update Texture Paths to SCS Base...')
     scs_project_path = _get_scs_globals().scs_project_path
     for material in bpy.data.materials:
-        for prop in material.scs_props.get_shader_texture_types():
-            texture_path = getattr(material.scs_props, prop)
+        for tex_type in material.scs_props.get_texture_types().keys():
+            texture_path = getattr(material.scs_props, "shader_texture_" + tex_type)
             scs_texture_path = os.path.join(scs_project_path, texture_path[2:])
             if texture_path:
                 for slot in material.texture_slots:
                     if slot:
-                        postfix = prop.split('_')[-1]
-                        if slot.name.startswith("scs_" + postfix):
+                        if slot.name.startswith("scs_" + tex_type):
                             image_path = slot.texture.image.filepath
                             if image_path != scs_texture_path:
                                 correct_image_filepath(slot, scs_texture_path)
@@ -383,7 +250,7 @@ def correct_blender_texture_paths():
 
 
 def set_shader_data_to_material(material, section, preset_effect, is_import=False, override_back_data=True):
-    """
+    """Used to set up material properties from given shader data even via UI or on import.
     :param material:
     :type material: bpy.types.Material
     :param section:
@@ -391,17 +258,12 @@ def set_shader_data_to_material(material, section, preset_effect, is_import=Fals
     :return:
     """
 
-    defined_tex_types = ("base", "flakenoise", "iamod", "lightmap", "mask", "mult", "oclu", "over", "paintjob", "reflection", "nmap")
-
-    material.use_transparency = preset_effect.endswith(".a")
-    _object.set_attr_if_different(material, "transparency_method", "MASK")
-
     attributes = {}
     textures = {}
     attribute_i = 0
     texture_i = 0
-    # dictionary for listing of texture types which are used and should be overlooked during clearing of texture slots
-    used_texture_types = {}
+    used_attribute_types = {}  # attribute types used by current shader
+    used_texture_types = {}  # texture types used by current shader and should be overlooked during clearing of texture slots
     for item in section.sections:
 
         if item.type == "Attribute":
@@ -416,59 +278,11 @@ def set_shader_data_to_material(material, section, preset_effect, is_import=Fals
                 attribute_data[key] = value
 
             attribute_type = attribute_data['Tag']
-            # APPLY PRESET ATTRIBUTE VALUES FROM PRESET
-            if attribute_type == 'diffuse':
-                material.scs_props.shader_attribute_diffuse = attribute_data['Value']
-                if is_import:
-                    material.scs_props.update_diffuse(material)
-            elif attribute_type == 'specular':
-                material.scs_props.shader_attribute_specular = attribute_data['Value']
-                if is_import:
-                    material.scs_props.update_specular(material)
-            elif attribute_type == 'shininess':
-                material.scs_props.shader_attribute_shininess = attribute_data['Value'][0]
-                if is_import:
-                    material.scs_props.update_shininess(material)
-            elif attribute_type == 'add_ambient':
-                material.scs_props.shader_attribute_add_ambient = attribute_data['Value'][0]
-                if is_import:
-                    material.scs_props.update_add_ambient(material)
-            elif attribute_type == 'reflection':
-                material.scs_props.shader_attribute_reflection = attribute_data['Value'][0]
-                if is_import:
-                    material.scs_props.update_reflection(material)
-            elif attribute_type == 'reflection2':
-                material.scs_props.shader_attribute_reflection2 = attribute_data['Value'][0]
-                if is_import:
-                    material.scs_props.update_reflection(material)
-            elif attribute_type == 'shadow_bias':
-                material.scs_props.shader_attribute_shadow_bias = attribute_data['Value'][0]
-                if is_import:
-                    material.scs_props.update_shadow_bias(material)
-            elif attribute_type == 'env_factor':
-                material.scs_props.shader_attribute_env_factor = attribute_data['Value']
-                if is_import:
-                    material.scs_props.update_env_factor(material)
-            elif attribute_type == 'fresnel':
-                material.scs_props.shader_attribute_fresnel = attribute_data['Value']
-            elif attribute_type == 'tint':
-                material.scs_props.shader_attribute_tint = attribute_data['Value']
-            elif attribute_type == 'tint_opacity':
-                material.scs_props.shader_attribute_tint_opacity = attribute_data['Value'][0]
-            elif attribute_type in ("aux3", "aux5", "aux6", "aux7", "aux8"):
-
-                auxiliary_prop = getattr(material.scs_props, "shader_attribute_" + attribute_type, None)
-
-                # clean old values possible left from previous shader
-                while len(auxiliary_prop) > 0:
-                    auxiliary_prop.remove(0)
-
-                for val in attribute_data['Value']:
-                    item = auxiliary_prop.add()
-                    item.value = val
 
             attributes[str(attribute_i)] = attribute_data
             attribute_i += 1
+
+            used_attribute_types[attribute_type] = attribute_data
 
         elif item.type == "Texture":
             texture_data = {}
@@ -478,83 +292,177 @@ def set_shader_data_to_material(material, section, preset_effect, is_import=Fals
 
             # APPLY SECTION TEXTURE VALUES
             texture_type = texture_data['Tag'].split(':')[1]
-            slot_id = texture_type[8:]
+            tex_type = texture_type[8:]
 
-            # set only defined textures
-            if slot_id in defined_tex_types:
-
-                texture_mappings = getattr(material.scs_props, "shader_texture_" + slot_id + "_uv")
-
-                # clear all texture mapping for current texture from previous shader
-                if override_back_data:
-                    while len(texture_mappings) > 0:
-                        texture_mappings.remove(0)
-
-                # if shader is imported try to create custom tex coord mappings on material
-                if material.scs_props.active_shader_preset_name == "<imported>" and "scs_tex_aliases" in material:
-                    custom_maps = material.scs_props.shader_custom_tex_coord_maps
-
-                    for tex_coord_key in sorted(material["scs_tex_aliases"].keys()):
-
-                        if _invetory.get_index(custom_maps, "tex_coord_" + tex_coord_key) == -1:
-                            new_map = custom_maps.add()
-                            new_map.name = "tex_coord_" + tex_coord_key
-                            new_map.value = material["scs_tex_aliases"][tex_coord_key]
-
-                    # add one mapping field for using it as a preview uv layer in case of imported shader
-                    mapping = texture_mappings.add()
-                    mapping.texture_type = slot_id
-                    mapping.tex_coord = -1
-
-                # if there is an info about mapping in shader use it (in case of imported material this condition will fall!)
-                elif "TexCoord" in texture_data:
-
-                    for tex_coord in texture_data['TexCoord']:
-                        tex_coord = int(tex_coord)
-
-                        if tex_coord != -1:
-                            mapping = texture_mappings.add()
-                            mapping.texture_type = slot_id
-                            mapping.tex_coord = tex_coord
-
-                            if "scs_tex_aliases" in material:
-                                mapping.value = material["scs_tex_aliases"][str(tex_coord)]
-
-                used_texture_types[slot_id] = 1
-
-                bitmap_filepath = _path.get_bitmap_filepath(texture_data['Value'])
-
-                if bitmap_filepath and bitmap_filepath != "":
-                    setattr(material.scs_props, "shader_texture_" + slot_id, bitmap_filepath)
-
-                    if is_import:
-                        update_texture_slots(material, bitmap_filepath, slot_id)
-
-                        # only if shader is imported then make sure that by default imported values will be used
-                        if material.scs_props.active_shader_preset_name == "<imported>":
-                            setattr(material.scs_props, "shader_texture_" + slot_id + "_use_imported", True)
-                            setattr(material.scs_props, "shader_texture_" + slot_id + "_imported_tobj", texture_data['Value'])
-
-                    texture_slot = get_texture_slot(material, slot_id)
-                    if slot_id == 'base' and texture_slot:
-                        set_diffuse(texture_slot, material, material.scs_props.shader_attribute_diffuse)
-                    elif slot_id == 'reflection' and texture_slot:
-                        set_env_factor(texture_slot, material.scs_props.shader_attribute_env_factor)
+            used_texture_types[tex_type] = texture_data
 
             textures[str(texture_i)] = texture_data
             texture_i += 1
 
-    if override_back_data:
+    # clear attribute values for current shader to be stored in blend data block
+    # NOTE: looks also takes into account that all the unused properties are omitted from scs_props dict
+    scs_props_keys = material.scs_props.keys()
+    for key in scs_props_keys:
+        is_key_used = False
+        if key.startswith("shader_attribute"):
+            for used_attribute in used_attribute_types:
+                if used_attribute in key[16:]:
+                    is_key_used = True
 
-        # clear texture slots for unused textures from previous preset
-        for tex_type in defined_tex_types:
-            if tex_type not in used_texture_types:  # delete unused texture slots
-                clear_texture_slots(material, tex_type)
+        if key.startswith("shader_texture"):
+            for used_tex_type in used_texture_types:
+                if used_tex_type in key[14:]:
+                    is_key_used = True
+
+        # delete only unused shader keys everything else should stay in the place
+        # as those keys might be used in some other way
+        if not is_key_used and key.startswith("shader_"):
+            lprint("D Unsetting property from material in set_shader_data %s:", (key,))
+            material.scs_props.property_unset(key)
+
+    # apply used attributes
+    created_attributes = {}
+    for attribute_type in used_attribute_types.keys():
+        attribute_data = used_attribute_types[attribute_type]
+        if attribute_type in ("diffuse", "specular", "env_factor", "fresnel", "tint"):
+
+            material.scs_props["shader_attribute_" + attribute_type] = attribute_data['Value']
+            created_attributes[attribute_type] = material.scs_props["shader_attribute_" + attribute_type]
+
+        elif attribute_type in ("shininess", "add_ambient", "reflection", "reflection2", "shadow_bias", "tint_opacity"):
+
+            material.scs_props["shader_attribute_" + attribute_type] = attribute_data['Value'][0]
+            created_attributes[attribute_type] = material.scs_props["shader_attribute_" + attribute_type]
+
+        elif attribute_type.startswith("aux") and hasattr(material.scs_props, "shader_attribute_" + attribute_type):
+
+            auxiliary_prop = getattr(material.scs_props, "shader_attribute_" + attribute_type, None)
+
+            # clean old values possible left from previous shader
+            while len(auxiliary_prop) > 0:
+                auxiliary_prop.remove(0)
+
+            for val in attribute_data['Value']:
+                item = auxiliary_prop.add()
+                item.value = val
+                item.aux_type = attribute_type
+
+            created_attributes[attribute_type] = material.scs_props["shader_attribute_" + attribute_type]
+
+        elif attribute_type == "substance":
+
+            material.scs_props.substance = attribute_data['Value'][0]
+
+    # if shader attribute properties are still unset reset it to default
+    if material.scs_props.substance == _MAT_consts.unset_substance and "substance" not in material.scs_props.keys():
+        material.scs_props.substance = "None"
+
+    # apply used textures
+    created_textures = {}
+    created_tex_uvs = {}
+    for tex_type in used_texture_types:
+        texture_data = used_texture_types[tex_type]
+
+        if tex_type in material.scs_props.get_texture_types().keys():
+
+            if "Lock" in texture_data:
+                setattr(material.scs_props, "shader_texture_" + tex_type + "_locked", bool(texture_data["Lock"]))
+
+            texture_mappings = getattr(material.scs_props, "shader_texture_" + tex_type + "_uv")
+            # clear all texture mapping for current texture from previous shader
+            if override_back_data:
+                while len(texture_mappings) > 0:
+                    texture_mappings.remove(0)
+
+            # if shader is imported try to create custom tex coord mappings on material
+            if material.scs_props.active_shader_preset_name == "<imported>" and "scs_tex_aliases" in material:
+                custom_maps = material.scs_props.custom_tex_coord_maps
+
+                for tex_coord_key in sorted(material["scs_tex_aliases"].keys()):
+
+                    if _invetory.get_index(custom_maps, "tex_coord_" + tex_coord_key) == -1:
+                        new_map = custom_maps.add()
+                        new_map.name = "tex_coord_" + tex_coord_key
+                        new_map.value = material["scs_tex_aliases"][tex_coord_key]
+
+                # add one mapping field for using it as a preview uv layer in case of imported shader
+                mapping = texture_mappings.add()
+                mapping.texture_type = tex_type
+                mapping.tex_coord = -1
+
+            # if there is an info about mapping in shader use it (in case of imported material this condition will fall!)
+            elif "TexCoord" in texture_data:
+
+                for tex_coord in texture_data['TexCoord']:
+                    tex_coord = int(tex_coord)
+
+                    if tex_coord != -1:
+                        mapping = texture_mappings.add()
+                        mapping.texture_type = tex_type
+                        mapping.tex_coord = tex_coord
+
+                        if "scs_tex_aliases" in material:
+                            mapping.value = material["scs_tex_aliases"][str(tex_coord)]
+
+                            # for now make sure to use only first coord mapping info for shader
+                            if len(texture_mappings) == 1:
+                                created_tex_uvs[tex_type] = mapping.value
+
+            # set bitmap file to current texture
+            bitmap_filepath = _path.get_bitmap_filepath(texture_data['Value'])
+
+            # apply texture path if not empty, except if import is going on
+            # NOTE: during import bitmap has to be applied even if empty
+            # because otherwise texture from previous look might be applied
+            if (bitmap_filepath and bitmap_filepath != "") or is_import:
+                material.scs_props["shader_texture_" + tex_type] = bitmap_filepath
+                created_textures[tex_type] = get_texture(bitmap_filepath, tex_type)
+
+                if is_import:
+
+                    # only if shader is imported then make sure that by default imported values will be used
+                    if material.scs_props.active_shader_preset_name == "<imported>":
+                        setattr(material.scs_props, "shader_texture_" + tex_type + "_use_imported", True)
+                        setattr(material.scs_props, "shader_texture_" + tex_type + "_imported_tobj", texture_data['Value'])
+
+            # if property is still unset reset it to empty
+            if getattr(material.scs_props, "shader_texture_" + tex_type, "") == _MAT_consts.unset_bitmap_filepath:
+                material.scs_props["shader_texture_" + tex_type] = ""
+            else:
+                bitmap_filepath = _path.get_abs_path(getattr(material.scs_props, "shader_texture_" + tex_type, ""))
+                created_textures[tex_type] = get_texture(bitmap_filepath, tex_type)
+
+    # override shader data for identifying used attributes and textures in UI
+    if override_back_data:
 
         shader_data = {'effect': preset_effect,
                        'attributes': attributes,
                        'textures': textures}
         material["scs_shader_attributes"] = shader_data
+
+    # setup nodes for 3D view visualization
+    _shader.setup_nodes(material, preset_effect, created_attributes, created_textures, created_tex_uvs, override_back_data)
+
+
+def reload_tobj_settings(material, tex_type):
+    """Relaods TOBJ settings on given texture type of material.
+    If tobj doesn't exists it does nothing.
+
+    :param material: material
+    :type material: bpy.types.Material
+    :param tex_type: texture type
+    :type tex_type: str
+    """
+
+    shader_texture_str = "shader_texture_" + tex_type
+    shader_texture_filepath = getattr(material.scs_props, shader_texture_str)
+
+    if is_valid_shader_texture_path(shader_texture_filepath, tobj_check=True):
+
+        tobj_file = _path.get_abs_path(shader_texture_filepath[:-4] + ".tobj")
+        # intentionally set ID property directly to avoid update function invoke
+        material.scs_props[shader_texture_str + "_settings"] = int(_tobj_imp.get_settings(tobj_file), 2)
+        setattr(material.scs_props, shader_texture_str + "_tobj_load_time", str(os.path.getmtime(tobj_file)))
 
 
 '''

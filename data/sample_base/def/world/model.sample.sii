@@ -9,11 +9,11 @@ SiiNunit
 # same namespace so suffixes or prefixes should be used to avoid conflicts.
 
 
-model_def : model.sample.1 {
+model_def : model.sample_1 {
 	model_desc: "/model/building/administration/corner_sample.pmd"
 	distance_type: 1
 }
-model_def : model.sample.2 {
+model_def : model.sample_2 {
 	model_desc: "/model/village_far/village_cz/village_cz_4_sample.pmd"
 	distance_type: 2
 }

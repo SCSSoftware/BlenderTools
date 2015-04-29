@@ -23,6 +23,7 @@ import bpy
 
 def register():
     bpy.types.Object.scs_cached_num_children = property(_get_num_children, _set_num_children)
+    bpy.types.Object.scs_cached_materials_ids = property(_get_materials_ids, _set_materials_ids)
 
 
 def _get_num_children(self):
@@ -34,3 +35,14 @@ def _get_num_children(self):
 
 def _set_num_children(self, value):
     self["scs_cached_num_children"] = value
+
+
+def _get_materials_ids(self):
+    if "scs_cached_materials_ids" not in self:
+        _set_materials_ids(self, {})
+
+    return self["scs_cached_materials_ids"]
+
+
+def _set_materials_ids(self, value):
+    self["scs_cached_materials_ids"] = value

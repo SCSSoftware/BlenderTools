@@ -22,8 +22,9 @@ from time import time
 
 import bpy
 from bpy.app.handlers import persistent
-from io_scs_tools.internals.connections.wrappers import group as _connections_group_wrapper
+from io_scs_tools.internals import looks as _looks
 from io_scs_tools.internals import preview_models as _preview_models
+from io_scs_tools.internals.connections.wrappers import group as _connections_group_wrapper
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
 from io_scs_tools.utils import object as _object_utils
 from io_scs_tools.utils import view3d as _view3d_utils
@@ -31,13 +32,18 @@ from io_scs_tools.utils.printout import lprint
 
 
 class _Timer:
-    interval = 0.125
-    last_execute_time = 0
+    _interval = 0.125
+    _last_execute_time = 0
+
+    updated = 0
+    """Marking object update iterations during stalling."""
+    data_updated = 0
+    """Marking object data update iteration during stalling."""
 
     @staticmethod
     def can_execute():
-        if time() - _Timer.last_execute_time > _Timer.interval:
-            _Timer.last_execute_time = time()
+        if time() - _Timer._last_execute_time > _Timer._interval:
+            _Timer._last_execute_time = time()
             return True
         else:
             return False
@@ -45,6 +51,11 @@ class _Timer:
 
 @persistent
 def object_data_check(scene):
+
+    # during rendering in Blender active_object doesn't exists so ignore this case
+    if not hasattr(bpy.context, "active_object"):
+        return
+
     active_obj = bpy.context.active_object
     selected_objs = bpy.context.selected_objects
 
@@ -53,27 +64,34 @@ def object_data_check(scene):
         return
 
     # CHECK FOR DATA CHANGE UPON SELECTION
-    updating = False
     if active_obj:
+
+        if active_obj.is_updated_data:
+            _Timer.data_updated += 1
+
         if active_obj.is_updated:
-            updating = True
-            lprint("D ---> DATA UPDATE ON ACTIVE: %r", (time(),))
+            _Timer.updated += 1
 
         elif len(selected_objs) > 0:
             # search for any updated object
             for sel_obj in selected_objs[:2]:
                 if sel_obj.is_updated:
-                    updating = True
-                    lprint("D ---> DATA UPDATE ON SELECTED: %r", (time(),))
+                    _Timer.updated += 1
                     break
-    if updating:
+    if _Timer.updated > 0:
         _connections_group_wrapper.switch_to_update()
 
-    if _Timer.can_execute():
-        if not updating:
-            _connections_group_wrapper.switch_to_stall()
-    else:
+    # BREAK EXECUTION IF TIMER SAYS SO
+    if not _Timer.can_execute():
         return
+
+    # GET UPDATE STATES
+    updated = _Timer.updated > 0
+    data_updated = _Timer.data_updated > 0
+    _Timer.updated = _Timer.data_updated = 0
+
+    if not updated:
+        _connections_group_wrapper.switch_to_stall()
 
     # NEW/COPY
     if len(scene.objects) > scene.scs_cached_num_objects:
@@ -139,6 +157,7 @@ def object_data_check(scene):
             new_name = active_obj.name
 
             active_obj.scs_props.object_identity = active_obj.name
+            _fix_children(active_obj)
 
             __object_rename__(old_name, new_name)
 
@@ -146,6 +165,8 @@ def object_data_check(scene):
 
                 lprint("D ---> NAME SWITCHING")
                 bpy.data.objects[old_name].scs_props.object_identity = old_name
+                _fix_children(bpy.data.objects[old_name])
+
                 # switching names causes invalid connections data so recalculate curves for these objects
                 _connections_group_wrapper.force_recalculate([bpy.data.objects[old_name], bpy.data.objects[new_name]])
 
@@ -200,6 +221,74 @@ def object_data_check(scene):
             lprint("D ---> UNPARENT selected objects in 3D view: %s", (len(selected_objs),))
             return
 
+        # ACTIVE SCS ROOT CHANGED
+        active_scs_root = _object_utils.get_scs_root(active_obj)
+        if active_scs_root and scene.scs_cached_active_scs_root != active_scs_root.name:
+
+            __active_scs_root_change__(active_scs_root)
+
+            scene.scs_cached_active_scs_root = active_scs_root.name
+            lprint("D ---> ACTIVE SCS ROOT CHANGE: %r", (active_scs_root.name,))
+            return
+
+        # MATERIAL ASSIGNEMENT ACTION
+        if data_updated or updated:
+
+            mats_ids = {}
+            new_mats = {}
+            removed_mats = dict(active_obj.scs_cached_materials_ids)
+            for slot in active_obj.material_slots:
+                if slot.material:
+                    curr_id = str(slot.material.scs_props.id)
+                    mats_ids[curr_id] = 1
+                    if curr_id not in active_obj.scs_cached_materials_ids:  # if not in cached -> it's newly assigned
+                        new_mats[curr_id] = 1
+                    elif curr_id in removed_mats:  # if in cached remove it from dictionary which stores removed materials
+                        del removed_mats[curr_id]
+
+            if len(new_mats) > 0 or len(removed_mats) > 0:
+                active_obj.scs_cached_materials_ids = mats_ids
+
+                __material_assignement__(active_obj, new_mats.keys(), removed_mats.keys())
+
+                lprint("D ---> MATERIAL ASSIGNEMENT CHANGED")
+                return
+
+
+def __active_scs_root_change__(new_scs_root_obj):
+    """Hookup function for changing active object.
+
+    :param new_scs_root_obj: new active SCS Root Object
+    :type new_scs_root_obj: bpy.types.Object
+    """
+
+    _looks.apply_active_look(new_scs_root_obj)
+
+
+def __material_assignement__(obj, new_mat_ids, removed_mat_ids):
+    """Hookup function for material reassignement on object.
+
+    :param obj: object on which material assignement happend
+    :type obj: bpy.types.Object
+    :param new_mat_ids: ID of newly added materials
+    :type new_mat_ids: iter
+    :param removed_mat_ids: ID of removed materials
+    :type removed_mat_ids: iter
+    """
+
+    # create actual new materials list
+    new_mats = []
+    for mat in bpy.data.materials:
+        curr_mat_id = str(mat.scs_props.id)
+        if curr_mat_id in new_mat_ids:
+            new_mats.append(mat)
+
+    scs_root = _object_utils.get_scs_root(obj)
+    if scs_root:
+        _looks.add_materials(scs_root, new_mats)
+        if len(removed_mat_ids) > 0:
+            _looks.clean_unused(scs_root)
+
 
 def __objects_reparent__(parent, new_objs):
     """Hookup function for objects reparent operation.
@@ -221,9 +310,16 @@ def __objects_reparent__(parent, new_objs):
         if assign_part_index >= len(part_inventory) or assign_part_index < 0:
             assign_part_index = 0
 
+        new_mats = []
         for new_obj in new_objs:
             if _object_utils.has_part_property(new_obj):
                 new_obj.scs_props.scs_part = part_inventory[assign_part_index].name
+
+            for slot in new_obj.material_slots:
+                if slot.material and slot.material not in new_mats:
+                    new_mats.append(slot.material)
+
+        _looks.add_materials(scs_root_object, new_mats)
 
 
 def __objects_copy__(old_objects, new_objects):
@@ -294,3 +390,12 @@ def _fix_ex_parent(obj):
     if obj.scs_props.parent_identity in bpy.data.objects:
         ex_parent_obj = bpy.data.objects[obj.scs_props.parent_identity]
         ex_parent_obj.scs_cached_num_children = len(ex_parent_obj.children)
+
+        ex_parent_scs_root = _object_utils.get_scs_root(ex_parent_obj)
+        if ex_parent_scs_root:
+            _looks.clean_unused(ex_parent_scs_root)
+
+
+def _fix_children(obj):
+    for child in obj.children:
+        child.scs_props.parent_identity = obj.name

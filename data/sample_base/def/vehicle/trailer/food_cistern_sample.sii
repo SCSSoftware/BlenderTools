@@ -1,0 +1,30 @@
+trailer : trailer.food_cistern.sample
+{
+	accessories[]: .food_cistern.sample.tchassis
+	accessories[]: .food_cistern.sample.trwheel0
+	accessories[]: .food_cistern.sample.trwheel1
+	accessories[]: .food_cistern.sample.trwheel2
+}
+
+vehicle_accessory: .food_cistern.sample.tchassis
+{
+	data_path: "/def/vehicle/trailer/food_cistern_sample/chassis.sii"
+}
+
+vehicle_wheel_accessory: .food_cistern.sample.trwheel0
+{
+	offset: 0
+	data_path: "/def/vehicle/t_wheel/single.sii"
+}
+
+vehicle_wheel_accessory: .food_cistern.sample.trwheel1
+{
+	offset: 2
+	data_path: "/def/vehicle/t_wheel/single.sii"
+}
+
+vehicle_wheel_accessory: .food_cistern.sample.trwheel2
+{
+	offset: 4
+	data_path: "/def/vehicle/t_wheel/single.sii"
+}

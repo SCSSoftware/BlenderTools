@@ -17,4 +17,4 @@ except:
     configurator.save_screenshot(getBundlePath(), Screen())
     raise
 finally:
-    configurator.close_blender(p)
+    pass #configurator.close_blender(p)

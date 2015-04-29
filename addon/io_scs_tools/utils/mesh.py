@@ -18,6 +18,7 @@
 
 # Copyright (C) 2013-2014: SCS Software
 
+import bpy
 import bmesh
 from io_scs_tools.utils.printout import lprint
 from io_scs_tools.utils import convert as _convert
@@ -108,39 +109,23 @@ def make_per_face_rgb_layer(mesh, rgb_layer, layer_name):
     return {'FINISHED'}
 
 
-def make_posnorm_list(mesh_vertices, mesh_normals):
-    """Makes a list of vertices records in a form (position_X, position_Y, position_Z, normal_X, normal_Y, normal_Z)."""
-    posnorm_list = []
+def make_points_to_weld_list(mesh_vertices, mesh_normals, equal_decimals_count):
+    """Makes a list of duplicated vertices indices. Each item in lists represents indices of vertices with same position and normal."""
+    posnorm_dict_tmp = {}
+    posnorm_dict = {}
+    perc = 10 ** equal_decimals_count  # represent precision for duplicates
     for val_i, val in enumerate(mesh_vertices):
-        posnorm_list.append((val[0], val[1], val[2], mesh_normals[val_i][0], mesh_normals[val_i][1], mesh_normals[val_i][2]))
-    return posnorm_list
 
+        key = (str(int(val[0] * perc)) + str(int(val[1] * perc)) + str(int(val[2] * perc)) +
+               str(int(mesh_normals[val_i][0] * perc)) + str(int(mesh_normals[val_i][1] * perc)) + str(int(mesh_normals[val_i][2] * perc)))
 
-def make_points_to_weld_list(posnorm_list):
-    """Search for identical records (the same "posnorms") and make a list..."""
-    points_to_weld_list = []
-    for a_i, a_pnt in enumerate(posnorm_list):
-        pnt_group = []
-        pnt_group_tmp = []
-        for b_i, b_pnt in enumerate(posnorm_list):
-            if a_i != b_i:
-                if a_pnt == b_pnt:
-                    pnt_group_tmp.append(b_i)
-        if len(pnt_group_tmp) > 0:
-            pnt_group.append(a_i)
-            for item in pnt_group_tmp:
-                pnt_group.append(item)
-        if len(pnt_group) > 0:
-            add_rec = True
-            for rec in points_to_weld_list:
-                if pnt_group[0] in rec:
-                    add_rec = False
-                    break
-            if add_rec:
-                points_to_weld_list.append(pnt_group)
-    # for item in points_to_weld_list:
-    # print('item = %s' % str(item))
-    return points_to_weld_list
+        if key not in posnorm_dict_tmp:
+            posnorm_dict_tmp[key] = [val_i]
+        else:
+            posnorm_dict_tmp[key].append(val_i)
+            posnorm_dict[key] = posnorm_dict_tmp[key]
+
+    return posnorm_dict.values()
 
 
 def set_sharp_edges(mesh, mesh_edges):
@@ -317,7 +302,7 @@ def bm_make_faces(bm, vertices, faces, points_to_weld_list, mesh_uv):
                 bm.verts.ensure_lookup_table()
                 bm.faces.new([bm.verts[i] for i in new_f_idx])
             except ValueError:
-                print('WARNING - Face #%i already exists! %s' % (f_idx_i, str(new_f_idx)))
+                lprint('I Face #%i already exists! %s', (f_idx_i, str(new_f_idx)))
 
                 duplicate_faces[f_idx_i] = new_f_idx
                 for v in new_f_idx:
@@ -412,18 +397,39 @@ def bm_make_vc_layer(pim_version, bm, vc_layer_name, vc_layer_data, multiplier=1
                 else:
                     vcol = vc_layer_data[face_i][loop_i][:3]  # TODO: Use Alpha value!
 
-            vcol = (vcol[0] / multiplier, vcol[1] / multiplier, vcol[2] / multiplier)
+            vcol = (vcol[0] / 2 / multiplier, vcol[1] / 2 / multiplier, vcol[2] / 2 / multiplier)
             loop[color_lay] = vcol
 
 
-def bm_triangulate(mesh):
+def bm_prepare_mesh_for_export(mesh, transformation_matrix, flip=False):
     """Triangulates given mesh with bmesh module. Data are then saved back into original mesh!
-    :param mesh:
-    :type mesh:
+    :param mesh: mesh data block to be triangulated and transformed
+    :type mesh: bpy.types.Mesh
+    :param transformation_matrix: transformation matrix which should be applied to mesh (usually root.matrix_world.inverted * obj.matrix_world)
+    :type transformation_matrix: mathutils.Matrix
+    :param flip: flag indicating if faces vertex order should be flipped
+    :type flip: bool
     """
     bm = bmesh.new()
     bm.from_mesh(mesh)
     bmesh.ops.triangulate(bm, faces=bm.faces)
+    bmesh.ops.transform(bm, matrix=transformation_matrix, verts=bm.verts)
+
+    if flip:
+        bmesh.ops.reverse_faces(bm, faces=bm.faces)
+
     bm.to_mesh(mesh)
     bm.free()
     del bm
+
+
+def cleanup_mesh(mesh):
+    """Frees normals split and removes mesh if possible.
+
+    :param mesh: mesh to be cleaned
+    :type mesh: bpy.types.Mesh
+    """
+
+    mesh.free_normals_split()
+    if mesh.users == 0:
+        bpy.data.meshes.remove(mesh)

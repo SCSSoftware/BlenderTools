@@ -74,7 +74,7 @@
 reload(configurator)
 p = configurator.start_it_up(getBundlePath(), <span class="str">"3_Ico_Sphere_2_Materials.blend"</span>)
 <span class="kw">try</span>:
-    <span class="skw">wait</span>(Pattern(<img src="3dview_3_Ico_Sphere_2_Materials.png" />).similar(<span class="dig">0.90</span>), <span class="dig">5</span>); hover(Pattern(<img src="3dview_3_Ico_Sphere_2_Materials.png" />).similar(<span class="dig">0.90</span>)); <span class="skw">type</span>(Key.ESC)
+    <span class="skw">wait</span>(Pattern(<img src="3dview_3_Ico_Sphere_2_Materials.png" />).exact(), <span class="dig">5</span>); hover(Pattern(<img src="3dview_3_Ico_Sphere_2_Materials.png" />).similar(<span class="dig">0.90</span>)); <span class="skw">type</span>(Key.ESC)
     <span class="skw">click</span>(Pattern(<img src="export_scene_button.png" />).similar(<span class="dig">0.90</span>))
     <span class="skw">wait</span>(<span class="dig">1.5</span>); <span class="skw">type</span>(Key.ENTER)
     <span class="skw">click</span>(Pattern(<img src="second_layer_button.png" />).exact())
@@ -88,7 +88,7 @@ p = configurator.start_it_up(getBundlePath(), <span class="str">"3_Ico_Sphere_2_
     <span class="skw">type</span>(Key.ENTER)
     keyDown(Key.SHIFT); <span class="skw">click</span>(Pattern(<img src="lamps_layer_button.png" />).exact()); keyUp(Key.SHIFT)
     <span class="skw">click</span>(Pattern(<img src="3dview_user_persp.png" />).similar(<span class="dig">0.95</span>))
-    <span class="skw">find</span>(Pattern(<img src="3dview_3_Ico_Sphere_2_Materials_imported_2.png" />).exact())
+    <span class="skw">find</span>(Pattern(<img src="3dview_3_Ico_Sphere_2_Materials.png" />).exact())
 <span class="kw">except</span>:
     configurator.save_screenshot(getBundlePath(), Screen())
     <span class="kw">raise</span>

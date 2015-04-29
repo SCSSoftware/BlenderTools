@@ -27,15 +27,17 @@ from io_scs_tools.utils import get_scs_globals as _get_scs_globals
 
 def fix_sep_by_platform(obj, prop):
     """Fix separators in path depending on the current platform.
+    Property will be set directly to ID datablock, to avoid triggering of update functions
+
     :param obj: object which should get fixed value
-    :type obj: object
+    :type obj: obj
     :param prop: property which should be fixed
     :type prop: str
     """
     if os.sep == "\\":
-        setattr(obj, prop, getattr(obj, prop).replace("/", "\\"))
+        obj[prop] = getattr(obj, prop).replace("/", "\\")
     elif os.sep == "/":
-        setattr(obj, prop, getattr(obj, prop).replace("\\", "/"))
+        obj[prop] = getattr(obj, prop).replace("\\", "/")
 
 
 def strip_sep(path):

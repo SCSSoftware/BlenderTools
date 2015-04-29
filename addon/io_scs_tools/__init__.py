@@ -22,24 +22,25 @@ bl_info = {
     "name": "SCS Tools",
     "description": "Setup models, Import-Export SCS data format",
     "author": "Milos Zajic (4museman), Simon Lusenc (50keda)",
-    "version": (0, 4),
-    "blender": (2, 70, 0),
+    "version": (0, 5),
+    "blender": (2, 73, 0),
     "location": "File > Import-Export",
     "warning": "WIP - beta version, doesn't include all features!",
     "wiki_url": "https://github.com/SCSSoftware/BlenderTools/wiki",
-    "tracker_url": "",
+    "tracker_url": "http://forum.scssoft.com/viewforum.php?f=165",
     "support": "COMMUNITY",
     "category": "Import-Export"}
 
 import bpy
 import os
 import traceback
-from bpy.props import CollectionProperty, StringProperty, PointerProperty
+from bpy.props import CollectionProperty, StringProperty, PointerProperty, BoolProperty
 from bpy_extras.io_utils import ImportHelper, ExportHelper
 from io_scs_tools.imp import pix as _pix_import
 from io_scs_tools.internals.callbacks import open_gl as _open_gl_callback
 from io_scs_tools.internals.callbacks import persistent as _persistent_callback
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
+from io_scs_tools.utils.view3d import switch_layers_visibility as _switch_layers_visibility
 from io_scs_tools.utils.printout import lprint
 
 
@@ -60,9 +61,22 @@ class ImportSCS(bpy.types.Operator, ImportHelper):
                                description="File path used for importing the SCS files",
                                type=bpy.types.OperatorFileListElement)
 
+    scs_project_path_mode = BoolProperty(
+        default=False,
+        description="Set currently selected directory as SCS Project Path"
+    )
+
     directory = StringProperty()
     filename_ext = "*.pim"
     filter_glob = StringProperty(default=filename_ext, options={'HIDDEN'})
+
+    def check(self, context):
+
+        if self.scs_project_path_mode:
+            _get_scs_globals().scs_project_path = os.path.dirname(self.filepath)
+            self.scs_project_path_mode = False
+
+        return True
 
     def execute(self, context):
         paths = [os.path.join(self.directory, name.name) for name in self.files]
@@ -123,7 +137,10 @@ class ImportSCS(bpy.types.Operator, ImportHelper):
         row.prop(scs_globals, "import_pim_file", toggle=True)
         if scs_globals.import_pim_file:
             row = box2.row()
-            row.prop(scs_globals, "auto_welding")
+            row.prop(scs_globals, "use_welding")
+            if scs_globals.use_welding:
+                row = box2.row()
+                row.prop(scs_globals, "welding_precision")
         row = box2.row()
         row.prop(scs_globals, "import_pit_file", toggle=True)
         if scs_globals.import_pit_file:
@@ -146,6 +163,19 @@ class ImportSCS(bpy.types.Operator, ImportHelper):
                 row = box2.row()
                 row.prop(scs_globals, "include_subdirs_for_pia")
 
+        # SCS Project Path
+        box3 = layout.box()
+        layout_box_col = box3.column(align=True)
+        layout_box_col.label('SCS Project Base Path:', icon='FILE_FOLDER')
+
+        layout_box_row = layout_box_col.row(align=True)
+        layout_box_row.alert = not os.path.isdir(scs_globals.scs_project_path)
+        layout_box_row.prop(scs_globals, 'scs_project_path', text='')
+
+        layout_box_row = layout_box_col.row(align=True)
+        layout_box_row.prop(self, "scs_project_path_mode", toggle=True, text="Set Current Dir as Project Base", icon='SAVE_COPY')
+
+        # Debug options
         ui.shared.draw_debug_settings(layout)
 
 
@@ -158,6 +188,20 @@ class ExportSCS(bpy.types.Operator, ExportHelper):
 
     filename_ext = ".pim"
     filter_glob = StringProperty(default=str("*" + filename_ext), options={'HIDDEN'})
+
+    layers_visibilities = []
+    """List for storing layers visibility in the init of operator"""
+
+    def __init__(self):
+        """Constructor used for showing all scene visibility layers.
+        This provides possibility to updates world matrixes even on hidden objects.
+        """
+        self.layers_visibilities = _switch_layers_visibility([], True)
+
+    def __del__(self):
+        """Destructor with reverting visible layers.
+        """
+        _switch_layers_visibility(self.layers_visibilities, False)
 
     def execute(self, context):
         lprint('D Export From Menu...')
@@ -235,6 +279,10 @@ def register():
     bpy.utils.register_module(__name__)
 
     # PROPERTIES REGISTRATION
+    bpy.types.Object.scs_object_look_inventory = CollectionProperty(
+        type=properties.object.ObjectLooksInventory
+    )
+
     bpy.types.Object.scs_object_part_inventory = CollectionProperty(
         type=properties.object.ObjectPartInventory
     )
@@ -339,6 +387,7 @@ def unregister():
     del bpy.types.Object.scs_props
     del bpy.types.World.scs_globals
 
+    del bpy.types.Object.scs_object_look_inventory
     del bpy.types.Object.scs_object_part_inventory
     del bpy.types.Object.scs_object_variant_inventory
     del bpy.types.Object.scs_object_animation_inventory

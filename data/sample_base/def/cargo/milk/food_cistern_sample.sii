@@ -1,0 +1,9 @@
+SiiNunit
+{
+trailer_def : .food_cistern.sample
+{
+	trailer: trailer.food_cistern_sample
+	mass: 15030
+	cog_height_offset: 0.75
+}
+}

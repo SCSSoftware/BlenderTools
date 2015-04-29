@@ -1,0 +1,13 @@
+SiiNunit
+{
+accessory_wheel_data : 1_sample.ftire
+{
+	name: "Trailmaster sample"
+	price: 910
+	unlock: 0
+	model: "/vehicle/truck/upgrade/tire/front_1_sample.pmd"
+	icon: "f_tire_01"
+	front_wheel:true
+	look: gestone
+}
+}

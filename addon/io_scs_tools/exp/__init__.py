@@ -65,6 +65,14 @@ def batch_export(operator_instance, init_obj_list, exclude_switched_off=True, me
             global_filepath = os.path.join(scs_project_path, default_export_path.strip(os.sep * 2))
 
         for root_object in game_objects_dict:
+
+            # update root object location to invoke update tagging on it and
+            # then update scene to make sure all children objects will have all transforms up to date
+            # NOTE: needed because Blender doesn't update objects on invisible layers on it's own
+            root_object.location = root_object.location
+            for scene in bpy.data.scenes:
+                scene.update()
+
             game_object_list = game_objects_dict[root_object]
 
             # GET CUSTOM FILE PATH
@@ -110,7 +118,9 @@ def batch_export(operator_instance, init_obj_list, exclude_switched_off=True, me
                 operator_instance.report({'ERROR'}, message.replace("\t", "").replace("   ", ""))
                 return {'CANCELLED'}
 
-        lprint("\nI Export procces completed, summaries are printed below!", report_errors=True, report_warnings=True)
+        if not lprint("\nI Export procces completed, summaries are printed below!", report_errors=True, report_warnings=True):
+            operator_instance.report({'INFO'}, "Export successfully completed!")
+
         if len(scs_game_objects_exported) > 0:
             print("\n\nEXPORTED GAME OBJECTS:\n" + "=" * 22)
             for scs_game_object_export_message in scs_game_objects_exported:

@@ -1,0 +1,13 @@
+SiiNunit
+{
+accessory_wheel_data : 2_sample.rtire
+{
+	name: "Elemental sample"
+	price: 4680
+	unlock: 5
+	model: "/vehicle/truck/upgrade/tire/rear_1_sample.pmd"
+	icon: "f_tire_02"
+	front_wheel:false
+	look: continent
+}
+}

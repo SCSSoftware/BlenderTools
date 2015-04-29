@@ -19,11 +19,8 @@ try:
     wait(0.5); type(Key.ENTER); mouseMove(Location(0,0)); hover(Pattern("3dview_init-1.png").similar(0.90))
     type("3"); click();
     type(scs_import_str + Key.ENTER); go_to_current_dir()
-    click(Pattern("import_game_object.png").similar(0.90)); type(Key.ENTER); find(Pattern("imported_game_object.png").similar(0.90))
-    type("4");
-    type(scs_import_str + Key.ENTER); go_to_current_dir()
     click(Pattern("import_game_object_001.png").similar(0.90)); type(Key.ENTER); find(Pattern("imported_game_object_001.png").similar(0.90))
-    type("5");
+    type("4");
     type(scs_import_str + Key.ENTER); go_to_current_dir()
     click(Pattern("import_game_object_002.png").similar(0.90)); type(Key.ENTER); find(Pattern("imported_game_object_002.png").similar(0.90))
 except:

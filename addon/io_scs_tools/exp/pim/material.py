@@ -66,7 +66,7 @@ class Material:
                     # if imported just use custom mappings defined separetly
                     if blend_mat.scs_props.active_shader_preset_name == "<imported>":
 
-                        custom_tex_coord_maps = blend_mat.scs_props.shader_custom_tex_coord_maps
+                        custom_tex_coord_maps = blend_mat.scs_props.custom_tex_coord_maps
                         for custom_tex_coord_map in custom_tex_coord_maps:
 
                             if custom_tex_coord_map.value != "":

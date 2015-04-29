@@ -53,13 +53,17 @@ def _format_data(data_line, spaces=5, data_hex=True):
     """Takes a list or tuple of float numbers and return
     formatted line of hexadecimal values in a string."""
     data = ''
-    if type(data_line[0]) is float:
+    if isinstance(data_line[0], float):
         if data_hex:
             for val in data_line:
                 data = data + float_to_hex_string(val) + '  '
         else:
             for val in data_line:
                 data = data + str(val) + ' '
+        data = data.rstrip()
+    elif isinstance(data_line[0], str):
+        for val in data_line:
+            data = data + '"' + val + '" '
         data = data.rstrip()
     else:
         if spaces == 0:
@@ -68,7 +72,8 @@ def _format_data(data_line, spaces=5, data_hex=True):
         else:
             for val in data_line:
                 data = data + str(val).ljust(spaces, ' ') + ' '
-        data = data[:-1]
+        data = data.rstrip()
+
     return data
 
 
@@ -98,7 +103,7 @@ def _write_properties_and_data(fw, section, ind, print_info):
                 fw('%s%s: %s\n' % (ind, prop[0], str(prop[1])[1:-1].replace(",", "").replace("'", "\"")))
         # elif type(prop[1]) == type("") and prop[1] not in (
         elif isinstance(prop[1], type("")) and prop[1] not in (
-                "FLOAT", "FLOAT2", "FLOAT3", "FLOAT4", "FLOAT5", "FLOAT6", "FLOAT7", "FLOAT8", "FLOAT9", "FLOAT4x4", "INT"):
+                "FLOAT", "FLOAT2", "FLOAT3", "FLOAT4", "FLOAT5", "FLOAT6", "FLOAT7", "FLOAT8", "FLOAT9", "FLOAT4x4", "INT", "STRING"):
             if prop[0] == '#':
                 fw('%s# %s\n' % (ind, prop[1]))
             elif prop[0] == '':

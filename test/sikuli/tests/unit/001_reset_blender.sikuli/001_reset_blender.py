@@ -3,32 +3,23 @@ reload(configurator)
 
 configurator.delete_scs_tools_config()
 
-# RESAVE USER PREFERENCES
-p = configurator.start_it_up(getBundlePath(), "userpref.blend")
-try:
-    mouseMove(Location(0,0))
-    wait(Pattern("3d_view_icon.png").similar(0.50), 5)
-    click("3d_view_icon.png")
-    click("user_pref_menu_item.png")
-    click(Pattern("save_user_settings.png").similar(0.95))
-    hover(Location(450, 400)) # move cursor to the safe location
-except:
-    configurator.save_screenshot(getBundlePath(), Screen())
-    raise
-finally:
-    configurator.close_blender(p)
-
-
 # SETUP SCS TOOLS
 p = configurator.start_it_up(getBundlePath(), "startup.blend")
 try:
+    mouseMove(Location(30,30))
     wait("3d_view_icon.png", 5)
     click(Pattern("3d_view_icon-1.png").similar(0.95))
     click("user_pref_menu_item.png")
     click(Pattern("search.png").similar(0.95))
     type("sc")
     type(Key.ENTER)
-    find(Pattern("addons_scs_tools_entry.png").similar(0.90)).right().click(Pattern("addon_checkbox_0.png").similar(0.65).targetOffset(15,0))
+    if find(Pattern("addons_scs_tools_entry.png").similar(0.90)).right().exists(Pattern("addon_checkbox_0.png").similar(0.90).targetOffset(15,0)):
+        find(Pattern("addons_scs_tools_entry.png").similar(0.90)).right().click(Pattern("addon_checkbox_0.png").similar(0.65).targetOffset(15,0))
+    else:
+        find(Pattern("addons_scs_tools_entry.png").similar(0.90)).right().click(Pattern("addon_checkbox_1.png").similar(0.95).targetOffset(15,1))
+        wait(1)
+        find(Pattern("addons_scs_tools_entry.png").similar(0.90)).right().click(Pattern("addon_checkbox_0.png").similar(0.65).targetOffset(15,0))
+
     find(Pattern("addons_scs_tools_enabled.png").exact())
     click(Pattern("save_user_settings.png").similar(0.95))
     find(Pattern("project_path.png").similar(0.95)).right().click("select_project_path_button.png")

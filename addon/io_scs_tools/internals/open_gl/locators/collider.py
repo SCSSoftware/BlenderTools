@@ -206,11 +206,10 @@ def draw_collision_locator(obj, scene_scs_props):
     :param scene_scs_props: Blender Scene properties
     :type scene_scs_props: prop
     """
-    # import mathutils
-    # size = context.scene.scs_props.locator_size
-    # mat_sca = mathutils.Matrix.Scale(size, 4)
-    mat_orig = obj.matrix_world
-    # mat = mat_orig * mat_sca
+
+    tran, rot, sca = obj.matrix_world.decompose()
+    mat_orig = Matrix.Translation(tran).to_4x4() * rot.to_matrix().to_4x4()
+
     if obj.scs_props.locator_collider_type == 'Box':
         draw_shape_box(mat_orig, obj.scs_props, scene_scs_props)
     if obj.scs_props.locator_collider_type == 'Sphere':

@@ -122,7 +122,7 @@ def get_data_from_file(filepath, ind, print_info=False):
     # print('    filepath: "%s"\n' % filepath)
     container, state = pix.read_data(filepath, ind, print_info)
     if len(container) < 1:
-        lprint('\nE File "%s" is empty!', str(filepath).replace("\\", "/"))
+        lprint('\nE File "%s" is empty!', (str(filepath).replace("\\", "/"),))
         return None
 
     # print_container(container)  # TEST PRINTOUTS
@@ -149,7 +149,7 @@ def write_data_to_file(container, filepath, ind, print_info=False):
 
     result = pix.write_data(container, filepath, ind, print_info=print_info)
     if result != {'FINISHED'}:
-        lprint('\nE Unable to export data into file:\n  "%s"\nFor details check printouts above.', str(filepath).replace("\\", "/"))
+        lprint('\nE Unable to export data into file:\n  "%s"\nFor details check printouts above.', (str(filepath).replace("\\", "/"),))
         return False
     else:
         lprint('I File created!\n')

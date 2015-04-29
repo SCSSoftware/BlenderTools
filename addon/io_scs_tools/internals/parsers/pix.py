@@ -39,7 +39,7 @@ def _get_prop(line):
         # print('-prop_split: "%s"' % str(prop_split))
         prop.append(prop_split[0].strip())
         prop_value = prop_split[1].strip()
-        if prop_value in ("FLOAT", "FLOAT2", "FLOAT3", "FLOAT4", "INT"):
+        if prop_value in ("FLOAT", "FLOAT2", "FLOAT3", "FLOAT4", "INT", "STRING"):
             prop.append(prop_value)
             return prop
         elif prop_value in ("FLOAT4x4", ):
@@ -88,7 +88,7 @@ def _get_prop(line):
                                                     except:
 
                                                         # LIST OF - STRINGS
-                                                        val = string
+                                                        val = string[1:-1]
                                             val_list.append(val)
 
                                     # LIST OF HEX NUMBERS

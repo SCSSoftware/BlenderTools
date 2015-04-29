@@ -22,6 +22,8 @@
 Constants for data group of map and navigation curves
 """
 
+from enum import Enum
+
 
 class ConnectionsStorage:
     """Constants related for storage of connections used in custom drawing
@@ -109,3 +111,75 @@ class Variant:
     """
     default_name = "default"
     """Default name for variant"""
+
+
+class Look:
+    """Constants related to 'SCS Looks'
+    """
+    custom_prop_name = "scs_looks_data"
+    """Name of the Blender Custom Property where dictionary for looks will be stored"""
+    default_name = "default"
+    """Default name for look"""
+
+
+class Material:
+    """Constants related to materials
+    """
+    unset_bitmap_filepath = ""
+    """Unset value of each texture filepath (used for identifying if this value in material was set)"""
+    unset_substance = "None"
+    """Unset value of material substance (used for identifying if this value in material was set)"""
+
+
+class LampTools:
+    """Constants related to lampmask and it's tools
+    """
+
+    class VehicleSides(Enum):
+        """Defined sides of vehicles.
+        """
+        FrontLeft = 0
+        FrontRight = 1
+        RearLeft = 2
+        RearRight = 3
+        Middle = 4
+
+    class VehicleLampTypes(Enum):
+        """Defined lamp types for vehicles.
+        """
+        LeftTurn = 0
+        RightTurn = 1
+        Brake = 2
+        HighBeam = 3
+        LowBeam = 4
+        Reverse = 5
+        DRL = 6
+        Positional = 7
+
+    class AuxiliaryLampColors(Enum):
+        """Defined vehicle auxiliary light colors.
+        """
+        White = 0
+        Orange = 1
+
+    class AuxiliaryLampTypes(Enum):
+        """Defined lamp types for vehicle auxiliary lights.
+        """
+        Dim = 0
+        Bright = 1
+
+    class TrafficLightTypes(Enum):
+        """Defined lamp types for traffic lights.
+        """
+        Red = 0
+        Yellow = 1
+        Green = 2
+
+
+class VertexColorTools:
+    """Constants related to vertex color tools
+    """
+
+    class WrapType:
+        All = "all"
+        Selected = "selected"

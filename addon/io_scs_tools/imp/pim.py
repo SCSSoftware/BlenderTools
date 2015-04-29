@@ -28,7 +28,6 @@ from io_scs_tools.utils.printout import handle_unused_arg
 from io_scs_tools.utils import convert as _convert_utils
 from io_scs_tools.utils import object as _object_utils
 from io_scs_tools.utils import mesh as _mesh_utils
-from io_scs_tools.utils import material as _material_utils
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
 
 
@@ -544,14 +543,14 @@ def _create_5_piece(
             mesh_rgb_final = []
 
         for uv_layer_name in mesh_rgb_final:
-            max_value = mesh_rgba[uv_layer_name][0][0]
-            for vc_entry in mesh_rgba[uv_layer_name]:
-                for value in vc_entry:
-                    if max_value < value:
-                        max_value = value
+            max_value = mesh_rgb_final[uv_layer_name][0][0] / 2
+            for vc_entry in mesh_rgb_final[uv_layer_name]:
+                for i, value in enumerate(vc_entry):
+                    if i < 3 and max_value < value / 2:
+                        max_value = value / 2
             if max_value > mesh.scs_props.vertex_color_multiplier:
                 mesh.scs_props.vertex_color_multiplier = max_value
-            _mesh_utils.bm_make_vc_layer(5, bm, uv_layer_name, mesh_rgba[uv_layer_name], multiplier=mesh.scs_props.vertex_color_multiplier)
+            _mesh_utils.bm_make_vc_layer(5, bm, uv_layer_name, mesh_rgb_final[uv_layer_name], mesh.scs_props.vertex_color_multiplier)
 
         context.window_manager.progress_update(0.5)
 
@@ -1029,7 +1028,6 @@ def load_pim_file(
      locator_count,
      skeleton) = _get_global(pim_container)
 
-
     # DATA LOADING
     materials_data = {}
     objects_data = {}
@@ -1070,11 +1068,8 @@ def load_pim_file(
                     points_to_weld_list = []
                     if mesh_normals:
                         # print('Piece %i going to "make_posnorm_list"...' % ob_index)
-                        if scs_globals.auto_welding:
-                            posnorm_list = _mesh_utils.make_posnorm_list(mesh_vertices, mesh_normals)
-                            # print('Piece %i going to "make_points_to_weld_list"...' % ob_index)
-                            points_to_weld_list = _mesh_utils.make_points_to_weld_list(posnorm_list)
-                            # print('Piece %i ...done' % ob_index)
+                        if scs_globals.use_welding:
+                            points_to_weld_list = _mesh_utils.make_points_to_weld_list(mesh_vertices, mesh_normals, scs_globals.welding_precision)
 
                     objects_data[ob_index] = (
                         context,
@@ -1261,7 +1256,6 @@ def load_pim_file(
 
         dup_obj = None
         if len(duplicate_geometry[1]) != 0:
-            lprint('W An object with duplicate geometry will be created...!')
             # for vertex_i, vertex in enumerate(duplicate_geometry[0]):
             # print('duplicate_geometry - vert: %s - %s (%i)' % (str(vertex), str(duplicate_geometry[0][vertex]), vertex_i))
             # for face_i, face in enumerate(duplicate_geometry[1]):
@@ -1288,7 +1282,7 @@ def load_pim_file(
             # object.select = True
             # bpy.context.scene.objects.active = object
             # bpy.ops.object.shade_smooth()
-            lprint('I Created Object "%s"...', (dup_obj.name,))
+            lprint('W Object with duplicated vertices created: %r', (dup_obj.name,))
 
         for new_obj in (obj, dup_obj):  # just to make only one call of this code block
             piece_name = objects_data[obj_i][1]

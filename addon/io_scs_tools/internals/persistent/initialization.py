@@ -85,8 +85,14 @@ def initialise_scs_dict(scene):
                 _path_utils.fix_sep_by_platform(obj.scs_props, "scs_root_object_export_filepath")
 
         for material in bpy.data.materials:
-            for prop in material.scs_props.get_shader_texture_types():
-                _path_utils.fix_sep_by_platform(material.scs_props, prop)
+            for prop in material.scs_props.get_texture_types():
+                if len(getattr(material.scs_props, "shader_texture_" + prop)) > 0:
+                    _path_utils.fix_sep_by_platform(material.scs_props, "shader_texture_" + prop)
+
+        for image in bpy.data.images:
+            if len(image.filepath) > 0:
+                _path_utils.fix_sep_by_platform(image, "filepath")
+                image.reload()
 
         _path_utils.fix_sep_by_platform(bpy.context.scene.scs_props, "default_export_filepath")
 

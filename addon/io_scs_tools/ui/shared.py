@@ -18,7 +18,10 @@
 
 # Copyright (C) 2013-2014: SCS Software
 
+import bpy
+
 from io_scs_tools.consts import Icons as _ICONS_consts
+from io_scs_tools.utils import object as _object_utils
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
 from io_scs_tools.internals.icons.wrapper import get_icon
 
@@ -32,6 +35,66 @@ class HeaderIconPanel:
 
     def draw_header(self, context):
         self.layout.label('', icon_value=get_icon(_ICON_TYPES.scs_logo))
+
+
+def draw_scs_looks_panel(layout, scene, active_object, scs_root_object):
+    """Creates 'SCS Looks' settings sub-panel.
+
+    :param layout: Blender UI Layout to draw to
+    :type layout: bpy.types.UILayout
+    :param scene: Blender Scene
+    :type scene: bpy.types.Scene
+    :param active_object: active object
+    :type active_object: bpy.types.Object
+    :param scs_root_object: SCS Root Object
+    :type scs_root_object: bpy.types.Object
+    """
+
+    layout_column = layout.column(align=True)
+    layout_box = layout_column.box()
+
+    if scene.scs_props.scs_look_panel_expand:
+
+        # HEADER (COLLAPSIBLE - OPENED)
+        row = layout_box.row()
+        row.prop(scene.scs_props, 'scs_look_panel_expand', text="SCS Looks:", icon='TRIA_DOWN', icon_only=True, emboss=False)
+        row.prop(scene.scs_props, 'scs_look_panel_expand', text=" ", icon='NONE', icon_only=True, emboss=False)
+
+        layout_box = layout_column.box()  # body box
+
+        if len(_object_utils.gather_scs_roots(bpy.context.selected_objects)) > 1 and active_object is not scs_root_object:
+
+            col = layout_box.box().column(align=True)
+            row = col.row()
+            row.label("WARNING", icon="ERROR")
+            row = col.row()
+            row.label("Can not edit looks! Selection has multiple game objects.")
+
+        else:  # more roots or active object is root object
+
+            row = layout_box.row()
+            row.template_list(
+                'SCSObjectLookSlots',
+                list_id="",
+                dataptr=scs_root_object,
+                propname="scs_object_look_inventory",
+                active_dataptr=scs_root_object.scs_props,
+                active_propname="active_scs_look",
+                rows=3,
+                maxrows=5,
+                type='DEFAULT',
+                columns=9
+            )
+
+            # LIST BUTTONS
+            col = row.column(align=True)
+            col.operator('object.add_scs_look', text="", icon='ZOOMIN')
+            col.operator('object.remove_scs_look', text="", icon='ZOOMOUT')
+
+    else:
+        row = layout_box.row()
+        row.prop(scene.scs_props, 'scs_look_panel_expand', text="SCS Looks:", icon='TRIA_RIGHT', icon_only=True, emboss=False)
+        row.prop(scene.scs_props, 'scs_look_panel_expand', text=" ", icon='NONE', icon_only=True, emboss=False)
 
 
 def draw_export_panel(layout):

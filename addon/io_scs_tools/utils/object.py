@@ -23,6 +23,7 @@ import bmesh
 from bpy_extras import object_utils as bpy_object_utils
 from mathutils import Vector
 from io_scs_tools.consts import Part as _PART_consts
+from io_scs_tools.internals import looks as _looks
 from io_scs_tools.internals import inventory as _inventory
 from io_scs_tools.utils.printout import lprint
 from io_scs_tools.utils import math as _math
@@ -34,19 +35,13 @@ from io_scs_tools.utils import get_scs_globals as _get_scs_globals
 
 def get_scs_root(obj):
     """Takes any object and returns it's 'SCS Root Object' or None."""
-    if obj:
-        obj = obj
-        while obj.scs_props.empty_object_type != 'SCS_Root':
-            if obj.parent:
-                obj = obj.parent
-            else:
-                break
-        if obj.scs_props.empty_object_type != 'SCS_Root':
-            return None
-        # elif obj == object:
-        # return obj
-        else:
-            return obj
+
+    parent = obj
+    while parent and parent.scs_props.empty_object_type != 'SCS_Root':
+        parent = parent.parent
+
+    if parent and parent.scs_props.empty_object_type == 'SCS_Root':
+        return parent
     else:
         return None
 
@@ -80,7 +75,6 @@ def make_scs_root_object(context, dialog=False):
 
     # ADD SCS ROOT OBJECT (EMPTY OBJECT)
     bpy.ops.object.empty_add(
-        type='PLAIN_AXES',
         view_align=False,
         location=context.scene.cursor_location,
     )
@@ -90,8 +84,6 @@ def make_scs_root_object(context, dialog=False):
     name = _name.make_unique_name(bpy.data.objects[0], "game_object", "_")
     bpy.context.active_object.name = name
     new_scs_root = bpy.data.objects.get(name)
-    new_scs_root.show_name = True
-    new_scs_root.show_x_ray = True
     new_scs_root.scs_props.scs_root_object_export_enabled = True
     new_scs_root.scs_props.empty_object_type = 'SCS_Root'
 
@@ -105,10 +97,30 @@ def make_scs_root_object(context, dialog=False):
 
         bpy.ops.object.select_all(action='DESELECT')
 
+        new_scs_root_mats = []
         # select content object for parenting later
         for obj in scs_game_object_content:
             obj.select = True
+
+            # fix old parent with new children number and cleaned looks
+            if obj.parent:
+                ex_parent_obj = obj.parent
+                obj.parent = None
+
+                ex_parent_obj.scs_cached_num_children = len(ex_parent_obj.children)
+
+                ex_parent_scs_root = get_scs_root(ex_parent_obj)
+                if ex_parent_scs_root:
+                    _looks.clean_unused(ex_parent_scs_root)
+
             obj.scs_props.parent_identity = new_scs_root.name
+            obj.scs_cached_num_children = len(obj.children)
+
+            for slot in obj.material_slots:
+                if slot.material and slot.material not in new_scs_root_mats:
+                    new_scs_root_mats.append(slot.material)
+
+        _looks.add_materials(new_scs_root, new_scs_root_mats)
 
         bpy.ops.object.parent_set(type='OBJECT', keep_transform=False)
         bpy.ops.object.select_all(action='DESELECT')
@@ -155,7 +167,7 @@ def sort_out_game_objects_for_export(objects):
             rejected_objects.append(obj)
 
     # SORTING
-    for object_i, obj in enumerate(data_objects):
+    for obj in data_objects:
         scs_root_object = get_scs_root(obj)
         if scs_root_object:
             if scs_root_object in game_objects_dict:
@@ -163,9 +175,7 @@ def sort_out_game_objects_for_export(objects):
             else:
                 game_objects_dict[scs_root_object] = [obj]
         else:
-            rejected = data_objects.pop(object_i)
-            # print(' rejected: %r' % rejected.name)
-            rejected_objects.append(rejected)
+            rejected_objects.append(obj)
 
     # PRINTOUTS
     dump_level = int(_get_scs_globals().dump_level)
@@ -391,14 +401,43 @@ def create_convex_data(objects, convex_props={}, create_hull=False):
 
     # IF MULTIPLE OBJECTS, CREATE JOINED MESH FROM ALL SELECTED MESHES
     bpy.ops.object.duplicate_move()
-    # print(' selected: %i - active: %r' % (len(bpy.context.selected_objects), str(bpy.context.active_object)))
     original_active = None
     if bpy.context.active_object not in bpy.context.selected_objects:
         original_active = bpy.context.active_object
         bpy.context.scene.objects.active = bpy.context.selected_objects[0]
-    bpy.ops.object.join()
-    bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+
+    if len(original_selection) > 1:
+        bpy.ops.object.join()
+
     obj = object_to_delete = bpy.context.active_object
+
+    for modifier in obj.modifiers:
+        bpy.ops.object.modifier_apply(modifier=modifier.name)
+
+    # if convex locator creation than decimate joined object to make sure
+    # mesh is not to big for convex locator
+    if not create_hull:
+        modifier = obj.modifiers.new("triangulate", "TRIANGULATE")
+        bpy.ops.object.modifier_apply(modifier=modifier.name)
+
+        if len(obj.data.polygons) > 256:  # actually decimate if face count is to big
+            initial_polycount = len(obj.data.polygons)
+
+            modifier = obj.modifiers.new("decimate", "DECIMATE")
+            while modifier.face_count > 256 or modifier.face_count < 200:
+
+                # divide ratio by 2 until we get into desired count of faces
+                diff = abs(modifier.ratio) / 2.0
+                if modifier.face_count > 256:
+                    diff *= -1.0
+
+                modifier.ratio += diff
+                bpy.context.scene.update()  # invoke scene update to get updated modifier
+
+            bpy.ops.object.modifier_apply(modifier=modifier.name)
+
+            lprint("W Mesh used for convex locator was decimated because it had to many faces for convex locator.\n\t   " +
+                   "Maximum triangles count is 256 but mesh had %s triangles.", (initial_polycount,))
 
     # GET PROPERTIES FROM THE RESULTING OBJECT
     if not convex_props:
@@ -472,8 +511,9 @@ def create_convex_data(objects, convex_props={}, create_hull=False):
                 # CREATE CONVEX HULL MESH OBJECT
                 if geom == 'geom' and create_hull:
                     resulting_convex_object = make_mesh_from_verts_and_faces(verts, faces, convex_props)
-                    # else:
-                    # print('   < NO DATA (%r)' % geom)
+
+                    # make resulting object is on the same layers as joined object
+                    resulting_convex_object.layers = obj.layers
 
     bm.free()
 

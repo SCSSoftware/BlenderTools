@@ -18,11 +18,8 @@
 
 # Copyright (C) 2013-2014: SCS Software
 
-import bpy
 from io_scs_tools.internals.containers import pix as _pix_container
 from io_scs_tools.utils import name as _name_utils
-from io_scs_tools.utils import material as _material_utils
-from io_scs_tools.utils import get_scs_globals as _get_scs_globals
 from io_scs_tools.utils.printout import lprint
 
 
@@ -194,52 +191,11 @@ def _get_variant(section):
     return variant_name, variantparts
 
 
-def _find_preset(material_effect):
-    """Tries to find suitable Shader Preset (as defined in shader_presets.txt file) for imported shader. If it cannot be found, it will return None.
-
-    :param material_effect: Name of the requested Look
-    :type material_effect: str
-    :return: Preset index and name or None
-    :rtype: (int, str) | None
-    """
-
-    scs_shader_presets_inventory = bpy.context.scene.scs_shader_presets_inventory
-    for i, shader_preset in enumerate(scs_shader_presets_inventory):
-
-        if shader_preset.name != "<none>":
-            preset_section = _material_utils.get_shader_preset(_get_scs_globals().shader_presets_filepath, shader_preset.name)
-            for preset_prop in preset_section.props:
-                if preset_prop[0] == "Effect":
-
-                    if preset_prop[1] == material_effect:
-
-                        return i, shader_preset.name
-
-    return None, None
-
-
-def _get_shader_data(material_data):
-    """Returns Material's Effect, Attributes and Textures.
-
-    :param material_data: Material data
-    :type material_data: list
-    :return: Material's Effect, Attributes, Textures
-    :rtype: tuple
-    """
-    material_effect = material_data[0]
-    material_attributes = material_data[2]
-    material_textures = material_data[3]
-    material_section = material_data[4]
-    return material_effect, material_attributes, material_textures, material_section
-
-
-def load(filepath, pim_mats_info):
+def load(filepath):
     """Enty point for importing PIT file
 
     :param filepath: filepath of PIT file
     :type filepath: str
-    :param pim_mats_info: list of material info, one material info consists of list: [ blend_mat_name, mat_effect, original_mat_alias ]
-    :type pim_mats_info: list of list
     """
     print("\n************************************")
     print("**      SCS PIT Importer          **")
@@ -284,14 +240,13 @@ def load(filepath, pim_mats_info):
     '''
 
     # LOAD LOOKS AND VARIANTS
-    loaded_looks = {}
-    looks = []
+    loaded_looks = []
     loaded_variants = []
     for section in pit_container:
         if section.type == 'Look':
             look_name, look_mat_settings = _get_look(section)
-            loaded_looks[look_name] = look_mat_settings
-            looks.append(look_name)
+            look_record = (look_name, look_mat_settings)
+            loaded_looks.append(look_record)
         elif section.type == 'Variant':
             variant_name, variantparts = _get_variant(section)
             variant_record = (variant_name, variantparts)
@@ -299,59 +254,5 @@ def load(filepath, pim_mats_info):
             loaded_variants.append(variant_record)
             # loaded_variants.append((getVariant(section)))
 
-    # PICK ONE LOOK DATA BLOCK, NOTE: This is temporal now as we don't have proper support for Looks.
-    if "Default" in loaded_looks:
-        look_name = "Default"
-    else:
-        look_name = looks[0]
-    # print(" look_name: %r" % look_name)
-    look_mat_settings = loaded_looks[look_name]
-
-    # SETUP ALL THE MATERIALS, NOTE: They should be already created by PIM import.
-    for mat_info in pim_mats_info:
-        mat = bpy.data.materials[mat_info[0]]
-        if mat_info[2] in look_mat_settings:
-
-            # ASSIGN IMPORTED SHADER DATA
-            material_effect, material_attributes, material_textures, material_section = _get_shader_data(look_mat_settings[mat_info[2]])
-
-            # TRY TO FIND SUITABLE PRESET
-            (preset_index, preset_name) = _find_preset(material_effect)
-
-            if preset_index:  # preset name is found within presets shaders
-
-                mat.scs_props.active_shader_preset_name = preset_name
-                preset_section = _material_utils.get_shader_preset(_get_scs_globals().shader_presets_filepath, preset_name)
-
-                if preset_section:
-
-                    preset_effect = preset_section.get_prop_value("Effect")
-                    mat.scs_props.mat_effect_name = preset_effect
-
-                    # apply default shader settings
-                    _material_utils.set_shader_data_to_material(mat, preset_section, preset_effect,
-                                                                is_import=True)
-
-                    # reapply settings from material
-                    _material_utils.set_shader_data_to_material(mat, material_section, material_effect,
-                                                                is_import=True, override_back_data=False)
-
-                    lprint("I Using shader preset on material %r.", (mat.name,))
-
-                else:
-                    print('''NO "preset_section"! (Shouldn't happen!)''')
-
-            else:  # import shader directly from material and mark it as imported
-
-                mat.scs_props.active_shader_preset_name = "<imported>"
-                _material_utils.set_shader_data_to_material(mat, material_section, material_effect,
-                                                            is_import=True)
-
-                lprint("I Using imported shader on material %r.", (mat.name,))
-
-            # delete not needed data on material
-            if "scs_tex_aliases" in mat:
-                del mat["scs_tex_aliases"]
-
     print("************************************")
-    return {'FINISHED'}, loaded_variants
+    return {'FINISHED'}, loaded_variants, loaded_looks

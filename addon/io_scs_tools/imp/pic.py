@@ -333,7 +333,7 @@ def load(filepath):
                 locator.scs_props.locator_collider_box_y = locator_parameters[2] * import_scale
                 locator.scs_props.locator_collider_box_z = locator_parameters[1] * import_scale
             elif locator_type in ('Sphere', 'Capsule', 'Cylinder'):
-                locator.scs_props.locator_collider_dia = locator_parameters[0] * import_scale
+                locator.scs_props.locator_collider_dia = locator_parameters[0] * 2 * import_scale
                 locator.scs_props.locator_collider_len = locator_parameters[1] * import_scale
             elif locator_type == 'Convex':
                 piece_index, piece_material, verts, faces = pieces[locator_convex_piece]

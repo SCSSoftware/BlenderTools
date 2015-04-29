@@ -329,8 +329,12 @@ class GlobalSCSProps(bpy.types.PropertyGroup):
         _config_container.update_item_in_file('Import.ImportPimFile', int(self.import_pim_file))
         return None
 
-    def auto_welding_update(self, context):
-        _config_container.update_item_in_file('Import.AutoWelding', int(self.auto_welding))
+    def use_welding_update(self, context):
+        _config_container.update_item_in_file('Import.UseWelding', int(self.use_welding))
+        return None
+
+    def welding_precision_update(self, context):
+        _config_container.update_item_in_file('Import.WeldingPrecision', int(self.welding_precision))
         return None
 
     def import_pit_file_update(self, context):
@@ -486,11 +490,18 @@ class GlobalSCSProps(bpy.types.PropertyGroup):
         default=True,
         update=import_pim_file_update,
     )
-    auto_welding = BoolProperty(
-        name="Auto Welding",
+    use_welding = BoolProperty(
+        name="Use Welding",
         description="Use automatic routine for welding of divided mesh surfaces",
         default=True,
-        update=auto_welding_update,
+        update=use_welding_update,
+    )
+    welding_precision = IntProperty(
+        name="Welding Precision",
+        description="Number of decimals which has to be equal for welding to take place.",
+        min=1, max=6,
+        default=4,
+        update=welding_precision_update
     )
     import_pit_file = BoolProperty(
         name="Import Trait (PIT)",
@@ -1016,8 +1027,6 @@ class SceneSCSProps(bpy.types.PropertyGroup):
             for preset_i, preset in enumerate(scene.scs_shader_presets_inventory):
                 if value == preset_i:
 
-                    material.scs_props.active_shader_preset_name = preset.name
-
                     # Set Shader Preset in the Material
                     preset_section = _material_utils.get_shader_preset(_get_scs_globals().shader_presets_filepath, preset.name)
 
@@ -1028,6 +1037,7 @@ class SceneSCSProps(bpy.types.PropertyGroup):
 
                         if preset_name:
                             _material_utils.set_shader_data_to_material(material, preset_section, preset_effect)
+                            material.scs_props.active_shader_preset_name = preset_name
                         else:
                             material.scs_props.active_shader_preset_name = "<none>"
                             material["scs_shader_attributes"] = {}
@@ -1228,6 +1238,11 @@ class SceneSCSProps(bpy.types.PropertyGroup):
     '''
 
     # VISIBILITY VARIABLES
+    scs_look_panel_expand = BoolProperty(
+        name="Expand SCS Look Panel",
+        description="Expand SCS Look panel",
+        default=True,
+    )
     scs_part_panel_expand = BoolProperty(
         name="Expand SCS Part Panel",
         description="Expand SCS Part panel",

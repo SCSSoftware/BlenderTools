@@ -1107,6 +1107,19 @@ def _draw_scs_variant_panel(layout, scene, scs_root_object):
         row.label('')
 
 
+class SCSObjectLookSlots(bpy.types.UIList):
+    """
+    Draw look item slot within SCS Looks list
+    """
+
+    def draw_item(self, context, layout, data, item, icon, active_data, active_property, index):
+        layout.prop(item, "name", text="", emboss=False, icon_value=icon)
+
+        # DEBUG
+        if int(_get_scs_globals().dump_level) > 2:
+            layout.label("DEBUG - id: " + str(item.id))
+
+
 class SCSObjectPartSlots(bpy.types.UIList):
     """
     Draw part item slot within SCS Parts list
@@ -1216,6 +1229,9 @@ class SCSTools(_ObjectPanelBlDefs, Panel):
 
                 # SCS VARIANT PANEL
                 _draw_scs_variant_panel(layout, scene, scs_root_obj)
+
+                # SCS LOOK PANEL
+                _shared.draw_scs_looks_panel(layout, scene, obj, scs_root_obj)
 
         # EMPTY OBJECT PANEL
         if obj.type == 'EMPTY':

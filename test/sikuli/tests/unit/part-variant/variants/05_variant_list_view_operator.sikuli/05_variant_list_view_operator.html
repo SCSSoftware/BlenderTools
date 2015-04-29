@@ -83,7 +83,7 @@ p = configurator.start_it_up(getBundlePath(), <span class="str">"default_3_varia
     <span class="skw">click</span>(Pattern(<img src="variant_list_select_and_view_01.png" />).similar(<span class="dig">0.95</span>).targetOffset(-<span class="dig">11</span>,-<span class="dig">23</span>))
     <span class="skw">find</span>(Pattern(<img src="variant_list_select_and_view_08.png" />).similar(<span class="dig">0.90</span>))
     <span class="skw">click</span>(Pattern(<img src="variant_list_select_and_view_01.png" />).similar(<span class="dig">0.95</span>).targetOffset(-<span class="dig">11</span>,-<span class="dig">4</span>))
-    <span class="skw">find</span>(Pattern(<img src="variant_list_select_and_view_09.png" />).similar(<span class="dig">0.89</span>))
+    <span class="skw">find</span>(Pattern(<img src="variant_list_select_and_view_09.png" />).similar(<span class="dig">0.84</span>))
     <span class="skw">click</span>(Pattern(<img src="variant_list_select_and_view_01.png" />).similar(<span class="dig">0.95</span>).targetOffset(-<span class="dig">11</span>,<span class="dig">16</span>))
     <span class="skw">find</span>(Pattern(<img src="variant_list_select_and_view_10.png" />).similar(<span class="dig">0.90</span>))
     hover(Location(<span class="dig">450</span>, <span class="dig">400</span>))  <span class="cmt"># move cursor to the safe location</span>
@@ -91,7 +91,7 @@ p = configurator.start_it_up(getBundlePath(), <span class="str">"default_3_varia
     configurator.save_screenshot(getBundlePath(), Screen())
     <span class="kw">raise</span>
 <span class="kw">finally</span>:
-    <span class="kw">pass</span><span class="cmt">#configurator.close_blender(p)</span>
+    configurator.close_blender(p)
 </pre>
 </body>
 </html>

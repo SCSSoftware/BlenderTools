@@ -1,0 +1,31 @@
+SiiNunit
+{
+accessory_chassis_data : chassis.trailer.food_cistern.sample
+{
+	detail_model: "/vehicle/trailer_eu/food_cistern/trailer_sample.pmd"
+	model: "/vehicle/trailer_eu/food_cistern/trailer_sample.pmd"
+	lods[]: "/vehicle/trailer_eu/food_cistern/lod_01_sample.pmd"
+	lods[]: "/vehicle/trailer_eu/food_cistern/lod_02_sample.pmd"
+	collision: "/vehicle/trailer_eu/food_cistern/trailer_sample.pmc"
+
+	residual_travel[]: 0.12 	# 1st axle
+	residual_travel[]: 0.12 	# 2nd axle
+	residual_travel[]: 0.12 	# 3rd axle
+
+	trailer_mass: 6200.0
+
+	variant: default
+	looks[]: plain
+	looks[]: euroacres
+	looks[]: trameri
+	looks[]: fcp
+
+
+	extended_shadow_texture: "/vehicle/trailer_eu/food_cistern/shadow.tobj"
+	extended_shadow_intensity: 1.45
+	extended_shadow_fadeout_start: 10
+	extended_shadow_fadeout_length: 0
+
+	ui_shadow: "/vehicle/trailer_eu/food_cistern/ui_shadow_sample.pmd"
+}
+}

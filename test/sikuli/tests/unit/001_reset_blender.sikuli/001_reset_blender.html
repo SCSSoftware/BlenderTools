@@ -75,32 +75,23 @@ reload(configurator)
 
 configurator.delete_scs_tools_config()
 
-<span class="cmt"># RESAVE USER PREFERENCES
-</span>p = configurator.start_it_up(getBundlePath(), <span class="str">"userpref.blend"</span>)
-<span class="kw">try</span>:
-    mouseMove(Location(<span class="dig">0</span>,<span class="dig">0</span>))
-    <span class="skw">wait</span>(Pattern(<img src="3d_view_icon.png" />).similar(<span class="dig">0.50</span>), <span class="dig">5</span>)
-    <span class="skw">click</span>(<img src="3d_view_icon.png" />)
-    <span class="skw">click</span>(<img src="user_pref_menu_item.png" />)
-    <span class="skw">click</span>(Pattern(<img src="save_user_settings.png" />).similar(<span class="dig">0.95</span>))
-    hover(Location(<span class="dig">450</span>, <span class="dig">400</span>)) <span class="cmt"># move cursor to the safe location</span>
-<span class="kw">except</span>:
-    configurator.save_screenshot(getBundlePath(), Screen())
-    <span class="kw">raise</span>
-<span class="kw">finally</span>:
-    configurator.close_blender(p)
-
-
 <span class="cmt"># SETUP SCS TOOLS
 </span>p = configurator.start_it_up(getBundlePath(), <span class="str">"startup.blend"</span>)
 <span class="kw">try</span>:
+    mouseMove(Location(<span class="dig">30</span>,<span class="dig">30</span>))
     <span class="skw">wait</span>(<img src="3d_view_icon.png" />, <span class="dig">5</span>)
     <span class="skw">click</span>(Pattern(<img src="3d_view_icon-1.png" />).similar(<span class="dig">0.95</span>))
     <span class="skw">click</span>(<img src="user_pref_menu_item.png" />)
     <span class="skw">click</span>(Pattern(<img src="search.png" />).similar(<span class="dig">0.95</span>))
     <span class="skw">type</span>(<span class="str">"sc"</span>)
     <span class="skw">type</span>(Key.ENTER)
-    <span class="skw">find</span>(Pattern(<img src="addons_scs_tools_entry.png" />).similar(<span class="dig">0.90</span>)).right().<span class="skw">click</span>(Pattern(<img src="addon_checkbox_0.png" />).similar(<span class="dig">0.65</span>).targetOffset(<span class="dig">15</span>,<span class="dig">0</span>))
+    <span class="kw">if</span> <span class="skw">find</span>(Pattern(<img src="addons_scs_tools_entry.png" />).similar(<span class="dig">0.90</span>)).right().exists(Pattern(<img src="addon_checkbox_0.png" />).similar(<span class="dig">0.90</span>).targetOffset(<span class="dig">15</span>,<span class="dig">0</span>)):
+        <span class="skw">find</span>(Pattern(<img src="addons_scs_tools_entry.png" />).similar(<span class="dig">0.90</span>)).right().<span class="skw">click</span>(Pattern(<img src="addon_checkbox_0.png" />).similar(<span class="dig">0.65</span>).targetOffset(<span class="dig">15</span>,<span class="dig">0</span>))
+    <span class="kw">else</span>:
+        <span class="skw">find</span>(Pattern(<img src="addons_scs_tools_entry.png" />).similar(<span class="dig">0.90</span>)).right().<span class="skw">click</span>(Pattern(<img src="addon_checkbox_1.png" />).similar(<span class="dig">0.95</span>).targetOffset(<span class="dig">15</span>,<span class="dig">1</span>))
+        <span class="skw">wait</span>(<span class="dig">1</span>)
+        <span class="skw">find</span>(Pattern(<img src="addons_scs_tools_entry.png" />).similar(<span class="dig">0.90</span>)).right().<span class="skw">click</span>(Pattern(<img src="addon_checkbox_0.png" />).similar(<span class="dig">0.65</span>).targetOffset(<span class="dig">15</span>,<span class="dig">0</span>))
+
     <span class="skw">find</span>(Pattern(<img src="addons_scs_tools_enabled.png" />).exact())
     <span class="skw">click</span>(Pattern(<img src="save_user_settings.png" />).similar(<span class="dig">0.95</span>))
     <span class="skw">find</span>(Pattern(<img src="project_path.png" />).similar(<span class="dig">0.95</span>)).right().<span class="skw">click</span>(<img src="select_project_path_button.png" />)

@@ -16,7 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2013-2014: SCS Software
+# Copyright (C) 2013-2015: SCS Software
 
 import bpy
 from bpy.props import (BoolProperty,
@@ -26,62 +26,106 @@ from bpy.props import (BoolProperty,
                        EnumProperty,
                        CollectionProperty,
                        IntProperty)
+import os
 import re
+from io_scs_tools.consts import Material as _MAT_consts
+from io_scs_tools.exp import tobj as _tobj_exp
+from io_scs_tools.internals import looks as _looks
 from io_scs_tools.internals import inventory as _inventory
+from io_scs_tools.internals.shaders import shader as _shader
 from io_scs_tools.utils import material as _material_utils
+from io_scs_tools.utils import object as _object_utils
+from io_scs_tools.utils import path as _path_utils
+from io_scs_tools.utils.printout import lprint
 
-'''
-# class MaterialCgFXShaderData(bpy.types.PropertyGroup):
-#     """
-#     CgFX data record, which gets saved within "material.scs_cgfx_looks" into *.blend file.
-#     """
-#     name = StringProperty(name="Data Name", default="")
-#     ui_name = StringProperty(name="UI Name", default="")
-#     ui_description = StringProperty(name="UI Description", default="")
-#     type = StringProperty(name="Data Type", default="")
-#     value = StringProperty(name="Data Value", default="")
-#     update_function = StringProperty(name="Update Function", default="")
-#     hide = BoolProperty(name="Hide Data", default=False)
-#     enabled = BoolProperty(name="Data Enabled", default=True)
-#
-#     enum_items = StringProperty(name="Enum Items", default="")
-#     define = BoolProperty(name="Data Define", default=False)
-#
-#
-# class CgFXItemSorter(bpy.types.PropertyGroup):
-#     """CgFX item sorter."""
-#     pass
-#
-#
-# class MaterialCgFXVertexShaderData(bpy.types.PropertyGroup):
-#     """
-#     CgFX data record, which gets saved within "material.scs_cgfx_looks" into *.blend file.
-#     """
-#     name = StringProperty(name="Data Name", default="")
-#     ui_name = StringProperty(name="UI Name", default="")
-#     ui_description = StringProperty(name="UI Description", default="")
-#     type = StringProperty(name="Data Type", default="")
-#     value = StringProperty(name="Data Value", default="")
-#     update_function = StringProperty(name="Update Function", default="")
-#     hide = BoolProperty(name="Hide Data", default=False)
-#     enabled = BoolProperty(name="Data Enabled", default=True)
-#
-#
-# class CgFXVertexItemSorter(bpy.types.PropertyGroup):
-#     """CgFX item sorter."""
-#     pass
-#
-#
-# class MaterialCgFXShaderLooks(bpy.types.PropertyGroup):
-#     """
-#     CgFX Shader data on Materials.
-#     """
-#     name = StringProperty(name="CgFX Shader Look Name", default="")
-#     cgfx_data = CollectionProperty(type=MaterialCgFXShaderData)
-#     cgfx_sorter = CollectionProperty(type=CgFXItemSorter)
-#     cgfx_vertex_data = CollectionProperty(type=MaterialCgFXVertexShaderData)
-#     cgfx_vertex_sorter = CollectionProperty(type=CgFXVertexItemSorter)
-'''
+
+def __get_texture_settings__():
+    return [
+        ('u_repeat', "U Repeat", "Repeat texture in U direction"),
+        ('v_repeat', "V Repeat", "Repeat texture in V direction"),
+        ('tsnormal', "TS Normal", "Tangent Space Normal for the texture"),
+        # ('bias', "Bias", "MIP Maps Bias..."),
+        ('nomips', "No MIP Maps", "Don't use MIP Maps for the texture"),
+        ('nocompress', "No Compress", "Don't use compression on texture"),
+    ]
+
+
+def __update_look__(self, context):
+    """Hookup function for triggering update look from material in internal module of looks.
+    It should be used on any property which should be saved in exported into looks.
+    :param context: Blender context
+    :type context: bpy.types.Context
+    """
+
+    if hasattr(context, "active_object") and hasattr(context.active_object, "active_material") and context.active_object.active_material:
+        scs_root = _object_utils.get_scs_root(context.active_object)
+        if scs_root:
+            _looks.update_look_from_material(scs_root, context.active_object.active_material, "preset_change" in self)
+
+
+def __update_shader_attribute__(self, context, attr_type):
+    """Hookup function for updating shader attributes in Blender.
+
+    :param context: Blender context
+    :type context: bpy.types.Context
+    :param attr_type: type of attribute to update in shader
+    :type attr_type: str
+    """
+    __update_look__(self, context)
+
+    material = _material_utils.get_material_from_context(context)
+
+    if material:
+        _shader.set_attribute(material, attr_type, getattr(self, "shader_attribute_" + attr_type, None))
+
+
+def __update_shader_texture_tobj_file__(self, context, tex_type):
+    """Hookup function for updating TOBJ file on any texture type.
+
+    :param context: Blender context
+    :type context: bpy.types.Context
+    :param tex_type: string representig texture type
+    :type tex_type: str
+    """
+
+    # dummy context arg usage so IDE doesn't report it as unused
+    if context == context:
+        pass
+
+    shader_texture_str = "shader_texture_" + tex_type
+    if _material_utils.is_valid_shader_texture_path(getattr(self, shader_texture_str)):
+        tex_filepath = _path_utils.get_abs_path(getattr(self, shader_texture_str))
+
+        if tex_filepath and (tex_filepath.endswith(".tga") or tex_filepath.endswith(".png")):
+            tobj_file = tex_filepath[:-4] + ".tobj"
+
+            if _tobj_exp.export(tobj_file, os.path.basename(tex_filepath), getattr(self, shader_texture_str + "_settings")):
+                self[shader_texture_str + "_tobj_load_time"] = str(os.path.getmtime(tobj_file))
+
+
+def __update_shader_texture__(self, context, tex_type):
+    """Hookup function for update of shader texture of any texture type.
+
+    :param context: Blender context
+    :type context: bpy.types.Context
+    :param tex_type: string representing texture type
+    :type tex_type: str
+    """
+
+    __update_look__((), context)
+
+    material = _material_utils.get_material_from_context(context)
+
+    if material:
+        shader_texture_str = "shader_texture_" + tex_type
+        shader_texture_filepath = getattr(self, shader_texture_str)
+
+        # create texture and use it on shader
+        texture = _material_utils.get_texture(shader_texture_filepath, tex_type)
+        _shader.set_texture(material, tex_type, texture)
+
+        # reload TOBJ settings
+        _material_utils.reload_tobj_settings(material, tex_type)
 
 
 class MaterialSCSTools(bpy.types.PropertyGroup):
@@ -90,326 +134,28 @@ class MaterialSCSTools(bpy.types.PropertyGroup):
     :return:
     """
 
-    _shader_texture_types = []
-
-    # @staticmethod
-    def get_shader_texture_types(self):
-        """SCS shader texture types which are currently deffined in SCS Blender Tools.
-
-        :return: SCS Shader Texture Types
-        :rtype: tuple
-        """
-        return self._shader_texture_types
-
-    # global matsubs_items
-    # matsubs_items = []
-
-    # # Following String property is fed from MATERIAL SUBSTANCE data list, which is usually loaded from
-    # # "//base/material/material.db" file and stored at "scs_globals.scs_matsubs_inventory".
-    substance = StringProperty(
-        name="Substance",
-        description="Substance",
-        default="None",
-        subtype='NONE',
-    )
-
-    # Shader Preset Attribute Values
-    def update_diffuse(self, context):
-
-        material = _material_utils.get_material_from_context(context)
-
-        if material:
-            material.diffuse_color = self.shader_attribute_diffuse
-            texture_slot = _material_utils.get_texture_slot(material, 'base')
-            if texture_slot:
-                _material_utils.set_diffuse(texture_slot, material, self.shader_attribute_diffuse)
-
-    def update_specular(self, context):
-
-        material = _material_utils.get_material_from_context(context)
-
-        if material:
-            material.specular_color = self.shader_attribute_specular
-            material.specular_intensity = self.shader_attribute_specular.v
-
-    def update_shininess(self, context):
-
-        material = _material_utils.get_material_from_context(context)
-
-        if material:
-            # material.specular_intensity = self.shader_attribute_shininess
-            material.specular_hardness = self.shader_attribute_shininess
-
-    def update_add_ambient(self, context):
-
-        material = _material_utils.get_material_from_context(context)
-
-        if material:
-            material.ambient = self.shader_attribute_add_ambient
-
-    def update_reflection(self, context):
-
-        material = _material_utils.get_material_from_context(context)
-
-        if material:
-            material.raytrace_mirror.reflect_factor = self.shader_attribute_reflection
-            if self.shader_attribute_reflection == 0:
-                material.raytrace_mirror.use = False
-            else:
-                material.raytrace_mirror.use = True
-
-    def update_shadow_bias(self, context):
-
-        material = _material_utils.get_material_from_context(context)
-
-        if material:
-            material.shadow_buffer_bias = self.shader_attribute_shadow_bias
-
-    def update_env_factor(self, context):
-
-        material = _material_utils.get_material_from_context(context)
-
-        if material:
-
-            texture_slot = _material_utils.get_texture_slot(material, 'reflection')
-            # print('deBug --- texture_slot: %r' % str(texture_slot.name))
-            if texture_slot:
-                # print('deBug --- TEXTURE SLOT %r SET [update_env_factor()]' % str(texture_slot.name))
-                _material_utils.set_env_factor(texture_slot, self.shader_attribute_env_factor)
-                # else:
-                # print('deBug --- NO TEXTURE SLOT [update_env_factor()]')
-
-    shader_attribute_diffuse = FloatVectorProperty(
-        name="Diffuse",
-        description="SCS shader 'Diffuse' value",
-        default=(0.0, 0.0, 0.0),
-        min=0, max=5,
-        soft_min=0, soft_max=1,
-        step=3, precision=2,
-        options={'HIDDEN'},
-        subtype='COLOR',
-        size=3,
-        update=update_diffuse,
-        # unit='NONE', get=None, set=None,
-    )
-    shader_attribute_specular = FloatVectorProperty(
-        name="Specular",
-        description="SCS shader 'Specular' value",
-        default=(0.0, 0.0, 0.0),
-        min=0, max=5,
-        soft_min=0, soft_max=1,
-        step=3, precision=2,
-        options={'HIDDEN'},
-        subtype='COLOR',
-        size=3,
-        update=update_specular,
-        # unit='NONE', get=None, set=None,
-    )
-    shader_attribute_shininess = FloatProperty(
-        name="Shininess",
-        description="SCS shader 'Shininess' value",
-        default=0.0,
-        min=0.0,
-        # max=sys.float_info.max,
-        # soft_min=sys.float_info.min,
-        # soft_max=sys.float_info.max,
-        step=100,
-        precision=2,
-        options={'HIDDEN'},
-        update=update_shininess,
-        # subtype='NONE', unit='NONE', get=None, set=None,
-    )
-    shader_attribute_add_ambient = FloatProperty(
-        name="Add Ambient",
-        description="SCS shader 'Add Ambient' value",
-        default=0.0,
-        min=0.0,
-        # max=sys.float_info.max,
-        # soft_min=sys.float_info.min,
-        # soft_max=sys.float_info.max,
-        step=1,
-        precision=2,
-        options={'HIDDEN'},
-        update=update_add_ambient,
-        # subtype='NONE', unit='NONE', get=None, set=None,
-    )
-    shader_attribute_reflection = FloatProperty(
-        name="Reflection",
-        description="SCS shader 'Reflection' value",
-        default=0.0,
-        min=0.0,
-        # max=sys.float_info.max,
-        # soft_min=sys.float_info.min,
-        # soft_max=sys.float_info.max,
-        step=1,
-        precision=2,
-        options={'HIDDEN'},
-        update=update_reflection,
-        # subtype='NONE', unit='NONE', get=None, set=None,
-    )
-    shader_attribute_reflection2 = FloatProperty(
-        name="Reflection 2",
-        description="SCS shader 'Reflection 2' value",
-        default=0.0,
-        min=0.0,
-        # max=sys.float_info.max,
-        # soft_min=sys.float_info.min,
-        # soft_max=sys.float_info.max,
-        step=1,
-        precision=2,
-        options={'HIDDEN'},
-        update=update_reflection,
-        # subtype='NONE', unit='NONE', get=None, set=None,
-    )
-    shader_attribute_shadow_bias = FloatProperty(
-        name="Shadow Bias",
-        description="SCS shader 'Shadow Bias' value",
-        default=0.0,
-        min=0.0,
-        # max=sys.float_info.max,
-        # soft_min=sys.float_info.min,
-        # soft_max=sys.float_info.max,
-        step=1,
-        precision=2,
-        options={'HIDDEN'},
-        update=update_shadow_bias,
-        # subtype='NONE', unit='NONE', get=None, set=None,
-    )
-    shader_attribute_env_factor = FloatVectorProperty(
-        name="Env Factor",
-        description="SCS shader 'Env Factor' value",
-        default=(1.0, 1.0, 1.0),
-        min=0, max=5,
-        soft_min=0, soft_max=1,
-        step=3, precision=2,
-        options={'HIDDEN'},
-        subtype='COLOR',
-        size=3,
-        update=update_env_factor,
-        # unit='NONE', get=None, set=None,
-    )
-    shader_attribute_fresnel = FloatVectorProperty(
-        name="Fresnel",
-        description="SCS shader 'Fresnel' value",
-        default=(0.2, 0.9),
-        min=0, max=5,
-        soft_min=0, soft_max=1,
-        step=3, precision=2,
-        options={'HIDDEN'},
-        subtype='NONE',
-        size=2,
-        # update=update_fresnel,
-        # unit='NONE', get=None, set=None,
-    )
-    shader_attribute_tint = FloatVectorProperty(
-        name="Tint",
-        description="SCS shader 'Tint' value",
-        default=(1.0, 1.0, 1.0),
-        min=0, max=5,
-        soft_min=0, soft_max=1,
-        step=3, precision=2,
-        options={'HIDDEN'},
-        subtype='COLOR',
-        size=3,
-        # update=update_tint,
-        # unit='NONE', get=None, set=None,
-    )
-    shader_attribute_tint_opacity = FloatProperty(
-        name="Tint Opacity",
-        description="SCS shader 'Tint Opacity' value",
-        default=0.0,
-        # min=0.0,
-        # max=sys.float_info.max,
-        # soft_min=sys.float_info.min,
-        # soft_max=sys.float_info.max,
-        step=1,
-        precision=2,
-        options={'HIDDEN'},
-        # update=update_tint_opacity,
-        # subtype='NONE', unit='NONE', get=None, set=None,
-    )
-
     class AuxiliaryItem(bpy.types.PropertyGroup):
-        """Class for saving flaot value of different auxiliary items
+        """Class for saving float value of different auxiliary items
         """
 
         value = FloatProperty(
             default=0.0,
-            options={'HIDDEN'}
+            options={'HIDDEN'},
+            update=__update_look__
         )
-
-    shader_attribute_aux3 = CollectionProperty(
-        name="Aux [3]",
-        type=AuxiliaryItem,
-        description="SCS shader 'Aux [3]' value",
-        options={'HIDDEN'},
-    )
-    shader_attribute_aux5 = CollectionProperty(
-        name="Aux [5]",
-        type=AuxiliaryItem,
-        description="SCS shader 'Aux [5]' value",
-        options={'HIDDEN'},
-    )
-    shader_attribute_aux6 = CollectionProperty(
-        name="Aux [6]",
-        type=AuxiliaryItem,
-        description="SCS shader 'Aux [6]' value",
-        options={'HIDDEN'},
-    )
-    shader_attribute_aux7 = CollectionProperty(
-        name="Aux [7]",
-        type=AuxiliaryItem,
-        description="SCS shader 'Aux [7]' value",
-        options={'HIDDEN'},
-    )
-    shader_attribute_aux8 = CollectionProperty(
-        name="Aux [8]",
-        type=AuxiliaryItem,
-        description="SCS shader 'Aux [8]' value",
-        options={'HIDDEN'},
-    )
-
-    # # Shader Preset Texture Values
-    texture_settings = [
-        ('u_repeat', "U Repeat", "Repeat texture in U direction"),
-        ('v_repeat', "V Repeat", "Repeat texture in V direction"),
-        # ('rgb_only', "RGB Only", "When texture has an Alpha channel, use RGB channels only"),
-        ('tsnormal', "TS Normal", "Tangent Space Normal for the texture"),
-        # ('bias', "Bias", "MIP Maps Bias..."),
-        ('nomips', "No MIP Maps", "Don't use MIP Maps for the texture"),
-        ('nocompress', "No Compress", "Don't use compression on texture"),
-        # ('quality:high', "High Quality", "") # TODO: ask around
-    ]
-
-    def update_shader_texture_base(self, context):
-
-        material = _material_utils.get_material_from_context(context)
-
-        if material:
-            _material_utils.update_texture_slots(material, self.shader_texture_base, 'base')
-
-    shader_texture_base = StringProperty(
-        name="Texture Base",
-        description="Texture Base for active Material",
-        default="",  # maxlen=0,
-        options={'HIDDEN'},
-        subtype='NONE',
-        update=update_shader_texture_base,
-        # get=None, set=None,
-    )
-    _shader_texture_types.append("shader_texture_base")
+        aux_type = StringProperty()  # used in update function to be able to identify which auxiliary is owning this item
 
     class UVMappingItem(bpy.types.PropertyGroup):
+        """Class for saving uv map reference for SCS texture
+        """
 
         def update_value(self, context):
+            __update_look__(self, context)
 
             material = _material_utils.get_material_from_context(context)
 
             if material:
-                tex_slot = _material_utils.get_texture_slot(material, self.texture_type)
-                # if texture slot exists set "uv_layer" property to reflect choosen uv from our settings to viewport
-                if tex_slot:
-                    tex_slot.uv_layer = self.value
+                _shader.set_uv(material, self.texture_type, self.value)
 
                 # synchronize all scs textures mappings that uses the same tex_coord field in current material
                 if "scs_shader_attributes" in material and "textures" in material["scs_shader_attributes"]:
@@ -433,503 +179,20 @@ class MaterialSCSTools(bpy.types.PropertyGroup):
         )
 
         tex_coord = IntProperty(default=-1)  # used upon export for mapping uv to tex_coord field
-        texture_type = StringProperty()  # used in update fuction to be able to identify which texture should be updated
-
-    shader_texture_base_uv = CollectionProperty(
-        name="Texture Base UV Sets",
-        description="Texture base UV sets for active Material",
-        type=UVMappingItem,
-        options={'HIDDEN'},
-    )
-    shader_texture_base_settings = EnumProperty(
-        name="Settings",
-        description="Additional settings for Texture Base",
-        items=texture_settings,
-        default=set(),
-        options={'ENUM_FLAG'},
-        # update=None, get=None, set=None,
-    )
-    shader_texture_base_use_imported = BoolProperty(
-        name="Use Imported",
-        description="Use custom provided path for TOBJ reference",
-        default=False
-    )
-    shader_texture_base_imported_tobj = StringProperty(
-        name="Imported TOBJ Path",
-        description="Use imported TOBJ path reference which will be exported into material (NOTE: export will not take care of any TOBJ files!)",
-        default=""
-    )
-    shader_texture_base_export_tobj = BoolProperty(
-        name="Export TOBJ",
-        description="Export TOBJ file (NOTE: if checked export will overwrite any existing one with the same name)",
-        default=False
-    )
-
-    def update_shader_texture_nmap(self, context):
-
-        material = _material_utils.get_material_from_context(context)
-
-        if material:
-            _material_utils.update_texture_slots(material, self.shader_texture_nmap, 'nmap')
-
-    shader_texture_nmap = StringProperty(
-        name="Texture NMap",
-        description="Texture NMap for active Material",
-        default="",  # maxlen=0,
-        options={'HIDDEN'},
-        subtype='NONE',
-        update=update_shader_texture_nmap,
-        # get=None, set=None,
-    )
-    _shader_texture_types.append("shader_texture_nmap")
-
-    shader_texture_nmap_uv = CollectionProperty(
-        name="Texture Base UV Sets",
-        description="Texture base UV sets for active Material",
-        type=UVMappingItem,
-        options={'HIDDEN'},
-    )
-    shader_texture_nmap_settings = EnumProperty(
-        name="Settings",
-        description="Additional settings for Texture NMap",
-        items=texture_settings,
-        default=set(),
-        options={'ENUM_FLAG'},
-        # update=None, get=None, set=None,
-    )
-    shader_texture_nmap_use_imported = BoolProperty(
-        name="Use Imported",
-        description="Use custom provided path for TOBJ reference",
-        default=False
-    )
-    shader_texture_nmap_imported_tobj = StringProperty(
-        name="Imported TOBJ Path",
-        description="Use imported TOBJ path reference which will be exported into material (NOTE: export will not take care of any TOBJ files!)",
-        default=""
-    )
-    shader_texture_nmap_export_tobj = BoolProperty(
-        name="Export TOBJ",
-        description="Export TOBJ file (NOTE: if checked export will overwrite any existing one with the same name)",
-        default=False
-    )
-
-    def update_shader_texture_reflection(self, context):
-
-        material = _material_utils.get_material_from_context(context)
-
-        if material:
-            _material_utils.update_texture_slots(material, self.shader_texture_reflection, 'reflection')
-
-    shader_texture_reflection = StringProperty(
-        name="Texture Reflection",
-        description="Texture Reflection for active Material",
-        default="",
-        options={'HIDDEN'},
-        subtype='NONE',
-        update=update_shader_texture_reflection,
-    )
-    _shader_texture_types.append("shader_texture_reflection")
-    shader_texture_reflection_uv = CollectionProperty(
-        name="Texture Reflection UV Sets",
-        description="Texture Reflection UV sets for active Material",
-        type=UVMappingItem,
-        options={'HIDDEN'},
-    )
-    shader_texture_reflection_settings = EnumProperty(
-        name="Settings",
-        description="Additional settings for Texture Reflection",
-        items=texture_settings,
-        default=set(),
-        options={'ENUM_FLAG'},
-    )
-    shader_texture_reflection_use_imported = BoolProperty(
-        name="Use Imported",
-        description="Use custom provided path for TOBJ reference",
-        default=False
-    )
-    shader_texture_reflection_imported_tobj = StringProperty(
-        name="Imported TOBJ Path",
-        description="Use imported TOBJ path reference which will be exported into material (NOTE: export will not take care of any TOBJ files!)",
-        default=""
-    )
-    shader_texture_reflection_export_tobj = BoolProperty(
-        name="Export TOBJ",
-        description="Export TOBJ file (NOTE: if checked export will overwrite any existing one with the same name)",
-        default=False
-    )
-
-    def update_shader_texture_over(self, context):
-
-        material = _material_utils.get_material_from_context(context)
-
-        if material:
-            _material_utils.update_texture_slots(material, self.shader_texture_over, 'over')
-
-    shader_texture_over = StringProperty(
-        name="Texture Over",
-        description="Texture Over for active Material",
-        default="",
-        options={'HIDDEN'},
-        subtype='NONE',
-        update=update_shader_texture_over,
-    )
-    _shader_texture_types.append("shader_texture_over")
-    shader_texture_over_uv = CollectionProperty(
-        name="Texture Over UV Sets",
-        description="Texture Over UV sets for active Material",
-        type=UVMappingItem,
-        options={'HIDDEN'},
-    )
-    shader_texture_over_settings = EnumProperty(
-        name="Settings",
-        description="Additional settings for Texture Over",
-        items=texture_settings,
-        default=set(),
-        options={'ENUM_FLAG'},
-    )
-    shader_texture_over_use_imported = BoolProperty(
-        name="Use Imported",
-        description="Use custom provided path for TOBJ reference",
-        default=False
-    )
-    shader_texture_over_imported_tobj = StringProperty(
-        name="Imported TOBJ Path",
-        description="Use imported TOBJ path reference which will be exported into material (NOTE: export will not take care of any TOBJ files!)",
-        default=""
-    )
-    shader_texture_over_export_tobj = BoolProperty(
-        name="Export TOBJ",
-        description="Export TOBJ file (NOTE: if checked export will overwrite any existing one with the same name)",
-        default=False
-    )
-
-    def update_shader_texture_oclu(self, context):
-
-        material = _material_utils.get_material_from_context(context)
-
-        if material:
-            _material_utils.update_texture_slots(material, self.shader_texture_oclu, 'oclu')
-
-    shader_texture_oclu = StringProperty(
-        name="Texture Oclu",
-        description="Texture Oclu for active Material",
-        default="",
-        options={'HIDDEN'},
-        subtype='NONE',
-        update=update_shader_texture_oclu,
-    )
-    _shader_texture_types.append("shader_texture_oclu")
-    shader_texture_oclu_uv = CollectionProperty(
-        name="Texture Oclu UV Sets",
-        description="Texture Oclu UV sets for active Material",
-        type=UVMappingItem,
-        options={'HIDDEN'},
-    )
-    shader_texture_oclu_settings = EnumProperty(
-        name="Settings",
-        description="Additional settings for Texture Oclu",
-        items=texture_settings,
-        default=set(),
-        options={'ENUM_FLAG'},
-    )
-    shader_texture_oclu_use_imported = BoolProperty(
-        name="Use Imported",
-        description="Use custom provided path for TOBJ reference",
-        default=False
-    )
-    shader_texture_oclu_imported_tobj = StringProperty(
-        name="Imported TOBJ Path",
-        description="Use imported TOBJ path reference which will be exported into material (NOTE: export will not take care of any TOBJ files!)",
-        default=""
-    )
-    shader_texture_oclu_export_tobj = BoolProperty(
-        name="Export TOBJ",
-        description="Export TOBJ file (NOTE: if checked export will overwrite any existing one with the same name)",
-        default=False
-    )
-
-    def update_shader_texture_mask(self, context):
-
-        material = _material_utils.get_material_from_context(context)
-
-        if material:
-            _material_utils.update_texture_slots(material, self.shader_texture_mask, 'mask')
-
-    shader_texture_mask = StringProperty(
-        name="Texture Mask",
-        description="Texture Mask for active Material",
-        default="",
-        options={'HIDDEN'},
-        subtype='NONE',
-        update=update_shader_texture_mask,
-    )
-    _shader_texture_types.append("shader_texture_mask")
-    shader_texture_mask_uv = CollectionProperty(
-        name="Texture Mask UV Sets",
-        description="Texture Mask UV sets for active Material",
-        type=UVMappingItem,
-        options={'HIDDEN'},
-    )
-    shader_texture_mask_settings = EnumProperty(
-        name="Settings",
-        description="Additional settings for Texture Mask",
-        items=texture_settings,
-        default=set(),
-        options={'ENUM_FLAG'},
-    )
-    shader_texture_mask_use_imported = BoolProperty(
-        name="Use Imported",
-        description="Use custom provided path for TOBJ reference",
-        default=False
-    )
-    shader_texture_mask_imported_tobj = StringProperty(
-        name="Imported TOBJ Path",
-        description="Use imported TOBJ path reference which will be exported into material (NOTE: export will not take care of any TOBJ files!)",
-        default=""
-    )
-    shader_texture_mask_export_tobj = BoolProperty(
-        name="Export TOBJ",
-        description="Export TOBJ file (NOTE: if checked export will overwrite any existing one with the same name)",
-        default=False
-    )
-
-    def update_shader_texture_mult(self, context):
-
-        material = _material_utils.get_material_from_context(context)
-
-        if material:
-            _material_utils.update_texture_slots(material, self.shader_texture_mult, 'mult')
-
-    shader_texture_mult = StringProperty(
-        name="Texture Mult",
-        description="Texture Mult for active Material",
-        default="",
-        options={'HIDDEN'},
-        subtype='NONE',
-        update=update_shader_texture_mult,
-    )
-    _shader_texture_types.append("shader_texture_mult")
-    shader_texture_mult_uv = CollectionProperty(
-        name="Texture Mult UV Sets",
-        description="Texture Mult UV sets for active Material",
-        type=UVMappingItem,
-        options={'HIDDEN'},
-    )
-    shader_texture_mult_settings = EnumProperty(
-        name="Settings",
-        description="Additional settings for Texture Mult",
-        items=texture_settings,
-        default=set(),
-        options={'ENUM_FLAG'},
-    )
-    shader_texture_mult_use_imported = BoolProperty(
-        name="Use Imported",
-        description="Use custom provided path for TOBJ reference",
-        default=False
-    )
-    shader_texture_mult_imported_tobj = StringProperty(
-        name="Imported TOBJ Path",
-        description="Use imported TOBJ path reference which will be exported into material (NOTE: export will not take care of any TOBJ files!)",
-        default=""
-    )
-    shader_texture_mult_export_tobj = BoolProperty(
-        name="Export TOBJ",
-        description="Export TOBJ file (NOTE: if checked export will overwrite any existing one with the same name)",
-        default=False
-    )
-
-    def update_shader_texture_iamod(self, context):
-
-        material = _material_utils.get_material_from_context(context)
-
-        if material:
-            _material_utils.update_texture_slots(material, self.shader_texture_iamod, 'iamod')
-
-    shader_texture_iamod = StringProperty(
-        name="Texture Iamod",
-        description="Texture Iamod for active Material",
-        default="",
-        options={'HIDDEN'},
-        subtype='NONE',
-        update=update_shader_texture_iamod,
-    )
-    _shader_texture_types.append("shader_texture_iamod")
-    shader_texture_iamod_uv = CollectionProperty(
-        name="Texture Iamod UV Sets",
-        description="Texture Iamod UV sets for active Material",
-        type=UVMappingItem,
-        options={'HIDDEN'},
-    )
-    shader_texture_iamod_settings = EnumProperty(
-        name="Settings",
-        description="Additional settings for Texture Iamod",
-        items=texture_settings,
-        default=set(),
-        options={'ENUM_FLAG'},
-    )
-    shader_texture_iamod_use_imported = BoolProperty(
-        name="Use Imported",
-        description="Use custom provided path for TOBJ reference",
-        default=False
-    )
-    shader_texture_iamod_imported_tobj = StringProperty(
-        name="Imported TOBJ Path",
-        description="Use imported TOBJ path reference which will be exported into material (NOTE: export will not take care of any TOBJ files!)",
-        default=""
-    )
-    shader_texture_iamod_export_tobj = BoolProperty(
-        name="Export TOBJ",
-        description="Export TOBJ file (NOTE: if checked export will overwrite any existing one with the same name)",
-        default=False
-    )
-
-    def update_shader_texture_lightmap(self, context):
-
-        material = _material_utils.get_material_from_context(context)
-
-        if material:
-            _material_utils.update_texture_slots(material, self.shader_texture_lightmap, 'lightmap')
-
-    shader_texture_lightmap = StringProperty(
-        name="Texture Lightmap",
-        description="Texture Lightmap for active Material",
-        default="",
-        options={'HIDDEN'},
-        subtype='NONE',
-        update=update_shader_texture_lightmap,
-    )
-    _shader_texture_types.append("shader_texture_lightmap")
-    shader_texture_lightmap_uv = CollectionProperty(
-        name="Texture Lightmap UV Sets",
-        description="Texture Lightmap UV sets for active Material",
-        type=UVMappingItem,
-        options={'HIDDEN'},
-    )
-    shader_texture_lightmap_settings = EnumProperty(
-        name="Settings",
-        description="Additional settings for Texture Lightmap",
-        items=texture_settings,
-        default=set(),
-        options={'ENUM_FLAG'},
-    )
-    shader_texture_lightmap_use_imported = BoolProperty(
-        name="Use Imported",
-        description="Use custom provided path for TOBJ reference",
-        default=False
-    )
-    shader_texture_lightmap_imported_tobj = StringProperty(
-        name="Imported TOBJ Path",
-        description="Use imported TOBJ path reference which will be exported into material (NOTE: export will not take care of any TOBJ files!)",
-        default=""
-    )
-    shader_texture_lightmap_export_tobj = BoolProperty(
-        name="Export TOBJ",
-        description="Export TOBJ file (NOTE: if checked export will overwrite any existing one with the same name)",
-        default=False
-    )
-
-    def update_shader_texture_paintjob(self, context):
-
-        material = _material_utils.get_material_from_context(context)
-
-        if material:
-            _material_utils.update_texture_slots(material, self.shader_texture_paintjob, 'paintjob')
-
-    shader_texture_paintjob = StringProperty(
-        name="Texture Paintjob",
-        description="Texture Paintjob for active Material",
-        default="",
-        options={'HIDDEN'},
-        subtype='NONE',
-        update=update_shader_texture_paintjob,
-    )
-    _shader_texture_types.append("shader_texture_paintjob")
-    shader_texture_paintjob_uv = CollectionProperty(
-        name="Texture Paintjob UV Sets",
-        description="Texture Paintjob UV sets for active Material",
-        type=UVMappingItem,
-        options={'HIDDEN'},
-    )
-    shader_texture_paintjob_settings = EnumProperty(
-        name="Settings",
-        description="Additional settings for Texture Paintjob",
-        items=texture_settings,
-        default=set(),
-        options={'ENUM_FLAG'},
-    )
-    shader_texture_paintjob_use_imported = BoolProperty(
-        name="Use Imported",
-        description="Use custom provided path for TOBJ reference",
-        default=False
-    )
-    shader_texture_paintjob_imported_tobj = StringProperty(
-        name="Imported TOBJ Path",
-        description="Use imported TOBJ path reference which will be exported into material (NOTE: export will not take care of any TOBJ files!)",
-        default=""
-    )
-    shader_texture_paintjob_export_tobj = BoolProperty(
-        name="Export TOBJ",
-        description="Export TOBJ file (NOTE: if checked export will overwrite any existing one with the same name)",
-        default=False
-    )
-
-    def update_shader_texture_flakenoise(self, context):
-
-        material = _material_utils.get_material_from_context(context)
-
-        if material:
-            _material_utils.update_texture_slots(material, self.shader_texture_flakenoise, 'flakenoise')
-
-    shader_texture_flakenoise = StringProperty(
-        name="Texture Flakenoise",
-        description="Texture Flakenoise for active Material",
-        default="",
-        options={'HIDDEN'},
-        subtype='NONE',
-        update=update_shader_texture_flakenoise,
-    )
-    _shader_texture_types.append("shader_texture_flakenoise")
-    shader_texture_flakenoise_uv = CollectionProperty(
-        name="Texture Flakenoise UV Sets",
-        description="Texture Flakenoise UV sets for active Material",
-        type=UVMappingItem,
-        options={'HIDDEN'},
-    )
-    shader_texture_flakenoise_settings = EnumProperty(
-        name="Settings",
-        description="Additional settings for Texture Flakenoise",
-        items=texture_settings,
-        default=set(),
-        options={'ENUM_FLAG'},
-    )
-    shader_texture_flakenoise_use_imported = BoolProperty(
-        name="Use Imported",
-        description="Use custom provided path for TOBJ reference",
-        default=False
-    )
-    shader_texture_flakenoise_imported_tobj = StringProperty(
-        name="Imported TOBJ Path",
-        description="Use imported TOBJ path reference which will be exported into material (NOTE: export will not take care of any TOBJ files!)",
-        default=""
-    )
-    shader_texture_flakenoise_export_tobj = BoolProperty(
-        name="Export TOBJ",
-        description="Export TOBJ file (NOTE: if checked export will overwrite any existing one with the same name)",
-        default=False
-    )
+        texture_type = StringProperty()  # used in update function to be able to identify which texture should be updated
 
     class TexCoordItem(bpy.types.PropertyGroup):
-        """
-        Property group holding data how to map uv maps to exported PIM file. It should be used only on material with imported shader.
+        """Property group holding data how to map uv maps to exported PIM file. It should be used only on material with imported shader.
         """
 
         def update_name(self, context):
+            __update_look__(self, context)
 
             if hasattr(context, "active_object") and hasattr(context.active_object, "active_material"):
                 material = context.active_object.active_material
                 if material:
 
-                    custom_maps = material.scs_props.shader_custom_tex_coord_maps
+                    custom_maps = material.scs_props.custom_tex_coord_maps
                     # force prescribed pattern for name ("tex_coord_X" where X is unsigned integer) and avoid duplicates
                     if not re.match("\Atex_coord_\d+\Z", self.name) or len(_inventory.get_indices(custom_maps, self.name)) == 2:
                         i = 0
@@ -942,29 +205,895 @@ class MaterialSCSTools(bpy.types.PropertyGroup):
                             self.name = new_name
 
         name = StringProperty(update=update_name)
-        value = StringProperty(description="UV map used for this tex_coord field")
+        value = StringProperty(description="UV map used for this tex_coord field", update=__update_look__)
 
-    shader_custom_tex_coord_maps = CollectionProperty(
-        description="List of tex coord fields used for determinating how uv layers will be exported. The number of the tex coord field specify "
-                    "order of exporting.",
-        type=TexCoordItem,
-    )
+    @staticmethod
+    def get_texture_types():
+        """SCS texture types which are currently defined in SCS Blender Tools and their corresponding texture slot index.
+
+        :return: SCS Shader Texture Types
+        :rtype: dict
+        """
+        return {'base': 5, 'reflection': 6, 'over': 7, 'oclu': 8,
+                'mask': 9, 'mult': 10, 'iamod': 11, 'lightmap': 12,
+                'paintjob': 13, 'flakenoise': 14, 'nmap': 15}
+
+    def get_id(self):
+        """Gets unique ID for material within current Blend file. If ID does not exists yet it's calculated.
+        :return: unique ID
+        :rtype: int
+        """
+
+        # make sure to fix cached mat num if some materials are deleted
+        if MaterialSCSTools._cached_mat_num > len(bpy.data.materials):
+            MaterialSCSTools._cached_mat_num = len(bpy.data.materials)
+
+        if "mat_id" in self and len(bpy.data.materials) != MaterialSCSTools._cached_mat_num:
+            mat_count = 0
+            for mat in bpy.data.materials:
+                if "mat_id" in mat.scs_props and mat.scs_props["mat_id"] == self["mat_id"]:
+                    mat_count += 1
+                    if mat_count > 1:
+                        del self["mat_id"]
+                        # update cached materials count only when duplicate is actually detected not on just any material
+                        MaterialSCSTools._cached_mat_num = len(bpy.data.materials)
+                        break
+
+        # if this material doesn't yet have ID assign it
+        if "mat_id" not in self:
+            existing_ids = {}
+            for material in bpy.data.materials:
+                if "mat_id" in material.scs_props:
+                    existing_ids[material.scs_props["mat_id"]] = 1
+
+            value = 0
+            while value in existing_ids:
+                value += 1
+
+            self["mat_id"] = value
+            lprint("S material ID set: %s", (value,))
+
+        lprint("S material ID get: %s", (self["mat_id"],))
+        return self["mat_id"]
+
+    def update_active_shader_preset_name(self, context):
+        self["preset_change"] = True  # indicate that this is shader preset update
+        __update_look__(self, context)
+        del self["preset_change"]  # remove indicator of shader preset update
+
+    def update_shader_attribute_add_ambient(self, context):
+        __update_shader_attribute__(self, context, "add_ambient")
+
+    def update_shader_attribute_diffuse(self, context):
+        __update_shader_attribute__(self, context, "diffuse")
+
+    def update_shader_attribute_env_factor(self, context):
+        __update_shader_attribute__(self, context, "env_factor")
+
+    def update_shader_attribute_fresnel(self, context):
+        __update_shader_attribute__(self, context, "fresnel")
+
+    def update_shader_attribute_shininess(self, context):
+        __update_shader_attribute__(self, context, "shininess")
+
+    def update_shader_attribute_specular(self, context):
+        __update_shader_attribute__(self, context, "specular")
+
+    def update_shader_attribute_tint(self, context):
+        __update_shader_attribute__(self, context, "tint")
+
+    def update_shader_attribute_tint_opacity(self, context):
+        __update_shader_attribute__(self, context, "tint_opacity")
+
+    def update_shader_texture_base(self, context):
+        __update_shader_texture__(self, context, "base")
+
+    def update_shader_texture_base_settings(self, context):
+        __update_shader_texture_tobj_file__(self, context, "base")
+
+    def update_shader_texture_flakenoise(self, context):
+        __update_shader_texture__(self, context, "flakenoise")
+
+    def update_shader_texture_flakenoise_settings(self, context):
+        __update_shader_texture_tobj_file__(self, context, "flakenoise")
+
+    def update_shader_texture_iamod(self, context):
+        __update_shader_texture__(self, context, "iamod")
+
+    def update_shader_texture_iamod_settings(self, context):
+        __update_shader_texture_tobj_file__(self, context, "iamod")
+
+    def update_shader_texture_lightmap(self, context):
+        __update_shader_texture__(self, context, "lightmap")
+
+    def update_shader_texture_lightmap_settings(self, context):
+        __update_shader_texture_tobj_file__(self, context, "lightmap")
+
+    def update_shader_texture_mask(self, context):
+        __update_shader_texture__(self, context, "mask")
+
+    def update_shader_texture_mask_settings(self, context):
+        __update_shader_texture_tobj_file__(self, context, "mask")
+
+    def update_shader_texture_mult(self, context):
+        __update_shader_texture__(self, context, "mult")
+
+    def update_shader_texture_mult_settings(self, context):
+        __update_shader_texture_tobj_file__(self, context, "mult")
+
+    def update_shader_texture_nmap(self, context):
+        __update_shader_texture__(self, context, "nmap")
+
+    def update_shader_texture_nmap_settings(self, context):
+        __update_shader_texture_tobj_file__(self, context, "nmap")
+
+    def update_shader_texture_oclu(self, context):
+        __update_shader_texture__(self, context, "oclu")
+
+    def update_shader_texture_oclu_settings(self, context):
+        __update_shader_texture_tobj_file__(self, context, "oclu")
+
+    def update_shader_texture_over(self, context):
+        __update_shader_texture__(self, context, "over")
+
+    def update_shader_texture_over_settings(self, context):
+        __update_shader_texture_tobj_file__(self, context, "over")
+
+    def update_shader_texture_paintjob(self, context):
+        __update_shader_texture__(self, context, "paintjob")
+
+    def update_shader_texture_paintjob_settings(self, context):
+        __update_shader_texture_tobj_file__(self, context, "paintjob")
+
+    def update_shader_texture_reflection(self, context):
+        __update_shader_texture__(self, context, "reflection")
+
+    def update_shader_texture_reflection_settings(self, context):
+        __update_shader_texture_tobj_file__(self, context, "reflection")
+
+    _cached_mat_num = -1
+    """Caching number of all materials to properly fix material ids when duplicating material"""
+
     active_custom_tex_coord = IntProperty(
         name="Active TexCoord Mapping",
-        description="Must have for showing the TecCoord mappings in the template list",
+        description="Must have for showing the TexCoord mappings in the template list",
         default=0
     )
 
-    # # Active Shader Preset for Material
     active_shader_preset_name = StringProperty(
         name="Active Shader Preset Name",
         description="Active shader preset name for active Material",
         default="<none>",
         subtype='NONE',
+        update=update_active_shader_preset_name
     )
+
+    custom_tex_coord_maps = CollectionProperty(
+        description="List of tex coord fields used for determinating order and number of exported uv layers. "
+                    "The number of the tex coord field specify order of exporting.",
+        type=TexCoordItem,
+    )
+
+    id = IntProperty(
+        name="Material ID",
+        description="Material unique ID inside blend file, this way materials can be easily identified for looks",
+        get=get_id
+    )
+
     mat_effect_name = StringProperty(
         name="Shader Effect Name",
         description="SCS shader effect name",
         default="eut2.dif",
         subtype='NONE',
+        update=__update_look__
+    )
+
+    # SHADER ATTRIBUTES
+    shader_attribute_add_ambient = FloatProperty(
+        name="Add Ambient",
+        description="SCS shader 'Add Ambient' value",
+        default=0.0,
+        min=0.0,
+        step=1,
+        precision=2,
+        options={'HIDDEN'},
+        update=update_shader_attribute_add_ambient,
+    )
+
+    shader_attribute_aux0 = CollectionProperty(
+        name="Aux [0]",
+        type=AuxiliaryItem,
+        description="SCS shader 'Aux [0]' value",
+        options={'HIDDEN'},
+    )
+
+    shader_attribute_aux1 = CollectionProperty(
+        name="Aux [1]",
+        type=AuxiliaryItem,
+        description="SCS shader 'Aux [1]' value",
+        options={'HIDDEN'},
+    )
+
+    shader_attribute_aux2 = CollectionProperty(
+        name="Aux [2]",
+        type=AuxiliaryItem,
+        description="SCS shader 'Aux [2]' value",
+        options={'HIDDEN'},
+    )
+
+    shader_attribute_aux3 = CollectionProperty(
+        name="Aux [3]",
+        type=AuxiliaryItem,
+        description="SCS shader 'Aux [3]' value",
+        options={'HIDDEN'},
+    )
+
+    shader_attribute_aux4 = CollectionProperty(
+        name="Aux [4]",
+        type=AuxiliaryItem,
+        description="SCS shader 'Aux [4]' value",
+        options={'HIDDEN'},
+    )
+
+    shader_attribute_aux5 = CollectionProperty(
+        name="Aux [5]",
+        type=AuxiliaryItem,
+        description="SCS shader 'Aux [5]' value",
+        options={'HIDDEN'},
+    )
+
+    shader_attribute_aux6 = CollectionProperty(
+        name="Aux [6]",
+        type=AuxiliaryItem,
+        description="SCS shader 'Aux [6]' value",
+        options={'HIDDEN'},
+    )
+
+    shader_attribute_aux7 = CollectionProperty(
+        name="Aux [7]",
+        type=AuxiliaryItem,
+        description="SCS shader 'Aux [7]' value",
+        options={'HIDDEN'},
+    )
+
+    shader_attribute_aux8 = CollectionProperty(
+        name="Aux [8]",
+        type=AuxiliaryItem,
+        description="SCS shader 'Aux [8]' value",
+        options={'HIDDEN'},
+    )
+
+    shader_attribute_diffuse = FloatVectorProperty(
+        name="Diffuse",
+        description="SCS shader 'Diffuse' value",
+        default=(0.0, 0.0, 0.0),
+        min=0, max=5,
+        soft_min=0, soft_max=1,
+        step=3, precision=2,
+        options={'HIDDEN'},
+        subtype='COLOR',
+        size=3,
+        update=update_shader_attribute_diffuse,
+    )
+
+    shader_attribute_env_factor = FloatVectorProperty(
+        name="Env Factor",
+        description="SCS shader 'Env Factor' value",
+        default=(1.0, 1.0, 1.0),
+        min=0, max=5,
+        soft_min=0, soft_max=1,
+        step=3, precision=2,
+        options={'HIDDEN'},
+        subtype='COLOR',
+        size=3,
+        update=update_shader_attribute_env_factor,
+    )
+
+    shader_attribute_fresnel = FloatVectorProperty(
+        name="Fresnel",
+        description="SCS shader 'Fresnel' value",
+        default=(0.2, 0.9),
+        min=-3, max=3,
+        soft_min=0, soft_max=1,
+        step=3, precision=2,
+        options={'HIDDEN'},
+        subtype='NONE',
+        size=2,
+        update=update_shader_attribute_fresnel,
+    )
+
+    shader_attribute_reflection = FloatProperty(
+        name="Reflection",
+        description="SCS shader 'Reflection' value",
+        default=0.0,
+        min=0.0,
+        step=1,
+        precision=2,
+        options={'HIDDEN'},
+        update=__update_look__,
+    )
+
+    shader_attribute_reflection2 = FloatProperty(
+        name="Reflection 2",
+        description="SCS shader 'Reflection 2' value",
+        default=0.0,
+        min=0.0,
+        step=1,
+        precision=2,
+        options={'HIDDEN'},
+        update=__update_look__,
+    )
+
+    shader_attribute_shadow_bias = FloatProperty(
+        name="Shadow Bias",
+        description="SCS shader 'Shadow Bias' value",
+        default=0.0,
+        min=0.0,
+        step=1,
+        precision=2,
+        options={'HIDDEN'},
+        update=__update_look__,
+    )
+
+    shader_attribute_shininess = FloatProperty(
+        name="Shininess",
+        description="SCS shader 'Shininess' value",
+        default=0.0,
+        min=0.0,
+        step=100,
+        precision=2,
+        options={'HIDDEN'},
+        update=update_shader_attribute_shininess,
+    )
+
+    shader_attribute_specular = FloatVectorProperty(
+        name="Specular",
+        description="SCS shader 'Specular' value",
+        default=(0.0, 0.0, 0.0),
+        min=0, max=5,
+        soft_min=0, soft_max=1,
+        step=3, precision=2,
+        options={'HIDDEN'},
+        subtype='COLOR',
+        size=3,
+        update=update_shader_attribute_specular,
+    )
+
+    shader_attribute_tint = FloatVectorProperty(
+        name="Tint",
+        description="SCS shader 'Tint' value",
+        default=(1.0, 1.0, 1.0),
+        min=0, max=5,
+        soft_min=0, soft_max=1,
+        step=3, precision=2,
+        options={'HIDDEN'},
+        subtype='COLOR',
+        size=3,
+        update=update_shader_attribute_tint
+    )
+
+    shader_attribute_tint_opacity = FloatProperty(
+        name="Tint Opacity",
+        description="SCS shader 'Tint Opacity' value",
+        default=0.0,
+        step=1,
+        precision=2,
+        options={'HIDDEN'},
+        update=update_shader_attribute_tint_opacity
+    )
+
+    # TEXTURE: BASE
+    shader_texture_base = StringProperty(
+        name="Texture Base",
+        description="Texture Base for active Material",
+        default=_MAT_consts.unset_bitmap_filepath,
+        options={'HIDDEN'},
+        subtype='NONE',
+        update=update_shader_texture_base,
+    )
+    shader_texture_base_imported_tobj = StringProperty(
+        name="Imported TOBJ Path",
+        description="Use imported TOBJ path reference which will be exported into material (NOTE: export will not take care of any TOBJ files!)",
+        default="",
+        update=__update_look__
+    )
+    shader_texture_base_locked = BoolProperty(
+        name="Texture Locked",
+        description="Tells if texture is locked and should not be changed by user(intended for internal usage only)",
+        default=False
+    )
+    shader_texture_base_settings = EnumProperty(
+        name="Settings",
+        description="TOBJ settings for this texture",
+        items=__get_texture_settings__(),
+        default=set(),
+        options={'ENUM_FLAG'},
+        update=update_shader_texture_base_settings
+    )
+    shader_texture_base_tobj_load_time = StringProperty(
+        name="Last TOBJ load time",
+        description="Time string of last loading",
+        default="",
+    )
+    shader_texture_base_use_imported = BoolProperty(
+        name="Use Imported",
+        description="Use custom provided path for TOBJ reference",
+        default=False,
+        update=__update_look__
+    )
+    shader_texture_base_uv = CollectionProperty(
+        name="Texture Base UV Sets",
+        description="Texture base UV sets for active Material",
+        type=UVMappingItem,
+        options={'HIDDEN'},
+    )
+
+    # TEXTURE: FLAKENOISE
+    shader_texture_flakenoise = StringProperty(
+        name="Texture Flakenoise",
+        description="Texture Flakenoise for active Material",
+        default=_MAT_consts.unset_bitmap_filepath,
+        options={'HIDDEN'},
+        subtype='NONE',
+        update=update_shader_texture_flakenoise,
+    )
+    shader_texture_flakenoise_imported_tobj = StringProperty(
+        name="Imported TOBJ Path",
+        description="Use imported TOBJ path reference which will be exported into material (NOTE: export will not take care of any TOBJ files!)",
+        default="",
+        update=__update_look__
+    )
+    shader_texture_flakenoise_locked = BoolProperty(
+        name="Texture Locked",
+        description="Tells if texture is locked and should not be changed by user(intended for internal usage only)",
+        default=False
+    )
+    shader_texture_flakenoise_settings = EnumProperty(
+        name="Settings",
+        description="TOBJ settings for this texture",
+        items=__get_texture_settings__(),
+        default=set(),
+        options={'ENUM_FLAG'},
+        update=update_shader_texture_flakenoise_settings
+    )
+    shader_texture_flakenoise_tobj_load_time = StringProperty(
+        name="Last TOBJ load time",
+        description="Time string of last loading",
+        default="",
+    )
+    shader_texture_flakenoise_use_imported = BoolProperty(
+        name="Use Imported",
+        description="Use custom provided path for TOBJ reference",
+        default=False,
+        update=__update_look__
+    )
+    shader_texture_flakenoise_uv = CollectionProperty(
+        name="Texture Flakenoise UV Sets",
+        description="Texture Flakenoise UV sets for active Material",
+        type=UVMappingItem,
+        options={'HIDDEN'},
+    )
+
+    # TEXTURE: IAMOD
+    shader_texture_iamod = StringProperty(
+        name="Texture Iamod",
+        description="Texture Iamod for active Material",
+        default=_MAT_consts.unset_bitmap_filepath,
+        options={'HIDDEN'},
+        subtype='NONE',
+        update=update_shader_texture_iamod,
+    )
+    shader_texture_iamod_imported_tobj = StringProperty(
+        name="Imported TOBJ Path",
+        description="Use imported TOBJ path reference which will be exported into material (NOTE: export will not take care of any TOBJ files!)",
+        default="",
+        update=__update_look__
+    )
+    shader_texture_iamod_locked = BoolProperty(
+        name="Texture Locked",
+        description="Tells if texture is locked and should not be changed by user(intended for internal usage only)",
+        default=False
+    )
+    shader_texture_iamod_settings = EnumProperty(
+        name="Settings",
+        description="TOBJ settings for this texture",
+        items=__get_texture_settings__(),
+        default=set(),
+        options={'ENUM_FLAG'},
+        update=update_shader_texture_iamod_settings
+    )
+    shader_texture_iamod_tobj_load_time = StringProperty(
+        name="Last TOBJ load time",
+        description="Time string of last loading",
+        default="",
+    )
+    shader_texture_iamod_use_imported = BoolProperty(
+        name="Use Imported",
+        description="Use custom provided path for TOBJ reference",
+        default=False,
+        update=__update_look__
+    )
+    shader_texture_iamod_uv = CollectionProperty(
+        name="Texture Iamod UV Sets",
+        description="Texture Iamod UV sets for active Material",
+        type=UVMappingItem,
+        options={'HIDDEN'},
+    )
+
+    # TEXTURE: LIGHTMAP
+    shader_texture_lightmap = StringProperty(
+        name="Texture Lightmap",
+        description="Texture Lightmap for active Material",
+        default=_MAT_consts.unset_bitmap_filepath,
+        options={'HIDDEN'},
+        subtype='NONE',
+        update=update_shader_texture_lightmap,
+    )
+    shader_texture_lightmap_imported_tobj = StringProperty(
+        name="Imported TOBJ Path",
+        description="Use imported TOBJ path reference which will be exported into material (NOTE: export will not take care of any TOBJ files!)",
+        default="",
+        update=__update_look__
+    )
+    shader_texture_lightmap_locked = BoolProperty(
+        name="Texture Locked",
+        description="Tells if texture is locked and should not be changed by user(intended for internal usage only)",
+        default=False
+    )
+    shader_texture_lightmap_settings = EnumProperty(
+        name="Settings",
+        description="TOBJ settings for this texture",
+        items=__get_texture_settings__(),
+        default=set(),
+        options={'ENUM_FLAG'},
+        update=update_shader_texture_lightmap_settings
+    )
+    shader_texture_lightmap_tobj_load_time = StringProperty(
+        name="Last TOBJ load time",
+        description="Time string of last loading",
+        default="",
+    )
+    shader_texture_lightmap_use_imported = BoolProperty(
+        name="Use Imported",
+        description="Use custom provided path for TOBJ reference",
+        default=False,
+        update=__update_look__
+    )
+    shader_texture_lightmap_uv = CollectionProperty(
+        name="Texture Lightmap UV Sets",
+        description="Texture Lightmap UV sets for active Material",
+        type=UVMappingItem,
+        options={'HIDDEN'},
+    )
+
+    # TEXTURE: MASK
+    shader_texture_mask = StringProperty(
+        name="Texture Mask",
+        description="Texture Mask for active Material",
+        default=_MAT_consts.unset_bitmap_filepath,
+        options={'HIDDEN'},
+        subtype='NONE',
+        update=update_shader_texture_mask,
+    )
+    shader_texture_mask_imported_tobj = StringProperty(
+        name="Imported TOBJ Path",
+        description="Use imported TOBJ path reference which will be exported into material (NOTE: export will not take care of any TOBJ files!)",
+        default="",
+        update=__update_look__
+    )
+    shader_texture_mask_locked = BoolProperty(
+        name="Texture Locked",
+        description="Tells if texture is locked and should not be changed by user(intended for internal usage only)",
+        default=False
+    )
+    shader_texture_mask_settings = EnumProperty(
+        name="Settings",
+        description="TOBJ settings for this texture",
+        items=__get_texture_settings__(),
+        default=set(),
+        options={'ENUM_FLAG'},
+        update=update_shader_texture_mask_settings
+    )
+    shader_texture_mask_tobj_load_time = StringProperty(
+        name="Last TOBJ load time",
+        description="Time string of last loading",
+        default="",
+    )
+    shader_texture_mask_use_imported = BoolProperty(
+        name="Use Imported",
+        description="Use custom provided path for TOBJ reference",
+        default=False,
+        update=__update_look__
+    )
+    shader_texture_mask_uv = CollectionProperty(
+        name="Texture Mask UV Sets",
+        description="Texture Mask UV sets for active Material",
+        type=UVMappingItem,
+        options={'HIDDEN'},
+    )
+
+    # TEXTURE: MULT
+    shader_texture_mult = StringProperty(
+        name="Texture Mult",
+        description="Texture Mult for active Material",
+        default=_MAT_consts.unset_bitmap_filepath,
+        options={'HIDDEN'},
+        subtype='NONE',
+        update=update_shader_texture_mult,
+    )
+    shader_texture_mult_imported_tobj = StringProperty(
+        name="Imported TOBJ Path",
+        description="Use imported TOBJ path reference which will be exported into material (NOTE: export will not take care of any TOBJ files!)",
+        default="",
+        update=__update_look__
+    )
+    shader_texture_mult_use_imported = BoolProperty(
+        name="Use Imported",
+        description="Use custom provided path for TOBJ reference",
+        default=False,
+        update=__update_look__
+    )
+    shader_texture_mult_locked = BoolProperty(
+        name="Texture Locked",
+        description="Tells if texture is locked and should not be changed by user(intended for internal usage only)",
+        default=False
+    )
+    shader_texture_mult_settings = EnumProperty(
+        name="Settings",
+        description="TOBJ settings for this texture",
+        items=__get_texture_settings__(),
+        default=set(),
+        options={'ENUM_FLAG'},
+        update=update_shader_texture_mult_settings
+    )
+    shader_texture_mult_tobj_load_time = StringProperty(
+        name="Last TOBJ load time",
+        description="Time string of last loading",
+        default="",
+    )
+    shader_texture_mult_uv = CollectionProperty(
+        name="Texture Mult UV Sets",
+        description="Texture Mult UV sets for active Material",
+        type=UVMappingItem,
+        options={'HIDDEN'},
+    )
+
+    # TEXTURE: NMAP
+    shader_texture_nmap = StringProperty(
+        name="Texture NMap",
+        description="Texture NMap for active Material",
+        default=_MAT_consts.unset_bitmap_filepath,
+        options={'HIDDEN'},
+        subtype='NONE',
+        update=update_shader_texture_nmap,
+    )
+    shader_texture_nmap_imported_tobj = StringProperty(
+        name="Imported TOBJ Path",
+        description="Use imported TOBJ path reference which will be exported into material (NOTE: export will not take care of any TOBJ files!)",
+        default="",
+        update=__update_look__
+    )
+    shader_texture_nmap_locked = BoolProperty(
+        name="Texture Locked",
+        description="Tells if texture is locked and should not be changed by user(intended for internal usage only)",
+        default=False
+    )
+    shader_texture_nmap_settings = EnumProperty(
+        name="Settings",
+        description="TOBJ settings for this texture",
+        items=__get_texture_settings__(),
+        default=set(),
+        options={'ENUM_FLAG'},
+        update=update_shader_texture_nmap_settings
+    )
+    shader_texture_nmap_tobj_load_time = StringProperty(
+        name="Last TOBJ load time",
+        description="Time string of last loading",
+        default="",
+    )
+    shader_texture_nmap_use_imported = BoolProperty(
+        name="Use Imported",
+        description="Use custom provided path for TOBJ reference",
+        default=False,
+        update=__update_look__
+    )
+    shader_texture_nmap_uv = CollectionProperty(
+        name="Texture Base UV Sets",
+        description="Texture base UV sets for active Material",
+        type=UVMappingItem,
+        options={'HIDDEN'},
+    )
+
+    # TEXTURE: OCCLUSION
+    shader_texture_oclu = StringProperty(
+        name="Texture Oclu",
+        description="Texture Oclu for active Material",
+        default=_MAT_consts.unset_bitmap_filepath,
+        options={'HIDDEN'},
+        subtype='NONE',
+        update=update_shader_texture_oclu,
+    )
+    shader_texture_oclu_imported_tobj = StringProperty(
+        name="Imported TOBJ Path",
+        description="Use imported TOBJ path reference which will be exported into material (NOTE: export will not take care of any TOBJ files!)",
+        default="",
+        update=__update_look__
+    )
+    shader_texture_oclu_locked = BoolProperty(
+        name="Texture Locked",
+        description="Tells if texture is locked and should not be changed by user(intended for internal usage only)",
+        default=False
+    )
+    shader_texture_oclu_settings = EnumProperty(
+        name="Settings",
+        description="TOBJ settings for this texture",
+        items=__get_texture_settings__(),
+        default=set(),
+        options={'ENUM_FLAG'},
+        update=update_shader_texture_oclu_settings
+    )
+    shader_texture_oclu_tobj_load_time = StringProperty(
+        name="Last TOBJ load time",
+        description="Time string of last loading",
+        default="",
+    )
+    shader_texture_oclu_use_imported = BoolProperty(
+        name="Use Imported",
+        description="Use custom provided path for TOBJ reference",
+        default=False,
+        update=__update_look__
+    )
+    shader_texture_oclu_uv = CollectionProperty(
+        name="Texture Oclu UV Sets",
+        description="Texture Oclu UV sets for active Material",
+        type=UVMappingItem,
+        options={'HIDDEN'},
+    )
+
+    # TEXTURE: OVER
+    shader_texture_over = StringProperty(
+        name="Texture Over",
+        description="Texture Over for active Material",
+        default=_MAT_consts.unset_bitmap_filepath,
+        options={'HIDDEN'},
+        subtype='NONE',
+        update=update_shader_texture_over,
+    )
+    shader_texture_over_imported_tobj = StringProperty(
+        name="Imported TOBJ Path",
+        description="Use imported TOBJ path reference which will be exported into material (NOTE: export will not take care of any TOBJ files!)",
+        default="",
+        update=__update_look__
+    )
+    shader_texture_over_locked = BoolProperty(
+        name="Texture Locked",
+        description="Tells if texture is locked and should not be changed by user(intended for internal usage only)",
+        default=False
+    )
+    shader_texture_over_settings = EnumProperty(
+        name="Settings",
+        description="TOBJ settings for this texture",
+        items=__get_texture_settings__(),
+        default=set(),
+        options={'ENUM_FLAG'},
+        update=update_shader_texture_over_settings
+    )
+    shader_texture_over_tobj_load_time = StringProperty(
+        name="Last TOBJ load time",
+        description="Time string of last loading",
+        default="",
+    )
+    shader_texture_over_use_imported = BoolProperty(
+        name="Use Imported",
+        description="Use custom provided path for TOBJ reference",
+        default=False,
+        update=__update_look__
+    )
+    shader_texture_over_uv = CollectionProperty(
+        name="Texture Over UV Sets",
+        description="Texture Over UV sets for active Material",
+        type=UVMappingItem,
+        options={'HIDDEN'},
+    )
+
+    # TEXTURE: PAINTJOB
+    shader_texture_paintjob = StringProperty(
+        name="Texture Paintjob",
+        description="Texture Paintjob for active Material",
+        default=_MAT_consts.unset_bitmap_filepath,
+        options={'HIDDEN'},
+        subtype='NONE',
+        update=update_shader_texture_paintjob,
+    )
+    shader_texture_paintjob_imported_tobj = StringProperty(
+        name="Imported TOBJ Path",
+        description="Use imported TOBJ path reference which will be exported into material (NOTE: export will not take care of any TOBJ files!)",
+        default="",
+        update=__update_look__
+    )
+    shader_texture_paintjob_locked = BoolProperty(
+        name="Texture Locked",
+        description="Tells if texture is locked and should not be changed by user(intended for internal usage only)",
+        default=False
+    )
+    shader_texture_paintjob_settings = EnumProperty(
+        name="Settings",
+        description="TOBJ settings for this texture",
+        items=__get_texture_settings__(),
+        default=set(),
+        options={'ENUM_FLAG'},
+        update=update_shader_texture_paintjob_settings
+    )
+    shader_texture_paintjob_tobj_load_time = StringProperty(
+        name="Last TOBJ load time",
+        description="Time string of last loading",
+        default="",
+    )
+    shader_texture_paintjob_use_imported = BoolProperty(
+        name="Use Imported",
+        description="Use custom provided path for TOBJ reference",
+        default=False,
+        update=__update_look__
+    )
+    shader_texture_paintjob_uv = CollectionProperty(
+        name="Texture Paintjob UV Sets",
+        description="Texture Paintjob UV sets for active Material",
+        type=UVMappingItem,
+        options={'HIDDEN'},
+    )
+
+    # TEXTURE: REFLECTION
+    shader_texture_reflection = StringProperty(
+        name="Texture Reflection",
+        description="Texture Reflection for active Material",
+        default=_MAT_consts.unset_bitmap_filepath,
+        options={'HIDDEN'},
+        subtype='NONE',
+        update=update_shader_texture_reflection,
+    )
+    shader_texture_reflection_imported_tobj = StringProperty(
+        name="Imported TOBJ Path",
+        description="Use imported TOBJ path reference which will be exported into material (NOTE: export will not take care of any TOBJ files!)",
+        default="",
+        update=__update_look__
+    )
+    shader_texture_reflection_locked = BoolProperty(
+        name="Texture Locked",
+        description="Tells if texture is locked and should not be changed by user(intended for internal usage only)",
+        default=False
+    )
+    shader_texture_reflection_settings = EnumProperty(
+        name="Settings",
+        description="TOBJ settings for this texture",
+        items=__get_texture_settings__(),
+        default=set(),
+        options={'ENUM_FLAG'},
+        update=update_shader_texture_reflection_settings
+    )
+    shader_texture_reflection_tobj_load_time = StringProperty(
+        name="Last TOBJ load time",
+        description="Time string of last loading",
+        default="",
+    )
+    shader_texture_reflection_use_imported = BoolProperty(
+        name="Use Imported",
+        description="Use custom provided path for TOBJ reference",
+        default=False,
+        update=__update_look__
+    )
+    shader_texture_reflection_uv = CollectionProperty(
+        name="Texture Reflection UV Sets",
+        description="Texture Reflection UV sets for active Material",
+        type=UVMappingItem,
+        options={'HIDDEN'},
+    )
+
+    # # Following String property is fed from MATERIAL SUBSTANCE data list, which is usually loaded from
+    # # "//base/material/material.db" file and stored at "scs_globals.scs_matsubs_inventory".
+    substance = StringProperty(
+        name="Substance",
+        description="Substance",
+        default=_MAT_consts.unset_substance,
+        subtype='NONE',
+        update=__update_look__
     )

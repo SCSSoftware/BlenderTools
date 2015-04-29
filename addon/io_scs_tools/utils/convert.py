@@ -58,7 +58,7 @@ def float_to_hex_string(value):
         # binary_float = "&" + ''.join('{:02x}'.format(ord(b)) for b in data_bytes) <-- original version from Python 2.6
         binary_float = "&" + ''.join('{:02x}'.format(b) for b in data_bytes)
         return binary_float
-    lprint('E float_to_hex_string: Wrong input data type! "%s" is not a float.', str(value))
+    lprint('E float_to_hex_string: Wrong input data type! "%s" is not a float.', (str(value),))
     return "Value Error"
 
 
@@ -82,7 +82,7 @@ def hex_string_to_float(string):
             value = ""
             # print('\tstring 2: %s' % string)
         return float(value[0])
-    lprint('E hex_string_to_float: Wrong input data type! "%s" is not a string.', string)
+    lprint('E hex_string_to_float: Wrong input data type! "%s" is not a string.', (string,))
     return "Value Error"
 
 

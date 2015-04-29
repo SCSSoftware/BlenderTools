@@ -21,6 +21,7 @@
 from bpy.types import Panel
 from io_scs_tools.consts import Icons as _ICONS_consts
 from io_scs_tools.consts import Operators as _OP_consts
+from io_scs_tools.consts import LampTools as _LT_consts
 from io_scs_tools.ui import shared as _shared
 from io_scs_tools.utils import object as _object_utils
 from io_scs_tools.internals.icons.wrapper import get_icon
@@ -283,3 +284,151 @@ class SCSDisplayMethods(_ToolShelfBlDefs, Panel):
             row = col.row(align=True)
             row.operator('object.all_collision_locators_faces', text='All Faces')
             row.operator('object.no_collision_locators_faces', text='No Faces')
+
+
+class SCSLampSwitcher(_ToolShelfBlDefs, Panel):
+    """
+    Creates Lamp Switcher panel for SCS Tools tab.
+    """
+    bl_label = "Lamp Switcher"
+
+    @classmethod
+    def poll(cls, context):
+        return not context.vertex_paint_object
+
+    def draw(self, context):
+        layout = self.layout
+
+        # vehicle switcher
+        body_col = layout.column(align=True)
+        body_row = body_col.row(align=True)
+        body_row.label("Vehicle", icon="AUTO")
+
+        body_row = body_col.row(align=True)
+        props = body_row.operator("material.scs_switch_lampmask", text="Positional")
+        props.lamp_type = _LT_consts.VehicleLampTypes.Positional.name
+        props = body_row.operator("material.scs_switch_lampmask", text="DRL")
+        props.lamp_type = _LT_consts.VehicleLampTypes.DRL.name
+
+        body_row = body_col.row(align=True)
+        props = body_row.operator("material.scs_switch_lampmask", text="Left Blinker")
+        props.lamp_type = _LT_consts.VehicleLampTypes.LeftTurn.name
+        props = body_row.operator("material.scs_switch_lampmask", text="Right Blinker")
+        props.lamp_type = _LT_consts.VehicleLampTypes.RightTurn.name
+
+        body_row = body_col.row(align=True)
+        props = body_row.operator("material.scs_switch_lampmask", text="Low Beam")
+        props.lamp_type = _LT_consts.VehicleLampTypes.LowBeam.name
+        props = body_row.operator("material.scs_switch_lampmask", text="High Beam")
+        props.lamp_type = _LT_consts.VehicleLampTypes.HighBeam.name
+
+        body_row = body_col.row(align=True)
+        props = body_row.operator("material.scs_switch_lampmask", text="Brake")
+        props.lamp_type = _LT_consts.VehicleLampTypes.Brake.name
+        props = body_row.operator("material.scs_switch_lampmask", text="Reverse")
+        props.lamp_type = _LT_consts.VehicleLampTypes.Reverse.name
+
+        # auxiliary switcher
+        body_col = layout.column(align=True)
+        body_row = body_col.row(align=True)
+        body_row.label("Auxiliary", icon="LAMP_SPOT")
+
+        body_row = body_col.row(align=True)
+        props = body_row.operator("material.scs_switch_lampmask", text="Dim")
+        props.lamp_type = _LT_consts.AuxiliaryLampTypes.Dim.name
+        props = body_row.operator("material.scs_switch_lampmask", text="Bright")
+        props.lamp_type = _LT_consts.AuxiliaryLampTypes.Bright.name
+
+        # traffic light switcher
+        body_col = layout.column(align=True)
+        body_row = body_col.row(align=True)
+        body_row.label("Traffic Lights", icon="COLOR_RED")
+
+        body_row = body_col.row(align=True)
+        props = body_row.operator("material.scs_switch_lampmask", text="Red")
+        props.lamp_type = _LT_consts.TrafficLightTypes.Red.name
+        props = body_row.operator("material.scs_switch_lampmask", text="Yellow")
+        props.lamp_type = _LT_consts.TrafficLightTypes.Yellow.name
+        props = body_row.operator("material.scs_switch_lampmask", text="Green")
+        props.lamp_type = _LT_consts.TrafficLightTypes.Green.name
+
+
+class SCSLampTool(_ToolShelfBlDefs, Panel):
+    """
+    Creates Lamp Switcher panel for SCS Tools tab.
+    """
+    bl_label = "Lamp UV Tool"
+    bl_context = "mesh_edit"
+
+    def draw(self, context):
+        layout = self.layout
+
+        body_col = layout.column(align=True)
+        body_row = body_col.row(align=True)
+        body_row.label("Vehicle", icon="AUTO")
+
+        body_row = body_col.row(align=True)
+        props = body_row.operator("mesh.scs_set_lampmask_uv", text="Front Left")
+        props.vehicle_side = _LT_consts.VehicleSides.FrontLeft.name
+        props.aux_color = props.traffic_light_color = ""
+        props = body_row.operator("mesh.scs_set_lampmask_uv", text="Front Right")
+        props.vehicle_side = _LT_consts.VehicleSides.FrontRight.name
+        props.aux_color = props.traffic_light_color = ""
+        body_row = body_col.row(align=True)
+        props = body_row.operator("mesh.scs_set_lampmask_uv", text="Rear Left")
+        props.vehicle_side = _LT_consts.VehicleSides.RearLeft.name
+        props.aux_color = props.traffic_light_color = ""
+        props = body_row.operator("mesh.scs_set_lampmask_uv", text="Rear Right")
+        props.vehicle_side = _LT_consts.VehicleSides.RearRight.name
+        props.aux_color = props.traffic_light_color = ""
+        body_row = body_col.row(align=True)
+        props = body_row.operator("mesh.scs_set_lampmask_uv", text="Middle")
+        props.vehicle_side = _LT_consts.VehicleSides.Middle.name
+        props.aux_color = props.traffic_light_color = ""
+
+        body_col = layout.column(align=True)
+        body_row = body_col.row(align=True)
+        body_row.label("Auxiliary", icon="LAMP_SPOT")
+
+        body_row = body_col.row(align=True)
+        props = body_row.operator("mesh.scs_set_lampmask_uv", text="White")
+        props.aux_color = _LT_consts.AuxiliaryLampColors.White.name
+        props.vehicle_side = props.traffic_light_color = ""
+        props = body_row.operator("mesh.scs_set_lampmask_uv", text="Orange")
+        props.aux_color = _LT_consts.AuxiliaryLampColors.Orange.name
+        props.vehicle_side = props.traffic_light_color = ""
+
+        body_col = layout.column(align=True)
+        body_row = body_col.row(align=True)
+        body_row.label("Traffic Lights", icon="COLOR_RED")
+
+        body_row = body_col.row(align=True)
+        props = body_row.operator("mesh.scs_set_lampmask_uv", text="Red")
+        props.traffic_light_color = _LT_consts.TrafficLightTypes.Red.name
+        props.vehicle_side = props.aux_color = ""
+        props = body_row.operator("mesh.scs_set_lampmask_uv", text="Yellow")
+        props.traffic_light_color = _LT_consts.TrafficLightTypes.Yellow.name
+        props.vehicle_side = props.aux_color = ""
+        props = body_row.operator("mesh.scs_set_lampmask_uv", text="Green")
+        props.traffic_light_color = _LT_consts.TrafficLightTypes.Green.name
+        props.vehicle_side = props.aux_color = ""
+
+
+class SCSVertexColorWrapTool(_ToolShelfBlDefs, Panel):
+    bl_label = "Wrap Tool"
+
+    @classmethod
+    def poll(cls, context):
+        return context.vertex_paint_object
+
+    def draw(self, context):
+        layout = self.layout
+        body_col = layout.column(align=True)
+
+        body_row = body_col.row(align=True)
+        props = body_row.operator("mesh.scs_wrap_vcol", text="Wrap All")
+        props.wrap_type = "all"
+
+        body_row = body_col.row(align=True)
+        props = body_row.operator("mesh.scs_wrap_vcol", text="Wrap Selected")
+        props.wrap_type = "selected"

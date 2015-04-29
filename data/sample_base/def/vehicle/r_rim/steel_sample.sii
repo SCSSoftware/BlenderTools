@@ -1,0 +1,12 @@
+SiiNunit
+{
+accessory_rim_data : steel_sample.rrim
+{
+	name: "@@standard@@ sample"
+	price: 5760
+	unlock: 0
+	model: "/vehicle/truck/upgrade/rim/rear_steel_sample.pmd"
+	icon: "r_rim_steel"
+	front_rim: false
+}
+}

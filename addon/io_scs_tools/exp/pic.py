@@ -28,6 +28,7 @@ from io_scs_tools.utils import mesh as _mesh_utils
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
 from io_scs_tools.utils.info import get_tools_version as _get_tools_version
 from io_scs_tools.utils.info import get_blender_version as _get_blender_version
+from io_scs_tools.utils.object import get_scs_root as _get_scs_root
 
 
 def _fill_header_section(file_name, sign_export):
@@ -186,6 +187,8 @@ def _fill_part_sections(locator_list, used_parts):
 
 
 def _make_common_part(item, index, col_type):
+    scs_root = _get_scs_root(item)
+
     if not item.scs_props.locator_collider_centered:
         if item.scs_props.locator_collider_type == 'Box':
             offset_matrix = (item.matrix_world *
@@ -204,9 +207,9 @@ def _make_common_part(item, index, col_type):
         else:
             offset_matrix = item.matrix_world
 
-        loc, qua, sca = _convert_utils.get_scs_transformation_components(offset_matrix)
+        loc, qua, sca = _convert_utils.get_scs_transformation_components(scs_root.matrix_world.inverted() * offset_matrix)
     else:
-        loc, qua, sca = _convert_utils.get_scs_transformation_components(item.matrix_world)
+        loc, qua, sca = _convert_utils.get_scs_transformation_components(scs_root.matrix_world.inverted() * item.matrix_world)
 
     section = _SectionData("Locator")
     section.props.append(("Name", _name_utils.tokenize_name(item.name)))
@@ -235,13 +238,13 @@ def _fill_collision_locator_sections(collision_locator_list):
                 item.scs_props.locator_collider_box_x, item.scs_props.locator_collider_box_z, item.scs_props.locator_collider_box_y, 0.0)]))
         elif loc_type == "Sphere":
             # radius
-            section.props.append(("Parameters", ["&&", (item.scs_props.locator_collider_dia, 0.0, 0.0, 0.0)]))
+            section.props.append(("Parameters", ["&&", (item.scs_props.locator_collider_dia / 2, 0.0, 0.0, 0.0)]))
         elif loc_type == "Capsule":
             # radius length
-            section.props.append(("Parameters", ["&&", (item.scs_props.locator_collider_dia, item.scs_props.locator_collider_len, 0.0, 0.0)]))
+            section.props.append(("Parameters", ["&&", (item.scs_props.locator_collider_dia / 2, item.scs_props.locator_collider_len, 0.0, 0.0)]))
         elif loc_type == "Cylinder":
             # radius length
-            section.props.append(("Parameters", ["&&", (item.scs_props.locator_collider_dia, item.scs_props.locator_collider_len, 0.0, 0.0)]))
+            section.props.append(("Parameters", ["&&", (item.scs_props.locator_collider_dia / 2, item.scs_props.locator_collider_len, 0.0, 0.0)]))
         elif loc_type == "Convex":
             section.props.append(("ConvexPiece", piece_index))
             piece_index += 1

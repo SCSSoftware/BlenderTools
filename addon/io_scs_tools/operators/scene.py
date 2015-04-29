@@ -390,6 +390,20 @@ class Export:
         bl_idname = "scene.export_scene"
         bl_description = "Export active scene only"
 
+        layers_visibilities = []
+        """List for storing layers visibility in the init of operator"""
+
+        def __init__(self):
+            """Constructor used for showing all scene visibility layers.
+            This provides possibility to updates world matrixes even on hidden objects.
+            """
+            self.layers_visibilities = _view3d_utils.switch_layers_visibility([], True)
+
+        def __del__(self):
+            """Destructor with reverting visible layers.
+            """
+            _view3d_utils.switch_layers_visibility(self.layers_visibilities, False)
+
         def execute(self, context):
             lprint('D Export Scene...')
             _get_scs_globals().content_type = 'scene'
@@ -417,6 +431,20 @@ class Export:
         bl_label = "Export All"
         bl_idname = "scene.export_all"
         bl_description = "Export all scenes"
+
+        layers_visibilities = []
+        """List for storing layers visibility in the init of operator"""
+
+        def __init__(self):
+            """Constructor used for showing all scene visibility layers.
+            This provides possibility to updates world matrixes even on hidden objects.
+            """
+            self.layers_visibilities = _view3d_utils.switch_layers_visibility([], True)
+
+        def __del__(self):
+            """Destructor with reverting visible layers.
+            """
+            _view3d_utils.switch_layers_visibility(self.layers_visibilities, False)
 
         def execute(self, context):
             lprint('D Export All...')

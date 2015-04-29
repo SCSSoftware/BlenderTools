@@ -14,7 +14,7 @@ try:
     click(Pattern("5_locators_model.png").similar(0.95))
     type(Key.ENTER)
     click(Pattern("3dview_user_persp.png").similar(0.95)); type("a")
-    rightClick(Pattern("3dview_imported.png").similar(0.89).targetOffset(-42,-154))
+    rightClick(Pattern("3dview_imported.png").similar(0.89).targetOffset(91,-156))
     click(Pattern("object_tab.png").similar(0.95))
     
     find(Pattern("flare_lamp_hookup.png").similar(0.95))

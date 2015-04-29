@@ -20,9 +20,11 @@
 
 import bpy
 from bpy.props import BoolProperty, StringProperty, IntProperty
+from io_scs_tools.consts import Look as _LOOK_consts
 from io_scs_tools.consts import Part as _PART_consts
 from io_scs_tools.consts import Variant as _VARIANT_consts
 from io_scs_tools.internals import inventory as _inventory
+from io_scs_tools.internals import looks as _looks
 from io_scs_tools.internals.connections.wrappers import group as _connection_group_wrapper
 from io_scs_tools.operators.bases.selection import Selection as _BaseSelectionOperator
 from io_scs_tools.operators.bases.view import View as _BaseViewOperator
@@ -93,6 +95,8 @@ class ConvexCollider:
                     locator = _object_utils.create_collider_convex_locator(geoms, convex_props, objects, self.delete_mesh_objects)
                     if locator:
                         locator.parent = parent
+                        # make sure to apply parent inverse matrix so object is oriented as origin object
+                        locator.matrix_parent_inverse = active_object.matrix_parent_inverse
                         _object_utils.make_objects_selected((locator,))
             return {'FINISHED'}
 
@@ -133,6 +137,103 @@ class ConvexCollider:
         def execute(self, context):
             lprint('D Update Convex Collider Locator...')
             _object_utils.update_convex_hull_margins(bpy.context.active_object)
+            return {'FINISHED'}
+
+
+class Look:
+    """
+    Wrapper class for better navigation in file
+    """
+
+    class AddLookOperator(bpy.types.Operator):
+        """Add SCS Look to actual SCS Game Object."""
+        bl_label = "Add SCS Look"
+        bl_idname = "object.add_scs_look"
+        bl_description = "Add new SCS Look to SCS Game Object"
+
+        look_name = StringProperty(
+            default=_LOOK_consts.default_name,
+            description="Name of the new look"
+        )
+        instant_apply = BoolProperty(
+            default=True,
+            description="Flag indicating if new look should also be applied directly"
+                        "(used on import when applying of each look is useless)"
+        )
+
+        @classmethod
+        def poll(cls, context):
+            if _object_utils.get_scs_root(context.active_object):
+                return True
+            else:
+                return False
+
+        def execute(self, context):
+            lprint("D " + self.bl_label + "...")
+            active_object = context.active_object
+            scs_root_object = _object_utils.get_scs_root(active_object)
+
+            if scs_root_object:
+
+                look_inventory = scs_root_object.scs_object_look_inventory
+
+                # gather existing ids
+                used_ids = {}
+                for look in look_inventory:
+                    used_ids[look.id] = 1
+
+                # create unique id
+                look_id = 0
+                while look_id in used_ids:
+                    look_id += 1
+
+                look = _inventory.add_item(look_inventory, self.look_name, conditional=False)
+                look.id = look_id
+
+                _looks.add_look(scs_root_object, look.id)
+
+                if self.instant_apply:
+                    scs_root_object.scs_props.active_scs_look = len(look_inventory) - 1
+
+            return {'FINISHED'}
+
+    class RemoveActiveLookOperator(bpy.types.Operator):
+        """Remove SCS Look to actual SCS Game Object."""
+        bl_label = "Remove Active SCS Look"
+        bl_idname = "object.remove_scs_look"
+        bl_description = "Remove active SCS Look from SCS Game Object"
+
+        @classmethod
+        def poll(cls, context):
+            if _object_utils.get_scs_root(context.active_object):
+                return True
+            else:
+                return False
+
+        def execute(self, context):
+            lprint('D Remove SCS Variant from SCS Game Object...')
+
+            active_object = context.active_object
+            scs_root_object = _object_utils.get_scs_root(active_object)
+            active_scs_look = scs_root_object.scs_props.active_scs_look
+            look_inventory = scs_root_object.scs_object_look_inventory
+
+            if 0 <= active_scs_look < len(look_inventory):
+
+                _looks.remove_look(scs_root_object, look_inventory[active_scs_look].id)
+
+                _inventory.remove_items_by_id(look_inventory, active_scs_look)
+
+                # if active index is not in the inventory anymore select last one
+                if active_scs_look >= len(look_inventory):
+                    scs_root_object.scs_props.active_scs_look = len(look_inventory) - 1
+
+                # make sure to reapply currently selected look after removal
+                _looks.apply_active_look(scs_root_object, force_apply=True)
+
+            else:
+                lprint("W No active 'SCS Look' to remove!")
+
             return {'FINISHED'}
 
 
@@ -307,7 +408,7 @@ class Part:
             part_inventory = scs_root_object.scs_object_part_inventory
 
             # DELETE SCS PART FROM PART INVENTORY
-            if active_scs_part < len(part_inventory):
+            if 0 <= active_scs_part < len(part_inventory):
                 if len(part_inventory) > 1:
 
                     active_scs_part_name = part_inventory[active_scs_part].name
@@ -605,7 +706,7 @@ class Variant:
             active_scs_variant = scs_root_object.scs_props.active_scs_variant
             variant_inventory = scs_root_object.scs_object_variant_inventory
 
-            if active_scs_variant < len(variant_inventory):
+            if 0 <= active_scs_variant < len(variant_inventory):
 
                 _inventory.remove_items_by_id(variant_inventory, active_scs_variant)
 
