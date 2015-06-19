@@ -1,0 +1,7 @@
+
+	seat_left_limit: -0.15
+	seat_right_limit: 0.15
+	seat_up_limit: 0.15
+	seat_down_limit: -0.15
+	seat_front_limit: -0.1
+	seat_back_limit: 0.1

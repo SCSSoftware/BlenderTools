@@ -139,7 +139,8 @@ def _fast_check_for_pia_skeleton(pia_filepath, skeleton):
                 data_type, line = _pix_parser.next_line(file)
                 ske = re.split(r'"', line)[1]
                 # print('  %r | %r' % (ske, skeleton))
-                if ske == skeleton:
+                pia_skeleton = os.path.join(os.path.dirname(pia_filepath), ske)
+                if os.path.samefile(pia_skeleton, skeleton):
                     file.close()
                     return True
                 break
@@ -151,7 +152,6 @@ def _utter_check_for_pia_skeleton(pia_filepath, armature):
     """Skeleton analysis in PIA file with reasonably quick searching the whole file.
     It takes filepath and an Armature object and returns True if the skeleton in PIA file
     can be used for the skeleton in provided Armature object, otherwise it returns False."""
-    bone_names = [bone.name for bone in armature.data.bones]
     file = open(pia_filepath, 'r')
     skeleton = None
     bone_matches = []
@@ -181,7 +181,7 @@ def _utter_check_for_pia_skeleton(pia_filepath, armature):
                 # print('  %s - %s' % (data_type, line))
                 prop_name = re.split(r'"', line)[1]
                 # print('  %r' % prop_name)
-                if prop_name in bone_names:
+                if prop_name in armature.data.bones:
                     bone_matches.append(prop_name)
                 else:
                     file.close()
@@ -236,29 +236,25 @@ def _create_fcurves(anim_action, anim_group, anim_curve, rot_euler=True, types='
     return pos_fcurves, rot_fcurves, sca_fcurves
 
 
-def _get_delta_matrix(bone_rest_matrix, bone_rest_matrix_scs, parent_bone_rest_matrix_scs, bone_animation_matrix_scs, import_scale):
+def _get_delta_matrix(bone_rest_matrix_scs, parent_bone_rest_matrix_scs, bone_animation_matrix_scs, import_scale):
     """."""
-    rest_location, rest_rotation, rest_scale = bone_rest_matrix_scs.decompose()
-    # print(' BONES rest_scale: %s' % str(rest_scale))
-    rest_scale = rest_scale * import_scale
-    scale_removal_matrix = Matrix()
-    scale_removal_matrix[0] = (1.0 / rest_scale[0], 0, 0, 0)
-    scale_removal_matrix[1] = (0, 1.0 / rest_scale[1], 0, 0)
-    scale_removal_matrix[2] = (0, 0, 1.0 / rest_scale[2], 0)
-    scale_removal_matrix[3] = (0, 0, 0, 1)
     scale_matrix = Matrix.Scale(import_scale, 4)
-    return (bone_rest_matrix.inverted() *
-            scale_matrix *
-            _convert_utils.scs_to_blend_matrix() *
+
+    # NOTE: apply scaling bone rest matrix, because it's subtracted by bone rest matrix inverse
+    loc, rot, sca = bone_rest_matrix_scs.decompose()
+    scale = Matrix.Identity(4)
+    scale[0] = (sca[0], 0, 0, 0)
+    scale[1] = (0, sca[1], 0, 0)
+    scale[2] = (0, 0, sca[2], 0)
+
+    return (scale_matrix *
+            scale *
+            bone_rest_matrix_scs.inverted() *
             parent_bone_rest_matrix_scs *
-            bone_animation_matrix_scs *
-            scale_removal_matrix)
+            bone_animation_matrix_scs)
 
 
-def load(root_object, pia_files, armature, skeleton=None, bones=None):
-    if not bones:
-        bones = {}
-
+def load(root_object, pia_files, armature, pis_filepath=None, bones=None):
     scs_globals = _get_scs_globals()
 
     print("\n************************************")
@@ -268,32 +264,36 @@ def load(root_object, pia_files, armature, skeleton=None, bones=None):
 
     import_scale = scs_globals.import_scale
     ind = '    '
+    imported_count = 0
     for pia_filepath in pia_files:
         # Check if PIA file is for the actual skeleton...
-        if skeleton:
-            skeleton_match = _fast_check_for_pia_skeleton(pia_filepath, skeleton)
+        if pis_filepath and bones:
+            skeleton_match = _fast_check_for_pia_skeleton(pia_filepath, pis_filepath)
         else:
-            skeleton_match, skeleton = _utter_check_for_pia_skeleton(pia_filepath, armature)
-            # print('%r - %s' %(os.path.basename(pia_filepath), skeleton_match))
-            # print('  skeleton: %r' % skeleton)
+            skeleton_match, pia_skeleton = _utter_check_for_pia_skeleton(pia_filepath, armature)
+
             if skeleton_match:
+
                 path = os.path.split(pia_filepath)[0]
-                pis_filepath = os.path.join(path, skeleton)
-                if os.path.isfile(pis_filepath):
-                    # print('  pis_filepath: %r' % pis_filepath)
-                    bones = _pis.load(pis_filepath, armature)
+                pia_skeleton = os.path.join(path, pia_skeleton)
+                if os.path.isfile(pia_skeleton):
+                    bones = _pis.load(pia_skeleton, armature, get_only=True)
                 else:
-                    lprint("""\nE The filepath "%s" doesn't exist!""", (pis_filepath.replace("\\", "/"),))
+                    lprint("\nE The filepath %r doesn't exist!", (pia_skeleton.replace("\\", "/"),))
+
+            else:
+                lprint(str("E Animation doesn't match the skeleton. Animation won't be loaded!\n\t   "
+                           "Animation file: %r"), (pia_filepath,))
 
         if skeleton_match:
             lprint('I ++ "%s" IMPORTING animation data...', (os.path.basename(pia_filepath),))
             pia_container, state = _pix_parser.read_data(pia_filepath, ind)
             if not pia_container:
                 lprint('\nE File "%s" is empty!', (pia_filepath.replace("\\", "/"),))
-                return {'CANCELLED'}
+                continue
             if state == 'ERR':
                 lprint('\nE File "%s" is not SCS Animation file!', (pia_filepath.replace("\\", "/"),))
-                return {'CANCELLED'}
+                continue
 
             # TEST PRINTOUTS
             # ind = '  '
@@ -320,36 +320,30 @@ def load(root_object, pia_files, armature, skeleton=None, bones=None):
             # LOAD HEADER
             format_version, source, f_type, animation_name, source_filename, author = _get_header(pia_container)
             if format_version != 3 or f_type != "Animation":
-                return {'CANCELLED'}
+                continue
 
             # LOAD GLOBALS
             skeleton, total_time, bone_channel_count, custom_channel_count = _get_globals(pia_container)
 
             # CREATE ANIMATION ACTIONS
-            anim_action = bpy.data.actions.new(animation_name)
+            anim_action = bpy.data.actions.new(animation_name + "_action")
             anim_action.use_fake_user = True
-            if total_time:
-                anim_action.scs_props.action_length = total_time
-            anim_data = armature.animation_data_create()
+            anim_data = armature.animation_data if armature.animation_data else armature.animation_data_create()
             anim_data.action = anim_action
 
             # LOAD BONE CHANNELS
-            # print(' * armature: %r' % armature.name)
-            if bone_channel_count > 0:
-                bone_channels = _get_anim_channels(pia_container, section_name="BoneChannel")
+            bone_channels = _get_anim_channels(pia_container, section_name="BoneChannel")
+            if len(bone_channels) > 0:
 
-                # ...
                 for bone_name in bone_channels:
-                    # bone_name = channel[0]
+
                     if bone_name in armature.data.bones:
-                        # print('%r is in armature %r' % (bone_name, armature.name))
                         '''
                         NOTE: skipped for now as no data needs to be readed
                         stream_count = bone_channels[bone_name][0]
                         keyframe_count = bone_channels[bone_name][1]
                         '''
                         streams = bone_channels[bone_name][2]
-                        # print('  channel %r - streams %s - keyframes %s' % (bone_name, stream_count, keyframe_count))
 
                         # CREATE ANIMATION GROUP
                         anim_group = anim_action.groups.new(bone_name)
@@ -360,10 +354,9 @@ def load(root_object, pia_files, armature, skeleton=None, bones=None):
                         # CREATE FCURVES
                         (pos_fcurves,
                          rot_fcurves,
-                         sca_fcurves) = _create_fcurves(anim_action, anim_group, str('pose.bones["' + bone_name + '"]'))
+                         sca_fcurves) = _create_fcurves(anim_action, anim_group, str('pose.bones["' + bone_name + '"]'), rot_euler=True)
 
                         # GET BONE REST POSITION MATRIX
-                        bone_rest_matrix = active_bone.matrix_local
                         bone_rest_matrix_scs = bones[bone_name][1].transposed()
                         parent_bone_name = bones[bone_name][0]
                         if parent_bone_name in bones:
@@ -372,44 +365,36 @@ def load(root_object, pia_files, armature, skeleton=None, bones=None):
                             parent_bone_rest_matrix_scs = Matrix()
                             parent_bone_rest_matrix_scs.identity()
 
-                            # if bone_name in ('LeftHand1', 'LeftHand'):
-                            # print('\n  %r - bone_rest_matrix_scs:\n%s' % (bone_name, bone_rest_matrix_scs))
-                            # print('  %r - bone_rest_matrix:\n%s' % (bone_name, bone_rest_matrix))
-                            # print('  %r - parent_bone_rest_matrix_scs:\n%s' % (bone_name, parent_bone_rest_matrix_scs))
-
                         for key_time_i, key_time in enumerate(streams[0]):
-                            # print(' key_time: %s' % str(key_time[0]))
-                            # keyframe = key_time_i * (key_time[0] * 10) ## TODO: Do proper timing...
                             keyframe = key_time_i + 1
 
                             # GET BONE ANIMATION MATRIX
                             bone_animation_matrix_scs = streams[1][key_time_i].transposed()
-                            # if bone_name in ('LeftHand1', 'LeftHand') and key_time_i == 0: print('  %r - bone_animation_matrix_scs (%i):\n%s' % (
-                            # bone_name, key_time_i, bone_animation_matrix_scs))
 
                             # CREATE DELTA MATRIX
-                            delta_matrix = _get_delta_matrix(bone_rest_matrix, bone_rest_matrix_scs,
-                                                             parent_bone_rest_matrix_scs, bone_animation_matrix_scs, import_scale)
+                            delta_matrix = _get_delta_matrix(bone_rest_matrix_scs, parent_bone_rest_matrix_scs, bone_animation_matrix_scs,
+                                                             import_scale)
 
                             # DECOMPOSE ANIMATION MATRIX
                             location, rotation, scale = delta_matrix.decompose()
-                            # if bone_name in ('left_leg', 'root') and key_time_i == 0: print('  location:\n%s' % str(location))
+
+                            # NOTE: scaling should be always positive, because possible negative scale is "applied" on PIS import
+                            scale = Vector((abs(scale[0]), abs(scale[1]), abs(scale[2])))
+
+                            # NOTE: this scaling rotation switch came from UK variants which had scale -1
+                            loc, rot, sca = bone_rest_matrix_scs.decompose()
+                            if sca.y < 0:
+                                rotation.y *= -1
+                            if sca.z < 0:
+                                rotation.z *= -1
+
                             rotation = rotation.to_euler('XYZ')
 
-                            # BUILD TRANSLATION CURVES
-                            pos_fcurves[0].keyframe_points.insert(frame=float(keyframe), value=location[0], options={'FAST'})
-                            pos_fcurves[1].keyframe_points.insert(frame=float(keyframe), value=location[1], options={'FAST'})
-                            pos_fcurves[2].keyframe_points.insert(frame=float(keyframe), value=location[2], options={'FAST'})
-
-                            # BUILD ROTATION CURVES
-                            rot_fcurves[0].keyframe_points.insert(frame=float(keyframe), value=rotation[0], options={'FAST'})
-                            rot_fcurves[1].keyframe_points.insert(frame=float(keyframe), value=rotation[1], options={'FAST'})
-                            rot_fcurves[2].keyframe_points.insert(frame=float(keyframe), value=rotation[2], options={'FAST'})
-
-                            # BUILD SCALE CURVES
-                            sca_fcurves[0].keyframe_points.insert(frame=float(keyframe), value=scale[0], options={'FAST'})
-                            sca_fcurves[1].keyframe_points.insert(frame=float(keyframe), value=scale[1], options={'FAST'})
-                            sca_fcurves[2].keyframe_points.insert(frame=float(keyframe), value=scale[2], options={'FAST'})
+                            # BUILD TRANSFORMATION CURVES
+                            for i in range(0, 3):
+                                pos_fcurves[i].keyframe_points.insert(frame=float(keyframe), value=location[i], options={'FAST'})
+                                rot_fcurves[i].keyframe_points.insert(frame=float(keyframe), value=rotation[i], options={'FAST'})
+                                sca_fcurves[i].keyframe_points.insert(frame=float(keyframe), value=scale[i], options={'FAST'})
 
                         # SET LINEAR INTERPOLATION FOR ALL CURVES
                         color_mode = 'AUTO_RAINBOW'  # Or better 'AUTO_RGB'?
@@ -426,8 +411,10 @@ def load(root_object, pia_files, armature, skeleton=None, bones=None):
                             for keyframe in curve.keyframe_points:
                                 keyframe.interpolation = 'LINEAR'
 
-                                # LOAD CUSTOM CHANNELS (ARMATURE OFFSET ANIMATION)
-            # if custom_channel_count > 0: ## NOTE: Can't be used because exporter from Maya saves always 0 even if there are Custom Channels.
+                        for curve in rot_fcurves:
+                            _animation_utils.apply_euler_filter(curve)
+
+            # LOAD CUSTOM CHANNELS (ARMATURE OFFSET ANIMATION)
             custom_channels = _get_anim_channels(pia_container, section_name="CustomChannel")
             if len(custom_channels) > 0:
                 for channel_name in custom_channels:
@@ -485,14 +472,13 @@ def load(root_object, pia_files, armature, skeleton=None, bones=None):
                     else:
                         lprint('W Unknown channel %r in "%s" file.', (channel_name, os.path.basename(pia_filepath)))
 
-                        # CREATE SCS ANIMATION
+            # CREATE SCS ANIMATION
             animation = _animation_utils.add_animation_to_root(root_object, animation_name)
             animation.export = True
             animation.action = anim_action.name
             animation.anim_start = anim_action.frame_range[0]
             animation.anim_end = anim_action.frame_range[1]
-            # animation.anim_export_step =
-            # animation.anim_export_filepath =
+
             if total_time:
                 animation.length = total_time
 
@@ -500,8 +486,14 @@ def load(root_object, pia_files, armature, skeleton=None, bones=None):
                 # if piece_count < 0: Print(dump_level, '\nW More Pieces found than were declared!')
                 # if piece_count > 0: Print(dump_level, '\nW Some Pieces not found, but were declared!')
                 # if dump_level > 1: print('')
+
+            imported_count += 1
         else:
             lprint('I    "%s" file REJECTED', (os.path.basename(pia_filepath),))
 
+    # at the end of batch import make sure to select last animation always
+    if imported_count > 0:
+        root_object.scs_props.active_scs_animation = len(root_object.scs_object_animation_inventory) - 1
+
     print("************************************")
-    return {'FINISHED'}
+    return imported_count

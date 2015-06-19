@@ -21,8 +21,9 @@
 import bpy
 import os
 from collections import OrderedDict
-from io_scs_tools.utils.printout import lprint
+from io_scs_tools.utils import path as _path_utils
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
+from io_scs_tools.utils.printout import lprint
 from io_scs_tools.exp import pia as _pia
 from io_scs_tools.exp import pic as _pic
 from io_scs_tools.exp import pip as _pip
@@ -124,51 +125,79 @@ def export(dirpath, root_object, game_object_list):
         armature_object
     ) = _get_objects_by_type(game_object_list)
 
+    skeleton_filepath = root_object.name + ".pis"  # NOTE: if no skeleton is exported name of it should be there anyway
+    if armature_object and root_object.scs_props.scs_root_animated:
+
+        skeleton_filepath = _path_utils.get_skeleton_relative_filepath(armature_object, dirpath, root_object.name)
+
+        if len(mesh_objects) == 0:
+            context.window.cursor_modal_restore()
+            lprint("E Animated SCS Game Object has to have at least one mesh object! SCS Game Object %r won't be exported!", (root_object.name,))
+            return False
+
     # EXPORT
     scs_globals = _get_scs_globals()
     export_success = True
     used_parts = OrderedDict()  # dictionary of parts which are actually used in this game object
     used_materials = []
+    used_bones = OrderedDict()  # dictionary of bones which are actually used in this game object
 
     # EXPORT PIM
     if scs_globals.export_pim_file:
-        export_success = _pim_exporter.execute(dirpath, root_object, mesh_objects, model_locators, used_parts, used_materials)
+        in_args = (dirpath, root_object, armature_object, skeleton_filepath, mesh_objects, model_locators)
+        out_args = (used_parts, used_materials, used_bones)
+        export_success = _pim_exporter.execute(*(in_args + out_args))
 
         # EXPORT PIC
         if scs_globals.export_pic_file and export_success:
             if collision_locators:
-                export_success = _pic.export(collision_locators, dirpath + os.sep + root_object.name, root_object.name, used_parts)
+                in_args = (collision_locators, dirpath + os.sep + root_object.name, root_object.name)
+                out_args = (used_parts,)
+                export_success = _pic.export(*(in_args + out_args))
             else:
                 lprint("I No collider locator objects to export.")
 
     # EXPORT PIT
-    if scs_globals.export_pit_file and used_materials and export_success:
-        export_success = _pit.export(root_object, used_parts, used_materials, context.scene, dirpath + os.sep + root_object.name)
+    if scs_globals.export_pit_file and export_success:
+        in_args = (root_object, used_parts, used_materials, context.scene, dirpath + os.sep + root_object.name)
+        export_success = _pit.export(*in_args)
 
     # EXPORT PIP
     if scs_globals.export_pip_file and prefab_locators and export_success:
-        export_success = _pip.export(prefab_locators, dirpath + os.sep + root_object.name, root_object.name, root_object.matrix_world)
+        in_args = (prefab_locators, dirpath + os.sep + root_object.name, root_object.name, root_object.matrix_world)
+        export_success = _pip.export(*in_args)
 
-    """
     # PIS, PIA
     if root_object.scs_props.scs_root_animated == 'anim':
         # EXPORT PIS
-        if scs_globals.export_pis_file and bone_list and export_success:
-            export_success = _pis.export(bone_list, dirpath, root_object.name)
+        if scs_globals.export_pis_file and len(used_bones) > 0 and export_success:
+            export_success = _pis.export(os.path.join(dirpath, skeleton_filepath), root_object, armature_object, list(used_bones.keys()))
 
         # EXPORT PIA
-        if scs_globals.export_pia_file and bone_list and export_success:
-            if armature.animation_data:
-                export_success = _pia.export(armature, bone_list, dirpath, root_object.name)
+        if scs_globals.export_pia_file and len(used_bones) > 0 and export_success:
+
+            anim_dirpath = _path_utils.get_animations_relative_filepath(root_object, dirpath)
+
+            if anim_dirpath is not None:
+
+                anim_dirpath = os.path.join(dirpath, anim_dirpath)
+                # make sure to get relative path from PIA to PIS (animations may use custom export path)
+                skeleton_filepath = _path_utils.get_skeleton_relative_filepath(armature_object, anim_dirpath, root_object.name)
+
+                for scs_anim in root_object.scs_object_animation_inventory:
+
+                    if scs_anim.export:  # check if export is disabled on animation itself
+
+                        # TODO: use used_bones variable for safety checks
+                        _pia.export(root_object, armature_object, scs_anim, anim_dirpath, skeleton_filepath)
+
             else:
-                lprint('E No animation data! Skipping PIA export...\n')
-    """
+                lprint("E Custom animations export path is not relative to SCS Project Base Path.\n\t   " +
+                       "Animations won't be exported!")
 
     # FINAL FEEDBACK
     context.window.cursor_modal_restore()
     if export_success:
         lprint('\nI Export compleeted in %.3f sec. Files were saved to folder:\n\t   %r\n', (time.time() - t, dirpath))
-    else:
-        lprint("E Nothing to export! Please set a 'SCS Root Object'...", report_errors=True)
 
-    return {'FINISHED'}
+    return True

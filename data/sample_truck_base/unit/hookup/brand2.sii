@@ -1,0 +1,8 @@
+SiiNunit
+{
+brand_hookup : brand2
+{
+	model: "/prefab/truck_dealer_small/brands.pmd"
+	brand_idx: 2
+}
+}

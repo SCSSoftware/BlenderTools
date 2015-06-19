@@ -81,7 +81,7 @@ def _get_bones(pis_container):
     return bones
 
 
-def load(filepath, armature=None):
+def load(filepath, armature, get_only=False):
     scs_globals = _get_scs_globals()
     import_scale = scs_globals.import_scale
     bone_import_scale = scs_globals.bone_import_scale
@@ -132,6 +132,9 @@ def load(filepath, armature=None):
 
     # LOAD BONES
     bones = _get_bones(pis_container)
+
+    if get_only:  # only return bones (used when importing PIA from panel)
+        return bones
 
     # PROVIDE AN ARMATURE
     if not armature:

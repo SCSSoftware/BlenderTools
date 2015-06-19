@@ -1,0 +1,8 @@
+SiiNunit
+{
+accessory_addon_data : 18320.man.tgx.sample.badge
+{
+	exterior_model: "/vehicle/truck/upgrade/badges/man_tgx/badges_18320.pmd"
+	suitable_for[]: "d2066_235.man.tgx.sample.engine"
+}
+}

@@ -1,0 +1,21 @@
+SiiNunit
+{
+accessory_paint_job_data : style2_c.man.tgx.sample.paint_job
+{
+	name: "Duellist"
+	price: 24800
+	unlock: 14
+	icon: "paintjob_style2"
+	mask_r_color :  (0.9559, 0.6653, 0.1412)
+	mask_r_locked: true
+	mask_g_color :    (0.7816, 0.8194, 0.6379)
+	mask_g_locked: true
+	mask_b_color :   (0.0998, 0.0051, 0.0033)
+	mask_b_locked: false
+	base_color :    (0.6866, 0.6239, 0.462)
+	base_color_locked: false
+	paint_job_mask: "/vehicle/truck/upgrade/paintjob/paintjob_002.tobj"
+	alternate_uvset: true
+	suitable_for[]: "xl_cab.man.tgx.sample.cabin"
+}
+}

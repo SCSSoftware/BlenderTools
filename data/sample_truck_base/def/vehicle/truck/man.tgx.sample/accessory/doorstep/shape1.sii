@@ -1,0 +1,11 @@
+SiiNunit
+{
+accessory_addon_data : man1.man.tgx.sample.doorstep
+{
+	name: "@@stock@@"
+	price: 1500
+	unlock: 0
+	icon: "doorstep_01_man_tgx"
+	exterior_model: "/vehicle/truck/upgrade/doorstep/man_tgx/doorstep_01.pmd"
+}
+}

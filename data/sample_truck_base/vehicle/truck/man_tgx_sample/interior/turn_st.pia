@@ -1,0 +1,50 @@
+Header {
+    FormatVersion: 3
+    Source: "Blender 2.74.0 (hash: 000dfc0), SCS Blender Tools: 0.5.bfcf60f"
+    Type: "Animation"
+    Name: "turn_st"
+}
+Global {
+    Skeleton: "anim.pis"
+    TotalTime: 0.16666699945926666
+    BoneChannelCount: 1
+    CustomChannelCount: 0
+}
+BoneChannel {
+    Name: "joint21"
+    StreamCount: 2
+    KeyframeCount: 5
+    Stream {
+        Format: FLOAT
+        Tag: "_TIME"
+        0    ( &3d2aaac1 )
+        1    ( &3d2aaac1 )
+        2    ( &3d2aaac1 )
+        3    ( &3d2aaac1 )
+        4    ( &3d2aaac1 )
+    }
+    Stream {
+        Format: FLOAT4x4
+        Tag: "_MATRIX"
+        0    (  &3f424d4f  &bf26ae88  &b5094f8f  &00000000
+                &3f26ae81  &3f424d49  &34e66162  &00000000
+                &33e7595b  &b531f84f  &3f800004  &00000000
+                &3d713e87  &335288a0  &b31ed939  &3f800000 )
+        1    (  &3f5b44b4  &bf042069  &b4e853bc  &00000000
+                &3f042065  &3f5b44b0  &3508753b  &00000000
+                &33e62651  &b531f8a0  &3f800003  &00000000
+                &3d713e87  &335288a0  &b31ed939  &3f800000 )
+        2    (  &3f6e277d  &bebbd0a0  &b4b788b5  &00000000
+                &3ebbd097  &3f6e2775  &3519e65f  &00000000
+                &33e4eef8  &b531f8f5  &3f800004  &00000000
+                &3d713e87  &335288a0  &b31ed939  &3f800000 )
+        3    (  &3f7a6f96  &be54562a  &b4819ae2  &00000000
+                &3e545622  &3f7a6f8d  &3527073a  &00000000
+                &33e3aec0  &b531f94c  &3f800005  &00000000
+                &3d713e87  &335288a0  &b31ed939  &3f800000 )
+        4    (  &3f7fc5ce  &bd2c9edf  &b410178d  &00000000
+                &3d2c9ef0  &3f7fc5c3  &352f7970  &00000000
+                &33e2608b  &b531f9a5  &3f800005  &00000000
+                &3d713e87  &335288a0  &b31ed939  &3f800000 )
+    }
+}

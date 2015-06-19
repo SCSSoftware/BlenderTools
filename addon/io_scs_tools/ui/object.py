@@ -18,8 +18,9 @@
 
 # Copyright (C) 2013-2014: SCS Software
 
-import bpy
 import os
+
+import bpy
 from bpy.types import Panel
 from io_scs_tools.consts import Operators as _OP_consts
 from io_scs_tools.internals.connections.wrappers import group as _connections_group_wrapper
@@ -472,75 +473,31 @@ def _draw_animation_section(layout):
     active_object = context.active_object
     scs_root_object = _object_utils.get_scs_root(active_object)
     scs_object_animation_inventory = scs_root_object.scs_object_animation_inventory
-    active_scs_animation = scs_root_object.scs_props.active_scs_animation
-    if len(scs_object_animation_inventory) > active_scs_animation:
-        active_animation = scs_object_animation_inventory[active_scs_animation]
+    active_scs_anim_i = scs_root_object.scs_props.active_scs_animation
+    if len(scs_object_animation_inventory) > active_scs_anim_i:
 
-        row = layout.row()
-        row_row = row.row(align=True)
-        row_row.prop_search(active_animation, 'action', bpy.data, 'actions', text="", icon='NONE')
-        # row_row.separator()
-        box_row_row = row_row.row(align=True)
-        box_row_row.operator('scene.import_scs_anim_actions', text='', icon='IMPORT')
-        if active_object.animation_data:
-            if active_object.animation_data.action:
-                box_row_row.operator('scene.export_scs_anim_action', text='', icon='EXPORT')
-                box_row_row = row_row.row()
-                box_row_row.scale_x = 0.35
-                if active_animation.export:
-                    icon = "FILE_TICK"
-                else:
-                    icon = "X_VEC"
-                box_row_row.prop(active_animation, 'export', text="Export", icon=icon, toggle=True)
+        layout = layout.box()
+        layout.label("Active Animation Settings:", icon="ANIM_DATA")
 
-        row = layout.row()
-        row_row = row.row(align=True)
-        row_row.prop(active_animation, 'anim_start', text="Start", icon='NONE')
-        row_row.prop(active_animation, 'anim_end', text="End", icon='NONE')
-        row_row.prop(active_animation, 'length', text="Length", icon='NONE')
+        active_scs_anim = scs_object_animation_inventory[active_scs_anim_i]
 
-        row = layout.row()
-        row.prop(active_animation, 'anim_export_filepath', text="", icon='EXPORT')
+        action_col = layout.column(align=True)
 
+        row = action_col.row(align=True)
+        icon = "NONE" if active_scs_anim.action in bpy.data.actions else "ERROR"
+        row.prop_search(active_scs_anim, 'action', bpy.data, 'actions', text="", icon=icon)
 
-def _draw_action_panel(layout):
-    """Draw Action settings panel.
+        row = action_col.row(align=True)
+        row.enabled = active_scs_anim.action in bpy.data.actions
+        row.prop(active_scs_anim, 'anim_start', text="Start", icon='NONE')
+        row.prop(active_scs_anim, 'anim_end', text="End", icon='NONE')
+        row.prop(active_scs_anim, 'length', text="Length", icon='NONE')
 
-    :param layout: Blender UI Layout to draw to
-    :type layout: bpy.types.UILayout
-    """
-    context = bpy.context
-    active_object = context.active_object
-
-    box = layout.box()
-    if active_object.animation_data:
-        box_row = box.row(align=True)
-        box_row.template_ID(active_object.animation_data, 'action', new="action.new")
-
-        # layout_row = box_row.row(align=True)
-        # layout_row.operator('scene.import_scs_anim_actions', text='', icon='IMPORT')
-        if active_object.animation_data.action:
-            # layout_row.operator('scene.export_scs_anim_action', text='', icon='EXPORT')
-            # layout_row = box_row.row()
-            # layout_row.scale_x = 0.35
-            # layout_row.prop(active_object.animation_data.action.scs_props, "export_action", text="Batch Export", toggle=True)
-
-            # box_row = box.row()
-            # box_row.enabled = active_object.animation_data.action.scs_props.export_action
-            # box_row.prop(active_object.animation_data.action.scs_props, "anim_export_filepath", icon='EXPORT')
-
-            box_row = box.row()
-            box_row_row = box_row.row(align=True)
-            box_row_row.operator('scene.increase_animation_steps', text='', icon='ZOOMIN')
-            box_row_row.operator('scene.decrease_animation_steps', text='', icon='ZOOMOUT')
-            # box_row_row.operator('scene.euler_filter', text='', icon='IPO')  # TODO: Turned off for now, Blender's Build-in Euler Filter needs
-            # Graph context and "apply_euler_filter()" function still doesn't work.
-            box_row.prop(active_object.animation_data.action.scs_props, "anim_export_step")
-            # box_row.prop(active_object.animation_data.action.scs_props, "action_length")
-    else:
-        box_row = box.row()
-        # box_row.operator('scene.import_scs_anim_actions', text="Import Animation Action", icon='FILESEL')
-        box_row.operator('scene.import_scs_anim_actions', text="Import Animation Actions", icon='IMPORT')
+        if active_object.animation_data and active_object.animation_data.action:
+            row = action_col.row(align=True)
+            row.operator('scene.increase_animation_steps', text='', icon='ZOOMIN')
+            row.operator('scene.decrease_animation_steps', text='', icon='ZOOMOUT')
+            row.prop(active_object.animation_data.action.scs_props, "anim_export_step")
 
 
 def _draw_animplayer_panel(layout):
@@ -556,9 +513,9 @@ def _draw_animplayer_panel(layout):
     screen = context.screen
 
     layout_box = layout.box()
-    if scene.scs_props.animplayer_panel_expand:
+    if scene.scs_props.scs_animplayer_panel_expand:
         row = layout_box.row()
-        row.prop(scene.scs_props, 'animplayer_panel_expand', text="Animation Player:", icon='TRIA_DOWN', icon_only=True, emboss=False)
+        row.prop(scene.scs_props, 'scs_animplayer_panel_expand', text="Animation Player:", icon='TRIA_DOWN', icon_only=True, emboss=False)
         row.label('')
 
         # layout_box_row = layout_box.row()
@@ -576,19 +533,15 @@ def _draw_animplayer_panel(layout):
         layout_box_row = layout_box.row()
         layout_col = layout_box_row.column(align=True)
         layout_row = layout_col.row(align=True)
-        layout_row.prop(scene, "frame_start", text="Start")
-        layout_row.prop(scene, "frame_end", text="End")
-        layout_row = layout_col.row(align=True)
         layout_row.prop(scene, "frame_preview_start", text="Start")
         layout_row.prop(scene, "frame_preview_end", text="End")
         layout_col = layout_box_row.column(align=True)
-        layout_col.scale_x = 0.7
-        layout_col.scale_y = 2.0
-        layout_col.prop(scene, "frame_current", text='')
+        layout_col.prop(scene, "frame_current", text='Current')
 
         layout_box_row = layout_box.row()
         layout_box_row.prop(scene, "use_preview_range", text='', toggle=True)
         layout_row = layout_box_row.row(align=True)
+        layout_row.scale_x = 1.5
         layout_row.operator("screen.frame_jump", text='', icon='REW').end = False
         layout_row.operator("screen.keyframe_jump", text='', icon='PREV_KEYFRAME').next = False
         if not screen.is_animation_playing:
@@ -605,17 +558,14 @@ def _draw_animplayer_panel(layout):
             sub.operator("screen.animation_play", text='', icon='PAUSE')
         layout_row.operator("screen.keyframe_jump", text='', icon='NEXT_KEYFRAME').next = True
         layout_row.operator("screen.frame_jump", text='', icon='FF').end = True
-        layout_row = layout_box_row.row(align=True)
-        layout_row.scale_x = 0.4
         layout_row.prop(scene.render, "fps")
-        layout_row.prop(scene.render, "fps_base", text="/")
     else:
         row = layout_box.row()
-        row.prop(scene.scs_props, 'animplayer_panel_expand', text="Animation Player:", icon='TRIA_RIGHT', icon_only=True, emboss=False)
+        row.prop(scene.scs_props, 'scs_animplayer_panel_expand', text="Animation Player:", icon='TRIA_RIGHT', icon_only=True, emboss=False)
         row.label('')
 
 
-def _draw_animation_settings_panel(layout):
+def _draw_scs_animation_panel(layout):
     """Draw Animation settings panel.
 
     :param layout: Blender UI Layout to draw to
@@ -625,24 +575,56 @@ def _draw_animation_settings_panel(layout):
     scene = context.scene
     active_object = context.active_object
     scs_root_object = _object_utils.get_scs_root(active_object)
-    layout_box = layout.box()
-    if scene.scs_props.animation_settings_expand:
+
+    layout_column = layout.column(align=True)
+    layout_box = layout_column.box()
+
+    if scene.scs_props.scs_animation_settings_expand:
+
         layout_box_row = layout_box.row()
-        layout_box_row.prop(scene.scs_props, 'animation_settings_expand', text="Animation Settings:",
+        layout_box_row.prop(scene.scs_props, 'scs_animation_settings_expand', text="SCS Animations:",
                             icon='TRIA_DOWN', icon_only=True, emboss=False)
         layout_box_row.label('')
 
-        # ACTION SETTINGS PANEL
-        _draw_action_panel(layout_box)
+        anims_box = layout_column.box()
 
         # layout_box_row = layout_box.row()
         # layout_box_row.prop(bpy.data, 'actions', text="Animation Actions:", icon='ACTION')
 
-        action_box = layout_box.box()
         if scs_root_object:
 
+            # ANIMATIONS CUSTOM EXPORT PATH
+            column = anims_box.column(align=True)
+            if scs_root_object.scs_props.scs_root_object_allow_anim_custom_path:
+                icon = "FILE_TICK"
+                text = "Custom Export Path Enabled"
+            else:
+                icon = "X_VEC"
+                text = "Custom Export Path Disabled"
+
+            column.prop(scs_root_object.scs_props, 'scs_root_object_allow_anim_custom_path', text=text, icon=icon, toggle=True)
+            row2 = column.row(align=True)
+            row2.enabled = scs_root_object.scs_props.scs_root_object_allow_anim_custom_path
+            if row2.enabled:
+                root_anim_export_path = scs_root_object.scs_props.scs_root_object_anim_export_filepath
+                row2.alert = ((root_anim_export_path != "" and not root_anim_export_path.startswith("//")) or
+                              not os.path.isdir(os.path.join(_get_scs_globals().scs_project_path,
+                                                             scs_root_object.scs_props.scs_root_object_anim_export_filepath.strip("//"))))
+                if row2.alert:
+                    _shared.draw_warning_operator(
+                        row2,
+                        "Custom Export Path Warning",
+                        str("Current custom Animations filepath is unreachable, which may result into an error on export!\n"
+                            "Make sure you did following:\n"
+                            "1. Properly set \"SCS Project Base Path\"\n"
+                            "2. Properly set this custom export path which must be relative on \"SCS Project Base Path\"")
+                    )
+            row2.prop(scs_root_object.scs_props, 'scs_root_object_anim_export_filepath', text='', icon='EXPORT')
+            props = row2.operator('scene.select_directory_inside_base', text='', icon='FILESEL')
+            props.type = "GameObjectAnimExportPath"
+
             # ANIMATION LIST
-            layout_setting = action_box.row()
+            layout_setting = anims_box.row()
             layout_setting.template_list(
                 'SCSObjectAnimationSlots',
                 list_id="",
@@ -650,8 +632,8 @@ def _draw_animation_settings_panel(layout):
                 propname="scs_object_animation_inventory",
                 active_dataptr=scs_root_object.scs_props,
                 active_propname="active_scs_animation",
-                rows=1,
-                maxrows=5,
+                rows=4,
+                maxrows=10,
                 type='DEFAULT',
                 columns=9,
             )
@@ -660,21 +642,75 @@ def _draw_animation_settings_panel(layout):
             list_buttons = layout_setting.column(align=True)
             list_buttons.operator('object.add_scs_animation', text="", icon='ZOOMIN')
             list_buttons.operator('object.remove_scs_animation', text="", icon='ZOOMOUT')
+            list_buttons.separator()
+            list_buttons.operator('scene.import_scs_anim_actions', text='', icon='IMPORT')
 
             # ANIMATION SETTINGS
             if len(scs_root_object.scs_object_animation_inventory) > 0:
-                _draw_animation_section(action_box)
+                _draw_animation_section(anims_box)
             else:
-                action_box.label('No Animation!', icon='INFO')
+                anims_box.label('No Animation!', icon='INFO')
         else:
-            action_box.label("No 'SCS Root Object'!", icon='INFO')
+            anims_box.label("No 'SCS Root Object'!", icon='INFO')
 
         # ANIMATION PLAYER PANEL
-        _draw_animplayer_panel(layout_box)
+        _draw_animplayer_panel(anims_box)
 
     else:
         layout_box_row = layout_box.row()
-        layout_box_row.prop(scene.scs_props, 'animation_settings_expand', text="Animation Settings:",
+        layout_box_row.prop(scene.scs_props, 'scs_animation_settings_expand', text="SCS Animations:",
+                            icon='TRIA_RIGHT', icon_only=True, emboss=False)
+        layout_box_row.label('')
+
+
+def _draw_scs_skeleton_panel(layout):
+    scene = bpy.context.scene
+    active_object = bpy.context.active_object
+
+    layout_column = layout.column(align=True)
+    layout_box = layout_column.box()
+
+    if scene.scs_props.scs_skeleton_panel_expand:
+
+        layout_box_row = layout_box.row()
+        layout_box_row.prop(scene.scs_props, 'scs_skeleton_panel_expand', text="SCS Skeleton:",
+                            icon='TRIA_DOWN', icon_only=True, emboss=False)
+        layout_box_row.label('')
+
+        layout_box = layout_column.box()
+
+        column_row = layout_box.row().split(percentage=0.3)
+
+        column1 = column_row.column()
+
+        column1.label("Custom Path:")
+        column1.label("Custom Name:")
+
+        column2 = column_row.column()
+
+        row = column2.row(align=True)
+        skeleton_export_path = active_object.scs_props.scs_skeleton_custom_export_dirpath
+        row.alert = ((skeleton_export_path != "" and not skeleton_export_path.startswith("//")) or
+                     not os.path.isdir(os.path.join(_get_scs_globals().scs_project_path,
+                                                    skeleton_export_path.strip("//"))))
+        if row.alert:
+            _shared.draw_warning_operator(
+                row,
+                "Skeleton Relative Export Path Warning",
+                str("Current relative export path is unreachable, which may result into an error on export!\n"
+                    "Make sure you did following:\n"
+                    "1. Properly set \"SCS Project Base Path\"\n"
+                    "2. Properly set this relative export path for skeleton which must be relative on \"SCS Project Base Path\"")
+            )
+
+        row.prop(active_object.scs_props, "scs_skeleton_custom_export_dirpath", text="", icon="EXPORT")
+        props = row.operator('scene.select_directory_inside_base', text='', icon='FILESEL')
+        props.type = "SkeletonExportPath"
+
+        column2.prop(active_object.scs_props, "scs_skeleton_custom_name", text="", icon="FILE_TEXT")
+    else:
+        layout_box_row = layout_box.row()
+        layout_box_row.prop(scene.scs_props, 'scs_skeleton_panel_expand', text="SCS Skeleton:",
                             icon='TRIA_RIGHT', icon_only=True, emboss=False)
         layout_box_row.label('')
 
@@ -932,21 +968,21 @@ def _draw_scs_root_panel(layout, scene, obj):
         row2.enabled = obj.scs_props.scs_root_object_allow_custom_path
         if row2.enabled:
             root_export_path = obj.scs_props.scs_root_object_export_filepath
-            row2.alert = ((root_export_path != "" and not root_export_path.startswith(os.sep * 2)) or
+            row2.alert = ((root_export_path != "" and not root_export_path.startswith("//")) or
                           not os.path.isdir(os.path.join(_get_scs_globals().scs_project_path,
-                                                         obj.scs_props.scs_root_object_export_filepath.strip(os.sep * 2))))
+                                                         obj.scs_props.scs_root_object_export_filepath.strip("//"))))
             if row2.alert:
                 _shared.draw_warning_operator(
                     row2,
                     "Custom Export Path Warning",
-                    str("Current custom SCS Game Object filepath is unreachable, which may result into an error on export!\n" +
-                        "Make sure you did following:\n" +
-                        "1. Properly set \"SCS Project Base Path\"\n" +
+                    str("Current custom SCS Game Object filepath is unreachable, which may result into an error on export!\n"
+                        "Make sure you did following:\n"
+                        "1. Properly set \"SCS Project Base Path\"\n"
                         "2. Properly set this custom export path which must be relative on \"SCS Project Base Path\"")
                 )
         row2.prop(obj.scs_props, 'scs_root_object_export_filepath', text='', icon='EXPORT')
-        row2.operator('scene.select_game_object_custom_export_filepath', text='', icon='FILESEL')
-        # row2.prop(obj.scs_props, 'scs_root_object_animations', icon='NONE')
+        props = row2.operator('scene.select_directory_inside_base', text='', icon='FILESEL')
+        props.type = "GameObjectExportPath"
     else:
         row = box.row()
         row.prop(scene.scs_props, 'scs_root_panel_settings_expand', text="Root Object:", icon='TRIA_RIGHT', icon_only=True, emboss=False)
@@ -1177,11 +1213,16 @@ class SCSObjectAnimationSlots(bpy.types.UIList):
         # assert(isinstance(item, bpy.types.MaterialSlot)
         if self.layout_type in {'DEFAULT', 'COMPACT'}:
             if item:
-                if index == data.scs_props.active_scs_animation:
-                    line = layout.split(percentage=0.4, align=False)
-                else:
-                    line = layout.row()
+                line = layout.split(percentage=0.6, align=False)
+
                 line.prop(item, "name", text="", emboss=False, icon_value=icon)
+
+                extra_ops = line.row(align=True)
+                extra_ops.alignment = 'RIGHT'
+
+                props = extra_ops.operator("scene.export_scs_anim_action", text="", icon="EXPORT", emboss=False)
+                props.index = index
+                extra_ops.prop(item, "export", text="Export")
             else:
                 layout.label(text="", icon_value=icon)
         elif self.layout_type in {'GRID'}:
@@ -1240,4 +1281,7 @@ class SCSTools(_ObjectPanelBlDefs, Panel):
         if obj.type == 'ARMATURE':
 
             # ANIMATION SETTINGS PANEL
-            _draw_animation_settings_panel(layout)
+            _draw_scs_animation_panel(layout)
+
+            # SKELETON SETTINGS
+            _draw_scs_skeleton_panel(layout)

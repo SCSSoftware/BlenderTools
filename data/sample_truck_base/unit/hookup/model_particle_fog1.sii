@@ -1,0 +1,46 @@
+SiiNunit
+{
+model_particle : model.particle.fog1 {
+ active_distance: &4b189680
+ gen_array: 1
+ gen_array[0]: _nameless.23B3.EEF8
+ auto_disable_delay: 0
+}
+
+particle_gen : _nameless.23B3.EEF8 {
+ list_order_up: false
+ blend_alpha: true
+ gen_pos: (0, 0, 0)
+ scale_acc: 0
+ rotation_speed: &3eb33333
+ alpha_blend_coef: &3f4ccccd
+ base_alpha: &3f333333
+ alpha_attack_time: 15
+ flow_speed: (0, &3dcccccd, 0)
+ flow_speed_acc: (0, 0, 0)
+ particle_size: (20, 20)
+ particle_size_var: (&3c23d70a, &3c23d70a)
+ particle_displacement: (-40, 40, 40)
+ color_multiplier: nil
+ key_pos: 5
+ key_pos[0]: 0
+ key_pos[1]: 50
+ key_pos[2]: 105
+ key_pos[3]: 171
+ key_pos[4]: 255
+ key_color: 5
+ key_color[0]: nil
+ key_color[1]: nil
+ key_color[2]: nil
+ key_color[3]: nil
+ key_color[4]: nil
+ time_to_live: 60
+ time_to_live_rand: &3e800000
+ particles_max_count: 8
+ relative_space: false
+ use_sprites: true
+ model_path: "/model/particle/fog1.pmd"
+ model_look: fog1
+}
+
+}

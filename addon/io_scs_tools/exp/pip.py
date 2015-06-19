@@ -27,16 +27,14 @@ from io_scs_tools.utils import curve as _curve_utils
 from io_scs_tools.utils import name as _name_utils
 from io_scs_tools.utils import convert as _convert_utils
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
-from io_scs_tools.utils.info import get_tools_version as _get_tools_version
-from io_scs_tools.utils.info import get_blender_version as _get_blender_version
+from io_scs_tools.utils.info import get_combined_ver_str
 
 
 def _fill_header_section(file_name, sign_export):
     """Fills up "Header" section."""
     section = _SectionData("Header")
     section.props.append(("FormatVersion", 2))
-    blender_version, blender_build = _get_blender_version()
-    section.props.append(("Source", "Blender " + blender_version + blender_build + ", SCS Blender Tools: " + str(_get_tools_version())))
+    section.props.append(("Source", get_combined_ver_str()))
     section.props.append(("Type", "Prefab"))
     section.props.append(("Name", file_name))
     if sign_export:

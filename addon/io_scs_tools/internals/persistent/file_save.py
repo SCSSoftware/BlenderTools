@@ -53,6 +53,13 @@ def pre_save(scene):
                     if node.material == material:
                         material.user_clear()
 
+    # make sure to save actions used in at least one scs game object
+    for obj in bpy.data.objects:
+        if obj.type == "EMPTY" and obj.scs_props.empty_object_type == "SCS_Root":
+            for scs_anim in obj.scs_object_animation_inventory:
+                if scs_anim.action in bpy.data.actions:
+                    bpy.data.actions[scs_anim.action].use_fake_user = True
+
 
 @persistent
 def post_save(scene):

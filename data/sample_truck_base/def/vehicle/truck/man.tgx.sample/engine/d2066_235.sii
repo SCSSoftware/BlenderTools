@@ -1,0 +1,17 @@
+SiiNunit
+{
+accessory_engine_data : d2066_235.man.tgx.sample.engine
+{
+	name: "D2066 235"
+	price: 8520
+	unlock: 0
+	info[]: "320 @@hp@@ (235@@kw@@)"
+	info[]: "1@@dg@@600 @@nm@@"
+	info[]: "1@@dg@@000-1@@dg@@400 @@rpm@@"
+	icon: "engine_01"
+	torque: 1600
+	volume:	10.5
+
+	defaults[]: "/def/vehicle/truck/man.tgx.sample/badge/18320.sii"
+}
+}

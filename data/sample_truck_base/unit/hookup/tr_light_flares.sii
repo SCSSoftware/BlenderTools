@@ -1,0 +1,324 @@
+SiiNunit
+{
+flare_traffic_light: flare.traffic.green
+{
+	ambient_color: (0.0000, 0.0000, 0.0000)
+	diffuse_color: (0.0, 0.15632, 0.0)
+	specular_color: (0.0, 0.15911, 0.0)
+
+	type: spot
+
+	range: 15.0
+	cut_range: 19.0
+	inner_angle: 20.0
+	outer_angle: 90.0
+
+	dir_type: angle
+	flare_inner_angle: 40.0
+	flare_outer_angle: 110.0
+
+	pitch_offset: -65
+
+	fade_distance: 200
+	fade_span: 100
+
+	active_state: 8
+	model: "/model/flare/tr_green.pmd"
+	scale_factor: 2
+}
+
+flare_traffic_light: flare.traffic.red
+{
+	ambient_color: (0.0000, 0.0000, 0.0000)
+	diffuse_color: ( 0.15632, 0.0, 0.0)
+	specular_color: ( 0.15911, 0.0, 0.0)
+
+	type: spot
+
+	range: 15.0
+	cut_range: 19.0
+	inner_angle: 20.0
+	outer_angle: 90.0
+
+	dir_type: angle
+	flare_inner_angle: 40.0
+	flare_outer_angle: 110.0
+
+	pitch_offset: -65
+	fade_distance: 200
+	fade_span: 100
+	active_state: 6
+	model: "/model/flare/tr_red.pmd"
+	scale_factor: 2
+}
+
+flare_traffic_light: flare.traffic.red.blink
+{
+	ambient_color: (0.0000, 0.0000, 0.0000)
+	diffuse_color: ( 0.15632, 0.0, 0.0)
+	specular_color: ( 0.15911, 0.0, 0.0)
+
+	type: spot
+
+	range: 15.0
+	cut_range: 19.0
+	inner_angle: 20.0
+	outer_angle: 90.0
+
+	dir_type: angle
+	flare_inner_angle: 40.0
+	flare_outer_angle: 110.0
+
+	pitch_offset: -65
+	fade_distance: 200
+	fade_span: 100
+	active_state: 3
+	blink_delay_on: 0.5
+	blink_delay_off: 0.5
+	model: "/model/flare/tr_red.pmd"
+	scale_factor: 2
+}
+
+flare_traffic_light: flare.traffic.red.blink.shift
+{
+	ambient_color: (0.0000, 0.0000, 0.0000)
+	diffuse_color: ( 0.15632, 0.0, 0.0)
+	specular_color: ( 0.15911, 0.0, 0.0)
+
+	type: spot
+
+	range: 15.0
+	cut_range: 19.0
+	inner_angle: 20.0
+	outer_angle: 90.0
+
+	dir_type: angle
+	flare_inner_angle: 40.0
+	flare_outer_angle: 110.0
+
+	pitch_offset: -65
+	fade_distance: 200
+	fade_span: 100
+	active_state: 3
+	blink_delay_on: 0.5
+	blink_delay_off: 0.5
+	blink_cycle_shift: 0.5
+	model: "/model/flare/tr_red.pmd"
+	scale_factor: 2
+}
+
+flare_traffic_light: flare.traffic.yellow
+{
+	ambient_color: (0.0000, 0.0000, 0.0000)
+	diffuse_color: ( 0.15632, 0.1, 0.0)
+	specular_color: ( 0.15911, 0.1, 0.0)
+
+	type: spot
+
+	range: 15.0
+	cut_range: 19.0
+	inner_angle: 20.0
+	outer_angle: 90.0
+
+	dir_type: angle
+	flare_inner_angle: 40.0
+	flare_outer_angle: 110.0
+
+	pitch_offset: -65
+	fade_distance: 200
+	fade_span: 100
+	active_state: 5
+	model: "/model/flare/tr_yellow.pmd"
+	scale_factor: 2
+}
+
+flare_traffic_light: flare.traffic.yellow.blink
+{
+	ambient_color: (0.0000, 0.0000, 0.0000)
+	diffuse_color: ( 0.15632, 0.1, 0.0)
+	specular_color: ( 0.15911, 0.1, 0.0)
+
+	type: spot
+
+	range: 15.0
+	cut_range: 19.0
+	inner_angle: 20.0
+	outer_angle: 90.0
+
+	dir_type: angle
+	flare_inner_angle: 40.0
+	flare_outer_angle: 110.0
+
+	pitch_offset: -65
+	fade_distance: 200
+	fade_span: 100
+	active_state: 5
+	blink_delay_on: 0.5
+	blink_delay_off: 0.5
+	model: "/model/flare/tr_yellow.pmd"
+	scale_factor: 2
+}
+
+flare_traffic_light: flare.traffic.yellow.blink.sleep
+{
+	ambient_color: (0.0000, 0.0000, 0.0000)
+	diffuse_color: ( 0.15632, 0.1, 0.0)
+	specular_color: ( 0.15911, 0.1, 0.0)
+
+	type: spot
+
+	range: 15.0
+	cut_range: 19.0
+	inner_angle: 20.0
+	outer_angle: 90.0
+
+	dir_type: angle
+	flare_inner_angle: 40.0
+	flare_outer_angle: 110.0
+
+	pitch_offset: -65
+	fade_distance: 200
+	fade_span: 100
+	active_state: 32
+	blink_delay_on: 1.0
+	blink_delay_off: 1.0
+	model: "/model/flare/tr_yellow.pmd"
+	scale_factor: 2
+}
+
+flare_traffic_light: flare.traffic.white.blink
+{
+	ambient_color: (0.0000, 0.0000, 0.0000)
+	diffuse_color: ( 0.15632, 0.1, 0.1)
+	specular_color: ( 0.15911, 0.1, 0.1)
+
+	type: spot
+
+	range: 15.0
+	cut_range: 19.0
+	inner_angle: 20.0
+	outer_angle: 90.0
+
+	dir_type: angle
+	flare_inner_angle: 40.0
+	flare_outer_angle: 110.0
+
+	pitch_offset: -65
+	fade_distance: 200
+	fade_span: 100
+	active_state: 8
+	blink_delay_on: 0.5
+	blink_delay_off: 0.5
+	model: "/model/flare/tr_white.pmd"
+	scale_factor: 2
+}
+
+flare_traffic_light: flare.traffic.yellow.blink.uk
+{
+	ambient_color: (0.0000, 0.0000, 0.0000)
+	diffuse_color: ( 0.15632, 0.1, 0.0)
+	specular_color: ( 0.15911, 0.1, 0.0)
+
+	type: spot
+
+	range: 15.0
+	cut_range: 19.0
+	inner_angle: 20.0
+	outer_angle: 90.0
+
+	dir_type: angle
+	flare_inner_angle: 40.0
+	flare_outer_angle: 110.0
+
+	pitch_offset: -65
+	fade_distance: 200
+	fade_span: 100
+	active_state: 1
+	blink_delay_on: 10000.0
+	blink_delay_off: 10000
+	model: "/model/flare/tr_yellow.pmd"
+	scale_factor: 2
+}
+
+flare_traffic_light: flare.traffic.red.blink.uk
+{
+	ambient_color: (0.0000, 0.0000, 0.0000)
+	diffuse_color: ( 0.15632, 0.0, 0.0)
+	specular_color: ( 0.15911, 0.0, 0.0)
+
+	type: spot
+
+	range: 15.0
+	cut_range: 19.0
+	inner_angle: 20.0
+	outer_angle: 90.0
+
+	dir_type: angle
+	flare_inner_angle: 40.0
+	flare_outer_angle: 110.0
+
+	pitch_offset: -65
+	fade_distance: 200
+	fade_span: 100
+	active_state: 3
+	blink_delay_on: 0.5
+	blink_delay_off: 0.5
+	blink_cycle_shift: 1.0
+	model: "/model/flare/tr_red.pmd"
+	scale_factor: 2
+}
+
+flare_traffic_light: flare.traffic.red.blink.shift.uk
+{
+	ambient_color: (0.0000, 0.0000, 0.0000)
+	diffuse_color: ( 0.15632, 0.0, 0.0)
+	specular_color: ( 0.15911, 0.0, 0.0)
+
+	type: spot
+
+	range: 15.0
+	cut_range: 19.0
+	inner_angle: 20.0
+	outer_angle: 90.0
+
+	dir_type: angle
+	flare_inner_angle: 40.0
+	flare_outer_angle: 110.0
+
+	pitch_offset: -65
+	fade_distance: 200
+	fade_span: 100
+	active_state: 3
+	blink_delay_on: 0.5
+	blink_delay_off: 0.5
+	blink_cycle_shift: 1.5
+	model: "/model/flare/tr_red.pmd"
+	scale_factor: 2
+}
+
+flare_traffic_light: flare.traffic.red.toll
+{
+	ambient_color: (0.0000, 0.0000, 0.0000)
+	diffuse_color: ( 0.15632, 0.0, 0.0)
+	specular_color: ( 0.15911, 0.0, 0.0)
+
+	type: spot
+
+	range: 15.0
+	cut_range: 19.0
+	inner_angle: 20.0
+	outer_angle: 90.0
+
+	dir_type: angle
+	flare_inner_angle: 40.0
+	flare_outer_angle: 110.0
+
+	pitch_offset: -65
+	fade_distance: 200
+	fade_span: 100
+	active_state: 7
+	model: "/model/flare/tr_red.pmd"
+	scale_factor: 2
+}
+
+}

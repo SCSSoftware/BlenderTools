@@ -1,0 +1,37 @@
+SiiNunit
+{
+accessory_truck_data : vehicle.man.tgx.sample
+{
+	info[]: "@@brand_man@@ Sample"
+	info[]: "@@series_man_tgx@@ Sample"
+
+	behind_camera: camera.behind.basic
+	interior_camera: camera.interior.man.tgx
+	interior_camera_oculus: camera.interior.man.tgx.oculus
+	bumper_camera: camera.bumper.basic
+	window_camera: camera.window.basic
+	cabin_camera: camera.cabin.basic
+	wheel_camera: camera.wheel.basic
+	top_camera: camera.top.basic
+	tv_camera: camera.tv.basic
+	wander_camera: camera.wander
+	debug_camera: camera.debug
+
+	fallback[]: "chassis|4x2.sii"
+	fallback[]: "cabin|xl_cab.sii"
+	fallback[]: "interior|standard_low.sii"
+	fallback[]: "engine|d2066_235.sii"
+	fallback[]: "transmission|12_speed.sii"
+	fallback[]: "f_rim|steel.sii"
+	fallback[]: "f_tire|1.sii"
+	fallback[]: "r_rim|steel.sii"
+	fallback[]: "r_tire|1.sii"
+	fallback[]: "paint_job|color0.sii"
+	fallback[]: "head_light|standard.sii"
+
+	require[]: mirror
+	require[]: doorstep
+	require[]: cab_doorstep
+	require[]: doorhndl
+}
+}

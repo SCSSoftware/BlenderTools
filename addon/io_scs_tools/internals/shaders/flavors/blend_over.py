@@ -19,6 +19,9 @@
 # Copyright (C) 2015: SCS Software
 
 
+FLAVOR_ID = "blend_over"
+
+
 def init(node_tree, alpha_from, alpha_to):
     """Initialize blend over.
 
@@ -32,3 +35,27 @@ def init(node_tree, alpha_from, alpha_to):
 
     # links creation
     node_tree.links.new(alpha_to, alpha_from)
+
+    node_tree[FLAVOR_ID] = True
+
+
+def delete(node_tree):
+    """Delete blend over from node tree.
+
+    :param node_tree: node tree from which blend over should be deleted
+    :type node_tree: bpy.types.NodeTree
+    """
+
+    if node_tree[FLAVOR_ID] in node_tree:
+        del node_tree[FLAVOR_ID]
+
+
+def is_set(node_tree):
+    """Check if flavor is set or not.
+
+    :param node_tree: node tree which should be checked for existance of this flavor
+    :type node_tree: bpy.types.NodeTree
+    :return: True if flavor exists; False otherwise
+    :rtype: bool
+    """
+    return FLAVOR_ID in node_tree and node_tree[FLAVOR_ID]

@@ -19,11 +19,11 @@
 # Copyright (C) 2013-2014: SCS Software
 
 from io_scs_tools.properties import action
-from io_scs_tools.properties import armature
 from io_scs_tools.properties import material
 from io_scs_tools.properties import mesh
 from io_scs_tools.properties import object
 from io_scs_tools.properties import scene
+from io_scs_tools.properties import world
 
 from io_scs_tools.properties.dynamic import scene as scene_dynamic
 from io_scs_tools.properties.dynamic import object as object_dynamic

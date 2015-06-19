@@ -34,12 +34,12 @@ class Stream:
         UV = "_UV"  # NOTE: there can be up to 9 uv streams
         TUV = "_TUV"  # NOTE: there can be up to 9 tuv streams
 
-    format = ""  # defined by type of tag
-    tag = Types.POSITION
-    tag_index = -1  # used for UV and TUV
+    _format = ""  # defined by type of tag
+    _tag = Types.POSITION
+    _tag_index = -1  # used for UV and TUV
 
-    aliases = {}
-    data = []
+    _aliases = {}
+    _data = []
 
     def __init__(self, stream_type, index):
         """Constructor for stream with given type and index.
@@ -51,27 +51,27 @@ class Stream:
         :type index: int
         """
 
-        self.aliases = {}
-        self.data = []
+        self._aliases = {}
+        self._data = []
 
-        self.tag = stream_type
+        self._tag = stream_type
 
         if stream_type == Stream.Types.POSITION:
-            self.format = "FLOAT3"
+            self._format = "FLOAT3"
         elif stream_type == Stream.Types.NORMAL:
-            self.format = "FLOAT3"
+            self._format = "FLOAT3"
         elif stream_type == Stream.Types.TANGENT:
-            self.format = "FLOAT4"
+            self._format = "FLOAT4"
         elif stream_type == Stream.Types.RGB:
-            self.format = "FLOAT3"
+            self._format = "FLOAT3"
         elif stream_type == Stream.Types.RGBA:
-            self.format = "FLOAT4"
+            self._format = "FLOAT4"
         elif stream_type == Stream.Types.UV:
-            self.tag_index = index
-            self.format = "FLOAT2"
+            self._tag_index = index
+            self._format = "FLOAT2"
         elif stream_type == Stream.Types.TUV:
-            self.tag_index = index
-            self.format = "UNKNOWN"  # TODO: ask someone what is actually tuv stream
+            self._tag_index = index
+            self._format = "UNKNOWN"  # TODO: ask someone what is actually tuv stream
 
     def add_entry(self, value):
         """Adds new entry to data of stream.
@@ -82,20 +82,20 @@ class Stream:
         :rtype: bool
         """
 
-        if self.tag == Stream.Types.POSITION and len(value) != 3:
+        if self._tag == Stream.Types.POSITION and len(value) != 3:
             return False
-        if self.tag == Stream.Types.NORMAL and len(value) != 3:
+        if self._tag == Stream.Types.NORMAL and len(value) != 3:
             return False
-        if self.tag == Stream.Types.TANGENT and len(value) != 4:
+        if self._tag == Stream.Types.TANGENT and len(value) != 4:
             return False
-        if self.tag == Stream.Types.RGB and len(value) != 3:
+        if self._tag == Stream.Types.RGB and len(value) != 3:
             return False
-        if self.tag == Stream.Types.RGBA and len(value) != 4:
+        if self._tag == Stream.Types.RGBA and len(value) != 4:
             return False
-        if self.tag == Stream.Types.UV and len(value) != 2:
+        if self._tag == Stream.Types.UV and len(value) != 2:
             return False
 
-        self.data.append(tuple(value))
+        self._data.append(tuple(value))
         return True
 
     def add_alias(self, alias):
@@ -108,8 +108,8 @@ class Stream:
         :rtype: bool
         """
 
-        if alias not in self.aliases:
-            self.aliases[alias] = 1
+        if alias not in self._aliases:
+            self._aliases[alias] = 1
             return True
 
         return False
@@ -120,7 +120,7 @@ class Stream:
         :return: size of stream
         :rtype: int
         """
-        return len(self.data)
+        return len(self._data)
 
     def get_tag(self):
         """Gets the tag of the stream
@@ -129,10 +129,10 @@ class Stream:
         :rtype: str
         """
 
-        if -1 < self.tag_index < 10:
-            return self.tag + str(self.tag_index)
+        if -1 < self._tag_index < 10:
+            return self._tag + str(self._tag_index)
         else:
-            return self.tag
+            return self._tag
 
     def get_as_section(self):
         """Gets stream represented with SectionData structure class.
@@ -142,18 +142,18 @@ class Stream:
         """
 
         section = _SectionData("Stream")
-        section.props.append(("Format", self.format))
+        section.props.append(("Format", self._format))
 
-        if -1 < self.tag_index < 10:
-            section.props.append(("Tag", self.tag + str(self.tag_index)))
+        if -1 < self._tag_index < 10:
+            section.props.append(("Tag", self._tag + str(self._tag_index)))
         else:
-            section.props.append(("Tag", self.tag))
+            section.props.append(("Tag", self._tag))
 
-        if len(self.aliases) > 0:
-            aliases = sorted(self.aliases.keys())
+        if len(self._aliases) > 0:
+            aliases = sorted(self._aliases.keys())
             section.props.append(("AliasCount", len(aliases)))
             section.props.append(("Aliases", aliases))
 
-        section.data = self.data
+        section.data = self._data
 
         return section

@@ -1,0 +1,12 @@
+SiiNunit
+{
+accessory_addon_data : shape1.man.tgx.sample.sideskirt
+{
+	name: "@@stock_v8@@"
+	price: 17200
+	unlock: 10
+	icon: "sideskirt_02_man_tgx"
+	exterior_model: "/vehicle/truck/upgrade/sideskirts/man_tgx/sideskirt_plate.pmd"
+	suitable_for[]: "4x2.man.tgx.sample.chassis"
+}
+}

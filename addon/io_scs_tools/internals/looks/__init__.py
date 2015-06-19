@@ -103,7 +103,7 @@ def apply_active_look(root_obj, force_apply=False):
 
     look_data = root_obj[_MAIN_DICT][look_id_str]
     for material in __collect_materials__(root_obj):
-        lprint("\nD Applying material: %r:", (material.name,))
+        lprint("D Applying material: %r:", (material.name,))
         mat_id_str = str(material.scs_props.id)
 
         if mat_id_str not in look_data:
@@ -112,7 +112,7 @@ def apply_active_look(root_obj, force_apply=False):
 
         mat_data = look_data[mat_id_str]
         for prop in mat_data:
-            lprint("D |- attr set: %r => %r", (prop, mat_data[prop]))
+            lprint("S |- attr set: %r => %r", (prop, mat_data[prop]))
 
             different = False  # apply value change and invoke update only if property is different
             if isinstance(mat_data[prop], Iterable) and "CollectionProperty" in mat_data[prop]:
@@ -139,7 +139,7 @@ def apply_active_look(root_obj, force_apply=False):
             valid_prefix = (prop.startswith("shader_attribute") or prop.startswith("shader_texture"))
             is_not_ignored = not ((prop.startswith("shader_texture") and prop.endswith(_IGNORED_TEXTURE_PROPS)) or prop in _IGNORED_PROPS)
             if prop not in mat_data and valid_prefix and is_not_ignored:
-                lprint("D |- attr unset: %r", (prop,))
+                lprint("S |- attr unset: %r", (prop,))
                 material.scs_props.property_unset(prop)
 
 
@@ -338,7 +338,7 @@ def __create_material_entry__(material):
     for key in material.scs_props.keys():
 
         if (key.startswith("shader_texture_") and key.endswith(_IGNORED_TEXTURE_PROPS)) or key in _IGNORED_PROPS:
-            lprint("D Ignoring property in create material entry: %r", (key,))
+            lprint("S Ignoring property in create material entry: %r", (key,))
             continue
 
         curr_prop = getattr(material.scs_props, key, "INVALID")

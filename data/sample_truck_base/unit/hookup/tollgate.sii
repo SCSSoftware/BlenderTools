@@ -1,0 +1,323 @@
+SiiNunit
+{
+tollgate: tollgate.onetime
+{
+	model: "/model/activation/tollgate.pmd"
+	animation: "/model/activation/tollgate.pma"
+	type: one_time
+	trigger_distance: 3.0
+	reset_distance: 5.0
+	# overal price in euro
+	toll: 10
+}
+
+tollgate: tollgate.start
+{
+	model: "/model/activation/tollgate.pmd"
+	animation: "/model/activation/tollgate.pma"
+	type: start
+	trigger_distance: 3.0
+	reset_distance: 5.0
+
+	# no price
+
+}
+
+tollgate: tollgate.end
+{
+	model: "/model/activation/tollgate.pmd"
+	animation: "/model/activation/tollgate.pma"
+	type: end
+	trigger_distance: 3.0
+	reset_distance: 5.0
+	# price in euro per km
+	toll: 0.255
+}
+
+tollgate: tollgate.onetime.it
+{
+	model: "/model/activation/tollgate.pmd"
+	animation: "/model/activation/tollgate.pma"
+	type: one_time
+	trigger_distance: 3.0
+	reset_distance: 5.0
+	# overal price in euro
+	toll: 7.4
+}
+
+tollgate: tollgate.end.it
+{
+	model: "/model/activation/tollgate.pmd"
+	animation: "/model/activation/tollgate.pma"
+	type: end
+	trigger_distance: 3.0
+	reset_distance: 5.0
+	# price in euro per km
+	toll: 0.18
+}
+tollgate: tollgate.end.it_fr
+{
+	model: "/model/activation/tollgate.pmd"
+	animation: "/model/activation/tollgate.pma"
+	type: end
+	trigger_distance: 3.0
+	reset_distance: 5.0
+	# price in euro per km
+	toll: 0.5
+}
+tollgate: tollgate.end.fr_alps
+{
+	model: "/model/activation/tollgate.pmd"
+	animation: "/model/activation/tollgate.pma"
+	type: end
+	trigger_distance: 3.0
+	reset_distance: 5.0
+	# price in euro per km
+	toll: 0.58
+}
+tollgate: tollgate.end.fr
+{
+	model: "/model/activation/tollgate.pmd"
+	animation: "/model/activation/tollgate.pma"
+	type: end
+	trigger_distance: 3.0
+	reset_distance: 5.0
+	# price in euro per km
+	toll: 0.45
+}
+tollgate: tollgate.end.fr.metz_reims
+{
+	model: "/model/activation/tollgate.pmd"
+	animation: "/model/activation/tollgate.pma"
+	type: end
+	trigger_distance: 3.0
+	reset_distance: 5.0
+	# price in euro per km
+	toll: 0.51
+}
+tollgate: tollgate.end.fr.reims_paris
+{
+	model: "/model/activation/tollgate.pmd"
+	animation: "/model/activation/tollgate.pma"
+	type: end
+	trigger_distance: 3.0
+	reset_distance: 5.0
+	# price in euro per km
+	toll: 0.6
+}
+tollgate: tollgate.onetime.pl
+{
+	model: "/model/activation/tollgate.pmd"
+	animation: "/model/activation/tollgate.pma"
+	type: one_time
+	trigger_distance: 3.0
+	reset_distance: 5.0
+	# overal price in euro
+	toll: 18.5
+}
+tollgate: tollgate.onetime.au
+{
+	model: "/model/activation/tollgate.pmd"
+	animation: "/model/activation/tollgate.pma"
+	type: one_time
+	trigger_distance: 3.0
+	reset_distance: 5.0
+	# overal price in euro
+	toll: 61
+}
+tollgate: tollgate.onetime.arlberg
+{
+	model: "/model/activation/tollgate.pmd"
+	animation: "/model/activation/tollgate.pma"
+	type: one_time
+	trigger_distance: 3.0
+	reset_distance: 5.0
+	# overal price in euro
+	toll: 23
+}
+tollgate: tollgate.end.pl.a1
+{
+	model: "/model/activation/tollgate.pmd"
+	animation: "/model/activation/tollgate.pma"
+	type: end
+	trigger_distance: 3.0
+	reset_distance: 5.0
+	# price in euro per km
+	toll: 0.96
+}
+
+tollgate: tollgate.end.pl.a2_1
+{
+	model: "/model/activation/tollgate.pmd"
+	animation: "/model/activation/tollgate.pma"
+	type: end
+	trigger_distance: 3.0
+	reset_distance: 5.0
+	# price in euro per km
+	toll: 0.62
+}
+
+tollgate: tollgate.end.pl.a2_2
+{
+	model: "/model/activation/tollgate.pmd"
+	animation: "/model/activation/tollgate.pma"
+	type: end
+	trigger_distance: 3.0
+	reset_distance: 5.0
+	# price in euro per km
+	toll: 0.665
+}
+
+tollgate: tollgate.end.pl.a2_3
+{
+	model: "/model/activation/tollgate.pmd"
+	animation: "/model/activation/tollgate.pma"
+	type: end
+	trigger_distance: 3.0
+	reset_distance: 5.0
+	# price in euro per km
+	toll: 0.123
+}
+
+tollgate: tollgate.end.pl.a4_1
+{
+	model: "/model/activation/tollgate.pmd"
+	animation: "/model/activation/tollgate.pma"
+	type: end
+	trigger_distance: 3.0
+	reset_distance: 5.0
+	# price in euro per km
+	toll: 0.12
+}
+
+tollgate: tollgate.end.pl.a4_2
+{
+	model: "/model/activation/tollgate.pmd"
+	animation: "/model/activation/tollgate.pma"
+	type: end
+	trigger_distance: 3.0
+	reset_distance: 5.0
+	# price in euro per km
+	toll: 0.5
+}
+
+tollgate: tollgate.ube
+{
+	model: "/model/activation/tollgate.pmd"
+	animation: "/model/activation/tollgate.pma"
+	type: one_time
+	trigger_distance: 3.0
+	reset_distance: 5.0
+	toll: 20.90
+}
+
+tollgate: tollgate.bos
+{
+	model: "/model/activation/tollgate.pmd"
+	animation: "/model/activation/tollgate.pma"
+	type: one_time
+	trigger_distance: 3.0
+	reset_distance: 5.0
+	toll: 8.82
+}
+
+tollgate: tollgate.v1_s1_b1_i1
+{
+	model: "/model/activation/tollgate.pmd"
+	animation: "/model/activation/tollgate.pma"
+	type: one_time
+	trigger_distance: 3.0
+	reset_distance: 5.0
+	toll: 10.5
+}
+
+tollgate: tollgate.v2_s2_b1_i1
+{
+	model: "/model/activation/tollgate.pmd"
+	animation: "/model/activation/tollgate.pma"
+	type: one_time
+	trigger_distance: 3.0
+	reset_distance: 5.0
+	toll: 93
+}
+
+tollgate: tollgate.v3_s1_b2_i2
+{
+	model: "/model/activation/tollgate.pmd"
+	animation: "/model/activation/tollgate.pma"
+	type: one_time
+	trigger_distance: 3.0
+	reset_distance: 5.0
+	toll: 11.5
+}
+
+tollgate: tollgate.v4_s2_b2_i2
+{
+	model: "/model/activation/tollgate.pmd"
+	animation: "/model/activation/tollgate.pma"
+	type: one_time
+	trigger_distance: 3.0
+	reset_distance: 5.0
+	toll: 14.5
+}
+
+tollgate: tollgate.onetime_19
+{
+	model: "/model/activation/tollgate.pmd"
+	animation: "/model/activation/tollgate.pma"
+	type: one_time
+	trigger_distance: 3.0
+	reset_distance: 5.0
+	toll: 19
+}
+
+tollgate: tollgate.onetime_7
+{
+	model: "/model/activation/tollgate.pmd"
+	animation: "/model/activation/tollgate.pma"
+	type: one_time
+	trigger_distance: 3.0
+	reset_distance: 5.0
+	toll: 7
+}
+
+tollgate: tollgate.onetime_7_5
+{
+	model: "/model/activation/tollgate.pmd"
+	animation: "/model/activation/tollgate.pma"
+	type: one_time
+	trigger_distance: 3.0
+	reset_distance: 5.0
+	toll: 7.5
+}
+
+tollgate: tollgate.onetime_246
+{
+	model: "/model/activation/tollgate.pmd"
+	animation: "/model/activation/tollgate.pma"
+	type: one_time
+	trigger_distance: 3.0
+	reset_distance: 5.0
+	toll: 246
+}
+
+tollgate: tollgate.onetime_234
+{
+	model: "/model/activation/tollgate.pmd"
+	animation: "/model/activation/tollgate.pma"
+	type: one_time
+	trigger_distance: 3.0
+	reset_distance: 5.0
+	toll: 234
+}
+
+tollgate: tollgate.onetime_12
+{
+	model: "/model/activation/tollgate.pmd"
+	animation: "/model/activation/tollgate.pma"
+	type: one_time
+	trigger_distance: 3.0
+	reset_distance: 5.0
+	toll: 12
+}
+}

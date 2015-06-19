@@ -18,6 +18,7 @@
 
 # Copyright (C) 2013-2014: SCS Software
 
+import bpy
 import math
 from io_scs_tools.internals import inventory as _inventory
 from io_scs_tools.internals.containers import pix as _pix_container
@@ -907,7 +908,7 @@ def load(filepath):
              map_neighbours) = _get_map_point_properties(section)
 
             if not map_name:
-                map_name = _name_utils.make_unique_name(object, str('Map_Point_Locator_' + str(map_index)))
+                map_name = _name_utils.get_unique("Map_Point_Locator", bpy.data.objects)
             # print('\nmap_name: %r' % map_name)
             # print('  map_visual_flags: %s' % map_visual_flags)
             # print('  map_nav_flags: %s' % map_nav_flags)

@@ -23,8 +23,8 @@ import os
 from io_scs_tools.utils.printout import lprint
 from io_scs_tools.utils import path as _path
 from io_scs_tools.utils import property as _property
-from io_scs_tools.utils import info as _info
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
+from io_scs_tools.utils.info import get_combined_ver_str
 from io_scs_tools.internals.containers import pix as _pix
 from io_scs_tools.internals.containers import sii as _sii
 from io_scs_tools.internals.structure import SectionData as _SectionData
@@ -51,14 +51,14 @@ def update_item_in_file(item_pointer, new_value):
     """Resaves config file with updated given item to a new value.
     The "item_pointer" variable must be in form of 'SectionName.PropertyName',
     example: 'Paths.ProjectPath'."""
-    # print('  > update_item_in_config_file...')
-    filepath = get_config_filepath()
-    ind = '    '
-    config_container = _pix.get_data_from_file(filepath, ind)
 
     if _get_scs_globals().config_update_lock:
         return False
     else:
+        filepath = get_config_filepath()
+        ind = '    '
+        config_container = _pix.get_data_from_file(filepath, ind)
+
         new_settings_container = []
         if config_container:
 
@@ -91,7 +91,7 @@ def update_shader_presets_path(scs_shader_presets_inventory, shader_presets_file
     :type shader_presets_filepath: str
     """
     # print('shader_presets_filepath: %r' % shader_presets_filepath)
-    if shader_presets_filepath.startswith(str(os.sep + os.sep)):  # RELATIVE PATH
+    if shader_presets_filepath.startswith("//"):  # RELATIVE PATH
         shader_presets_abs_path = _path.get_abs_path(shader_presets_filepath)
     else:
         shader_presets_abs_path = shader_presets_filepath
@@ -344,8 +344,7 @@ def gather_default():
         """Fills up "Header" section."""
         section = _SectionData("Header")
         section.props.append(("FormatVersion", 1))
-        blender_version, blender_build = _info.get_blender_version()
-        section.props.append(("Source", "Blender " + blender_version + blender_build + ", SCS Blender Tools " + str(_info.get_tools_version())))
+        section.props.append(("Source", get_combined_ver_str()))
         section.props.append(("Type", "Configuration"))
         section.props.append(("Note", "User settings of SCS Blender Tools"))
         author = bpy.context.user_preferences.system.author
@@ -416,7 +415,7 @@ def gather_default():
         section.props.append(("DisplayLocators", int(_property.get_default(bpy.types.SceneSCSProps.display_locators))))
         section.props.append(("LocatorSize", _property.get_default(bpy.types.SceneSCSProps.locator_size)))
         section.props.append(("LocatorEmptySize", _property.get_default(bpy.types.SceneSCSProps.locator_empty_size)))
-        section.props.append(("DisplayCurves", int(_property.get_default(bpy.types.SceneSCSProps.display_connections))))
+        section.props.append(("DisplayConnections", int(_property.get_default(bpy.types.SceneSCSProps.display_connections))))
         section.props.append(("CurveSegments", _property.get_default(bpy.types.SceneSCSProps.curve_segments)))
         section.props.append(("DisplayTextInfo", _property.get_default(bpy.types.SceneSCSProps.display_info)))
         return section
@@ -596,25 +595,24 @@ def apply_settings():
                         _get_scs_globals().sign_export = prop[1]
             elif section.type == "GlobalDisplay":
                 for prop in section.props:
-                    pass
-                if prop[0] in ("", "#"):
-                    pass
-                elif prop[0] == "DisplayLocators":
-                    bpy.context.scene.scs_props.display_locators = prop[1]
-                elif prop[0] == "LocatorSize":
-                    bpy.context.scene.scs_props.locator_size = float(prop[1])
-                elif prop[0] == "LocatorEmptySize":
-                    bpy.context.scene.scs_props.locator_empty_size = float(prop[1])
-                elif prop[0] == "DisplayConnections":
-                    bpy.context.scene.scs_props.display_connections = prop[1]
-                elif prop[0] == "CurveSegments":
-                    bpy.context.scene.scs_props.curve_segments = prop[1]
-                elif prop[0] == "OptimizedConnsDrawing":
-                    bpy.context.scene.scs_props.optimized_connections_drawing = prop[1]
-                elif prop[0] == "DisplayTextInfo":
-                    bpy.context.scene.scs_props.display_info = prop[1]
-                else:
-                    lprint('W Unrecognised item "%s" has been found in setting file! Skipping...', (str(prop[0]),))
+                    if prop[0] in ("", "#"):
+                        pass
+                    elif prop[0] == "DisplayLocators":
+                        bpy.context.scene.scs_props.display_locators = prop[1]
+                    elif prop[0] == "LocatorSize":
+                        bpy.context.scene.scs_props.locator_size = float(prop[1])
+                    elif prop[0] == "LocatorEmptySize":
+                        bpy.context.scene.scs_props.locator_empty_size = float(prop[1])
+                    elif prop[0] == "DisplayConnections":
+                        bpy.context.scene.scs_props.display_connections = prop[1]
+                    elif prop[0] == "CurveSegments":
+                        bpy.context.scene.scs_props.curve_segments = prop[1]
+                    elif prop[0] == "OptimizedConnsDrawing":
+                        bpy.context.scene.scs_props.optimized_connections_drawing = prop[1]
+                    elif prop[0] == "DisplayTextInfo":
+                        bpy.context.scene.scs_props.display_info = prop[1]
+                    else:
+                        lprint('W Unrecognised item "%s" has been found in setting file! Skipping...', (str(prop[0]),))
             elif section.type == "GlobalColors":
                 for prop in section.props:
                     if prop[0] in ("", "#"):

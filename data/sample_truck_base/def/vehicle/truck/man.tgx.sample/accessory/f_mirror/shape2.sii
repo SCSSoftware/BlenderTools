@@ -1,0 +1,17 @@
+SiiNunit
+{
+accessory_addon_data : shape2.man.tgx.sample.f_mirror
+{
+	name: "@@stock@@"
+	price: 1500
+	unlock: 0
+	icon: "f_mirror_01_man_tgx"
+	exterior_model: "/vehicle/truck/upgrade/mirror/man_tgx/front_mirror_02.pmd"
+	interior_model: "/vehicle/truck/upgrade/mirror/man_tgx/front_mirror_01_interior.pmd"
+	exterior_model_uk: "/vehicle/truck/upgrade/mirror/man_tgx/front_mirror_02_uk.pmd"
+	interior_model_uk: "/vehicle/truck/upgrade/mirror/man_tgx/front_mirror_01_interior_uk.pmd"
+	suitable_for[]: "xl_cab.man.tgx.sample.cabin"
+	suitable_for[]: "xlx_cab.man.tgx.sample.cabin"
+
+}
+}

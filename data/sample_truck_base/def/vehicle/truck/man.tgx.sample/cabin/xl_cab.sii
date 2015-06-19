@@ -1,0 +1,26 @@
+SiiNunit
+{
+accessory_cabin_data : xl_cab.man.tgx.sample.cabin
+{
+	name: "XL"
+	price: 15600
+	unlock: 0
+	icon: "cab_man_tgx_c"
+	model: "/vehicle/truck/man_tgx_sample/truck.pmd"
+	lods[]: "/vehicle/truck/man_tgx_sample/lod_02.pmd"
+	lods[]: "/vehicle/truck/man_tgx_sample/lod_03.pmd"
+	collision: "/vehicle/truck/man_tgx_sample/truck.pmc"
+	variant: c_cabin
+	variant_uk: c_cabin_uk
+	look: default
+	wiper_model: "/vehicle/truck/man_tgx_sample/wipers.pmd"
+	wiper_anim: "/vehicle/truck/man_tgx_sample/wipers.pma"
+	wiper_model_uk: "/vehicle/truck/man_tgx_sample/wipers_uk.pmd"
+	wiper_anim_uk: "/vehicle/truck/man_tgx_sample/wipers_uk.pma"
+	defaults[]: "/def/vehicle/truck/man.tgx.sample/accessory/doorhndl/shape1.sii"
+	defaults[]: "/def/vehicle/truck/man.tgx.sample/accessory/mirror/shape1.sii"
+	defaults[]: "/def/vehicle/truck/man.tgx.sample/paint_job/color0.sii"
+	defaults[]: "/def/vehicle/truck/man.tgx.sample/head_light/standard.sii"
+  defaults[]: "/def/vehicle/truck/man.tgx.sample/interior/standard_low.sii"
+}
+}

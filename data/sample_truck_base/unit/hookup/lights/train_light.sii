@@ -1,0 +1,19 @@
+SiiNunit
+{
+light_source : lamp.train.light
+{
+	ambient_color: (0.0000, 0.0000, 0.0000)
+	diffuse_color: (0.9047, 0.8632, 0.6038)
+	specular_color: (0.9911, 0.9911, 0.9387)
+
+	range: 30.0
+	cut_range: 20.0
+	inner_angle: 80.0
+	outer_angle: 120.0
+
+
+}
+
+
+
+}

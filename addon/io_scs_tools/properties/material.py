@@ -138,10 +138,21 @@ class MaterialSCSTools(bpy.types.PropertyGroup):
         """Class for saving float value of different auxiliary items
         """
 
+        def update_value(self, context):
+
+            __update_look__(self, context)
+
+            material = _material_utils.get_material_from_context(context)
+
+            if material:
+                _shader.set_attribute(material, self.aux_type, getattr(material.scs_props, "shader_attribute_" + self.aux_type, None))
+
         value = FloatProperty(
             default=0.0,
+            step=0.1,
+            precision=4,
             options={'HIDDEN'},
-            update=__update_look__
+            update=update_value
         )
         aux_type = StringProperty()  # used in update function to be able to identify which auxiliary is owning this item
 
@@ -155,7 +166,7 @@ class MaterialSCSTools(bpy.types.PropertyGroup):
             material = _material_utils.get_material_from_context(context)
 
             if material:
-                _shader.set_uv(material, self.texture_type, self.value)
+                _shader.set_uv(material, self.texture_type, self.value, self.tex_coord)
 
                 # synchronize all scs textures mappings that uses the same tex_coord field in current material
                 if "scs_shader_attributes" in material and "textures" in material["scs_shader_attributes"]:

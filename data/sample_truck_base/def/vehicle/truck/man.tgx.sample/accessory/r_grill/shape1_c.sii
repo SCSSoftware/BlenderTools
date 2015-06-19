@@ -1,0 +1,12 @@
+SiiNunit
+{
+accessory_addon_data : shape1_c.man.tgx.sample.r_grill
+{
+	name: "Mirage"
+	price: 2640
+	unlock: 1
+	icon: "r_grill_01"
+	exterior_model: "/vehicle/truck/upgrade/roofgrill/man_tgx/roofgrill_01_c.pmd"
+	suitable_for[]: "xl_cab.man.tgx.sample.cabin"
+}
+}

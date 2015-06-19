@@ -1,0 +1,9 @@
+SiiNunit
+{
+flare_vehicle: flare.vehicle.halogenl
+{
+	dir_type: wide
+	light_type: aux
+	model: "/model/flare/vehicle_halogenl.pmd"
+}
+}

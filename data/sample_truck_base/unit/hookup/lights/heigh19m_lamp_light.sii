@@ -1,0 +1,19 @@
+SiiNunit
+{
+light_source : heigh19m.lamp.light
+{
+	ambient_color: (0.0000, 0.0000, 0.0000)
+	diffuse_color: (0.9047, 0.8632, 0.6038)
+	specular_color: (0.9911, 0.9911, 0.9387)
+
+	range: 19.0
+	cut_range: 19.0
+	inner_angle: 70.0
+	outer_angle: 130.0
+	attenuation_start_range: 10
+
+	dir_type: all
+	model: "/model/flare/lamp_flare.pmd"
+	scale_factor: 2
+}
+}

@@ -38,6 +38,10 @@ def setup_nodes(material, effect, attr_dict, tex_dict, tex_uvs, recreate):
     :type recreate: bool
     """
 
+    # disable transparency when resetting material
+    if recreate:
+        material.use_transparency = False
+
     # gather possible flavors from effect name
     flavors = {}
     if effect.endswith(".a") or ".a." in effect:
@@ -50,8 +54,10 @@ def setup_nodes(material, effect, attr_dict, tex_dict, tex_uvs, recreate):
         material.transparency_method = "MASK"
         flavors["blend_over"] = True
 
-    if not ("alpha_test" in flavors or "blend_over" in flavors):
-        material.use_transparency = False
+    if (effect.endswith(".add") or ".add." in effect) and ".add.env" not in effect:
+        material.use_transparency = True
+        material.transparency_method = "MASK"
+        flavors["blend_add"] = True
 
     if effect.endswith(".tsnmapuv") or ".tsnmapuv." in effect:
         flavors["nmap"] = True
@@ -94,7 +100,7 @@ def set_texture(material, tex_type, texture):
     __setup_nodes__(material, material.scs_props.mat_effect_name, {}, {tex_type: texture}, {}, {}, False)
 
 
-def set_uv(material, tex_type, uv_layer):
+def set_uv(material, tex_type, uv_layer, tex_coord):
     """Set UV layer to given texture type in material.
 
     :param material: blender material
@@ -104,7 +110,22 @@ def set_uv(material, tex_type, uv_layer):
     :param uv_layer: uv layer name which should be assigned to this texture
     :type uv_layer: str
     """
-    __setup_nodes__(material, material.scs_props.mat_effect_name, {}, {}, {tex_type: uv_layer}, {}, False)
+
+    is_valid_input = True
+
+    if tex_type == "paintjob" and ".truckpaint" in material.scs_props.mat_effect_name:
+
+        # prevent setting the uv to shader if alternative uv is used and tex_coord alias is 1
+        # otherwise prevent usage when using 2 as tex_coord alias
+        if ".altuv" in material.scs_props.mat_effect_name:
+            if tex_coord == 1:
+                is_valid_input = False
+
+        elif tex_coord == 2:
+            is_valid_input = False
+
+    if is_valid_input:
+        __setup_nodes__(material, material.scs_props.mat_effect_name, {}, {}, {tex_type: uv_layer}, {}, False)
 
 
 def __setup_nodes__(material, effect, attr_dict, tex_dict, uvs_dict, flavors_dict, recreate):

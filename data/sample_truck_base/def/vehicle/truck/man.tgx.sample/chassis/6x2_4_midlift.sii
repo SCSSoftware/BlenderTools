@@ -1,0 +1,43 @@
+SiiNunit
+{
+accessory_chassis_data : 6x2_4_ml.man.tgx.sample.chassis
+{
+	name: "@@chassis@@ 6x2/4 @@midlift@@"
+	price: 52320
+	unlock: 12
+	info[]: "6x2/4 @@midlift@@"
+	info[]: "450 @@unit_l@@"
+	icon: "chassis_man_tgx_6x2"
+	model: "/vehicle/truck/man_tgx_sample/truck.pmd"
+	lods[]: "/vehicle/truck/man_tgx_sample/lod_02.pmd"
+	lods[]: "/vehicle/truck/man_tgx_sample/lod_03.pmd"
+	collision: "/vehicle/truck/man_tgx_sample/truck.pmc"
+	residual_travel[]: 0.12 	# 1st axle
+	residual_travel[]: 0.08 	# 2nd axle
+	residual_travel[]: 0.08 	# 3rd axle
+	tank_size: 450
+	variant: chs_6x2_4
+	look: default
+	defaults[]: "/def/vehicle/truck/man.tgx.sample/accessory/doorstep/shape1.sii"
+	defaults[]: "/def/vehicle/truck/man.tgx.sample/paint_job/color0.sii"
+	extended_shadow_texture: "/vehicle/truck/man_tgx_sample/shadow_6x2.tobj"
+	extended_shadow_intensity: 1.0
+	extended_shadow_fadeout_start: 10
+	extended_shadow_fadeout_length: 0
+	ui_shadow: "/vehicle/truck/man_tgx_sample/ui_shadow_6x2.pmd"
+	powered_wheel[0]: false	# front wheel left
+	powered_wheel[1]: false	# front wheel right
+	powered_wheel[2]: false	# rear wheel left
+	powered_wheel[3]: false	# rear wheel right
+	powered_wheel[4]: true	# rear wheel left
+	powered_wheel[5]: true	# rear wheel right
+	kerb_weight[0]:	5100.1
+	kerb_weight[1]:	1350.1
+	kerb_weight[2]:	1350.1
+	liftable_axle[0]: false
+	liftable_axle[1]: true
+	liftable_axle[2]: false
+
+  defaults[]: "/def/vehicle/truck/man.tgx.sample/chs_badges/chs_badges_26.sii"
+}
+}

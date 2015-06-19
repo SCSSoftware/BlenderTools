@@ -1,0 +1,11 @@
+SiiNunit
+{
+accessory_addon_data : 26.man.tgx.sample.chs_badge
+{
+	exterior_model: "/vehicle/truck/upgrade/badges/man_tgx/chs_badges_26.pmd"
+	suitable_for[]: "6x2.man.tgx.sample.chassis"
+	suitable_for[]: "6x2_tl.man.tgx.sample.chassis"
+	suitable_for[]: "6x2_4.man.tgx.sample.chassis"
+	suitable_for[]: "6x2_4_ml.man.tgx.sample.chassis"
+}
+}

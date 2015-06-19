@@ -1167,7 +1167,7 @@ def load_pim_file(
         elif section.type == 'Bones':
             if scs_globals.import_pis_file:
                 bones = _get_bones_properties(section, scs_globals.import_pis_file)
-                print('\nbones: %r' % str(bones))
+                # print('\nbones: %r' % str(bones))
 
         # SKINNING
         elif section.type == 'Skin':  # Always only one skin in current SCS game implementation.

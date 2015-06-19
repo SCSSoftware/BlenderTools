@@ -1,0 +1,280 @@
+SiiNunit
+{
+accessory_sound_data: ext.man.tgx.sample.sound
+{
+	exterior_sound: true
+
+	start: .start
+	stop: .stop
+	start_no_fuel: .startbad
+
+	engine[]: .e0
+	engine[]: .e1
+	engine[]: .e2
+	engine[]: .e3
+	engine[]: .e4
+	engine[]: .e5
+
+	engine_load[]: .el0
+	engine_load[]: .el1
+	engine_load[]: .el2
+	engine_load[]: .el3
+	engine_load[]: .el4
+	engine_load[]: .el5
+
+	turbo: .t
+
+	air_gear[0]: .airgear0
+	air_gear[1]: .airgear1
+	air_gear[2]: .airgear2
+
+	air_brake[0]: .airbrake0
+	air_brake[1]: .airbrake1
+
+	motor_brake: .mbrake
+	horn: .horn
+	reverse: .reverse
+
+@include "/def/vehicle/truck/common_sound_ext.sui"
+
+}
+
+sound_data: .start
+{
+	name: "/sound/truck/mercedes/ext/mercedes_start_ext.ogg"
+	looped: false
+}
+
+sound_data: .startbad
+{
+	name: "/sound/truck/mercedes/ext/mercedes_start_ext_bad.ogg"
+	looped: false
+}
+
+sound_data: .stop
+{
+	name: "/sound/truck/mercedes/ext/mercedes_stop_ext.ogg"
+	looped: false
+}
+
+sound_engine_data: .e0
+{
+	name: "/sound/truck/mercedes/ext/mercedes_idle_ext.ogg"
+
+	looped: true
+
+	pitch_reference: 600
+
+	min_rpm:  300.0
+	max_rpm: 700.0
+	volume: 0.4
+}
+
+sound_engine_data: .e1
+{
+	name: "/sound/truck/mercedes/ext/mercedes_0800rpm_ext.ogg"
+
+	looped: true
+
+	pitch_reference: 800
+
+	min_rpm: 600.0
+	max_rpm: 1000.0
+	volume: 0.6
+}
+
+sound_engine_data: .e2
+{
+	name: "/sound/truck/mercedes/ext/mercedes_1000rpm_ext.ogg"
+
+	looped: true
+
+	pitch_reference: 1000
+
+	min_rpm: 800.0
+	max_rpm: 1200.0
+	volume: 0.6
+}
+
+sound_engine_data: .e3
+{
+	name: "/sound/truck/mercedes/ext/mercedes_1200rpm_ext.ogg"
+
+	looped: true
+
+	pitch_reference: 1200
+
+	min_rpm: 1000.0
+	max_rpm: 1500.0
+	volume: 0.7
+}
+
+sound_engine_data: .e4
+{
+	name: "/sound/truck/mercedes/ext/mercedes_1500rpm_ext.ogg"
+
+	looped: true
+
+	pitch_reference: 1500
+
+	min_rpm: 1300.0
+	max_rpm: 1800.0
+	volume: 0.75
+}
+
+sound_engine_data: .e5
+{
+	name: "/sound/truck/mercedes/ext/mercedes_2100rpm_ext.ogg"
+
+	looped: true
+
+	pitch_reference: 2100
+
+	min_rpm: 1600.0
+	max_rpm: 3000.0
+	volume: 0.78
+}
+
+
+sound_engine_data: .el0
+{
+	name: "/sound/truck/mercedes/ext/mercedes_idle_exhaust_ext.ogg"
+
+	looped: true
+
+	pitch_reference: 500
+
+	min_rpm: 300.0
+	max_rpm: 700.0
+	volume: 0.8
+}
+
+sound_engine_data: .el1
+{
+	name: "/sound/truck/mercedes/ext/mercedes_0800rpm_exhaust_ext.ogg"
+
+	looped: true
+
+	pitch_reference: 800
+
+	min_rpm: 600.0
+	max_rpm: 1000.0
+	volume: 0.8
+}
+
+sound_engine_data: .el2
+{
+	name: "/sound/truck/mercedes/ext/mercedes_1000rpm_exhaust_ext.ogg"
+
+	looped: true
+
+	pitch_reference: 1000
+
+	min_rpm: 800.0
+	max_rpm: 1200.0
+	volume: 0.8
+}
+
+sound_engine_data: .el3
+{
+	name: "/sound/truck/mercedes/ext/mercedes_1200rpm_exhaust_ext.ogg"
+
+	looped: true
+
+	pitch_reference: 1200
+
+	min_rpm: 1000.0
+	max_rpm: 1500.0
+	volume: 0.85
+}
+
+sound_engine_data: .el4
+{
+	name: "/sound/truck/mercedes/ext/mercedes_1500rpm_exhaust_ext.ogg"
+
+	looped: true
+
+	pitch_reference: 1500
+
+	min_rpm: 1300.0
+	max_rpm: 1800.0
+	volume: 0.9
+}
+
+sound_engine_data: .el5
+{
+	name: "/sound/truck/mercedes/ext/mercedes_2100rpm_exhaust_ext.ogg"
+
+	looped: true
+
+	pitch_reference: 2000
+
+	min_rpm: 1600.0
+	max_rpm: 3000.0
+	volume: 0.95
+}
+
+sound_data: .t
+{
+	name: "/sound/truck/mercedes/ext/turbo_ext.ogg"
+	looped: true
+
+	volume: 0.5
+}
+
+sound_data: .airgear0
+{
+	name: "/sound/truck/mercedes/ext/gear_air_1.ogg"
+	volume: 0.6
+}
+
+sound_data: .airgear1
+{
+	name: "/sound/truck/mercedes/ext/gear_air_2.ogg"
+	volume: 0.6
+}
+
+sound_data: .airgear2
+{
+	name: "/sound/truck/mercedes/ext/gear_air_3.ogg"
+	volume: 0.6
+}
+
+sound_data: .airbrake0
+{
+	name: "/sound/truck/mercedes/ext/air_brake1.ogg"
+	looped: false
+}
+
+sound_data: .airbrake1
+{
+	name: "/sound/truck/mercedes/ext/air_brake2.ogg"
+	looped: false
+}
+
+sound_engine_data: .mbrake
+{
+	name: "/sound/truck/mercedes/ext/engine_brake.ogg"
+	looped: true
+
+	pitch_reference: 1850
+	min_rpm: 200.0
+	max_rpm: 3000.0
+}
+
+sound_data: .horn
+{
+	name: "/sound/truck/mercedes/ext/horn_loop.ogg"
+	looped: true
+}
+
+sound_data: .reverse
+{
+	name: "/sound/truck/mercedes/ext/reverse.ogg"
+	looped: true
+}
+
+
+@include "/def/vehicle/truck/common_sound_ext_data.sui"
+
+}

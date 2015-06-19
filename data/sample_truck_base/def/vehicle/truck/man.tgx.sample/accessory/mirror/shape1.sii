@@ -1,0 +1,15 @@
+SiiNunit
+{
+accessory_addon_data : man_shape1.man.tgx.sample.mirror
+{
+	name: "@@paint@@"
+	price: 4500
+	unlock: 9
+	icon: "mirror_01_man_tgx"
+	exterior_model: "/vehicle/truck/upgrade/mirror/man_tgx/mirror_01.pmd"
+	exterior_model_uk: "/vehicle/truck/upgrade/mirror/man_tgx/mirror_01_uk.pmd"
+	interior_model: "/vehicle/truck/upgrade/mirror/man_tgx/mirror_01_interior.pmd"
+	interior_model_uk: "/vehicle/truck/upgrade/mirror/man_tgx/mirror_01_interior_uk.pmd"
+	hide_in: 0x7E00
+}
+}

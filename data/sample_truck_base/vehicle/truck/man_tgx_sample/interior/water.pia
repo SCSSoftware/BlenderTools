@@ -1,0 +1,45 @@
+Header {
+    FormatVersion: 3
+    Source: "Blender 2.74.0 (hash: 000dfc0), SCS Blender Tools: 0.5.bfcf60f"
+    Type: "Animation"
+    Name: "water"
+}
+Global {
+    Skeleton: "anim.pis"
+    TotalTime: 0.125
+    BoneChannelCount: 1
+    CustomChannelCount: 0
+}
+BoneChannel {
+    Name: "joint29"
+    StreamCount: 2
+    KeyframeCount: 4
+    Stream {
+        Format: FLOAT
+        Tag: "_TIME"
+        0    ( &3d2aaaab )
+        1    ( &3d2aaaab )
+        2    ( &3d2aaaab )
+        3    ( &3d2aaaab )
+    }
+    Stream {
+        Format: FLOAT4x4
+        Tag: "_MATRIX"
+        0    (  &b9fad7a0  &3ef1e9f2  &3f619f40  &00000000
+                &bf01b07d  &3f427f71  &bed0aed7  &00000000
+                &bf5cb7db  &bee4b32e  &3e74bc12  &00000000
+                &bda2dc17  &bf0b5f12  &bf53cdfc  &3f800000 )
+        1    (  &b9fad5af  &3ef1e9f1  &3f619f41  &00000000
+                &be42eae7  &3f5d7c62  &beed8827  &00000000
+                &bf7b51b0  &be2c03f1  &3db75847  &00000000
+                &bda2dc17  &bf0b5f12  &bf53cdfc  &3f800000 )
+        2    (  &b9fad69a  &3ef1e9f1  &3f619f40  &00000000
+                &3e1733ae  &3f5f284a  &beef3aea  &00000000
+                &bf7d318d  &3e0507dc  &bd8fbc7a  &00000000
+                &bda2dc17  &bf0b5f12  &bf53cdfc  &3f800000 )
+        3    (  &b9fad580  &3ef1e9f2  &3f619f40  &00000000
+                &3ef004f8  &3f47524a  &bed59573  &00000000
+                &bf622096  &3ed36f8a  &be6331b3  &00000000
+                &bda2dc17  &bf0b5f12  &bf53cdfc  &3f800000 )
+    }
+}

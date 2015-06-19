@@ -1,0 +1,34 @@
+SiiNunit
+{
+accessory_interior_data: exclusive.low_uk.man.tgx.sample.interior
+{
+	name: "@@exclusive@@ UK"
+	price: 31080
+	unlock: 12
+	icon: "interior_man_tgx_lux_uk"
+
+	model: "/vehicle/truck/man_tgx_sample/interior/uk/model.pmd"
+	animated_model: "/vehicle/truck/man_tgx_sample/interior/uk/anim.pmd"
+	active_mirrors_part: a_e_mirrors
+	passive_mirrors_part: p_e_mirrors
+	look: look2
+	variant: low_roof_ex
+
+@include "animations_uk.sui"
+
+	dashboard_path:"/ui/dashboard/man_tgx.sii"
+  gps_path:"/ui/gps.sii"
+
+	left_hand_traffic: true
+
+	glass_panes[]: .man.tgx.sample.pane.front
+	glass_panes[]: .man.tgx.sample.pane.close
+	glass_panes[]: .man.tgx.sample.pane.far
+
+  suitable_for[]: "xl_cab.man.tgx.sample.cabin"
+
+@include "dashboard_color.sui"
+@include "seat_uk.sui"
+}
+@include "glass.dat"
+}

@@ -1,0 +1,12 @@
+SiiNunit
+{
+accessory_addon_data : shape1.man.tgx.sample.exhaust_r
+{
+	name: "Flow I"
+	price: 1560
+	unlock: 12
+	icon: "exhaust_01"
+	exterior_model: "/vehicle/truck/upgrade/exhaust/man_tgx/exhaust_01_r.pmd"
+	suitable_for[]: "shape1.man.tgx.sample.sideskirt"
+}
+}

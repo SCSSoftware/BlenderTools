@@ -1,0 +1,42 @@
+SiiNunit
+{
+model_particle : model.particle.fire2 {
+ gen_array: 1
+ gen_array[0]: _nameless.00D5.B2F8
+}
+
+particle_gen : _nameless.00D5.B2F8 {
+ list_order_up: false
+ blend_alpha: true
+ gen_pos: (0, 2, 0)
+ scale_acc: 5
+ rotation_speed: 80
+ alpha_blend_coef: &3e99999a
+ base_alpha: &3f4ccccd
+ alpha_attack_time: 1
+ flow_speed: (0, 2, 1)
+ flow_speed_acc: (10, 33, 19)
+ particle_size: (2, 2)
+ particle_size_var: (&3e947ae1, &3e999999)
+ particle_displacement: (8, 5, 5)
+ color_multiplier: 4294967295
+ key_pos: 5
+ key_pos[0]: 0
+ key_pos[1]: 53
+ key_pos[2]: 103
+ key_pos[3]: 167
+ key_pos[4]: 255
+ key_color: 5
+ key_color[0]: 4431601
+ key_color[1]: 946396
+ key_color[2]: 4276545
+ key_color[3]: 0
+ key_color[4]: 6776679
+ time_to_live: 3
+ particles_max_count: 47
+ relative_space: false
+ model_path: "/model/particle/smoke.pmd"
+ model_look: pipe
+}
+
+}

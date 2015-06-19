@@ -32,6 +32,7 @@ class ShowWarningMessage(bpy.types.Operator):
     """Used for saving message inside class to be able to retrieve it on popup draw."""
 
     is_modal = BoolProperty(default=False)
+    icon = StringProperty(default="ERROR")
     title = StringProperty(default="UNKWOWN")
     message = StringProperty(default="NO MESSAGE")
 
@@ -52,7 +53,7 @@ class ShowWarningMessage(bpy.types.Operator):
             col.label(line)
 
     def execute_popup(self, context):
-        context.window_manager.popup_menu(self.popup_draw, title=self.title, icon="ERROR")
+        context.window_manager.popup_menu(self.popup_draw, title=self.title, icon=self.icon)
         return {'FINISHED'}
 
     def execute(self, context):

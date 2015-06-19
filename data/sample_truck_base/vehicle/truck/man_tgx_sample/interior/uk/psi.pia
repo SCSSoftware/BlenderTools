@@ -1,0 +1,78 @@
+Header {
+    FormatVersion: 3
+    Source: "Blender 2.74.0 (hash: 000dfc0), SCS Blender Tools: 0.5.bfcf60f"
+    Type: "Animation"
+    Name: "psi"
+}
+Global {
+    Skeleton: "anim.pis"
+    TotalTime: 0.125
+    BoneChannelCount: 2
+    CustomChannelCount: 0
+}
+BoneChannel {
+    Name: "joint33"
+    StreamCount: 2
+    KeyframeCount: 4
+    Stream {
+        Format: FLOAT
+        Tag: "_TIME"
+        0    ( &3d2aaaab )
+        1    ( &3d2aaaab )
+        2    ( &3d2aaaab )
+        3    ( &3d2aaaab )
+    }
+    Stream {
+        Format: FLOAT4x4
+        Tag: "_MATRIX"
+        0    (  &b9fc08cf  &3ef1e9f6  &3f619f4c  &00000000
+                &befe928b  &3f43ba3d  &bed1ffd6  &00000000
+                &bf5e1cf0  &bee07710  &3e703044  &00000000
+                &3e1a654f  &bf0b5a8b  &bf53c805  &3f800000 )
+        1    (  &b9fc08c7  &3ef1e9f6  &3f619f4c  &00000000
+                &be3a25d3  &3f5dda37  &beedec2e  &00000000
+                &bf7bbc0c  &be2449a6  &3daf0d50  &00000000
+                &3e1a654f  &bf0b5a8b  &bf53c805  &3f800000 )
+        2    (  &b9fc0808  &3ef1e9f7  &3f619f4c  &00000000
+                &3e1ddcb8  &3f5eef17  &beeefd07  &00000000
+                &bf7cf08a  &3e0ae66c  &bd96088e  &00000000
+                &3e1a654f  &bf0b5a8b  &bf53c805  &3f800000 )
+        3    (  &b9fc0819  &3ef1e9f6  &3f619f4c  &00000000
+                &3ef206b1  &3f46d9a2  &bed5139c  &00000000
+                &bf619794  &3ed53443  &be65175f  &00000000
+                &3e1a654f  &bf0b5a8b  &bf53c805  &3f800000 )
+    }
+}
+BoneChannel {
+    Name: "joint35"
+    StreamCount: 2
+    KeyframeCount: 4
+    Stream {
+        Format: FLOAT
+        Tag: "_TIME"
+        0    ( &3d2aaaab )
+        1    ( &3d2aaaab )
+        2    ( &3d2aaaab )
+        3    ( &3d2aaaab )
+    }
+    Stream {
+        Format: FLOAT4x4
+        Tag: "_MATRIX"
+        0    (  &b9faccbe  &3ef1e9fc  &3f619f47  &00000000
+                &bef24131  &3f46bdc4  &bed5393a  &00000000
+                &bf6187e1  &bed59c25  &3e648b71  &00000000
+                &3d964712  &bf0b652e  &bf53c49a  &3f800000 )
+        1    (  &b9faca90  &3ef1e9fb  &3f619f47  &00000000
+                &be256ee9  &3f5ea626  &beeec561  &00000000
+                &bf7ca313  &be1207e9  &3d9b7a83  &00000000
+                &3d964712  &bf0b652e  &bf53c49a  &3f800000 )
+        2    (  &b9facac6  &3ef1e9fc  &3f619f47  &00000000
+                &3e2b8f55  &3f5e715e  &beee7560  &00000000
+                &bf7c61aa  &3e16f94f  &bda2f8a6  &00000000
+                &3d964712  &bf0b652e  &bf53c49a  &3f800000 )
+        3    (  &b9fac99e  &3ef1e9fc  &3f619f47  &00000000
+                &3ef4fc74  &3f462525  &bed451e3  &00000000
+                &bf60cab9  &3ed7d050  &be67e2a5  &00000000
+                &3d964712  &bf0b652e  &bf53c49a  &3f800000 )
+    }
+}

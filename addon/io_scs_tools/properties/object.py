@@ -19,7 +19,6 @@
 # Copyright (C) 2013-2014: SCS Software
 
 import bpy
-import os
 from bpy.props import (StringProperty,
                        BoolProperty,
                        CollectionProperty,
@@ -181,57 +180,80 @@ class ObjectAnimationInventory(bpy.types.PropertyGroup):
         :type context: bpy.types.Context
         """
         active_object = context.active_object
-        if active_object:
-            if active_object.animation_data:
-                action = active_object.animation_data.action
-                if action:
-                    scs_root_object = _object_utils.get_scs_root(active_object)
-                    if scs_root_object:
-                        active_scs_animation = scs_root_object.scs_props.active_scs_animation
-                        scs_object_animation_inventory = scs_root_object.scs_object_animation_inventory
-                        animation = scs_object_animation_inventory[active_scs_animation]
-                        _animation_utils.set_fps_for_preview(
-                            context.scene,
-                            animation.length,
-                            action.scs_props.anim_export_step,
-                            animation.anim_start,
-                            animation.anim_end,
-                        )
+        if active_object and active_object.type == "ARMATURE" and active_object.animation_data:
+            action = active_object.animation_data.action
+            if action:
+                _animation_utils.set_fps_for_preview(
+                    context.scene,
+                    self.length,
+                    self.anim_start,
+                    self.anim_end,
+                )
+
+    def anim_range_update(self, context):
+        """If start or end frame are changed frame range in scene should be adopted to new values
+        together with FPS reset.
+
+        """
+
+        active_object = context.active_object
+        if active_object and active_object.type == "ARMATURE" and active_object.animation_data:
+            action = active_object.animation_data.action
+            if action:
+                _animation_utils.set_frame_range(context.scene, self.anim_start, self.anim_end)
+                _animation_utils.set_fps_for_preview(
+                    context.scene,
+                    self.length,
+                    self.anim_start,
+                    self.anim_end,
+                )
+
+    def anim_action_update(self, context):
+        """Set action on armature if changed.
+        """
+
+        active_object = context.active_object
+        if active_object and active_object.type == "ARMATURE":
+
+            # ensure animation data block to be able to set action
+            if active_object.animation_data is None:
+                active_object.animation_data_create()
+
+            if self.action in bpy.data.actions:
+                active_object.animation_data.action = bpy.data.actions[self.action]
+            else:
+                active_object.animation_data.action = None
 
     name = StringProperty(name="Animation Name", default=_VARIANT_consts.default_name)
-    active = BoolProperty(name="Animation Activation Status", default=True)
     export = BoolProperty(
-        name="Export Animation",
-        description="Include actual Animation on Export and write it as an SCS Animation file (PIA)",
-        default=False,
+        name="Export Inclusion",
+        description="Include this SCS animation on Export and write it as SCS Animation file (PIA)",
+        default=True,
     )
     action = StringProperty(
         name="Animation Action",
+        description="Action used for this SCS animation",
         default="",
+        options={'HIDDEN'},
+        update=anim_action_update
     )
     anim_start = IntProperty(
         name="Animation Start",
-        description="Start frame for this animation",
+        description="Action start frame for this SCS animation",
         default=1,
         options={'HIDDEN'},
+        update=anim_range_update
     )
     anim_end = IntProperty(
         name="Animation End",
-        description="End frame for this animation",
+        description="Action end frame for this SCS animation",
         default=250,
         options={'HIDDEN'},
-    )
-    anim_export_filepath = StringProperty(
-        name="Alternative Export Path",
-        description="Alternative custom file path for export of animation",
-        # default=utils.get_cgfx_templates_filepath(),
-        default="",
-        subtype="FILE_PATH",
-        # update=anim_export_filepath_update,
+        update=anim_range_update
     )
     length = FloatProperty(
         name="Animation Length",
-        description="Animation total length (in seconds)",
+        description="Total length of this SCS Animation (in seconds)",
         default=10.0,
         min=0.1,
         options={'HIDDEN'},
@@ -252,6 +274,8 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
     locators_orig_draw_type = StringProperty(name="Locator Original Draw Type")
 
     def empty_object_type_items(self, context):
+        """Returns object type items in real time, because of accessing to custom icons.
+        """
         return [
             ('None', "None", "Normal Blender Empty object", 'X_VEC', 0),
             ('SCS_Root', "Root Object", "Empty object will become a 'SCS Root Object'", get_icon(_ICON_TYPES.scs_root), 1),
@@ -279,70 +303,19 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
         update=update_empty_object_type
     )
 
+    # SCS SKELETON OBJECTS
+    scs_skeleton_custom_export_dirpath = StringProperty(
+        name="Skeleton Custom Export Path",
+        description="Custom export file path for skeleton PIS file (if empty skeleton is exported beside PIM file).",
+        default="",
+    )
+    scs_skeleton_custom_name = StringProperty(
+        name="Skeleton Custom Name",
+        description="Custom name for SCS Skeleton PIS file (if empty name of skeleton file is the same as PIM file).",
+        default="",
+    )
+
     # SCS GAME OBJECTS
-
-    def active_scs_animation_update(self, context):
-        """Update function for Active SCS Animation record on Objects.
-
-        :param context: Blender Context
-        :type context: bpy.types.Context
-        :rtype: None
-        """
-        active_object = context.active_object
-        scs_root_object = _object_utils.get_scs_root(active_object)
-        scene = context.scene
-
-        # GET ARMATURE OBJECT
-        armature = None
-        if active_object.type == 'ARMATURE':
-            armature = active_object
-        else:
-            children = _object_utils.get_children(scs_root_object)
-            for child in children:
-                if child.type == 'ARMATURE':
-                    armature = child
-                    break
-
-        scs_object_animation_inventory = scs_root_object.scs_object_animation_inventory
-        active_scs_animation = self.active_scs_animation
-        if len(scs_object_animation_inventory) > active_scs_animation:
-            active_animation = scs_object_animation_inventory[active_scs_animation]
-            animation_name = active_animation.name
-            print('Animation changed to %r [%i].' % (animation_name, active_scs_animation))
-
-            # SET ACTION STRING
-            action = armature.animation_data.action
-            action_names = []
-            for act in bpy.data.actions:
-                action_names.append(act.name)
-            if animation_name in action_names:
-                action = bpy.data.actions[animation_name]
-                armature.animation_data.action = action
-            active_object.data.scs_props.current_action = action.name
-
-            # SET PREVIEW RANGE
-            scene.use_preview_range = True
-            print(
-                'CAUTION! --- DELAYED START UPDATE ISSUE --- (see the code)')  # FIXME: If the start value is other than zero,
-            # it gets only properly updated the second time an "SCS Animation" is hit in the list. For the first time it mysteriously
-            # always gets the old 'anim_end' value. Test is on "multiple_animations_from_one_action.blend" file.
-            print('scene.frame_preview_start:\t%i' % scene.frame_preview_start)
-            print('active_animation.anim_start:\t\t%i' % active_animation.anim_start)
-            start_frame = active_animation.anim_start
-            scene.frame_preview_start = start_frame
-            print('scene.frame_preview_start:\t%i' % scene.frame_preview_start)
-            end_frame = active_animation.anim_end
-            scene.frame_preview_end = end_frame
-            # frame_range = action.frame_range
-            # set_fps(scene, action, frame_range)
-            # set_fps(scene, action, (active_animation.anim_start, active_animation.anim_end))
-            length = active_animation.length
-            anim_export_step = action.scs_props.anim_export_step
-            _animation_utils.set_fps_for_preview(scene, length, anim_export_step, start_frame, end_frame)
-        else:
-            print('Wrong Animation index %i/%i!' % (active_scs_animation, len(scs_object_animation_inventory)))
-        return None
-
     scs_root_object_export_enabled = BoolProperty(
         name="Export",
         description="Enable / disable export of all object's children as single 'SCS Game Object'",
@@ -365,16 +338,19 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
     scs_root_object_export_filepath = StringProperty(
         name="Custom Export File Path",
         description="Custom export file path for this 'SCS Game Object'",
-        default=os.sep * 2,
+        default="//",
         # subtype="FILE_PATH",
         subtype='NONE',
     )
-    scs_root_object_animations = StringProperty(
-        name="Animation Directory Name",
-        description="This name is used for directory for animation files (if current 'SCS Game Object' contains any bone animated item)",
-        default="anim",
-        options={'HIDDEN'},
-        subtype='NONE',
+    scs_root_object_allow_anim_custom_path = BoolProperty(
+        name="Allow Custom Animations Export File Path",
+        description="Allow use of custom export file path for animations of this 'SCS Game Object'",
+        default=False,
+    )
+    scs_root_object_anim_export_filepath = StringProperty(
+        name="Custom Animations Export File Path",
+        description="Custom export file path for animations of this 'SCS Game Object'",
+        default="//",
     )
 
     def active_scs_part_get_direct(self):
@@ -456,6 +432,57 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
         options={'HIDDEN'},
         subtype='NONE',
     )
+
+    def active_scs_animation_update(self, context):
+        """Update function for Active SCS Animation record on Objects.
+
+        :param context: Blender Context
+        :type context: bpy.types.Context
+        :rtype: None
+        """
+        active_object = context.active_object
+        scs_root_object = _object_utils.get_scs_root(active_object)
+        scene = context.scene
+
+        # GET ARMATURE OBJECT
+        armature = None
+        if active_object.type == 'ARMATURE':
+            armature = active_object
+        else:
+            children = _object_utils.get_children(scs_root_object)
+            for child in children:
+                if child.type == 'ARMATURE':
+                    armature = child
+                    break
+
+        scs_object_anim_inventory = scs_root_object.scs_object_animation_inventory
+        active_scs_anim_i = self.active_scs_animation
+        if len(scs_object_anim_inventory) > active_scs_anim_i:
+            active_scs_anim = scs_object_anim_inventory[active_scs_anim_i]
+            start_frame = active_scs_anim.anim_start
+            end_frame = active_scs_anim.anim_end
+            length = active_scs_anim.length
+
+            # set frame range properly
+            _animation_utils.set_frame_range(scene, start_frame, end_frame)
+
+            # set action to armature end properly set preview fps
+            action = None
+            if active_scs_anim.action in bpy.data.actions:
+                action = bpy.data.actions[active_scs_anim.action]
+
+                _animation_utils.set_fps_for_preview(scene, length, start_frame, end_frame)
+
+            # ensure animation data block to be able to set action
+            if armature.animation_data is None:
+                armature.animation_data_create()
+
+            armature.animation_data.action = action  # set/reset action of current animation
+
+        else:
+            print('Wrong Animation index %i/%i!' % (active_scs_anim_i, len(scs_object_anim_inventory)))
+        return None
+
     active_scs_animation = IntProperty(
         name="Active SCS Animation",
         description="Active SCS Animation for current SCS Game Object",

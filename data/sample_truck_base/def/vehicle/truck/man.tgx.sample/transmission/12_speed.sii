@@ -1,0 +1,30 @@
+SiiNunit
+{
+accessory_transmission_data : 12_speed.man.tgx.sample.transmission
+{
+	name: "ZF AS Tronic"
+	price: 10000
+	unlock: 0
+	icon: "transmission_generic"
+	# info from oscar
+	# MAN ZF AS Tronic
+	# Differential Ratio: 2.71, 2.85, 3.08, 3.36, 3.63, 3.70
+	# 15.86 12.33 9.57 7.44 5.87 4.57 3.47 2.70 2.10 1.63 1.29 1.00 Rev: -14.68
+	differential_ratio: 2.71
+	# reverse gear
+	ratios_reverse[0]: -14.68
+	# forward gears
+	ratios_forward[0]: 15.86
+	ratios_forward[1]: 12.33
+	ratios_forward[2]: 9.57
+	ratios_forward[3]: 7.44
+	ratios_forward[4]: 5.87
+	ratios_forward[5]: 4.57
+	ratios_forward[6]: 3.47
+	ratios_forward[7]: 2.70
+	ratios_forward[8]: 2.10
+	ratios_forward[9]: 1.63
+	ratios_forward[10]: 1.29
+	ratios_forward[11]: 1.0
+}
+}

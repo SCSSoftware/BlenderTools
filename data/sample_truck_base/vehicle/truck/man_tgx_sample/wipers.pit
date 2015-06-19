@@ -1,0 +1,69 @@
+# Look Names:
+#	default
+#
+# Variant Names:
+#	c
+#
+Header {
+    FormatVersion: 1
+    Source: "Blender 2.74.0 (hash: 000dfc0), SCS Blender Tools: 0.5.460c640"
+    Type: "Trait"
+    Name: "wipers"
+}
+Global {
+    LookCount: 1
+    VariantCount: 1
+    PartCount: 1
+    MaterialCount: 1
+}
+Look {
+    Name: "default"
+    Material {
+        Alias: "plastic"
+        Effect: "eut2.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.3499999940395355 0.3499999940395355 0.3499999940395355 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 20.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/vehicle/truck/man_tgx_sample/color"
+        }
+    }
+}
+Variant {
+    Name: "c"
+    Part {
+        Name: "vis"
+        AttributeCount: 1
+        Attribute {
+            Format: INT
+            Tag: "visible"
+            Value: ( 1 )
+        }
+    }
+}

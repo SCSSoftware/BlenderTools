@@ -1,0 +1,29 @@
+
+	wiper_anim: "/vehicle/truck/man_tgx_sample/interior/uk/wipers.pma"
+	wiper_delay[]: 2
+	wheel_anim: "/vehicle/truck/man_tgx_sample/interior/uk/s_wheel.pma"
+	blinker_delay: 0.718
+	blinker_anim: "/vehicle/truck/man_tgx_sample/interior/uk/turn_st.pma"
+	lights_anim: "/vehicle/truck/man_tgx_sample/interior/uk/cl_light.pma"
+	high_beam_anim: "/vehicle/truck/man_tgx_sample/interior/uk/f_light.pma"
+	wiper_stick_anim: "/vehicle/truck/man_tgx_sample/interior/uk/wiper_st.pma"
+	retarder_stick_anim: "/vehicle/truck/man_tgx_sample/interior/uk/retarder_st.pma"
+
+	tachometer_anim: "/vehicle/truck/man_tgx_sample/interior/uk/rpm.pma"
+	tachometer_anim_max: 3500
+	speedometer_anim: "/vehicle/truck/man_tgx_sample/interior/uk/speed.pma"
+	speedometer_anim_max: 120
+	air_psi_anim: "/vehicle/truck/man_tgx_sample/interior/uk/psi.pma"
+	air_psi_anim_max: 174
+	fuel_anim: "/vehicle/truck/man_tgx_sample/interior/uk/fuel.pma"
+	water_temp_anim: "/vehicle/truck/man_tgx_sample/interior/uk/water.pma"
+	water_temp_anim_min: 30
+	water_temp_anim_max: 110
+
+	button_left_blinker: "/vehicle/truck/man_tgx_sample/interior/uk/blinker_l.pma"
+	button_right_blinker: "/vehicle/truck/man_tgx_sample/interior/uk/blinker_r.pma"
+	button_lights: "/vehicle/truck/man_tgx_sample/interior/uk/cl_light_s.pma"
+	button_high_beam_lights: "/vehicle/truck/man_tgx_sample/interior/uk/f_light_s.pma"
+	button_low_air_psi: "/vehicle/truck/man_tgx_sample/interior/uk/psi_s.pma"
+	button_low_fuel: "/vehicle/truck/man_tgx_sample/interior/uk/fuel_s.pma"
+	button_parking_brake: "/vehicle/truck/man_tgx_sample/interior/uk/parking_s.pma"

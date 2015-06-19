@@ -18,6 +18,8 @@
 
 # Copyright (C) 2015: SCS Software
 
+
+FLAVOR_ID = "alpha_test"
 ALPHA_TEST_NODE = "AlphaTestCalc"
 
 
@@ -58,6 +60,8 @@ def init(node_tree, location, alpha_from, alpha_to):
     node_tree.links.new(nodes[ALPHA_TEST_NODE].inputs[0], alpha_from)
     node_tree.links.new(alpha_to, nodes[ALPHA_TEST_NODE].outputs[0])
 
+    node_tree[FLAVOR_ID] = True
+
 
 def delete(node_tree):
     """Delete alpha test nodes from node tree.
@@ -68,3 +72,28 @@ def delete(node_tree):
 
     if ALPHA_TEST_NODE in node_tree.nodes:
         node_tree.nodes.remove(node_tree.nodes[ALPHA_TEST_NODE])
+
+    if FLAVOR_ID in node_tree:
+        del node_tree[FLAVOR_ID]
+
+
+def get_node(node_tree):
+    """Gets alpha test flavor node.
+
+    :param node_tree: node tree from which alpha test flavor node should be returned
+    :type node_tree: bpy.types.NodeTree
+    :return: node if it's set; otherwise None
+    :rtype: bpy.types.NodeTree | None
+    """
+    return node_tree.nodes[ALPHA_TEST_NODE] if ALPHA_TEST_NODE in node_tree.nodes else None
+
+
+def is_set(node_tree):
+    """Check if flavor is set or not.
+
+    :param node_tree: node tree which should be checked for existance of this flavor
+    :type node_tree: bpy.types.NodeTree
+    :return: True if flavor exists; False otherwise
+    :rtype: bool
+    """
+    return FLAVOR_ID in node_tree and node_tree[FLAVOR_ID]

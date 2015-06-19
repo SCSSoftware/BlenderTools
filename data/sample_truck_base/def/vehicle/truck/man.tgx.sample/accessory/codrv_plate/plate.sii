@@ -1,0 +1,12 @@
+SiiNunit
+{
+accessory_addon_data : plate.man.tgx.sample.codrv_plate
+{
+	name: "@@plate_std@@"
+	price: 150
+	unlock: 2
+	icon: "plate_number"
+	exterior_model: "/vehicle/truck/upgrade/codriver_plate/0.pmd"
+	interior_model: "/vehicle/truck/upgrade/driver_plate/0_int.pmd"
+}
+}

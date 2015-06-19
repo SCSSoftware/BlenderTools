@@ -50,28 +50,50 @@ def _get_shader_data(material_data):
     return material_effect, material_attributes, material_textures, material_section
 
 
-def _find_preset(material_effect):
+def _find_preset(presets_container, material_effect, material_textures):
     """Tries to find suitable Shader Preset (as defined in shader_presets.txt file) for imported shader. If it cannot be found, it will return None.
 
+    :param presets_container: preset container in which preset shall be searched for; if none presets are readed from file
+    :type presets_container: io_scs_tools.internals.structure.SectionData | None
     :param material_effect: Name of the requested Look
     :type material_effect: str
+    :param material_textures: material textures dictionary (key: tex_id, value: tex_path)
+    :type material_textures: dict
     :return: Preset index and name or None
     :rtype: (int, str) | None
     """
 
-    scs_shader_presets_inventory = bpy.context.scene.scs_shader_presets_inventory
+    scs_shader_presets_inventory = bpy.data.worlds[0].scs_shader_presets_inventory
     for i, shader_preset in enumerate(scs_shader_presets_inventory):
 
         if shader_preset.name != "<none>":
-            preset_section = _material_utils.get_shader_preset(_get_scs_globals().shader_presets_filepath, shader_preset.name)
+            preset_section = _material_utils.get_shader_preset(_get_scs_globals().shader_presets_filepath, shader_preset.name, presets_container)
             for preset_prop in preset_section.props:
                 if preset_prop[0] == "Effect":
 
                     if preset_prop[1] == material_effect:
 
-                        return i, shader_preset.name
+                        # also check for matching among locked textures
+                        # NOTE: this check is needed because of possible multiple
+                        # presets with the same effect name and different locked texture
+                        matched_textures = 0
+                        matched_textures_avaliable = 0
+                        for tex_sec in preset_section.get_sections("Texture"):
 
-    return None, None
+                            tex_id = tex_sec.get_prop("Tag")[1]
+                            tex_path = tex_sec.get_prop("Value")[1]
+                            tex_lock = tex_sec.get_prop("Lock")
+
+                            if tex_lock and tex_lock[1] == "True":
+                                matched_textures_avaliable += 1
+
+                                if tex_id in material_textures and (tex_path == material_textures[tex_id] or tex_path == ""):
+                                    matched_textures += 1
+
+                        if matched_textures == matched_textures_avaliable or matched_textures_avaliable == 0:
+                            return i, shader_preset.name, preset_section
+
+    return None, None, None
 
 
 def _create_scs_root_object(name, loaded_variants, loaded_looks, mats_info, objects, skinned_objects, locators, armature):
@@ -101,8 +123,7 @@ def _create_scs_root_object(name, loaded_variants, loaded_looks, mats_info, obje
     context = bpy.context
 
     # MAKE THE 'SCS ROOT OBJECT' NAME UNIQUE
-    if name in bpy.data.objects:
-        name = _name_utils.make_unique_name(bpy.data.objects[0], name)
+    name = _name_utils.get_unique(name, bpy.data.objects)
 
     # CREATE EMPTY OBJECT
     bpy.ops.object.empty_add(
@@ -123,6 +144,10 @@ def _create_scs_root_object(name, loaded_variants, loaded_looks, mats_info, obje
 
     # PARENTING
     if armature:
+
+        # if armature is present we can specify our game object as animated
+        scs_root_object.scs_props.scs_root_animated = "anim"
+
         # print('ARM.pos: %s' % str(armature.location))
         bpy.ops.object.select_all(action='DESELECT')
         armature.select = True
@@ -176,6 +201,8 @@ def _create_scs_root_object(name, loaded_variants, loaded_looks, mats_info, obje
                 part.include = False
 
     # MAKE LOOK RECORDS
+    # get preset container only once to speed up import process
+    presets_container = _material_utils.get_shader_presets_container(_get_scs_globals().shader_presets_filepath)
     for look_i, look in enumerate(loaded_looks):
 
         look_name = look[0]
@@ -190,12 +217,11 @@ def _create_scs_root_object(name, loaded_variants, loaded_looks, mats_info, obje
                 material_effect, material_attributes, material_textures, material_section = _get_shader_data(look_mat_settings[mat_info[2]])
 
                 # TRY TO FIND SUITABLE PRESET
-                (preset_index, preset_name) = _find_preset(material_effect)
+                (preset_index, preset_name, preset_section) = _find_preset(presets_container, material_effect, material_textures)
 
                 if preset_index:  # preset name is found within presets shaders
 
                     mat.scs_props.active_shader_preset_name = preset_name
-                    preset_section = _material_utils.get_shader_preset(_get_scs_globals().shader_presets_filepath, preset_name)
 
                     if preset_section:
 
@@ -336,56 +362,49 @@ def load(context, filepath):
 
     # IMPORT PIS
     if scs_globals.import_pis_file:
-        pis_filepath = str(filepath[:-1] + 's')
+        # pis file path is created from directory of pim file and skeleton definition inside pim header
+        pis_filepath = os.path.dirname(filepath) + os.sep + skeleton
         if os.path.isfile(pis_filepath):
             lprint('\nD PIS filepath:\n  %s', (pis_filepath,))
-            # print('PIS filepath:\n  %s' % pis_filepath)
+
+            # fill in custom data if PIS file is from other directory
+            if skeleton[:-4] != scs_root_object.name:
+                armature.scs_props.scs_skeleton_custom_export_dirpath = "//" + os.path.relpath(os.path.dirname(pis_filepath),
+                                                                                               scs_globals.scs_project_path)
+                armature.scs_props.scs_skeleton_custom_name = os.path.basename(skeleton[:-4])
+
             bones = _pis.load(pis_filepath, armature)
         else:
             bones = None
             lprint('\nI No PIS file.')
-            # print('INFO - No PIS file.')
 
-    # IMPORT PIA
-    if scs_globals.import_pis_file and scs_globals.import_pia_file:
-        basepath = os.path.dirname(filepath)
-        # Search for PIA files in model's directory and its subdirectiories...
-        lprint('\nD Searching the directory for PIA files:\n   %s', (basepath,))
-        # print('\nSearching the directory for PIA files:\n   %s' % str(basepath))
-        pia_files = []
-        index = 0
-        for root, dirs, files in os.walk(basepath):
-            if not scs_globals.include_subdirs_for_pia:
-                if index > 0:
-                    break
-            # print('  root: %s - dirs: %s - files: %s' % (str(root), str(dirs), str(files)))
-            for file in files:
-                if file.endswith(".pia"):
-                    pia_filepath = os.path.join(root, file)
-                    pia_files.append(pia_filepath)
-            index += 1
+        # IMPORT PIA
+        if scs_globals.import_pia_file and bones:
+            basepath = os.path.dirname(filepath)
+            # Search for PIA files in model's directory and its subdirectiories...
+            lprint('\nD Searching the directory for PIA files:\n   %s', (basepath,))
+            # print('\nSearching the directory for PIA files:\n   %s' % str(basepath))
+            pia_files = []
+            index = 0
+            for root, dirs, files in os.walk(basepath):
+                if not scs_globals.include_subdirs_for_pia:
+                    if index > 0:
+                        break
+                # print('  root: %s - dirs: %s - files: %s' % (str(root), str(dirs), str(files)))
+                for file in files:
+                    if file.endswith(".pia"):
+                        pia_filepath = os.path.join(root, file)
+                        pia_files.append(pia_filepath)
+                index += 1
 
-        if len(pia_files) > 0:
-            lprint('D PIA files found:')
-            for pia_filepath in pia_files:
-                lprint('D %r', pia_filepath)
-            # print('armature: %s\nskeleton: %r\nbones: %s\n' % (str(armature), str(skeleton), str(bones)))
-            _pia.load(scs_root_object, pia_files, armature, skeleton, bones)
-        else:
-            lprint('\nI No PIA files.')
-
-            # ## SETUP 'SCS GAME OBJECTS'
-            # for item in collision_locators:
-            # locators.append(item)
-            # for item in prefab_locators:
-            # locators.append(item)
-            # path, file = os.path.split(filepath)
-            # print('  path: %r\n  file: %r' % (path, file))
-            # lod_name, ext = os.path.splitext(file)
-            # if objects:
-            # scs_root_object = create_scs_root_object(lod_name, loaded_variants, objects, skinned_objects, locators, armature)
-
-            # SET OPTIMAL SETTINGS AND DRAW MODES
+            if len(pia_files) > 0:
+                lprint('D PIA files found:')
+                for pia_filepath in pia_files:
+                    lprint('D %r', pia_filepath)
+                # print('armature: %s\nskeleton: %r\nbones: %s\n' % (str(armature), str(skeleton), str(bones)))
+                _pia.load(scs_root_object, pia_files, armature, pis_filepath, bones)
+            else:
+                lprint('\nI No PIA files.')
 
     # fix scene objects count so it won't trigger copy cycle
     bpy.context.scene.scs_cached_num_objects = len(bpy.context.scene.objects)

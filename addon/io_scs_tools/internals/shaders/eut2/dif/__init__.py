@@ -22,6 +22,7 @@
 from mathutils import Color
 from io_scs_tools.internals.shaders.flavors import alpha_test
 from io_scs_tools.internals.shaders.flavors import blend_over
+from io_scs_tools.internals.shaders.flavors import blend_add
 from io_scs_tools.internals.shaders.flavors import nmap
 
 
@@ -226,6 +227,18 @@ class Dif:
         pass  # NOTE: reflection attribute doesn't change anything in rendered material, so pass it
 
     @staticmethod
+    def set_shadow_bias(node_tree, value):
+        """Set shadow bias attirbute for this shader.
+
+        :param node_tree: node tree of current shader
+        :type node_tree: bpy.types.NodeTree
+        :param value: blender material for used in this tree node as output
+        :type value: float
+        """
+
+        pass  # NOTE: shadow bias won't be visualized as game uses it's own implementation
+
+    @staticmethod
     def set_base_texture(node_tree, texture):
         """Set base texture to shader.
 
@@ -259,7 +272,7 @@ class Dif:
         :type switch_on: bool
         """
 
-        if switch_on:
+        if switch_on and not blend_over.is_set(node_tree):
             out_node = node_tree.nodes[Dif.OUT_MAT_NODE]
             in_node = node_tree.nodes[Dif.BASE_TEX_NODE]
             location = (out_node.location.x - 185 * 2, out_node.location.y - 500)
@@ -274,14 +287,43 @@ class Dif:
 
         :param node_tree: node tree of current shader
         :type node_tree: bpy.types.NodeTree
-        :param switch_on: flag indication if alpha test should be switched on or off
+        :param switch_on: flag indication if blend over should be switched on or off
         :type switch_on: bool
         """
+
+        # remove alpha test flavor if it was set already. Because these two can not coexist
+        if alpha_test.is_set(node_tree):
+            Dif.set_alpha_test_flavor(node_tree, False)
+
         out_node = node_tree.nodes[Dif.OUT_MAT_NODE]
         in_node = node_tree.nodes[Dif.BASE_TEX_NODE]
 
         if switch_on:
             blend_over.init(node_tree, in_node.outputs['Value'], out_node.inputs['Alpha'])
+        else:
+            blend_over.delete(node_tree)
+
+    @staticmethod
+    def set_blend_add_flavor(node_tree, switch_on):
+        """Set blend add flavor to this shader.
+
+        :param node_tree: node tree of current shader
+        :type node_tree: bpy.types.NodeTree
+        :param switch_on: flag indication if blend add should be switched on or off
+        :type switch_on: bool
+        """
+
+        # remove alpha test flavor if it was set already. Because these two can not coexist
+        if alpha_test.is_set(node_tree):
+            Dif.set_alpha_test_flavor(node_tree, False)
+
+        out_node = node_tree.nodes[Dif.OUT_MAT_NODE]
+        in_node = node_tree.nodes[Dif.BASE_TEX_NODE]
+
+        if switch_on:
+            blend_add.init(node_tree, in_node.outputs['Value'], out_node.inputs['Alpha'])
+        else:
+            blend_add.delete(node_tree)
 
     @staticmethod
     def set_nmap_flavor(node_tree, switch_on):

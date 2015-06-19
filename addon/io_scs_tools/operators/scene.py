@@ -20,12 +20,10 @@
 
 import bpy
 import os
-from bpy.props import StringProperty, BoolProperty, CollectionProperty
+from bpy.props import StringProperty, BoolProperty, CollectionProperty, EnumProperty, IntProperty
 from io_scs_tools.utils.printout import lprint
-from io_scs_tools.utils import animation as _anim_utils
 from io_scs_tools.utils import object as _object_utils
 from io_scs_tools.utils import view3d as _view3d_utils
-from io_scs_tools.utils import name as _name_utils
 from io_scs_tools.utils import path as _path_utils
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
 from io_scs_tools import exp as _export
@@ -167,7 +165,7 @@ class Import:
     class ImportAnimActions(bpy.types.Operator):
         bl_label = "Import SCS Animation (PIA)"
         bl_idname = "scene.import_scs_anim_actions"
-        bl_description = "Import SCS Animation files (PIA) as a new Actions"
+        bl_description = "Import SCS Animation files (PIA) as a new SCS animations"
 
         directory = StringProperty(
             name="Import PIA Directory",
@@ -180,34 +178,25 @@ class Import:
         )
         filter_glob = StringProperty(default="*.pia", options={'HIDDEN'})
 
+        @classmethod
+        def poll(cls, context):
+            active_obj = context.active_object
+            return active_obj and active_obj.type == "ARMATURE" and _object_utils.get_scs_root(active_obj)
+
         def execute(self, context):
             lprint('D Import Animation Action...')
 
-            '''
-            print('  o directory: %r' % str(self.directory))
-            print('  o files:')
-            for file in self.files:
-                print('  o   file: %r' % str(file.name))
-            '''
-
             pia_files = [os.path.join(self.directory, file.name) for file in self.files]
 
-            if context.active_object.type == 'ARMATURE':
-                armature = context.active_object
-            else:
-                return {'CANCELLED'}
-
-            skeleton = None
-            bones = None
-
-            '''
-            for file in pia_files:
-                print('  o   file: %r' % str(file))
-            '''
+            armature = context.active_object
             root_object = _object_utils.get_scs_root(armature)
 
-            lprint('S armature: %s\nskeleton: %s\nbones: %s\n', (str(armature), str(skeleton), str(bones)))
-            _import.pia.load(root_object, pia_files, armature)  # , skeleton, bones)
+            imported_count = _import.pia.load(root_object, pia_files, armature)
+
+            # report warnings and errors if actually imported count differs from number of pia files
+            if imported_count != len(pia_files):
+                lprint("", report_warnings=1, report_errors=1)
+
             return {'FINISHED'}
 
         def invoke(self, context, event):
@@ -224,7 +213,7 @@ class Export:
     class ExportSelected(bpy.types.Operator):
         """Export selected operator."""
         bl_idname = "scene.export_selected"
-        bl_label = "Export selected"
+        bl_label = "Export Selected"
         bl_description = "Export selected objects only"
 
         @staticmethod
@@ -471,17 +460,17 @@ class Export:
     class ExportAnimAction(bpy.types.Operator):
         bl_label = "Export SCS Animation (PIA)"
         bl_idname = "scene.export_scs_anim_action"
-        bl_description = "Export actual Action as SCS Animation file (PIA)"
-        from bpy.props import StringProperty
+        bl_description = "Select directory and export SCS animation (PIA) to it."
+        bl_options = {'INTERNAL'}
 
-        filename = StringProperty(
-            name="Export PIA Filename",
-            # maxlen=1024,
-            subtype='FILE_NAME',
+        index = IntProperty(
+            name="Anim Index",
+            default=False,
+            options={'HIDDEN'}
         )
+
         directory = StringProperty(
             name="Export PIA Directory",
-            # maxlen=1024,
             subtype='DIR_PATH',
         )
         filename_ext = ".pia"
@@ -489,36 +478,37 @@ class Export:
 
         @classmethod
         def poll(cls, context):
-            return _anim_utils.get_armature_action(context) is not None
+            active_obj = context.active_object
+            return active_obj and active_obj.type == "ARMATURE" and _object_utils.get_scs_root(active_obj) is not None
 
         def execute(self, context):
-            lprint('D Export Animation Action...')
-            import os
+            lprint("D " + self.bl_idname, report_errors=-1, report_warnings=-1)
 
-            filepath = bpy.path.ensure_ext(os.path.join(self.directory, self.filename), self.filename_ext)
-            # print('  o filepath:\n%r' % filepath)
-            # print('  o filename:\n%r' % self.filename)
-            # print('  o directory:\n%r' % self.directory)
+            if not self.directory.startswith(_get_scs_globals().scs_project_path):
+                message = "E Selected path is not inside SCS Project Base Path! Animation can't be exported to this directory."
+                lprint(message)
+                self.report({'ERROR'}, message[2:])
+                return {'CANCELLED'}
 
-            action = _anim_utils.get_armature_action(context)
-            if action:
-                # print('Exporting action %r...' % action.name)
-                armature = context.active_object
-                # bone_list = ['a', 'b']  # TODO...
-                bone_list = armature.data.bones
-                # print('  bone_list: %s' % str(bone_list))
-                file_name = _name_utils.get_lod_name(context)  # FIXME: Probably not reliable!
-                # print('  file_name: %s' % str(file_name))
+            armature = context.active_object
+            scs_root_obj = _object_utils.get_scs_root(armature)
+            anim_inventory = scs_root_obj.scs_object_animation_inventory
 
-                # EXPORT PIA
-                _export.pia.export(armature, bone_list, filepath, file_name)
+            skeleton_filepath = _path_utils.get_skeleton_relative_filepath(armature, self.directory, scs_root_obj.name)
 
+            if 0 <= self.index < len(anim_inventory):
+
+                anim = anim_inventory[self.index]
+                _export.pia.export(scs_root_obj, armature, anim, self.directory, skeleton_filepath)
+
+            lprint("", report_errors=1, report_warnings=1)
             return {'FINISHED'}
 
         def invoke(self, context, event):
             """Invoke a file path selector."""
-            self.filename = str(_anim_utils.get_armature_action(context).name + ".pia")
-            # self.directory = str(os.sep + "home" + os.sep)
+            scs_project_path = _get_scs_globals().scs_project_path
+            if scs_project_path not in self.directory:
+                self.directory = _get_scs_globals().scs_project_path
             context.window_manager.fileselect_add(self)
             return {'RUNNING_MODAL'}
 
@@ -589,7 +579,7 @@ class Paths:
         def invoke(self, context, event):
             """Invoke a file path selector."""
             filepath = getattr(bpy.context.active_object.active_material.scs_props, self.shader_texture)
-            if filepath.startswith(str(os.sep + os.sep)) and os.path.isdir(_get_scs_globals().scs_project_path):
+            if filepath.startswith("//") and os.path.isdir(_get_scs_globals().scs_project_path):
                 self.filepath = os.path.join(_get_scs_globals().scs_project_path, _path_utils.strip_sep(filepath))
             elif os.path.isfile(filepath):
                 self.filepath = filepath
@@ -605,11 +595,6 @@ class Paths:
         bl_idname = "scene.select_shader_presets_filepath"
         bl_description = "Open a file browser"
 
-        rel_path = BoolProperty(
-            name='Relative Path',
-            description='Select the file relative to SCS Project directory',
-            default=True,
-        )
         filepath = StringProperty(
             name="Shader Presets Library File",
             description="Shader Presets library relative or absolute file path",
@@ -621,16 +606,14 @@ class Paths:
         def execute(self, context):
             """Set Shader Presets library file path."""
             scs_globals = _get_scs_globals()
-            if self.rel_path:
-                scs_globals.shader_presets_filepath = _path_utils.relative_path(scs_globals.scs_project_path, self.filepath)
-            else:
-                scs_globals.shader_presets_filepath = str(self.filepath)
+            scs_globals.shader_presets_filepath = self.filepath
+
             return {'FINISHED'}
 
         def invoke(self, context, event):
             """Invoke a file path selector."""
             filepath = _get_scs_globals().shader_presets_filepath
-            if filepath.startswith(str(os.sep + os.sep)):
+            if filepath.startswith("//"):
                 self.filepath = _path_utils.get_abs_path(filepath)
             else:
                 self.filepath = filepath
@@ -721,7 +704,11 @@ class Paths:
         def execute(self, context):
             """Set Sign directory path."""
             scs_globals = _get_scs_globals()
-            scs_globals.sign_library_rel_path = _path_utils.relative_path(scs_globals.scs_project_path, self.filepath)
+
+            if self.filepath.startswith(scs_globals.scs_project_path):
+                self.filepath = _path_utils.relative_path(scs_globals.scs_project_path, self.filepath)
+
+            scs_globals.sign_library_rel_path = self.filepath
             return {'FINISHED'}
 
         def invoke(self, context, event):
@@ -747,7 +734,11 @@ class Paths:
         def execute(self, context):
             """Set Traffic Semaphore Profile library filepath."""
             scs_globals = _get_scs_globals()
-            scs_globals.tsem_library_rel_path = _path_utils.relative_path(scs_globals.scs_project_path, self.filepath)
+
+            if self.filepath.startswith(scs_globals.scs_project_path):
+                self.filepath = _path_utils.relative_path(scs_globals.scs_project_path, self.filepath)
+
+            scs_globals.tsem_library_rel_path = self.filepath
             return {'FINISHED'}
 
         def invoke(self, context, event):
@@ -773,7 +764,11 @@ class Paths:
         def execute(self, context):
             """Set Traffic Rules library filepath."""
             scs_globals = _get_scs_globals()
-            scs_globals.traffic_rules_library_rel_path = _path_utils.relative_path(scs_globals.scs_project_path, self.filepath)
+
+            if self.filepath.startswith(scs_globals.scs_project_path):
+                self.filepath = _path_utils.relative_path(scs_globals.scs_project_path, self.filepath)
+
+            scs_globals.traffic_rules_library_rel_path = self.filepath
             return {'FINISHED'}
 
         def invoke(self, context, event):
@@ -799,7 +794,11 @@ class Paths:
         def execute(self, context):
             """Set Hookup directory path."""
             scs_globals = _get_scs_globals()
-            scs_globals.hookup_library_rel_path = _path_utils.relative_path(scs_globals.scs_project_path, self.directory)
+
+            if self.directory.startswith(scs_globals.scs_project_path):
+                self.directory = _path_utils.relative_path(scs_globals.scs_project_path, self.directory)
+
+            scs_globals.hookup_library_rel_path = self.directory
             return {'FINISHED'}
 
         def invoke(self, context, event):
@@ -825,7 +824,11 @@ class Paths:
         def execute(self, context):
             """Set Material Substance library filepath."""
             scs_globals = _get_scs_globals()
-            scs_globals.matsubs_library_rel_path = _path_utils.relative_path(scs_globals.scs_project_path, self.filepath)
+
+            if self.filepath.startswith(scs_globals.scs_project_path):
+                self.filepath = _path_utils.relative_path(scs_globals.scs_project_path, self.filepath)
+
+            scs_globals.matsubs_library_rel_path = self.filepath
             return {'FINISHED'}
 
         def invoke(self, context, event):
@@ -834,62 +837,53 @@ class Paths:
             context.window_manager.fileselect_add(self)
             return {'RUNNING_MODAL'}
 
-    class DefaultExportFilePathSelector(bpy.types.Operator):
+    class DirSelectorInsideBase(bpy.types.Operator):
         """Operator for setting relative or absolute path to Global Export file."""
-        bl_label = "Select Default Export Directory"
-        bl_idname = "scene.select_default_export_filepath"
+        bl_label = "Select Directory"
+        bl_idname = "scene.select_directory_inside_base"
         bl_description = "Open a directory browser"
 
         directory = StringProperty(
-            name="Global Export Path",
-            description="Global export path (relative or absolute)",
-            # maxlen=1024,
+            name="Directory",
+            description="Directory inside SCS Project Base path",
             subtype='DIR_PATH',
         )
+
+        type = EnumProperty(
+            name="Type",
+            description="Type of selection",
+            items=(
+                ('DefaultExportPath', "DefaultExport", "", "NONE", 0),
+                ('GameObjectExportPath', "GameObjectExport", "", "NONE", 1),
+                ('GameObjectAnimExportPath', "GameObjectExport", "", "NONE", 2),
+                ('SkeletonExportPath', "SkeletonExport", "", "NONE", 3),
+            ),
+            options={'HIDDEN'}
+        )
+
         filter_glob = StringProperty(default="*.pim", options={'HIDDEN'})
 
         def execute(self, context):
-            """Set global export path."""
-            scs_globals = _get_scs_globals()
-            scene_scs_props = context.scene.scs_props
-            if self.directory.startswith(scs_globals.scs_project_path):
-                scene_scs_props.default_export_filepath = os.sep * 2 + os.path.relpath(self.directory, start=scs_globals.scs_project_path)
-            else:
-                scene_scs_props.default_export_filepath = os.path.sep * 2
-                self.report({'ERROR'}, "Selected path is not within SCS Project Base Path,\npath will be reset to SCS Project Base Path instead.")
-                return {'CANCELLED'}
-
-            return {'FINISHED'}
-
-        def invoke(self, context, event):
-            """Invoke a path selector."""
-            self.directory = _get_scs_globals().scs_project_path
-            context.window_manager.fileselect_add(self)
-            return {'RUNNING_MODAL'}
-
-    class SCSGameObjectCustomExportFilePathSelector(bpy.types.Operator):
-        """Operator for setting relative or absolute export path for 'SCS Game Object'."""
-        bl_label = "Select 'SCS Game Object' Export Directory"
-        bl_idname = "scene.select_game_object_custom_export_filepath"
-        bl_description = "Open a directory browser"
-
-        directory = StringProperty(
-            name="'SCS Game Object' Custom Export Path",
-            description="'SCS Game Object' custom export path (relative or absolute)",
-            # maxlen=1024,
-            subtype='DIR_PATH',
-        )
-        filter_glob = StringProperty(default="*.pim", options={'HIDDEN'})
-
-        def execute(self, context):
-            """Set 'SCS Game Object' custom export path."""
 
             scs_globals = _get_scs_globals()
-            obj_scs_props = context.active_object.scs_props
-            if self.directory.startswith(scs_globals.scs_project_path):
-                obj_scs_props.scs_root_object_export_filepath = os.sep * 2 + os.path.relpath(self.directory, start=scs_globals.scs_project_path)
+
+            if self.type == "DefaultExportPath":
+                obj = context.scene.scs_props
+                prop = "default_export_filepath"
+            elif self.type == "GameObjectExportPath":
+                obj = context.active_object.scs_props
+                prop = "scs_root_object_export_filepath"
+            elif self.type == "GameObjectAnimExportPath":
+                obj = _object_utils.get_scs_root(context.active_object).scs_props
+                prop = "scs_root_object_anim_export_filepath"
             else:
-                obj_scs_props.scs_root_object_export_filepath = os.path.sep * 2
+                obj = context.active_object.scs_props
+                prop = "scs_skeleton_custom_export_dirpath"
+
+            if self.directory.startswith(scs_globals.scs_project_path):
+                setattr(obj, prop, _path_utils.relative_path(scs_globals.scs_project_path, self.directory))
+            else:
+                setattr(obj, prop, "//")
                 self.report({'ERROR'}, "Selected path is not within SCS Project Base Path,\npath will be reset to SCS Project Base Path instead.")
                 return {'CANCELLED'}
 
@@ -969,9 +963,6 @@ class Animation:
                 # print('anim_export_step: %s' % str(action.scs_props.anim_export_step))
                 action.scs_props.anim_export_step *= 2
 
-                # INCREASE FPS
-                scene.render.fps *= 2
-
             return {'FINISHED'}
 
     class DecreaseAnimationSteps(bpy.types.Operator):
@@ -1036,9 +1027,6 @@ class Animation:
                 # INCREASE EXPORT STEP
                 # print('anim_export_step: %s' % str(action.scs_props.anim_export_step))
                 action.scs_props.anim_export_step /= 2
-
-                # INCREASE FPS
-                scene.render.fps /= 2
 
             return {'FINISHED'}
 

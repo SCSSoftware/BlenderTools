@@ -1,0 +1,15 @@
+SiiNunit
+{
+light_source : hotel.const.omni.light
+{
+	ambient_color: (0.0, 0.0000, 0.0000)
+	diffuse_color: (0.394, 0.764, 0.847)
+	specular_color: (0.465, 0.687, 0.847)
+
+	type: point
+	range: 15
+
+
+}
+
+}

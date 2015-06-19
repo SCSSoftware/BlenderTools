@@ -44,7 +44,7 @@ def is_valid_shader_texture_path(shader_texture, tobj_check=False):
         if tobj_check and (shader_texture.endswith(".tga") or shader_texture.endswith(".png")):
             shader_texture = shader_texture[:-4] + ".tobj"
 
-        if shader_texture.startswith(str(os.sep + os.sep)):  # RELATIVE PATH
+        if shader_texture.startswith("//"):  # RELATIVE PATH
             shader_texture_abs_path = _path.get_abs_path(shader_texture)
             if shader_texture_abs_path:
                 if os.path.isfile(shader_texture_abs_path):
@@ -85,14 +85,13 @@ def get_texture(texture_path, texture_type):
     # print(' texture_path: %s' % str(texture_path))
 
     # CREATE TEXTURE/IMAGE ID NAME
-    teximag_id_name = str(os.path.splitext(os.path.basename(texture_path))[0])
+    teximag_id_name = _path.get_filename(texture_path, with_ext=False)
 
     # CREATE ABSOLUTE FILEPATH
     abs_texture_filepath = _path.get_abs_path(texture_path)
 
+    texture = None
     if abs_texture_filepath and os.path.isfile(abs_texture_filepath):
-
-        texture = None
 
         # find existing texture with this image
         if teximag_id_name in bpy.data.textures:
@@ -102,7 +101,7 @@ def get_texture(texture_path, texture_type):
             postfixed_tex = teximag_id_name
             while postfixed_tex in bpy.data.textures:
 
-                if _path.repair_path(bpy.data.textures[postfixed_tex].image.filepath) == abs_texture_filepath:
+                if _path.repair_path(bpy.data.textures[postfixed_tex].image.filepath) == _path.repair_path(abs_texture_filepath):
                     texture = bpy.data.textures[postfixed_tex]
                     break
 
@@ -120,7 +119,7 @@ def get_texture(texture_path, texture_type):
             postfixed_img = teximag_id_name
             while postfixed_img in bpy.data.images:
 
-                if _path.repair_path(bpy.data.images[postfixed_img].filepath) == abs_texture_filepath:
+                if _path.repair_path(bpy.data.images[postfixed_img].filepath) == _path.repair_path(abs_texture_filepath):
                     image = bpy.data.images[postfixed_img]
                     break
 
@@ -135,12 +134,11 @@ def get_texture(texture_path, texture_type):
                 # try to get relative path to the Blender file and set it to the image
                 if bpy.data.filepath != '':  # empty file path means blender file is not saved
                     try:
-                        rel_path = os.path.relpath(abs_texture_filepath, os.path.dirname(bpy.data.filepath))
+                        rel_path = _path.relative_path(os.path.dirname(bpy.data.filepath), abs_texture_filepath)
                     except ValueError:  # catch different mount paths: "path is on mount 'C:', start on mount 'E:'"
                         rel_path = None
 
                     if rel_path:
-                        rel_path = os.sep + os.sep + rel_path
                         image.filepath = rel_path
 
             # finally link image to texture
@@ -155,36 +153,62 @@ def get_texture(texture_path, texture_type):
             texture.image.colorspace_settings.name = "sRGB"
             texture.use_normal_map = False
 
-        return texture
+    return texture
 
 
-def get_shader_preset(shader_presets_filepath, template_name):
+def get_shader_presets_container(shader_presets_filepath):
+    """Returns shader presets data continaer from given path.
+
+    :param shader_presets_filepath: relative or absolute shader presets filepath
+    :type shader_presets_filepath: str
+    :return: data container if file is found; None otherwise
+    :rtype: io_scs_tools.internals.structure.SectionData
+    """
+
+    presets_container = None
+
+    if shader_presets_filepath.startswith("//"):  # IF RELATIVE PATH, MAKE IT ABSOLUTE
+        shader_presets_filepath = _path.get_abs_path(shader_presets_filepath)
+
+    if os.path.isfile(shader_presets_filepath):
+
+        presets_container = _pix_container.get_data_from_file(shader_presets_filepath, '    ')
+
+    else:
+        lprint('\nW The file path "%s" is not valid!', (shader_presets_filepath,))
+
+    return presets_container
+
+
+def get_shader_preset(shader_presets_filepath, template_name, presets_container=None):
     """Returns requested Shader Preset data from preset file.
 
     :param shader_presets_filepath: A file path to SCS shader preset file, can be absolute or relative
     :type shader_presets_filepath: str
     :param template_name: Preset name
     :type template_name: str
+    :param presets_container: if provided this container is used to search shader in instead of opening the file again
+    :type presets_container: io_scs_tools.internals.structure.SectionData
     :return: Preset data section
     :rtype: SectionData
     """
-    # print('shader_presets_filepath: %r' % shader_presets_filepath)
-    if shader_presets_filepath.startswith(str(os.sep + os.sep)):  # IF RELATIVE PATH, MAKE IT ABSOLUTE
-        shader_presets_filepath = _path.get_abs_path(shader_presets_filepath)
+
+    # get container as it's not present in argument
+    if not presets_container:
+
+        presets_container = get_shader_presets_container(shader_presets_filepath)
+
     preset_section = None
-    if os.path.isfile(shader_presets_filepath):
-        presets_container = _pix_container.get_data_from_file(shader_presets_filepath, '    ')
-        if presets_container:
-            for section in presets_container:
-                if section.type == "Shader":
-                    for prop in section.props:
-                        if prop[0] == "PresetName":
-                            if prop[1] == template_name:
-                                # print(' + template name: "%s"' % template_name)
-                                preset_section = section
-                                break
-    else:
-        lprint('\nW The file path "%s" is not valid!', (shader_presets_filepath,))
+    if presets_container:
+        for section in presets_container:
+            if section.type == "Shader":
+                for prop in section.props:
+                    if prop[0] == "PresetName":
+                        if prop[1] == template_name:
+                            # print(' + template name: "%s"' % template_name)
+                            preset_section = section
+                            break
+
     return preset_section
 
 
@@ -344,8 +368,8 @@ def set_shader_data_to_material(material, section, preset_effect, is_import=Fals
 
             for val in attribute_data['Value']:
                 item = auxiliary_prop.add()
-                item.value = val
-                item.aux_type = attribute_type
+                item['value'] = val
+                item['aux_type'] = attribute_type
 
             created_attributes[attribute_type] = material.scs_props["shader_attribute_" + attribute_type]
 

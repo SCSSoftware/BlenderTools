@@ -1,0 +1,3 @@
+map	2d	man_vanila_ice_no.tga
+addr 	clamp_to_edge	clamp_to_edge
+usage tsnormal

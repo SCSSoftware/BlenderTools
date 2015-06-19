@@ -1,0 +1,127 @@
+# Look Names:
+#	default
+#
+# Variant Names:
+#	default
+#
+Header {
+    FormatVersion: 1
+    Source: "Blender 2.74.0 (hash: 000dfc0), SCS Blender Tools: 0.5.9d30163"
+    Type: "Trait"
+    Name: "m_vanilla_ice_sample"
+}
+Global {
+    LookCount: 1
+    VariantCount: 1
+    PartCount: 1
+    MaterialCount: 2
+}
+Look {
+    Name: "default"
+    Material {
+        Alias: "man02_body"
+        Effect: "eut2.dif.spec.mult.dif.spec.tsnmap.shadow"
+        Flags: 0
+        AttributeCount: 6
+        TextureCount: 3
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 20.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shadow_bias"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_nmap"
+            Value: "/model/mover/characters/textures/body/man_body_02_no"
+        }
+        Texture {
+            Tag: "texture[1]:texture_base"
+            Value: "/model/mover/characters/textures/body/man_body_02_lum"
+        }
+        Texture {
+            Tag: "texture[2]:texture_mult"
+            Value: "/model/mover/characters/textures/body/wear_str_01"
+        }
+    }
+    Material {
+        Alias: "vanila_ice_no"
+        Effect: "eut2.dif.spec.tsnmap.shadow"
+        Flags: 0
+        AttributeCount: 6
+        TextureCount: 2
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 50.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shadow_bias"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_nmap"
+            Value: "/model/mover/characters/textures/heads/man_vanila_ice_no"
+        }
+        Texture {
+            Tag: "texture[1]:texture_base"
+            Value: "/model/mover/characters/textures/heads/man_vanila_ice"
+        }
+    }
+}
+Variant {
+    Name: "default"
+    Part {
+        Name: "defaultpart"
+        AttributeCount: 1
+        Attribute {
+            Format: INT
+            Tag: "visible"
+            Value: ( 1 )
+        }
+    }
+}

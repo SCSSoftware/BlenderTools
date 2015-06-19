@@ -27,8 +27,11 @@ def get_shader(effect):
     :return: corresponding class for given shader effect
     :rtype: class
     """
+    if effect == "reflective":
 
-    if effect == "fakeshadow":
+        from io_scs_tools.internals.shaders.eut2.reflective import Reflective as Shader
+
+    elif effect == "fakeshadow":
 
         from io_scs_tools.internals.shaders.eut2.fakeshadow import Fakeshadow as Shader
 
@@ -39,6 +42,24 @@ def get_shader(effect):
     elif effect == "glass":
 
         from io_scs_tools.internals.shaders.eut2.glass import Glass as Shader
+
+    elif effect == "mlaaweight":
+
+        from io_scs_tools.internals.shaders.eut2.mlaaweight import MlaaWeight as Shader
+
+    elif effect.startswith("unlit.vcol.tex"):
+
+        from io_scs_tools.internals.shaders.eut2.unlit_tex import UnlitVcolTex as Shader
+
+    elif effect.startswith("truckpaint"):
+
+        if ".airbrush" in effect:
+
+            from io_scs_tools.internals.shaders.eut2.truckpaint.airbrush import TruckpaintAirbrush as Shader
+
+        else:
+
+            from io_scs_tools.internals.shaders.eut2.truckpaint import Truckpaint as Shader
 
     elif effect.startswith("lamp"):
 
@@ -70,6 +91,10 @@ def get_shader(effect):
 
         from io_scs_tools.internals.shaders.eut2.dif_spec_add_env import DifSpecAddEnv as Shader
 
+    elif effect.startswith("dif.spec.weight.add.env"):
+
+        from io_scs_tools.internals.shaders.eut2.dif_spec_weight_add_env import DifSpecWeightAddEnv as Shader
+
     elif effect.startswith("dif.spec.weight"):
 
         from io_scs_tools.internals.shaders.eut2.dif_spec_weight import DifSpecWeight as Shader
@@ -77,6 +102,10 @@ def get_shader(effect):
     elif effect.startswith("dif.spec"):
 
         from io_scs_tools.internals.shaders.eut2.dif_spec import DifSpec as Shader
+
+    elif effect.startswith("dif.lum"):
+
+        from io_scs_tools.internals.shaders.eut2.dif_lum import DifLum as Shader
 
     elif effect.startswith("dif"):
 

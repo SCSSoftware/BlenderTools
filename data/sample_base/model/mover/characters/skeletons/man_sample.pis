@@ -1,0 +1,158 @@
+Header {
+    FormatVersion: 1
+    Source: "Blender 2.74.0 (hash: 000dfc0), SCS Blender Tools: 0.5.9d30163"
+    Type: "Skeleton"
+    Name: "m_vanilla_ice_sample"
+}
+Global {
+    BoneCount: 21
+}
+Bones {
+    0     ( Name:  "Hips"
+            Parent: ""
+            Matrix: ( &00000000  &3f7fca65  &3d25a26f  &00000000
+                      &bf800000  &00000000  &00000000  &00000000
+                      &00000000  &bd25a26f  &3f7fca65  &00000000
+                      &a29941ad  &3f8afd4c  &3d0aefe9  &3f800000 )
+       )
+    1     ( Name:  "Spine"
+            Parent: "Hips"
+            Matrix: ( &00000000  &3f7fe856  &3cdc1d79  &00000000
+                      &bf800000  &00000000  &00000000  &00000000
+                      &00000000  &bcdc1d79  &3f7fe856  &00000000
+                      &a29941ad  &3fa060ba  &3d26a308  &3f800000 )
+       )
+    2     ( Name:  "Spine1"
+            Parent: "Spine"
+            Matrix: ( &00000000  &3f7f96a0  &bd682d80  &00000000
+                      &bf800000  &00000000  &00000000  &00000000
+                      &00000000  &3d682d80  &3f7f96a0  &00000000
+                      &a29941ad  &3fbbed50  &3d3e5539  &3f800000 )
+       )
+    3     ( Name:  "Neck"
+            Parent: "Spine1"
+            Matrix: ( &00000000  &3f686f2c  &bed6927e  &00000000
+                      &bf800000  &00000000  &00000000  &00000000
+                      &00000000  &3ed6927e  &3f686f2c  &00000000
+                      &a29941ad  &3fcf5682  &3d1b1124  &3f800000 )
+       )
+    4     ( Name:  "Head"
+            Parent: "Neck"
+            Matrix: ( &00000000  &3f7fffff  &328885a0  &00000000
+                      &bf800000  &00000000  &00000000  &00000000
+                      &00000000  &b28885a0  &3f7fffff  &00000000
+                      &a29941ad  &3fd757e3  &3c134b9a  &3f800000 )
+       )
+    5     ( Name:  "LeftShould"
+            Parent: "Spine1"
+            Matrix: ( &bf770915  &be77b84c  &3dcfb71c  &00000000
+                      &3dcd712e  &3c8ab866  &3f7eabfa  &00000000
+                      &be78317f  &3f785bbd  &3c01debb  &00000000
+                      &bd63bd63  &3fc9858f  &3d483846  &3f800000 )
+       )
+    6     ( Name:  "LeftArm"
+            Parent: "LeftShould"
+            Matrix: ( &bf440911  &bf247f15  &3cdb74d6  &00000000
+                      &bf24a360  &3f43d2fa  &bd11e4c2  &00000000
+                      &3b1cf72c  &bd364996  &bf7fbedd  &00000000
+                      &be566e91  &3fc49611  &3d85376a  &3f800000 )
+       )
+    7     ( Name:  "LeftForeArm"
+            Parent: "LeftArm"
+            Matrix: ( &bf3bc9da  &bf20f54c  &be841ebd  &00000000
+                      &bf24a360  &3f43d2fa  &bd11e4c7  &00000000
+                      &3e610f4d  &3e0f2ec7  &bf772964  &00000000
+                      &bee3e0de  &3fab461e  &3d9619de  &3f800000 )
+       )
+    8     ( Name:  "LeftHand"
+            Parent: "LeftForeArm"
+            Matrix: ( &bf3bc9d9  &bf20f54b  &be841ec5  &00000000
+                      &bf24a360  &3f43d2fa  &bd11e4d5  &00000000
+                      &3e610f5b  &3e0f2ece  &bf772963  &00000000
+                      &bf292825  &3f939c16  &bb296aea  &3f800000 )
+       )
+    9     ( Name:  "RightShould"
+            Parent: "Spine1"
+            Matrix: ( &bf7708f3  &3e77ba5c  &bdcfb71b  &00000000
+                      &3dcd712e  &bc8ab866  &bf7eabf6  &00000000
+                      &be78338e  &bf785b98  &bc01e14b  &00000000
+                      &3d63bd5a  &3fc9859d  &3d483848  &3f800000 )
+       )
+    10    ( Name:  "RightArm"
+            Parent: "RightShould"
+            Matrix: ( &bf440966  &3f247eb0  &bcdb72eb  &00000000
+                      &bf24a2fc  &bf43d350  &3d11e4fe  &00000000
+                      &3b1d01dc  &3d364952  &3f7fbedd  &00000000
+                      &3e566dda  &3fc49620  &3d853772  &3f800000 )
+       )
+    11    ( Name:  "RightForeArm"
+            Parent: "RightArm"
+            Matrix: ( &bf3bca2b  &3f20f4e6  &3e841eda  &00000000
+                      &bf24a2f8  &bf43d353  &3d11e504  &00000000
+                      &3e610fd9  &be0f2e61  &3f772960  &00000000
+                      &3ee3e0a6  &3fab4638  &3d9619da  &3f800000 )
+       )
+    12    ( Name:  "RightHand"
+            Parent: "RightForeArm"
+            Matrix: ( &bf3bca2b  &3f20f4e6  &3e841ed9  &00000000
+                      &bf24a2f8  &bf43d353  &3d11e502  &00000000
+                      &3e610fd7  &be0f2e60  &3f772960  &00000000
+                      &3f29281a  &3f939c41  &bb296a8a  &3f800000 )
+       )
+    13    ( Name:  "LeftUpLeg"
+            Parent: "Hips"
+            Matrix: ( &bd8edc76  &bf7f0c0e  &bd4f6e97  &00000000
+                      &bf7f605b  &3d8ead4e  &3b68150e  &00000000
+                      &b2bc0000  &3d4ff044  &bf7fab80  &00000000
+                      &bdb9b481  &3f787ac1  &3af11655  &3f800000 )
+       )
+    14    ( Name:  "LeftLeg"
+            Parent: "LeftUpLeg"
+            Matrix: ( &bd8b87c3  &bf7be3c8  &3e28eb07  &00000000
+                      &bf7f605b  &3d8ead76  &3b68154f  &00000000
+                      &bc75607c  &be28426f  &bf7c7dc5  &00000000
+                      &bdf7d478  &3f091f30  &3c68bb51  &3f800000 )
+       )
+    15    ( Name:  "LeftFoot"
+            Parent: "LeftLeg"
+            Matrix: ( &bd2345e6  &bf071404  &bf59390b  &00000000
+                      &bf7f605b  &3d8ead75  &3b6814b1  &00000000
+                      &3d6a7a54  &3f58bad3  &bf0775c8  &00000000
+                      &be1a4fcb  &3dde9b73  &3d522572  &3f800000 )
+       )
+    16    ( Name:  "LeftToeBase"
+            Parent: "LeftFoot"
+            Matrix: ( &bb6813d8  &39019c44  &bf7fff98  &00000000
+                      &bf7f605b  &3d8ead7d  &3b681408  &00000000
+                      &3d8ead7e  &3f7f60c4  &b9016bc8  &00000000
+                      &be211074  &3caf5ba4  &bdb66872  &3f800000 )
+       )
+    17    ( Name:  "RightUpLeg"
+            Parent: "Hips"
+            Matrix: ( &bd8edc7f  &3f7f0c0e  &3d4f6ea6  &00000000
+                      &bf7f605c  &bd8ead57  &bb68147b  &00000000
+                      &32ab8000  &bd4ff052  &3f7fab7f  &00000000
+                      &3db9b47f  &3f787ac0  &3af11655  &3f800000 )
+       )
+    18    ( Name:  "RightLeg"
+            Parent: "RightUpLeg"
+            Matrix: ( &bd8b87a6  &3f7be3c8  &be28eaff  &00000000
+                      &bf7f605c  &bd8ead57  &bb68151b  &00000000
+                      &bc75603e  &3e284269  &3f7c7dc4  &00000000
+                      &3df7d47a  &3f091f2e  &3c68bb5d  &3f800000 )
+       )
+    19    ( Name:  "RightFoot"
+            Parent: "RightLeg"
+            Matrix: ( &bd2345c2  &3f071402  &3f59390b  &00000000
+                      &bf7f605c  &bd8ead56  &bb68147d  &00000000
+                      &3d6a7a23  &bf58bad4  &3f0775c5  &00000000
+                      &3e1a4fc5  &3dde9b9b  &3d522584  &3f800000 )
+       )
+    20    ( Name:  "RightToeBase"
+            Parent: "RightFoot"
+            Matrix: ( &bb6815d0  &b9017444  &3f7fff96  &00000000
+                      &bf7f605c  &bd8ead45  &bb6815d0  &00000000
+                      &3d8ead45  &bf7f60c3  &39018bc8  &00000000
+                      &3e21106b  &3caf5bd8  &bdb66871  &3f800000 )
+       )
+}

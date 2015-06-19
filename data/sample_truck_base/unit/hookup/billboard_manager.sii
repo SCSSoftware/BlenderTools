@@ -1,0 +1,6 @@
+SiiNunit
+{
+billboard_manager : billboard.manager
+{
+}
+}

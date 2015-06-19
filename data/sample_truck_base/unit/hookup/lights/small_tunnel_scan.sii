@@ -1,0 +1,17 @@
+SiiNunit
+{
+light_source : small.tunnel.scan.light
+{
+	ambient_color: (0.0000, 0.0000, 0.0000)
+	diffuse_color: (0.5, 0.4, 0.3)
+	specular_color: (0.9911, 0.9823, 0.8879)
+
+	range: 12.0
+	cut_range: 8.0
+	inner_angle: 50.0
+	outer_angle: 120.0
+
+  always_on: true
+}
+
+}

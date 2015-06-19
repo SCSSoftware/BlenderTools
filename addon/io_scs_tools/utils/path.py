@@ -25,21 +25,6 @@ from io_scs_tools.utils.printout import lprint
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
 
 
-def fix_sep_by_platform(obj, prop):
-    """Fix separators in path depending on the current platform.
-    Property will be set directly to ID datablock, to avoid triggering of update functions
-
-    :param obj: object which should get fixed value
-    :type obj: obj
-    :param prop: property which should be fixed
-    :type prop: str
-    """
-    if os.sep == "\\":
-        obj[prop] = getattr(obj, prop).replace("/", "\\")
-    elif os.sep == "/":
-        obj[prop] = getattr(obj, prop).replace("\\", "/")
-
-
 def strip_sep(path):
     """Strips double path separators (slashes and backslashes) on the start and the end of the given path
     :param path: path to strip separators from
@@ -48,6 +33,28 @@ def strip_sep(path):
     :rtype: str
     """
     return path.strip("\\\\").strip("//")
+
+
+def get_filename(path, with_ext=True):
+    """Returns file name from given file, with or without extension.
+    It finds last "os.sep" inside string and returns tail.
+    :param path: path with file name
+    :type path: str
+    :param with_ext: return file name with extension or not
+    :type with_ext: bool
+    :return: file name with or without extension
+    :rtype: str
+    """
+
+    # find last separator; prefer os.sep otherwise search for normal slash
+    last_sep = path.rfind(os.sep)
+    if last_sep < 0:
+        last_sep = path.rfind("/")
+
+    new_path = path[last_sep + 1:]
+    if not with_ext and new_path.rfind(".") > 0:
+        new_path = new_path[:new_path.rfind(".")]
+    return new_path
 
 
 def repair_path(filepath):
@@ -69,9 +76,12 @@ def relative_path(base_path, path):
     repaired_path = repair_path(path)
     # print('repaired_path:\n\t"%s"' % repaired_path)
     if len(repaired_base_path) > 2:
-        if path.startswith(repaired_base_path):
-            rel_path = repaired_path.replace(repaired_base_path, os.sep)
+        # presuming that first equality of first two chars means we are on same mount point
+        if repaired_path[:2] == repaired_base_path[:2]:
+            rel_path = os.path.relpath(repaired_path, repaired_base_path).replace("\\", "/")
             # print('rel_path:\n\t"%s"' % rel_path)
+            if not rel_path.startswith("//"):
+                rel_path = "//" + rel_path
             return rel_path
         else:
             lprint("W Not possible to create a relative path! Returning absolute path (%s)", (repaired_path,))
@@ -97,7 +107,7 @@ def get_abs_path(path_in, subdir_path=''):
     if subdir_path != '':
         root_path = os.path.join(root_path, subdir_path)
 
-    if path_in.startswith(str(os.sep + os.sep)):
+    if path_in.startswith("//"):
         if len(root_path) > 2:
             result = os.path.join(root_path, path_in[2:])
         else:
@@ -160,7 +170,7 @@ def is_valid_shader_presets_library_path():
     the Shader Presets Library directory, otherwise False."""
     shader_presets_filepath = _get_scs_globals().shader_presets_filepath
     if shader_presets_filepath != "":
-        if shader_presets_filepath.startswith(str(os.sep + os.sep)):  # RELATIVE PATH
+        if shader_presets_filepath.startswith("//"):  # RELATIVE PATH
             shader_presets_abs_path = get_abs_path(shader_presets_filepath)
             if shader_presets_abs_path:
                 if os.path.isfile(shader_presets_abs_path):
@@ -380,3 +390,103 @@ def get_bitmap_filepath(texture_tobj_string):
                 pass
             rec_i += 1
     return filepath
+
+
+def get_skeleton_relative_filepath(armature, directory, default_name):
+    """Get's skeleton relative path to given directory. This path can be used for linking
+    skeletons in PIM and PIA files.
+
+    :param armature: armature object which will be used as scs skeleton
+    :type armature: bpy.types.Object
+    :param directory: directory from which relative path of skeleton should be gotten
+    :type directory: str
+    :param default_name: if custom path is empty this name will be used as the name of pis file
+    :type default_name: str
+    :return: relative path to predicted PIS file of given armature
+    :rtype: str
+    """
+
+    skeleton_custom_dir = armature.scs_props.scs_skeleton_custom_export_dirpath
+    skeleton_custom_name = armature.scs_props.scs_skeleton_custom_name
+
+    skeleton_path = ""
+    if skeleton_custom_dir != "":
+        if skeleton_custom_dir.startswith("//"):
+            skeleton_path = os.path.relpath(os.path.join(_get_scs_globals().scs_project_path, skeleton_custom_dir[2:]), directory)
+        else:
+            lprint("E Custom skeleton export path is not relative to SCS Project Base Path.\n\t   " +
+                   "Custom path will be ignored, which might lead to wrongly linked skeleton file inside PIM and PIA files.")
+
+    skeleton_name = (skeleton_custom_name if skeleton_custom_name != "" else default_name) + ".pis"
+
+    return os.path.join(skeleton_path, skeleton_name)
+
+
+def get_animations_relative_filepath(scs_root, directory):
+    """Get's skeleton relative path to given directory. This path can be used for linking
+    skeletons in PIM and PIA files.
+
+    :param scs_root: scs root object of this animation
+    :type scs_root: bpy.types.Object
+    :param directory: directory from which relative path of animaton should be gotten
+    :type directory: str
+    :return: relative path to predicted PIS file of given armature
+    :rtype: str
+    """
+
+    anims_path = ""
+
+    if scs_root.scs_props.scs_root_object_allow_anim_custom_path:
+        animations_custom_dir = scs_root.scs_props.scs_root_object_anim_export_filepath
+
+        if animations_custom_dir != "":
+
+            if animations_custom_dir.startswith("//"):
+                anims_path = os.path.relpath(os.path.join(_get_scs_globals().scs_project_path, animations_custom_dir[2:]), directory)
+            else:
+                return None
+
+    return anims_path
+
+
+def get_global_export_path():
+    """Gets global export path.
+    If default export path is empty and blend file is saved inside current scs project path  -> return blend file dir;
+    Otherwise return scs project path combined with default export path.
+    :return: global export path defined by directory of saved blend file and default export path from settings
+    :rtype: str
+    """
+
+    scs_project_path = _get_scs_globals().scs_project_path
+    is_blend_file_within_base = bpy.data.filepath != "" and bpy.data.filepath.startswith(scs_project_path)
+    default_export_path = bpy.context.scene.scs_props.default_export_filepath
+
+    # if not set try to use Blender filepath
+    if default_export_path == "" and is_blend_file_within_base:
+        return os.path.dirname(bpy.data.filepath)
+    else:
+        return os.path.join(scs_project_path, default_export_path.strip("//"))
+
+
+def get_custom_scs_root_export_path(root_object):
+    """Gets custom export file path for given SCS Root Object.
+    If custom export path is empty and blend file is saved inside current scs project path -> return blend file dir;
+    Otherwise return scs porject path combined with custom scs root export path.
+    :param root_object: scs root object
+    :type root_object: bpy.types.Object
+    :return: custom export directory path of given SCS Root Object; None if custom export for SCS Root is disabled
+    :rtype: str | None
+    """
+    scs_project_path = _get_scs_globals().scs_project_path
+    is_blend_file_within_base = bpy.data.filepath != "" and bpy.data.filepath.startswith(scs_project_path)
+
+    custom_filepath = None
+    if root_object.scs_props.scs_root_object_allow_custom_path:
+        scs_root_export_path = root_object.scs_props.scs_root_object_export_filepath
+        # if not set try to use Blender filepath
+        if scs_root_export_path == "" and is_blend_file_within_base:
+            custom_filepath = os.path.dirname(bpy.data.filepath)
+        else:
+            custom_filepath = os.path.join(scs_project_path, scs_root_export_path.strip("//"))
+
+    return custom_filepath

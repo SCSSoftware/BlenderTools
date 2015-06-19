@@ -1,0 +1,50 @@
+Header {
+    FormatVersion: 3
+    Source: "Blender 2.74.0 (hash: 000dfc0), SCS Blender Tools: 0.5.bfcf60f"
+    Type: "Animation"
+    Name: "retarder_st"
+}
+Global {
+    Skeleton: "anim.pis"
+    TotalTime: 0.5554999709129333
+    BoneChannelCount: 1
+    CustomChannelCount: 0
+}
+BoneChannel {
+    Name: "joint2"
+    StreamCount: 2
+    KeyframeCount: 5
+    Stream {
+        Format: FLOAT
+        Tag: "_TIME"
+        0    ( &3e0e353f )
+        1    ( &3e0e353f )
+        2    ( &3e0e353f )
+        3    ( &3e0e353f )
+        4    ( &3e0e353f )
+    }
+    Stream {
+        Format: FLOAT4x4
+        Tag: "_MATRIX"
+        0    (  &3f541e58  &bed30d59  &3ec1f7f7  &00000000
+                &3ee0aaa9  &3f65fe05  &3c91e763  &00000000
+                &beb20591  &3e1b1db1  &3f6cdfb6  &00000000
+                &3d20f88f  &bc8f2e60  &bd932c85  &3f800000 )
+        1    (  &3f3ef47c  &bf0d20c6  &3ebf5d3a  &00000000
+                &3f1536c1  &3f4fd53f  &3d0c1e02  &00000000
+                &bea50396  &3e44f362  &3f6d48ff  &00000000
+                &3d2ee227  &bc6a7e00  &bd946dea  &3f800000 )
+        2    (  &3f2475b9  &bf2ce2bb  &3eb97783  &00000000
+                &3f35e997  &3f33b1e1  &3d464eda  &00000000
+                &be92ed02  &3e67bc0f  &3f6e4aa5  &00000000
+                &3d3ccbbf  &bc369f41  &bd95af50  &3f800000 )
+        3    (  &3f05a1b0  &bf48182d  &3eaed2c6  &00000000
+                &3f517333  &3f126e27  &3d6febeb  &00000000
+                &be76e09a  &3e7ec242  &3f70257f  &00000000
+                &3d4ab557  &bc02c082  &bd96f0b5  &3f800000 )
+        4    (  &3ec72ef1  &bf5e2feb  &3e9e1e44  &00000000
+                &3f66f690  &3eda7c0a  &3d8088a4  &00000000
+                &be3eb9a7  &3e822747  &3f72f4ab  &00000000
+                &3d589eee  &bb9dc387  &bd98321a  &3f800000 )
+    }
+}

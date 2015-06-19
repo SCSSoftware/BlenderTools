@@ -1,0 +1,36 @@
+SiiNunit
+{
+accessory_chassis_data : 4x2.man.tgx.sample.chassis
+{
+	name: "@@chassis@@ 4x2"
+	price: 25560
+	unlock: 0
+	info[]: "4x2"
+	info[]: "800 + 450 @@unit_l@@"
+	icon: "chassis_man_tgx_4x2"
+	model: "/vehicle/truck/man_tgx_sample/truck.pmd"
+	lods[]: "/vehicle/truck/man_tgx_sample/lod_02.pmd"
+	lods[]: "/vehicle/truck/man_tgx_sample/lod_03.pmd"
+	collision: "/vehicle/truck/man_tgx_sample/truck.pmc"
+	residual_travel[]: 0.12 	# 1st axle
+	residual_travel[]: 0.08 	# 2nd axle
+	tank_size: 1250
+	variant: chs_4x2
+	look: default
+	defaults[]: "/def/vehicle/truck/man.tgx.sample/accessory/doorstep/shape1.sii"
+	defaults[]: "/def/vehicle/truck/man.tgx.sample/paint_job/color0.sii"
+	extended_shadow_texture: "/vehicle/truck/man_tgx_sample/shadow_4x2.tobj"
+	extended_shadow_intensity: 1.0
+	extended_shadow_fadeout_start: 10
+	extended_shadow_fadeout_length: 0
+	ui_shadow: "/vehicle/truck/man_tgx_sample/ui_shadow_4x2.pmd"
+	powered_wheel[0]: false	# front wheel left
+	powered_wheel[1]: false	# front wheel right
+	powered_wheel[2]: true	# rear wheel left
+	powered_wheel[3]: true	# rear wheel right
+	kerb_weight[0]:	5000.1
+	kerb_weight[1]:	1900.1
+
+  defaults[]: "/def/vehicle/truck/man.tgx.sample/chs_badges/chs_badges_18.sii"
+}
+}

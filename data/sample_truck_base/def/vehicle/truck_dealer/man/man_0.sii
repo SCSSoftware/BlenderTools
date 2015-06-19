@@ -1,0 +1,172 @@
+vehicle: .tdealer.man_0
+{
+ fuel_relative: &3f000000
+ user_mirror_rot: 4
+ user_mirror_rot[0]: (1; 0, 0, 0)
+ user_mirror_rot[1]: (1; 0, 0, 0)
+ user_mirror_rot[2]: (1; 0, 0, 0)
+ user_mirror_rot[3]: (1; 0, 0, 0)
+
+ accessories[]: .man0.data
+ accessories[]: .man0.chassis
+ accessories[]: .man0.cabin
+ accessories[]: .man0.interior
+ accessories[]: .man0.engine
+ accessories[]: .man0.transmission
+ accessories[]: .man0.soundint
+ accessories[]: .man0.soundext
+ accessories[]: .man0.head_light
+ accessories[]: .man0.frim
+ accessories[]: .man0.ftire
+ accessories[]: .man0.rrim
+ accessories[]: .man0.rtire
+ accessories[]: .man0.paint_job
+ accessories[]: .man0.doorstep
+ accessories[]: .man0.doorhndl
+ accessories[]: .man0.mirror
+ accessories[]: .man0.sunshld
+ accessories[]: .man0.f_mirror
+ accessories[]: .man0.s_mirror
+ accessories[]: .man0.sideskirt
+ accessories[]: .man0.badge
+ accessories[]: .man0.chs_badges
+ odometer: 0
+ odometer_float_part: &3b065059
+}
+
+vehicle_accessory : .man0.data {
+ wear: 0
+ data_path: "/def/vehicle/truck/man.tgx.sample/data.sii"
+}
+
+vehicle_accessory : .man0.chassis {
+ wear: 0
+ data_path: "/def/vehicle/truck/man.tgx.sample/chassis/4x2.sii"
+}
+
+vehicle_accessory : .man0.cabin {
+ wear: 0
+ data_path: "/def/vehicle/truck/man.tgx.sample/cabin/xl_cab.sii"
+}
+
+vehicle_accessory : .man0.interior {
+ wear: 0
+ data_path: "/def/vehicle/truck/man.tgx.sample/interior/standard_low.sii"
+}
+
+vehicle_accessory : .man0.engine {
+ wear: 0
+ data_path: "/def/vehicle/truck/man.tgx.sample/engine/d2066_235.sii"
+}
+
+vehicle_addon_accessory : .man0.badge {
+wear: 0
+data_path: "/def/vehicle/truck/man.tgx.sample/badge/18320.sii"
+}
+
+vehicle_addon_accessory : .man0.chs_badges {
+wear: 0
+data_path: "/def/vehicle/truck/man.tgx.sample/chs_badges/chs_badges_18.sii"
+}
+
+vehicle_accessory : .man0.transmission {
+ wear: 0
+ data_path: "/def/vehicle/truck/man.tgx.sample/transmission/12_speed.sii"
+}
+
+vehicle_sound_accessory : .man0.soundint {
+ wear: 0
+ data_path: "/def/vehicle/truck/man.tgx.sample/sound/interior.sii"
+}
+
+vehicle_sound_accessory : .man0.soundext {
+ wear: 0
+ data_path: "/def/vehicle/truck/man.tgx.sample/sound/exterior.sii"
+}
+
+vehicle_accessory : .man0.head_light {
+ wear: 0
+ data_path: "/def/vehicle/truck/man.tgx.sample/head_light/standard.sii"
+}
+
+vehicle_wheel_accessory : .man0.frim {
+ offset: 0
+ wear: 0
+ data_path: "/def/vehicle/f_rim/steel.sii"
+}
+
+vehicle_wheel_accessory : .man0.ftire {
+ offset: 0
+ wear: 0
+ data_path: "/def/vehicle/f_tire/1.sii"
+}
+
+vehicle_wheel_accessory : .man0.rrim {
+ offset: 0
+ wear: 0
+ data_path: "/def/vehicle/r_rim/steel.sii"
+}
+
+vehicle_wheel_accessory : .man0.rtire {
+ offset: 0
+ wear: 0
+ data_path: "/def/vehicle/r_tire/1.sii"
+}
+
+vehicle_paint_job_accessory : .man0.paint_job {
+ mask_r_color: (1, 0, 0)
+ mask_g_color: (0, 1, 0)
+ mask_b_color: (0, 0, 1)
+ base_color: (&3c28c155, &3c8c154d, &3dab020c)
+ wear: 0
+ data_path: "/def/vehicle/truck/man.tgx.sample/paint_job/color0.sii"
+}
+
+vehicle_addon_accessory : .man0.doorstep {
+ slot_name: 0
+ slot_hookup: 0
+ wear: 0
+ data_path: "/def/vehicle/truck/man.tgx.sample/accessory/doorstep/shape1.sii"
+}
+
+vehicle_addon_accessory : .man0.doorhndl {
+ slot_name: 0
+ slot_hookup: 0
+ wear: 0
+ data_path: "/def/vehicle/truck/man.tgx.sample/accessory/doorhndl/shape1.sii"
+}
+
+vehicle_addon_accessory : .man0.mirror {
+ slot_name: 0
+ slot_hookup: 0
+ wear: 0
+ data_path: "/def/vehicle/truck/man.tgx.sample/accessory/mirror/shape1.sii"
+}
+
+vehicle_addon_accessory : .man0.sunshld {
+ slot_name: 0
+ slot_hookup: 0
+ wear: 0
+ data_path: "/def/vehicle/truck/man.tgx.sample/accessory/sunshld/shape1_c.sii"
+}
+
+vehicle_addon_accessory : .man0.f_mirror {
+ slot_name: 0
+ slot_hookup: 0
+ wear: 0
+ data_path: "/def/vehicle/truck/man.tgx.sample/accessory/f_mirror/shape2.sii"
+}
+
+vehicle_addon_accessory : .man0.s_mirror {
+ slot_name: 0
+ slot_hookup: 0
+ wear: 0
+ data_path: "/def/vehicle/truck/man.tgx.sample/accessory/s_mirror/shape1.sii"
+}
+
+vehicle_addon_accessory : .man0.sideskirt {
+ slot_name: 0
+ slot_hookup: 0
+ wear: 0
+ data_path: "/def/vehicle/truck/man.tgx.sample/accessory/sideskirt/shape1.sii"
+}

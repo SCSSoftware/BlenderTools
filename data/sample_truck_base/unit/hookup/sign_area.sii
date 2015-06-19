@@ -1,0 +1,279 @@
+SiiNunit
+{
+sign_editable_area : sign.675x303
+{
+	width: 6.75
+	height: 3.03
+	shining: false
+
+}
+
+sign_editable_area : sign.507x303
+{
+	width: 5.07
+	height: 3.03
+	shining: false
+}
+
+sign_editable_area : sign.545x244
+{
+	width: 5.45
+	height: 2.44
+	shining: false
+}
+
+sign_editable_area : sign.375x507
+{
+	width: 3.75
+	height: 5.07
+	shining: false
+}
+
+sign_editable_area : sign.577x64
+{
+	width: 5.77
+	height: 0.64
+	shining: false
+}
+
+sign_editable_area : sign.455x71
+{
+	width: 4.55
+	height: 0.71
+	shining: false
+}
+
+sign_editable_area : sign.577x71
+{
+	width: 5.77
+	height: 0.71
+	shining: false
+}
+
+sign_editable_area : sign.717x507
+{
+	width: 7.17
+	height: 5.07
+	shining: false
+}
+
+sign_editable_area : sign.545x681
+{
+	width: 5.45
+	height: 6.81
+	shining: false
+}
+
+sign_editable_area : sign.1035x303
+{
+	width: 10.35
+	height: 3.03
+	shining: false
+}
+
+sign_editable_area : sign.297x100
+{
+	width: 2.97
+	height: 1.00
+	shining: false
+}
+
+sign_editable_area : sign.382x304
+{
+	width: 3.82
+	height: 3.04
+	shining: false
+}
+
+sign_editable_area : sign.222x34
+{
+	width: 2.22
+	height: 0.34
+	shining: false
+}
+
+sign_editable_area : sign.346x53
+{
+	width: 3.46
+	height: 0.53
+	shining: false
+}
+
+sign_editable_area : sign.675x446
+{
+	width: 6.75
+	height: 4.46
+	shining: false
+}
+
+sign_editable_area : sign.507x446
+{
+	width: 5.07
+	height: 4.46
+	shining: false
+}
+
+sign_editable_area : sign.1253x446
+{
+	width: 12.53
+	height: 4.46
+	shining: false
+}
+
+sign_editable_area : sign.364x369
+{
+	width: 3.64
+	height: 3.69
+	shining: false
+}
+
+sign_editable_area : sign.512x201
+{
+	width: 5.12
+	height: 2.01
+	shining: false
+}
+
+sign_editable_area : sign.465x271
+{
+	width: 4.65
+	height: 2.71
+	shining: false
+}
+
+sign_editable_area : sign.251x44
+{
+	width: 2.51
+	height: 0.44
+	shining: false
+}
+
+sign_editable_area : sign.60x60
+{
+	width: 0.60
+	height: 0.60
+	shining: false
+}
+
+sign_editable_area : sign.170x60
+{
+	width: 1.70
+	height: 0.60
+	shining: false
+}
+
+sign_editable_area : sign.40x40
+{
+	width: 0.40
+	height: 0.40
+	shining: false
+}
+
+sign_editable_area : sign.160x40
+{
+	width: 1.6
+	height: 0.40
+	shining: false
+}
+
+sign_editable_area : sign.340x80
+{
+	width: 3.4
+	height: 0.8
+	shining: false
+}
+
+sign_editable_area : sign.136x90
+{
+	width: 1.36
+	height: 0.9
+	shining: false
+}
+
+sign_editable_area : sign.577x345
+{
+	width: 5.77
+	height: 3.45
+	shining: false
+}
+
+sign_editable_area : sign.577x426
+{
+	width: 5.77
+	height: 4.26
+	shining: false
+}
+
+sign_editable_area : sign.577x560
+{
+	width: 5.77
+	height: 5.60
+	shining: false
+}
+
+sign_editable_area : sign.333x51
+{
+	width: 3.33
+	height: 0.51
+	shining: false
+}
+
+sign_editable_area : sign.333x167
+{
+	width: 3.33
+	height: 1.67
+	shining: false
+
+}
+
+sign_editable_area : sign.382x152
+{
+	width: 3.82
+	height: 1.52
+	shining: false
+}
+
+sign_editable_area : sign.250x233
+{
+	width: 2.5
+	height: 2.33
+	shining: false
+}
+
+sign_editable_area : sign.100x100
+{
+	width: 1
+	height: 1
+	shining: false
+
+}
+
+sign_editable_area : sign.251x88
+{
+	width: 2.51
+	height: 0.88
+	shining: false
+}
+
+sign_editable_area : sign.333x100
+{
+	width: 3.33
+	height: 1.00
+	shining: false
+}
+
+sign_editable_area : sign.165x226
+{
+	width: 1.65
+	height: 2.26
+	shining: false
+}
+
+sign_editable_area : sign.100x123
+{
+	width: 1.00
+	height: 1.23
+	shining: false
+}
+
+}

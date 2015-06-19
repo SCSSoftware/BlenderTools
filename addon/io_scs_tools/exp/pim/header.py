@@ -19,7 +19,7 @@
 # Copyright (C) 2013-2014: SCS Software
 
 from io_scs_tools.internals.structure import SectionData as _SectionData
-from io_scs_tools.utils import info as _info_utils
+from io_scs_tools.utils.info import get_combined_ver_str
 
 
 class Header:
@@ -39,8 +39,7 @@ class Header:
         """
         self._format_type = format_type
         self._format_version = format_version
-        (format_version, build) = _info_utils.get_blender_version()
-        self._source = "Blender " + format_version + build + ", SCS Blender Tools: " + str(_info_utils.get_tools_version())
+        self._source = get_combined_ver_str()
         self._name = name
 
     def get_as_section(self):

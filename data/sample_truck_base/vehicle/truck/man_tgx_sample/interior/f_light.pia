@@ -1,0 +1,55 @@
+Header {
+    FormatVersion: 3
+    Source: "Blender 2.74.0 (hash: 000dfc0), SCS Blender Tools: 0.5.bfcf60f"
+    Type: "Animation"
+    Name: "f_light"
+}
+Global {
+    Skeleton: "anim.pis"
+    TotalTime: 0.20833300054073334
+    BoneChannelCount: 1
+    CustomChannelCount: 0
+}
+BoneChannel {
+    Name: "joint37"
+    StreamCount: 2
+    KeyframeCount: 6
+    Stream {
+        Format: FLOAT
+        Tag: "_TIME"
+        0    ( &3d2aaa99 )
+        1    ( &3d2aaa99 )
+        2    ( &3d2aaa99 )
+        3    ( &3d2aaa99 )
+        4    ( &3d2aaa99 )
+        5    ( &3d2aaa99 )
+    }
+    Stream {
+        Format: FLOAT4x4
+        Tag: "_MATRIX"
+        0    (  &bf6ab182  &3ecc4db0  &3c8f156c  &00000000
+                &3ecc03a7  &3f692480  &3ddeb797  &00000000
+                &3ce12cf3  &3dda6f30  &bf7e714c  &00000000
+                &bd2d7a78  &bf160d52  &bf2d2caf  &3f800000 )
+        1    (  &bf6a6507  &3ecc68dd  &bd438125  &00000000
+                &3ec8be5c  &3f69aefd  &3de9b710  &00000000
+                &3db689f0  &3dafaa09  &bf7e08b6  &00000000
+                &bd2d7a79  &bf160d52  &bf2c665f  &3f800000 )
+        2    (  &bf69c51e  &3ec8776a  &bde7f9e0  &00000000
+                &3ec20078  &3f6af99d  &3df1cacb  &00000000
+                &3e19cc28  &3d84e5e8  &bf7c8cec  &00000000
+                &bd2d7a78  &bf160d52  &bf2ba010  &3f800000 )
+        3    (  &bf6859a9  &3ec28a40  &be36c591  &00000000
+                &3eb9d012  &3f6c8417  &3df87522  &00000000
+                &3e581040  &3d39afc7  &bf79f7a4  &00000000
+                &bd2d7a78  &bf160d51  &bf2ad9c0  &3f800000 )
+        4    (  &bf65b334  &3ebcce79  &be789346  &00000000
+                &3eb23ec2  &3f6ddae8  &3dff4225  &00000000
+                &3e8b02cc  &3cdfd62a  &bf7648dc  &00000000
+                &bd2d7a78  &bf160d52  &bf2a1370  &3f800000 )
+        5    (  &bf617003  &3eb97618  &be9c653a  &00000000
+                &3ead6a76  &3f6e99de  &3e03e44c  &00000000
+                &3ea9a75e  &3c233ec1  &bf718633  &00000000
+                &bd2d7a79  &bf160d51  &bf294d1f  &3f800000 )
+    }
+}

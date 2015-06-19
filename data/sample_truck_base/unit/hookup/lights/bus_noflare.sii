@@ -1,0 +1,18 @@
+SiiNunit
+{
+light_source : bus_noflare
+{
+	ambient_color: (0.0000, 0.0000, 0.0000)
+	diffuse_color: (0.5, 0.4, 0.2)
+	specular_color: (0.1, 0.1, 0.1)
+
+	range: 15
+	cut_range: 15
+	inner_angle: 100.0
+	outer_angle: 170.0
+	attenuation_start_range: 5
+	forward_distance: false
+
+}
+
+}

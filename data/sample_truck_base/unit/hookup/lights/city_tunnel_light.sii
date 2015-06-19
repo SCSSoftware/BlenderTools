@@ -1,0 +1,17 @@
+SiiNunit
+{
+light_source : city.tunnel.light
+{
+	ambient_color: (0.0000, 0.0000, 0.0000)
+	diffuse_color: (0.865, 0.968, 1.0)
+	specular_color: (0.703, 0.881, 1)
+
+	type: point
+	range: 14
+
+  always_on: true
+
+
+}
+
+}

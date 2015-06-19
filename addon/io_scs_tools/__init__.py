@@ -22,7 +22,7 @@ bl_info = {
     "name": "SCS Tools",
     "description": "Setup models, Import-Export SCS data format",
     "author": "Milos Zajic (4museman), Simon Lusenc (50keda)",
-    "version": (0, 5),
+    "version": (0, 6, "792edf5"),
     "blender": (2, 73, 0),
     "location": "File > Import-Export",
     "warning": "WIP - beta version, doesn't include all features!",
@@ -30,6 +30,18 @@ bl_info = {
     "tracker_url": "http://forum.scssoft.com/viewforum.php?f=165",
     "support": "COMMUNITY",
     "category": "Import-Export"}
+
+
+def get_tools_version():
+    """Returns Blender Tools version as string from bl_info["version"] dictonary value.
+    :return: string representation of bl_info["version"] tuple
+    :rtype: str
+    """
+    ver = ""
+    for ver_num in bl_info["version"]:
+        ver += str(ver_num) + "."
+    return ver[:-1]
+
 
 import bpy
 import os
@@ -55,6 +67,7 @@ class ImportSCS(bpy.types.Operator, ImportHelper):
     """
     bl_idname = "import_mesh.pim"
     bl_label = "SCS Import"
+    bl_description = "Load various SCS file formats containing geometries and numerous settings."
     bl_options = {'UNDO'}
 
     files = CollectionProperty(name="File Path",
@@ -185,6 +198,7 @@ class ExportSCS(bpy.types.Operator, ExportHelper):
     """
     bl_idname = "export_mesh.pim"
     bl_label = "SCS Export"
+    bl_description = "Export complex geometries to the SCS file formats."
 
     filename_ext = ".pim"
     filter_glob = StringProperty(default=str("*" + filename_ext), options={'HIDDEN'})
@@ -295,8 +309,8 @@ def register():
         type=properties.object.ObjectAnimationInventory
     )
 
-    bpy.types.Scene.scs_shader_presets_inventory = CollectionProperty(
-        type=properties.scene.SceneShaderPresetsInventory
+    bpy.types.World.scs_shader_presets_inventory = CollectionProperty(
+        type=properties.world.SceneShaderPresetsInventory
     )
 
     # bpy.types.Scene.scs_cgfx_template_inventory = CollectionProperty(
@@ -313,7 +327,7 @@ def register():
 
     bpy.types.World.scs_globals = PointerProperty(
         name="SCS Tools Global Variables",
-        type=properties.scene.GlobalSCSProps,
+        type=properties.world.GlobalSCSProps,
         description="SCS Tools global variables",
     )
 
@@ -333,12 +347,6 @@ def register():
         name="SCS Tools Mesh Variables",
         type=properties.mesh.MeshSCSTools,
         description="SCS Tools Mesh variables",
-    )
-
-    bpy.types.Armature.scs_props = PointerProperty(
-        name="SCS Tools Armature Variables",
-        type=properties.armature.ArmatureSCSTools,
-        description="SCS Tools Armature variables",
     )
 
     bpy.types.Material.scs_props = PointerProperty(
@@ -381,7 +389,6 @@ def unregister():
     # REMOVE PROPERTIES FROM DATA
     del bpy.types.Action.scs_props
     del bpy.types.Material.scs_props
-    del bpy.types.Armature.scs_props
     del bpy.types.Mesh.scs_props
     del bpy.types.Scene.scs_props
     del bpy.types.Object.scs_props
@@ -391,7 +398,7 @@ def unregister():
     del bpy.types.Object.scs_object_part_inventory
     del bpy.types.Object.scs_object_variant_inventory
     del bpy.types.Object.scs_object_animation_inventory
-    del bpy.types.Scene.scs_shader_presets_inventory
+    del bpy.types.World.scs_shader_presets_inventory
 
 
 if __name__ == "__main__":

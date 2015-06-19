@@ -43,7 +43,7 @@ def _draw_shader_presets(layout, scs_props, scs_globals, read_only=False):
         panel_header_2 = panel_header.row(align=True)
         panel_header_2.alignment = 'RIGHT'
         panel_header_2a = panel_header_2.row()
-        panel_header_2a.prop(scs_props, 'shader_preset_list_sorted', text='', icon='SORTALPHA', expand=True, toggle=True)
+        panel_header_2a.prop(scs_globals, 'shader_preset_list_sorted', text='', icon='SORTALPHA', expand=True, toggle=True)
 
         layout_box_row = layout_box.row(align=True)
         if _path_utils.is_valid_shader_presets_library_path():
@@ -54,11 +54,19 @@ def _draw_shader_presets(layout, scs_props, scs_globals, read_only=False):
         layout_box_row.operator('scene.select_shader_presets_filepath', text='', icon='FILESEL')
 
         layout_box_row = layout_box.column()
-        layout_box_row.prop(scs_props, 'shader_preset_list', expand=True, toggle=True)
+        layout_box_row.prop(scs_globals, 'shader_preset_list', expand=True, toggle=True)
     else:
-        layout_box_row = layout_box.row()
+        layout_box_row = layout_box.row().split(percentage=0.4)
         layout_box_row.prop(scs_props, 'shader_presets_expand', text="Shader Presets:", icon='TRIA_RIGHT', icon_only=True, emboss=False)
-        layout_box_row.prop(scs_props, 'shader_preset_list', text='')
+
+        column = layout_box_row.column(align=True)
+
+        row = column.row(align=True)
+        row.prop(scs_globals, 'shader_preset_list', text='')
+        row.prop(scs_globals, "shader_preset_use_search", icon="VIEWZOOM", icon_only=True, toggle=True)
+
+        if scs_globals.shader_preset_use_search:
+            column.prop_search(scs_globals, "shader_preset_search_value", bpy.data.worlds[0], "scs_shader_presets_inventory", text="", icon="BLANK1")
 
 
 def _draw_shader_attribute(layout, mat, split_perc, attribute):
@@ -298,7 +306,10 @@ def _draw_shader_texture(layout, mat, split_perc, texture, read_only):
 
                 # add info about normal map uv mapping property in case of imported shader
                 if read_only and tag_id_string == "texture_nmap":
-                    item_space_row.operator("material.show_normal_maps_mapping_info", text="", icon="INFO")
+                    preview_nmap_msg = str("Maping value for normal maps is in the case of imported shader\n"
+                                           "also used for defining uv map layer for tangent calculations!\n"
+                                           "If the uv map is not provided first entry from Mappings list above will be used!")
+                    _shared.draw_warning_operator(item_space_row, "Mapping Info", preview_nmap_msg, icon="INFO")
 
                 # add ensuring operator for norma map uv mapping
                 if tag_id_string == "texture_nmap":

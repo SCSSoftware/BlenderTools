@@ -1,0 +1,10 @@
+SiiNunit
+{
+flare_vehicle: flare.vehicle.high_beam
+{
+	dir_type: narrow
+	light_type: high_beam
+	model: "/model/flare/vehicle_headl.pmd"
+	scale_factor: 5
+}
+}

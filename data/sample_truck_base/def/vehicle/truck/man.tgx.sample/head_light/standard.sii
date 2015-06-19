@@ -1,0 +1,60 @@
+SiiNunit
+{
+accessory_head_lights_data : std.man.tgx.sample.head_lights
+{
+	name: "@@halogen@@"
+	price: 180
+	unlock: 0
+	icon: "lamp_standard_01"
+	reflectors_offset : (0.0, 1.0, -2.0)
+	reflectors_distance : 1.8
+	left_rot : (-2.5, 0.0, 0.0)
+	right_rot : (-2.5, 0.0, 0.0)
+	low_beam_color : (2.82, 2.64, 1.77)
+	low_beam_color_specular : (0.0129, 0.0129, 0.0129)
+	low_beam_color_ambient :  (0.2158, 0.2158, 0.2158)
+	low_beam_range : 90.0
+	low_beam_angle : 80.0
+	low_beam_aspect : 2
+	low_beam_sign_color: (0.05, 0.05, 0.05)
+	low_beam_sign_range: 200
+	low_beam_mask: "/material/custom/trucklight_mask_norm.tobj"
+	low_beam_attenuation: "/material/custom/trucklight_attn_128.tobj"
+	hi_beam_color : (5.58, 5.22, 3.48)
+	hi_beam_color_specular : (0.0129, 0.0129, 0.0129)
+	hi_beam_color_ambient : (0.2158, 0.2158, 0.2158)
+	hi_beam_range : 220.0
+	hi_beam_angle : 70.0
+	hi_beam_aspect : 2
+	hi_beam_sign_color: (0.2, 0.2, 0.2)
+	hi_beam_sign_range: 200
+	hi_beam_mask: "/material/custom/trucklight_mask_high.tobj"
+	front_beam_color : (5.58, 5.22, 3.48)
+	front_beam_color_specular : (0.0129, 0.0129, 0.0129)
+	front_beam_color_ambient : (0.2158, 0.2158, 0.2158)
+	front_beam_range : 300.0
+	front_beam_angle : 90.0
+	front_beam_aspect : 2
+	front_beam_sign_color: (0.2, 0.2, 0.2)
+	front_beam_sign_range: 210
+	front_beam_mask: "/material/custom/trucklight_mask_lowbeam.tobj"
+	roof_beam_color : (5.58, 5.22, 3.48)
+	roof_beam_color_specular : (0.0129, 0.0129, 0.0129)
+	roof_beam_color_ambient : (0.2158, 0.2158, 0.2158)
+	roof_beam_range : 260.0
+	roof_beam_angle : 90.0
+	roof_beam_aspect : 2
+	roof_beam_sign_color: (0.2, 0.2, 0.2)
+	roof_beam_sign_range: 200
+	roof_beam_mask: "/material/custom/trucklight_mask_roof.tobj"
+	front_roof_beam_color : (5.58, 5.22, 3.48)
+	front_roof_beam_color_specular : (0.0129, 0.0129, 0.0129)
+	front_roof_beam_color_ambient : (0.2158, 0.2158, 0.2158)
+	front_roof_beam_range : 280.0
+	front_roof_beam_angle : 90.0
+	front_roof_beam_aspect : 2
+	front_roof_beam_sign_color: (0.2, 0.2, 0.2)
+	front_roof_beam_sign_range: 260
+	front_roof_beam_mask: "/material/custom/trucklight_mask_roofront.tobj"
+}
+}

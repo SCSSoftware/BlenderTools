@@ -168,7 +168,7 @@ def draw_debug_settings(layout):
     row.prop(_get_scs_globals(), 'dump_level', text="Dump Level")
 
 
-def draw_warning_operator(layout, title, message):
+def draw_warning_operator(layout, title, message, icon="ERROR"):
     """Draws operator for showing popup window with given title and message.
 
     :param layout: Blender UI layout to draw operator to
@@ -177,8 +177,11 @@ def draw_warning_operator(layout, title, message):
     :type title: str
     :param message: message used in popup window
     :type message: str
+    :param icon: blender icon string
+    :type icon: str
     """
-    props = layout.operator('wm.show_warning_message', text="", icon="ERROR")
+    props = layout.operator('wm.show_warning_message', text="", icon=icon)
+    props.is_modal = False
+    props.icon = icon
     props.title = title
     props.message = message
-    props.is_modal = False

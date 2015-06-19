@@ -1,0 +1,67 @@
+SiiNunit
+{
+
+garage_door : small.garage.door
+{
+	model: "/prefab/garage/door.pmd"
+	collision: "/prefab/garage/door.pmc"
+	animation: "/prefab/garage/door_open.pma"
+	trigger_distance: 17
+	sound_path: "/sound/gate.ogg"
+}
+
+garage_door : big.garage.door
+{
+	model: "/prefab/garage/door_expensive.pmd"
+	animation: "/prefab/garage/door_exp.pma"
+	collision: "/prefab/garage/door_expensive.pmc"
+	trigger_distance: 18
+	sound_path: "/sound/gate.ogg"
+}
+
+garage_door : poor.garage.door
+{
+	model: "/prefab/garage/door_poor.pmd"
+	animation: "/prefab/garage/door_poor.pma"
+	collision: "/prefab/garage/door_poor.pmc"
+	trigger_distance: 18
+	sound_path: "/sound/gate.ogg"
+}
+
+garage_door : car.garage.door
+{
+	model: "/prefab/car_factory/gate.pmd"
+	animation: "/prefab/car_factory/gate_open.pma"
+	collision: "/prefab/car_factory/gate.pmc"
+	trigger_distance: 10
+	sound_path: "/sound/gate.ogg"
+}
+
+garage_door : poor.garage.sc.door
+{
+	model: "/prefab/garage_scandinavia/door_poor_sc.pmd"
+	animation: "/prefab/garage/door_poor.pma"
+	collision: "/prefab/garage_scandinavia/door_poor_sc.pmc"
+	trigger_distance: 18
+	sound_path: "/sound/gate.ogg"
+}
+
+garage_door : garage.door.sc
+{
+	model: "/prefab/garage_scandinavia/door_sc.pmd"
+	collision: "/prefab/garage_scandinavia/door_sc.pmc"
+	animation: "/prefab/garage_scandinavia/door.pma"
+	trigger_distance: 17
+	sound_path: "/sound/gate.ogg"
+}
+
+garage_door : garage.door.exp.sc
+{
+	model: "/prefab/garage_scandinavia/door_expensive_sc.pmd"
+	collision: "/prefab/garage_scandinavia/door_expensive_sc.pmc"
+	animation: "/prefab/garage_scandinavia/door_exp.pma"
+	trigger_distance: 18
+	sound_path: "/sound/gate.ogg"
+}
+
+}

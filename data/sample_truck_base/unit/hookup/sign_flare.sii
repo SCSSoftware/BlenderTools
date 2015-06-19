@@ -1,0 +1,8 @@
+SiiNunit
+{
+flare_lamp : flare.lamp.sign
+{
+	dir_type: wide
+	model: "/model/flare/lamp_flare_verysmall.pmd"
+}
+}

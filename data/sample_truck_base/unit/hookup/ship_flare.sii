@@ -1,0 +1,8 @@
+SiiNunit
+{
+flare_lamp : flare.ship.flare
+{
+	dir_type: all
+	model: "/model/flare/ship_flare.pmd"
+}
+}

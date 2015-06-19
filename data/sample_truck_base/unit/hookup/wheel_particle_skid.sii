@@ -1,0 +1,42 @@
+SiiNunit
+{
+vehicle_particle : wheel.particle.skid {
+ gen_array: 1
+ gen_array[0]: _nameless.0BB4.70F0
+}
+
+particle_gen : _nameless.0BB4.70F0 {
+ list_order_up: false
+ blend_alpha: true
+ gen_pos: (0, 0, 0)
+ scale_acc: &3d4ccccd
+ rotation_speed: 109
+ alpha_blend_coef: &3da3d70a
+ base_alpha: &3ecccccd
+ alpha_attack_time: &3e4ccccd
+ flow_speed: (1, &3fe8f5c3, 0)
+ flow_speed_acc: (0, &c089999a, &3ca3d70a)
+ particle_size: (&3ecccccd, &3ecccccd)
+ particle_size_var: (&3dcccccc, &3dcccccc)
+ particle_displacement: (&3e19999a, &3e800000, &3e19999a)
+ color_multiplier: 4294967295
+ key_pos: 5
+ key_pos[0]: 0
+ key_pos[1]: 56
+ key_pos[2]: 111
+ key_pos[3]: 148
+ key_pos[4]: 255
+ key_color: 5
+ key_color[0]: 4607573
+ key_color[1]: 6316128
+ key_color[2]: 9211020
+ key_color[3]: 9737364
+ key_color[4]: 12435652
+ time_to_live: &3fc00000
+ particles_max_count: 19
+ relative_space: false
+ model_path: "/model/particle/smoke.pmd"
+ model_look: skid
+}
+
+}

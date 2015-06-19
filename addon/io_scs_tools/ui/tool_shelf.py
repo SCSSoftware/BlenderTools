@@ -432,3 +432,17 @@ class SCSVertexColorWrapTool(_ToolShelfBlDefs, Panel):
         body_row = body_col.row(align=True)
         props = body_row.operator("mesh.scs_wrap_vcol", text="Wrap Selected")
         props.wrap_type = "selected"
+
+
+class SCSVertexColorStatsTool(_ToolShelfBlDefs, Panel):
+    bl_label = "Stats Tool"
+
+    @classmethod
+    def poll(cls, context):
+        return context.vertex_paint_object
+
+    def draw(self, context):
+        layout = self.layout
+
+        body_row = layout.row(align=True)
+        body_row.operator("mesh.scs_get_vcol_stats")

@@ -1,0 +1,45 @@
+Header {
+    FormatVersion: 3
+    Source: "Blender 2.74.0 (hash: 000dfc0), SCS Blender Tools: 0.5.bfcf60f"
+    Type: "Animation"
+    Name: "fuel"
+}
+Global {
+    Skeleton: "anim.pis"
+    TotalTime: 0.125
+    BoneChannelCount: 1
+    CustomChannelCount: 0
+}
+BoneChannel {
+    Name: "joint27"
+    StreamCount: 2
+    KeyframeCount: 4
+    Stream {
+        Format: FLOAT
+        Tag: "_TIME"
+        0    ( &3d2aaaab )
+        1    ( &3d2aaaab )
+        2    ( &3d2aaaab )
+        3    ( &3d2aaaab )
+    }
+    Stream {
+        Format: FLOAT4x4
+        Tag: "_MATRIX"
+        0    (  &b9fe091a  &3ef1e9ff  &3f619f50  &00000000
+                &bef6e74b  &3f45a05c  &bed40849  &00000000
+                &bf604453  &bed9b53f  &3e68ef60  &00000000
+                &be1b5880  &bf0b23ec  &bf53f0f1  &3f800000 )
+        1    (  &b9fe0876  &3ef1e9ff  &3f619f50  &00000000
+                &be28ef5d  &3f5e855e  &beeea29c  &00000000
+                &bf7c7e01  &be151eba  &3d9ec6f7  &00000000
+                &be1b5880  &bf0b23ec  &bf53f0f1  &3f800000 )
+        2    (  &b9fe0847  &3ef1e9ff  &3f619f50  &00000000
+                &3e2efe89  &3f5e5033  &beee5166  &00000000
+                &bf7c3bed  &3e19ff7a  &bda63a2b  &00000000
+                &be1b5880  &bf0b23ec  &bf53f0f1  &3f800000 )
+        3    (  &b9fe0777  &3ef1e9ff  &3f619f50  &00000000
+                &3ef9976b  &3f4506d0  &bed31dc6  &00000000
+                &bf5f8594  &3edbdf32  &be6c3d6a  &00000000
+                &be1b5880  &bf0b23ec  &bf53f0f1  &3f800000 )
+    }
+}

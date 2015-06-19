@@ -1,0 +1,58 @@
+Header {
+    FormatVersion: 3
+    Source: "Blender 2.74.0 (hash: 000dfc0), SCS Blender Tools: 0.5.bfcf60f"
+    Type: "Animation"
+    Name: "f_light_s"
+}
+Global {
+    Skeleton: "anim.pis"
+    TotalTime: 0.10000000149011612
+    BoneChannelCount: 2
+    CustomChannelCount: 0
+}
+BoneChannel {
+    Name: "joint10"
+    StreamCount: 2
+    KeyframeCount: 2
+    Stream {
+        Format: FLOAT
+        Tag: "_TIME"
+        0    ( &3dcccccd )
+        1    ( &3dcccccd )
+    }
+    Stream {
+        Format: FLOAT4x4
+        Tag: "_MATRIX"
+        0    (  &3f800000  &00000000  &00000000  &00000000
+                &00000000  &3f7ffffd  &00000000  &00000000
+                &00000000  &00000000  &3f7ffffd  &00000000
+                &ba34b563  &befce169  &3fa8c43d  &3f800000 )
+        1    (  &3f800000  &00000000  &00000000  &00000000
+                &00000000  &3f7ffffd  &00000000  &00000000
+                &00000000  &00000000  &3f7ffffd  &00000000
+                &ba34b563  &befce169  &bf59c686  &3f800000 )
+    }
+}
+BoneChannel {
+    Name: "joint15"
+    StreamCount: 2
+    KeyframeCount: 2
+    Stream {
+        Format: FLOAT
+        Tag: "_TIME"
+        0    ( &3dcccccd )
+        1    ( &3dcccccd )
+    }
+    Stream {
+        Format: FLOAT4x4
+        Tag: "_MATRIX"
+        0    (  &3f800000  &00000000  &00000000  &00000000
+                &00000000  &3f7ffffd  &00000000  &00000000
+                &00000000  &00000000  &3f800000  &00000000
+                &be0ae8df  &befc0a0d  &3fa93ca2  &3f800000 )
+        1    (  &3f800000  &00000000  &00000000  &00000000
+                &00000000  &3f7ffffd  &00000000  &00000000
+                &00000000  &00000000  &3f800000  &00000000
+                &be0ae8df  &befc0a0d  &bf58d5bc  &3f800000 )
+    }
+}

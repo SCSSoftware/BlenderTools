@@ -1,0 +1,16 @@
+SiiNunit
+{
+light_source : ship.light
+{
+	ambient_color: (0.0000, 0.0000, 0.0000)
+	diffuse_color: (0.7953, 0.8895, 1)
+	specular_color: (0.4194, 0.4682, 0.5252)
+
+	range: 19.0
+	cut_range: 17.0
+	inner_angle: 80.0
+	outer_angle: 150.0
+
+}
+
+}

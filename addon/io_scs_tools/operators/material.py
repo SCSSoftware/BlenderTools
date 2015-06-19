@@ -37,6 +37,7 @@ class CustomMapping:
         bl_label = "Add Custom TexCoord Mapping"
         bl_idname = "material.add_custom_tex_coord_map"
         bl_description = "Add custom TexCoord mapping to list"
+        bl_options = {'INTERNAL'}
 
         def execute(self, context):
             material = context.active_object.active_material
@@ -51,6 +52,7 @@ class CustomMapping:
         bl_label = "Remove Custom TexCoord Mapping"
         bl_idname = "material.remove_custom_tex_coord_map"
         bl_description = "Remove selected custom TexCoord mapping from list"
+        bl_options = {'INTERNAL'}
 
         def execute(self, context):
             material = context.active_object.active_material
@@ -59,21 +61,6 @@ class CustomMapping:
 
                 material.scs_props.custom_tex_coord_maps.remove(material.scs_props.active_custom_tex_coord)
 
-            return {'FINISHED'}
-
-    class NormalMapMappingInfo(bpy.types.Operator):
-        bl_label = "Mapping info for normal maps"
-        bl_idname = "material.show_normal_maps_mapping_info"
-        bl_description = "Maping value for normal maps is in the case of imported shader used for defining uv map layer for tangent calculations!"
-
-        @staticmethod
-        def popup_draw(self, context):
-            self.layout.row().label("Maping value for normal maps is in the case of imported shader")
-            self.layout.row().label("also used for defining uv map layer for tangent calculations!")
-            self.layout.row().label("If the uv map is not provided first entry from Mappings list above will be used!")
-
-        def execute(self, context):
-            bpy.context.window_manager.popup_menu(self.popup_draw, title="Mapping Info", icon="INFO")
             return {'FINISHED'}
 
 

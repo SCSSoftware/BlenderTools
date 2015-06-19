@@ -18,211 +18,233 @@
 
 # Copyright (C) 2013-2014: SCS Software
 
-import bpy
 import os
+
+import bpy
 from mathutils import Vector, Matrix, Euler, Quaternion
-from io_scs_tools.utils.printout import lprint
-from io_scs_tools.utils.info import get_tools_version as _get_tools_version
-from io_scs_tools.utils.info import get_blender_version as _get_blender_version
 from io_scs_tools.utils import convert as _convert_utils
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
+from io_scs_tools.utils.info import get_combined_ver_str
+from io_scs_tools.utils.printout import lprint
 from io_scs_tools.internals.structure import SectionData as _SectionData
 from io_scs_tools.internals.containers import pix as _pix_container
 
 
-def _get_custom_channels(action):
+def _get_custom_channels(scs_animation, action):
     custom_channels = []
-    frame_start = action.frame_range[0]
-    frame_end = action.frame_range[1]
-    total_time = action.scs_props.action_length
+    frame_start = scs_animation.anim_start
+    frame_end = scs_animation.anim_end
     anim_export_step = action.scs_props.anim_export_step
     total_frames = (frame_end - frame_start) / anim_export_step
-    for group in action.groups:
-        if group.name == 'Location':
-            # print(' A -> %s' % str(group))
-            loc_curves = {}
-            for channel in group.channels:
-                if channel.data_path.endswith("location"):
-                    # data_path = channel.data_path
-                    array_index = channel.array_index
-                    # print(' a -> %s (%i)' % (data_path, array_index))
-                    loc_curves[array_index] = channel
 
-            # GO THOUGH FRAMES
-            actual_frame = frame_start
-            previous_frame_value = None
-            timings_stream = []
-            movement_stream = []
-            while actual_frame <= frame_end:
-                location = Vector()
+    loc_curves = {}  # dictionary for storing "location" curves of action
 
-                # LOCATION MATRIX
-                if len(loc_curves) > 0:
-                    for index in range(3):
-                        if index in loc_curves:
-                            location[index] = loc_curves[index].evaluate(actual_frame)
+    # get curves which are related to moving of armature object
+    for fcurve in action.fcurves:
+        if fcurve.data_path == 'location':
+            loc_curves[fcurve.array_index] = fcurve
 
-                    # COMPUTE SCS FRAME LOCATION
-                    frame_loc = _convert_utils.convert_location_to_scs(location)
+    # write custom channel only if location curves were found
+    if len(loc_curves) > 0:
 
-                if previous_frame_value is None:
-                    previous_frame_value = frame_loc
-                frame_movement = frame_loc - previous_frame_value
+        # GO THOUGH FRAMES
+        actual_frame = frame_start
+        previous_frame_value = None
+        timings_stream = []
+        movement_stream = []
+        while actual_frame <= frame_end:
+            location = Vector()
+
+            # LOCATION MATRIX
+            if len(loc_curves) > 0:
+                for index in range(3):
+                    if index in loc_curves:
+                        location[index] = loc_curves[index].evaluate(actual_frame)
+
+                # COMPUTE SCS FRAME LOCATION
+                frame_loc = _convert_utils.convert_location_to_scs(location)
+
+            if previous_frame_value is None:
                 previous_frame_value = frame_loc
 
-                lprint('S actual_frame: %s - value: %s', (actual_frame, frame_loc))
-                timings_stream.append(("__time__", total_time / total_frames), )
-                movement_stream.append(frame_movement)
-                actual_frame += anim_export_step
-            anim_timing = ("_TIME", timings_stream)
-            anim_movement = ("_MOVEMENT", movement_stream)
-            bone_anim = (anim_timing, anim_movement)
-            bone_data = ("Prism Movement", bone_anim)
-            custom_channels.append(bone_data)
+            frame_movement = frame_loc - previous_frame_value
+            previous_frame_value = frame_loc
 
-    # TODO: Channels can be outside of action groups, but I'm not sure if it practically can occur.
-    # for x in action.fcurves:
-    # if x.data_path == 'location':
-    # print(' B -> %s' % str(x.data_path))
+            lprint('S actual_frame: %s - value: %s', (actual_frame, frame_loc))
+            timings_stream.append(("__time__", scs_animation.length / total_frames), )
+            movement_stream.append(frame_movement)
+            actual_frame += anim_export_step
+
+        anim_timing = ("_TIME", timings_stream)
+        anim_movement = ("_MOVEMENT", movement_stream)
+        bone_anim = (anim_timing, anim_movement)
+        bone_data = ("Prism Movement", bone_anim)
+        custom_channels.append(bone_data)
 
     return custom_channels
 
 
-def _get_bone_channels(bone_list, action, export_scale):
-    """Takes a bone list and action and returns bone channels.
+def _get_bone_channels(scs_root_obj, armature, scs_animation, action, export_scale):
+    """Takes armature and action and returns bone channels.
     bone_channels structure example:
     [("Bone", [("_TIME", [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1]), ("_MATRIX", [])])]"""
     bone_channels = []
-    frame_start = action.frame_range[0]
-    frame_end = action.frame_range[1]
-    total_time = action.scs_props.action_length
+    frame_start = scs_animation.anim_start
+    frame_end = scs_animation.anim_end
     anim_export_step = action.scs_props.anim_export_step
     total_frames = (frame_end - frame_start) / anim_export_step
-    # print(' -- action: %r' % str(action))
-    for bone in bone_list:
-        # print(' oo bone: %r' % str(bone))
-        if bone:
-            # print(' -- bone_name: %r' % bone.name)
-            bone_name = bone.name
-            bone_rest_mat = bone.matrix_local
-            if bone.parent:
-                parent_bone_rest_mat = Matrix.Scale(export_scale, 4) * _convert_utils.scs_to_blend_matrix().inverted() * bone.parent.matrix_local
-            else:
-                parent_bone_rest_mat = Matrix()
-            for group in action.groups:
-                if group.name == bone_name:
-                    # print(' -- group: %r' % str(group))
 
-                    # GET CHANELS' CURVES
-                    loc_curves = {}
-                    euler_rot_curves = {}
-                    quat_rot_curves = {}
-                    sca_curves = {}
-                    rot_mode = ''
-                    for channel in group.channels:
-                        data_path = channel.data_path
-                        array_index = channel.array_index
-                        # channel_start = channel.range()[0]
-                        # channel_end = channel.range()[1]
-                        # print('      channel: %r (%s) [%s - %s]' % (data_path, array_index, channel_start, channel_end))
-                        if data_path.endswith("location"):
-                            loc_curves[array_index] = channel
-                        elif data_path.endswith("rotation_euler"):
-                            euler_rot_curves[array_index] = channel
-                            rot_mode = 'euler'
-                        elif data_path.endswith("rotation_quaternion"):
-                            quat_rot_curves[array_index] = channel
-                            rot_mode = 'quat'
-                        elif data_path.endswith("scale"):
-                            sca_curves[array_index] = channel
+    # armature matrix stores transformation of armature object against scs root
+    # and has to be added to all bones as they only armature space transformations
+    armature_mat = scs_root_obj.matrix_world.inverted() * armature.matrix_world
 
-                    # GO THOUGH FRAMES
-                    actual_frame = frame_start
-                    timings_stream = []
-                    matrices_stream = []
-                    while actual_frame <= frame_end:
-                        mat_loc = Matrix()
-                        mat_rot = Matrix()
-                        mat_sca = Matrix()
+    invalid_data = False  # flag to indicate invalid data state
+    curves_per_bone = {}  # store all the curves we are interested in per bone names
 
-                        # LOCATION MATRIX
-                        if len(loc_curves) > 0:
-                            location = Vector()
-                            for index in range(3):
-                                if index in loc_curves:
-                                    location[index] = loc_curves[index].evaluate(actual_frame)
-                            mat_loc = Matrix.Translation(location)
+    for bone in armature.data.bones:
+        for fcurve in action.fcurves:
 
-                        # ROTATION MATRIX
-                        if rot_mode == 'euler' and len(euler_rot_curves) > 0:
-                            rotation = Euler()
-                            for index in range(3):
-                                if index in euler_rot_curves:
-                                    rotation[index] = euler_rot_curves[index].evaluate(actual_frame)
-                            mat_rot = Euler(rotation, 'XYZ').to_matrix().to_4x4()  # TODO: Solve the other rotation modes.
-                        if rot_mode == 'quat' and len(quat_rot_curves) > 0:
-                            rotation = Quaternion()
-                            for index in range(4):
-                                if index in quat_rot_curves:
-                                    rotation[index] = quat_rot_curves[index].evaluate(actual_frame)
-                            mat_rot = rotation.to_matrix().to_4x4()
+            # check if curve belongs to bone
+            if '["' + bone.name + '"]' in fcurve.data_path:
 
-                        # SCALE MATRIX
-                        if len(sca_curves) > 0:
-                            scale = Vector((1.0, 1.0, 1.0))
-                            for index in range(3):
-                                if index in sca_curves:
-                                    scale[index] = sca_curves[index].evaluate(actual_frame)
-                            mat_sca = Matrix()
-                            mat_sca[0] = (scale[0], 0, 0, 0)
-                            mat_sca[1] = (0, scale[2], 0, 0)
-                            mat_sca[2] = (0, 0, scale[1], 0)
-                            mat_sca[3] = (0, 0, 0, 1)
+                data_path = fcurve.data_path
+                array_index = fcurve.array_index
 
-                        # BLENDER FRAME MATRIX
-                        mat = mat_loc * mat_rot * mat_sca
+                if data_path.endswith("location"):
+                    curve_type = "location"
+                elif data_path.endswith("rotation_euler"):
+                    curve_type = "euler_rotation"
+                elif data_path.endswith("rotation_quaternion"):
+                    curve_type = "quat_rotation"
+                elif data_path.endswith("scale"):
+                    curve_type = "scale"
+                else:
+                    curve_type = None
 
-                        # SCALE REMOVAL MATRIX
-                        rest_location, rest_rotation, rest_scale = bone_rest_mat.decompose()
-                        # print(' BONES rest_scale: %s' % str(rest_scale))
-                        rest_scale = rest_scale * export_scale
-                        scale_removal_matrix = Matrix()
-                        scale_removal_matrix[0] = (1.0 / rest_scale[0], 0, 0, 0)
-                        scale_removal_matrix[1] = (0, 1.0 / rest_scale[1], 0, 0)
-                        scale_removal_matrix[2] = (0, 0, 1.0 / rest_scale[2], 0)
-                        scale_removal_matrix[3] = (0, 0, 0, 1)
+                # write only recognized curves
+                if curve_type is not None:
+                    if bone.name not in curves_per_bone:
+                        curves_per_bone[bone.name] = {
+                            "location": {},
+                            "euler_rotation": {},
+                            "quat_rotation": {},
+                            "scale": {}
+                        }
 
-                        # SCALE MATRIX
-                        scale_matrix = Matrix.Scale(export_scale, 4)
+                    curves_per_bone[bone.name][curve_type][array_index] = fcurve
 
-                        # COMPUTE SCS FRAME MATRIX
-                        frame_matrix = (parent_bone_rest_mat.inverted() * _convert_utils.scs_to_blend_matrix().inverted() *
-                                        scale_matrix.inverted() * bone_rest_mat * mat * scale_removal_matrix.inverted())
+    for bone_name, bone_curves in curves_per_bone.items():
 
-                        # print('          actual_frame: %s - value: %s' % (actual_frame, frame_matrix))
-                        timings_stream.append(("__time__", total_time / total_frames), )
-                        matrices_stream.append(("__matrix__", frame_matrix.transposed()), )
-                        actual_frame += anim_export_step
-                    anim_timing = ("_TIME", timings_stream)
-                    anim_matrices = ("_MATRIX", matrices_stream)
-                    bone_anim = (anim_timing, anim_matrices)
-                    bone_data = (bone_name, bone_anim)
-                    bone_channels.append(bone_data)
+        bone = armature.data.bones[bone_name]
+        pose_bone = armature.pose.bones[bone_name]
+        loc_curves = bone_curves["location"]
+        euler_rot_curves = bone_curves["euler_rotation"]
+        quat_rot_curves = bone_curves["quat_rotation"]
+        sca_curves = bone_curves["scale"]
+
+        bone_rest_mat = armature_mat * bone.matrix_local
+        if bone.parent:
+            parent_bone_rest_mat = (Matrix.Scale(export_scale, 4) * _convert_utils.scs_to_blend_matrix().inverted() *
+                                    armature_mat * bone.parent.matrix_local)
         else:
-            lprint('W bone %r is not part of the actual Armature!', bone.name)
-            # print(' -- bone.name: %r' % (bone.name))
+            parent_bone_rest_mat = Matrix()
+
+        # GO THOUGH FRAMES
+        actual_frame = frame_start
+        timings_stream = []
+        matrices_stream = []
+        while actual_frame <= frame_end:
+            mat_loc = Matrix()
+            mat_rot = Matrix()
+            mat_sca = Matrix()
+
+            # LOCATION MATRIX
+            if len(loc_curves) > 0:
+                location = Vector()
+                for index in range(3):
+                    if index in loc_curves:
+                        location[index] = loc_curves[index].evaluate(actual_frame)
+                mat_loc = Matrix.Translation(location)
+
+            # ROTATION MATRIX
+            if len(euler_rot_curves) > 0:
+                rotation = Euler()
+                for index in range(3):
+                    if index in euler_rot_curves:
+                        rotation[index] = euler_rot_curves[index].evaluate(actual_frame)
+                mat_rot = Euler(rotation, pose_bone.rotation_mode).to_matrix().to_4x4()  # calc rotation by pose rotation mode
+
+            elif len(quat_rot_curves) > 0:
+                rotation = Quaternion()
+                for index in range(4):
+                    if index in quat_rot_curves:
+                        rotation[index] = quat_rot_curves[index].evaluate(actual_frame)
+                mat_rot = rotation.to_matrix().to_4x4()
+
+            # SCALE MATRIX
+            if len(sca_curves) > 0:
+                scale = Vector((1.0, 1.0, 1.0))
+                for index in range(3):
+                    if index in sca_curves:
+                        scale[index] = sca_curves[index].evaluate(actual_frame)
+
+                        if scale[index] < 0:
+                            lprint(str("E Negative scale detected on bone %r:\n\t   "
+                                       "(Action: %r, keyframe no.: %s, SCS Animation: %r)."),
+                                   (bone_name, action.name, actual_frame, scs_animation.name))
+                            invalid_data = True
+
+                mat_sca = Matrix()
+                mat_sca[0] = (scale[0], 0, 0, 0)
+                mat_sca[1] = (0, scale[2], 0, 0)
+                mat_sca[2] = (0, 0, scale[1], 0)
+                mat_sca[3] = (0, 0, 0, 1)
+
+            # BLENDER FRAME MATRIX
+            mat = mat_loc * mat_rot * mat_sca
+
+            # SCALE REMOVAL MATRIX
+            rest_location, rest_rotation, rest_scale = bone_rest_mat.decompose()
+            # print(' BONES rest_scale: %s' % str(rest_scale))
+            rest_scale = rest_scale * export_scale
+            scale_removal_matrix = Matrix()
+            scale_removal_matrix[0] = (1.0 / rest_scale[0], 0, 0, 0)
+            scale_removal_matrix[1] = (0, 1.0 / rest_scale[1], 0, 0)
+            scale_removal_matrix[2] = (0, 0, 1.0 / rest_scale[2], 0)
+            scale_removal_matrix[3] = (0, 0, 0, 1)
+
+            # SCALE MATRIX
+            scale_matrix = Matrix.Scale(export_scale, 4)
+
+            # COMPUTE SCS FRAME MATRIX
+            frame_matrix = (parent_bone_rest_mat.inverted() * _convert_utils.scs_to_blend_matrix().inverted() *
+                            scale_matrix.inverted() * bone_rest_mat * mat * scale_removal_matrix.inverted())
+
+            # print('          actual_frame: %s - value: %s' % (actual_frame, frame_matrix))
+            timings_stream.append(("__time__", scs_animation.length / total_frames), )
+            matrices_stream.append(("__matrix__", frame_matrix.transposed()), )
+            actual_frame += anim_export_step
+
+        anim_timing = ("_TIME", timings_stream)
+        anim_matrices = ("_MATRIX", matrices_stream)
+        bone_anim = (anim_timing, anim_matrices)
+        bone_data = (bone_name, bone_anim)
+        bone_channels.append(bone_data)
+
+    # return empty bone channels if data are invalid
+    if invalid_data:
+        return []
+
     return bone_channels
 
 
-def _fill_header_section(action, sign_export):
+def _fill_header_section(anim_name, sign_export):
     """Fills up "Header" section."""
     section = _SectionData("Header")
     section.props.append(("FormatVersion", 3))
-    blender_version, blender_build = _get_blender_version()
-    section.props.append(("Source", "Blender " + blender_version + blender_build + ", SCS Blender Tools: " + str(_get_tools_version())))
+    section.props.append(("Source", get_combined_ver_str()))
     section.props.append(("Type", "Animation"))
-    # section.props.append(("Name", str(os.path.basename(bpy.data.filepath)[:-6])))
-    section.props.append(("Name", action.name))
+    section.props.append(("Name", anim_name))
     if sign_export:
         section.props.append(("SourceFilename", str(bpy.data.filepath)))
         author = bpy.context.user_preferences.system.author
@@ -234,7 +256,7 @@ def _fill_header_section(action, sign_export):
 def _fill_global_section(skeleton_file, total_time, bone_channel_cnt, custom_channel_cnt):
     """Fills up "Global" section."""
     section = _SectionData("Global")
-    section.props.append(("Skeleton", skeleton_file))
+    section.props.append(("Skeleton", skeleton_file.replace("\\", "/")))
     section.props.append(("TotalTime", total_time))
     # section.props.append(("#", "...in seconds"))
     section.props.append(("BoneChannelCount", bone_channel_cnt))
@@ -257,42 +279,52 @@ def _fill_channel_sections(data_list, channel_type="BoneChannel"):
     return sections
 
 
-def export(armature, bone_list, filepath, filename):
+def export(scs_root_obj, armature, scs_animation, dirpath, skeleton_filepath):
     """Exports PIA animation
 
-
-    :param armature:
-    :type armature:
-    :param bone_list:
-    :type bone_list:
-    :param filepath: path to export
-    :type filepath: str
-    :param filename: name of exported file
-    :type filename: str
-    :return:
-    :rtype:
+    :param scs_root_obj: root object of current animation
+    :type scs_root_obj: bpy.types.Object
+    :param armature: armature object of current animation
+    :type armature: bpy.types.Object
+    :param scs_animation: animation which should get exported
+    :type scs_animation: io_scs_tools.properties.object.ObjectAnimationInventory
+    :param dirpath: path to export
+    :type dirpath: str
+    :param skeleton_filepath: name of skeleton file that this animation works on
+    :type skeleton_filepath: str
     """
-    scs_globals = _get_scs_globals()
-    # anim_file_name = os.path.splitext(os.path.split(filepath)[1])[0]
 
+    # safety checks
+    if scs_animation.action not in bpy.data.actions:
+        lprint(str("E Action %r requested by %r animation doesn't exists. Animation won't be exported!\n\t   "
+                   "Make sure proper action is assigned to SCS Animation."),
+               (scs_animation.action, scs_animation.name))
+        return False
+
+    scs_globals = _get_scs_globals()
     print("\n************************************")
     print("**      SCS PIA Exporter          **")
     print("**      (c)2014 SCS Software      **")
     print("************************************\n")
 
     # DATA GATHERING
-    skeleton_file = str(filename + ".pis")
-    action = armature.animation_data.action
-    total_time = action.scs_props.action_length
-    anim_export_filepath = action.scs_props.anim_export_filepath
-    bone_channels = _get_bone_channels(bone_list, action, scs_globals.export_scale)
-    custom_channels = _get_custom_channels(action)
+    total_time = scs_animation.length
+    action = bpy.data.actions[scs_animation.action]
+    bone_channels = _get_bone_channels(scs_root_obj, armature, scs_animation, action, scs_globals.export_scale)
+    custom_channels = _get_custom_channels(scs_animation, action)
 
     # DATA CREATION
-    header_section = _fill_header_section(action, scs_globals.sign_export)
+    header_section = _fill_header_section(scs_animation.name, scs_globals.sign_export)
     custom_channel_sections = _fill_channel_sections(custom_channels, "CustomChannel")
     bone_channel_sections = _fill_channel_sections(bone_channels, "BoneChannel")
-    global_section = _fill_global_section(skeleton_file, total_time, len(bone_channels), len(custom_channels))
+    global_section = _fill_global_section(skeleton_filepath, total_time, len(bone_channels), len(custom_channels))
+
+    # post creation safety checks
+    if len(bone_channels) + len(custom_channels) == 0:
+        lprint(str("E PIA file won't be exported, as SCS Animation %r\n\t   "
+                   "doesn't effect armature or it's bones or data are invalid."),
+               (scs_animation.name,))
+        return False
 
     # DATA ASSEMBLING
     pia_container = [header_section, global_section]
@@ -301,19 +333,9 @@ def export(armature, bone_list, filepath, filename):
     for section in bone_channel_sections:
         pia_container.append(section)
 
-    # EXPORT PIA TO CUSTOM LOCATION
-    # pia_filepath = str(filepath[:-1] + "a")
-    dir_path = os.path.dirname(filepath)
-    if anim_export_filepath:
-        if os.path.isdir(anim_export_filepath):
-            dir_path = anim_export_filepath
-        else:
-            pass  # TODO: Create location?
-
     # FILE EXPORT
     ind = "    "
-    pia_filepath = os.path.join(dir_path, str(action.name + ".pia"))
-    _pix_container.write_data_to_file(pia_container, pia_filepath, ind)
+    filepath = os.path.join(dirpath, scs_animation.name + ".pia")
 
     # print("************************************")
-    return {'FINISHED'}
+    return _pix_container.write_data_to_file(pia_container, filepath, ind)

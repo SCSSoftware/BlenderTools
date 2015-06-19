@@ -27,7 +27,8 @@ from io_scs_tools.exp import pip
 from io_scs_tools.exp import pis
 from io_scs_tools.exp import pix
 
-from io_scs_tools.utils import object as _object
+from io_scs_tools.utils import object as _object_utils
+from io_scs_tools.utils import path as _path_utils
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
 from io_scs_tools.utils.printout import lprint
 
@@ -47,22 +48,15 @@ def batch_export(operator_instance, init_obj_list, exclude_switched_off=True, me
     """
 
     lprint("", report_errors=-1, report_warnings=-1)  # Clear the 'error_messages' and 'warning_messages'
-    game_objects_dict = _object.sort_out_game_objects_for_export(init_obj_list)
+    game_objects_dict = _object_utils.sort_out_game_objects_for_export(init_obj_list)
     if exclude_switched_off:
-        game_objects_dict = _object.exclude_switched_off(game_objects_dict)
+        game_objects_dict = _object_utils.exclude_switched_off(game_objects_dict)
 
     if game_objects_dict:
         scs_game_objects_exported = []
+        scs_game_objects_rejected = []
 
-        # GET GLOBAL FILE PATH
-        scs_project_path = _get_scs_globals().scs_project_path
-        is_blend_file_within_base = bpy.data.filepath != "" and bpy.data.filepath.startswith(scs_project_path)
-        default_export_path = bpy.context.scene.scs_props.default_export_filepath
-        # if not set try to use Blender filepath
-        if default_export_path == "" and is_blend_file_within_base:
-            global_filepath = os.path.dirname(bpy.data.filepath)
-        else:
-            global_filepath = os.path.join(scs_project_path, default_export_path.strip(os.sep * 2))
+        global_filepath = _path_utils.get_global_export_path()
 
         for root_object in game_objects_dict:
 
@@ -76,16 +70,7 @@ def batch_export(operator_instance, init_obj_list, exclude_switched_off=True, me
             game_object_list = game_objects_dict[root_object]
 
             # GET CUSTOM FILE PATH
-            custom_filepath = None
-            if root_object.scs_props.scs_root_object_allow_custom_path:
-                scs_root_export_path = root_object.scs_props.scs_root_object_export_filepath
-                # if not set try to use Blender filepath
-                if scs_root_export_path == "" and is_blend_file_within_base:
-                    custom_filepath = os.path.dirname(bpy.data.filepath)
-                    print("Custom filepath for Blend file!")
-                else:
-                    custom_filepath = os.path.join(scs_project_path, scs_root_export_path.strip(os.sep * 2))
-                    print("Custom filepath:", custom_filepath)
+            custom_filepath = _path_utils.get_custom_scs_root_export_path(root_object)
 
             # MAKE FINAL FILEPATH
             if menu_filepath:
@@ -98,12 +83,12 @@ def batch_export(operator_instance, init_obj_list, exclude_switched_off=True, me
                 filepath = global_filepath
                 filepath_message = "Default export path used for \"" + root_object.name + "\":\n\t   \"" + filepath + "\""
 
-            # print(' filepath (%r):\n%r' % (root_object.name, str(filepath)))
             scs_project_path = _get_scs_globals().scs_project_path
             if os.path.isdir(filepath) and filepath.startswith(scs_project_path) and scs_project_path != "":
-                pix.export(filepath, root_object, game_object_list)
-                scs_game_objects_exported.append("> \"" + root_object.name + "\" exported to: '" + filepath + "'")
-                # if result != {'FINISHED'}: return {'CANCELLED'}
+                if pix.export(filepath, root_object, game_object_list):
+                    scs_game_objects_exported.append("> \"" + root_object.name + "\" exported to: '" + filepath + "'")
+                else:
+                    scs_game_objects_rejected.append("> \"" + root_object.name + "\"")
             else:
                 if filepath:
                     message = (
@@ -122,10 +107,16 @@ def batch_export(operator_instance, init_obj_list, exclude_switched_off=True, me
             operator_instance.report({'INFO'}, "Export successfully completed!")
 
         if len(scs_game_objects_exported) > 0:
-            print("\n\nEXPORTED GAME OBJECTS:\n" + "=" * 22)
+            print("\n\nEXPORTED GAME OBJECTS (" + str(len(scs_game_objects_exported)) + "):\n" + "=" * 26)
             for scs_game_object_export_message in scs_game_objects_exported:
                 print(scs_game_object_export_message)
-        else:
+
+        if len(scs_game_objects_rejected) > 0:
+            print("\n\nREJECTED GAME OBJECTS (" + str(len(scs_game_objects_rejected)) + "):\n" + "=" * 26)
+            for scs_game_object_export_message in scs_game_objects_rejected:
+                print(scs_game_object_export_message)
+
+        if len(scs_game_objects_exported) + len(scs_game_objects_rejected) == 0:
             message = "Nothing to export! Please set at least one 'SCS Root Object'."
             lprint('E ' + message)
             operator_instance.report({'ERROR'}, message)

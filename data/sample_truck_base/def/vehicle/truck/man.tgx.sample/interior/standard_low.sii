@@ -1,0 +1,31 @@
+SiiNunit
+{
+accessory_interior_data: standard.low.man.tgx.sample.interior
+{
+	name: "@@standard@@"
+	price: 12900
+	unlock: 0
+	icon: "interior_man_tgx_std"
+
+	model: "/vehicle/truck/man_tgx_sample/interior/model.pmd"
+	animated_model: "/vehicle/truck/man_tgx_sample/interior/anim.pmd"
+	active_mirrors_part: a_s_mirrors
+	passive_mirrors_part: p_s_mirrors
+	look: look1
+	variant: low_roof
+
+@include "animations.sui"
+
+	dashboard_path:"/ui/dashboard/man_tgx.sii"
+
+	glass_panes[]: .man.tgx.sample.pane.front
+	glass_panes[]: .man.tgx.sample.pane.close
+	glass_panes[]: .man.tgx.sample.pane.far
+
+    suitable_for[]: "xl_cab.man.tgx.sample.cabin"
+
+@include "dashboard_color.sui"
+@include "seat.sui"
+}
+@include "glass.dat"
+}

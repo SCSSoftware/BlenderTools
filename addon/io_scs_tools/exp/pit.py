@@ -28,8 +28,7 @@ from io_scs_tools.internals.structure import SectionData as _SectionData
 from io_scs_tools.internals.containers import pix as _pix_container
 from io_scs_tools.utils import path as _path_utils
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
-from io_scs_tools.utils.info import get_tools_version as _get_tools_version
-from io_scs_tools.utils.info import get_blender_version as _get_blender_version
+from io_scs_tools.utils.info import get_combined_ver_str
 from io_scs_tools.utils.printout import lprint
 
 
@@ -51,8 +50,7 @@ def _fill_header_section(file_name, sign_export):
     """Fills up "Header" section."""
     section = _SectionData("Header")
     section.props.append(("FormatVersion", 1))
-    blender_version, blender_build = _get_blender_version()
-    section.props.append(("Source", "Blender " + blender_version + blender_build + ", SCS Blender Tools: " + str(_get_tools_version())))
+    section.props.append(("Source", get_combined_ver_str()))
     section.props.append(("Type", "Trait"))
     section.props.append(("Name", file_name))
     if sign_export:
@@ -404,7 +402,7 @@ def export(root_object, used_parts, used_materials, scene, filepath):
                     texture_sections = []
                     active_shader_preset_name = material.scs_props.active_shader_preset_name
                     # print(' active_shader_preset_name: %r' % active_shader_preset_name)
-                    for preset_i, preset in enumerate(scene.scs_shader_presets_inventory):
+                    for preset_i, preset in enumerate(bpy.data.worlds[0].scs_shader_presets_inventory):
                         # print(' preset[%i]: %r' % (preset_i, preset.name))
                         if preset.name == active_shader_preset_name:
                             # print('   - material %r - %r' % (material.name, preset.name))

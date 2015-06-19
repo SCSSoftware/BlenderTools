@@ -1,0 +1,11 @@
+SiiNunit
+{
+accessory_addon_data : shape1.man.tgx.sample.doorhndl
+{
+	name: "@@plastic@@"
+	price: 480
+	unlock: 0
+	icon: "doorhandle_01_man_tgx"
+	exterior_model: "/vehicle/truck/upgrade/doorhandle/man_tgx/doorhandle_01.pmd"
+}
+}

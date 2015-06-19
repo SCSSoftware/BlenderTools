@@ -131,7 +131,7 @@ class LampTool:
             return {'FINISHED'}
 
 
-class VertexColorWrapTool:
+class VertexColorTools:
     """
     Wrapper class for better navigation in file
     """
@@ -199,6 +199,51 @@ class VertexColorWrapTool:
                         )
 
             self.report({"INFO"}, "Vertex colors wrapped!")
+            return {'FINISHED'}
+
+    class PrintVertexColorsStatistics(bpy.types.Operator):
+        bl_label = "Get Statistics"
+        bl_idname = "mesh.scs_get_vcol_stats"
+        bl_description = "Prints out min, max and avarage vertex color for active vertex color layer."
+        bl_options = {'REGISTER', 'UNDO'}
+
+        @classmethod
+        def poll(cls, context):
+            return context.object is not None and context.object.mode == "VERTEX_PAINT" and len(context.object.data.vertex_colors) > 0
+
+        def execute(self, context):
+
+            mesh = context.object.data
+            vcolor_layer = mesh.vertex_colors[mesh.vertex_colors.active_index]
+
+            c_min = [100] * 3
+            c_max = [0] * 3
+            c_sum = [0] * 3
+            colors_count = 0
+            for poly in mesh.polygons:
+                for loop_i in poly.loop_indices:
+                    curr_col = vcolor_layer.data[loop_i].color
+
+                    for i in range(0, 3):
+                        if curr_col[i] < c_min[i]:
+                            c_min[i] = curr_col[i]
+
+                        if curr_col[i] > c_max[i]:
+                            c_max[i] = curr_col[i]
+
+                        c_sum[i] += curr_col[i]
+
+                    colors_count += 1
+
+            c_avg = []
+            for i in range(0, 3):
+                c_avg.append(c_sum[i] / colors_count)
+
+            self.report({"INFO"}, "Vertex color stats: MIN(%.1f, %.1f, %.2f), MAX(%.1f, %.1f, %.1f), AVG(%.1f, %.1f, %.1f)" %
+                        (c_min[0], c_min[1], c_min[2],
+                         c_max[0], c_max[1], c_max[2],
+                         c_avg[0], c_avg[1], c_avg[2]))
+
             return {'FINISHED'}
 
 

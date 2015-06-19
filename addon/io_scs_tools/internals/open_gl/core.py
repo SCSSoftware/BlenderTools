@@ -387,7 +387,8 @@ def _get_custom_visual_elements():
         else:
 
             # fix all preview models which parents are not visible anymore
-            if visib_obj.data and "scs_props" in visib_obj.data and visib_obj.data.scs_props.locator_preview_model_path != "":
+            is_scs_mesh = visib_obj.type == "MESH" and visib_obj.data and "scs_props" in visib_obj.data
+            if is_scs_mesh and visib_obj.data.scs_props.locator_preview_model_path != "":
 
                 if visib_obj.parent and not visib_obj.parent in bpy.context.visible_objects:
                     _preview_models.fix_visibility(visib_obj.parent)

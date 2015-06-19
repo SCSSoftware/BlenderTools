@@ -27,6 +27,9 @@ from io_scs_tools.exp.pim.material import Material
 from io_scs_tools.exp.pim.piece import Piece
 from io_scs_tools.exp.pim.part import Part
 from io_scs_tools.exp.pim.locator import Locator
+from io_scs_tools.exp.pim.bones import Bones
+from io_scs_tools.exp.pim.skin import Skin
+from io_scs_tools.exp.pim.skin import SkinStream
 from io_scs_tools.internals.containers import pix as _pix_container
 from io_scs_tools.utils import mesh as _mesh_utils
 from io_scs_tools.utils import name as _name_utils
@@ -38,16 +41,24 @@ from io_scs_tools.utils.convert import scs_to_blend_matrix as _scs_to_blend_matr
 from io_scs_tools.utils.printout import lprint
 
 
-def execute(dirpath, root_object, mesh_objects, model_locators, used_parts, used_materials):
+def execute(dirpath, root_object, armature_object, skeleton_filepath, mesh_objects, model_locators, used_parts, used_materials, used_bones):
     """Executes export of PIM file for given data.
     :param dirpath: directory path for PIM file
     :type dirpath: str
     :param root_object: Blender SCS Root empty object
     :type root_object: bpy.types.Object
+    :param armature_object: Blender Aramture object belonging to this SCS game object
+    :type armature_object: bpy.types.Object
     :param mesh_objects: all the meshes which should be exported for current game object
     :type mesh_objects: list of bpy.types.Object
     :param model_locators: all Blender empty objecs which represents model locators and should be exported for current game object
     :type model_locators: list of bpy.types.Object
+    :param used_parts: out argument where parts used inside this PIM will be added {key: part_name, value: 1}
+    :type used_parts: dict
+    :param used_materials: out argument where materials used inside this PIM will be added {key: material_name, value: 1}
+    :type used_materials: list
+    :param used_bones: out argument where bones used inside this PIM will be added {key: bone_name, value: 1}
+    :type used_bones: dict
     :return: True if export was successfull; False otherwise
     :rtype: bool
     """
@@ -66,8 +77,10 @@ def execute(dirpath, root_object, mesh_objects, model_locators, used_parts, used
         format_version = 1
         format_type = "def"
 
+    is_skin_used = (armature_object and root_object.scs_props.scs_root_animated == "anim")
+
     pim_header = Header(format_type, format_version, root_object.name)
-    pim_global = Globall(root_object.name + ".pis")
+    pim_global = Globall(skeleton_filepath)
 
     pim_materials = collections.OrderedDict()  # dict of Material class instances representing used materials
     """:type: dict of Material"""
@@ -81,15 +94,35 @@ def execute(dirpath, root_object, mesh_objects, model_locators, used_parts, used
     objects_with_default_material = {}  # stores object names which has no material set
     missing_mappings_data = {}  # indicates if material doesn't have set any uv layer for export
 
+    bones = skin = skin_stream = None
+    if is_skin_used:
+        # create bones data section
+        bones = Bones()
+        for bone in armature_object.data.bones:
+            bones.add_bone(bone.name)
+            used_bones[bone.name] = 1
+
+        # create skin data section
+        skin_stream = SkinStream(SkinStream.Types.POSITION)
+        skin = Skin(skin_stream)
+
     # create mesh object data sections
     for mesh_obj in mesh_objects:
+
+        vert_groups = mesh_obj.vertex_groups
 
         mesh_pieces = collections.OrderedDict()
 
         # calculate faces flip state from all ancestors of current object
         scale_sign = 1
-        for scale_axis in mesh_obj.scale:
-            scale_sign *= scale_axis
+        parent = mesh_obj
+        while parent and parent.scs_props.empty_object_type != "SCS_Root":
+
+            for scale_axis in parent.scale:
+                scale_sign *= scale_axis
+
+            parent = parent.parent
+
         face_flip = scale_sign < 0
 
         # calculate transformation matrix for current object (root object transforms are always subtracted!)
@@ -101,7 +134,7 @@ def execute(dirpath, root_object, mesh_objects, model_locators, used_parts, used
 
         nor_transf_mat = _scs_to_blend_matrix().inverted()
 
-        # get initial mesh
+        # get initial mesh and vertex groups for it
         mesh = _object_utils.get_mesh(mesh_obj)
         _mesh_utils.bm_prepare_mesh_for_export(mesh, mesh_transf_mat, face_flip)
         mesh.calc_normals_split()
@@ -113,7 +146,7 @@ def execute(dirpath, root_object, mesh_objects, model_locators, used_parts, used
 
             mat_index = poly.material_index
 
-            # check material existance and decide what material name and effect has to be used
+            # check material existence and decide what material name and effect has to be used
             if mat_index >= len(mesh_obj.material_slots) or mesh_obj.material_slots[mat_index].material is None:  # no material or invalid index
                 material = None
                 pim_mat_name = "_not_existing_material_"
@@ -215,6 +248,20 @@ def execute(dirpath, root_object, mesh_objects, model_locators, used_parts, used
                 piece_vert_index = mesh_piece.add_vertex(vert_i, position, normal, uvs, uvs_aliases, vcol, tangent)
                 piece_vert_indices.append(piece_vert_index)
 
+                if is_skin_used:
+                    # get skinning data for vertex and save it to skin stream
+                    bone_weights = {}
+                    for v_group_entry in mesh.vertices[vert_i].groups:
+                        bone_indx = bones.get_bone_index(vert_groups[v_group_entry.group].name)
+                        bone_weight = v_group_entry.weight
+
+                        # proceed only if bone exists in our armature
+                        if bone_indx != -1:
+                            bone_weights[bone_indx] = bone_weight
+
+                    skin_entry = SkinStream.Entry(mesh_piece.get_index(), piece_vert_index, position, bone_weights)
+                    skin_stream.add_entry(skin_entry)
+
             mesh_piece.add_triangle(tuple(piece_vert_indices[::-1]))  # invert indices because of normals flip
 
         # free normals calculations
@@ -305,7 +352,11 @@ def execute(dirpath, root_object, mesh_objects, model_locators, used_parts, used
     for locator in pim_locators:
         pim_container.append(locator.get_as_section())
 
+    if is_skin_used:
+        pim_container.append(bones.get_as_section())
+        pim_container.append(skin.get_as_section())
+
     # write to file
     ind = "    "
-    pim_filepath = dirpath + os.sep + root_object.name + ".pim"
+    pim_filepath = os.path.join(dirpath, root_object.name + ".pim")
     return _pix_container.write_data_to_file(pim_container, pim_filepath, ind)

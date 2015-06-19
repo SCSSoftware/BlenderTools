@@ -1,0 +1,14 @@
+SiiNunit
+{
+accessory_addon_data: shape1_c.man.tgx.sample.sunshld
+{
+	name: "@@stock@@"
+	price: 2160
+	unlock: 0
+	icon: "sunshield_01_man_tgx"
+	exterior_model: "/vehicle/truck/upgrade/sunshield/man_tgx/sunshield_01_c.pmd"
+	interior_model: "/vehicle/truck/upgrade/sunshield/man_tgx/sunshield_01_low_int.pmd"
+	suitable_for[]: "xl_cab.man.tgx.sample.cabin"
+	conflict_with[]: "shape4_c.man.tgx.sample.r_grill"
+}
+}

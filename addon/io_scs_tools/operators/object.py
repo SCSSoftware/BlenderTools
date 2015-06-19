@@ -1533,7 +1533,9 @@ class SCSRoot:
     class AddSCSRootObjectDialogOperator(bpy.types.Operator):
         """Makes a dialog window allowing specifying a new Part name and adds it into Part list."""
         bl_idname = "object.add_scs_root_object_dialog_operator"
-        bl_label = "Add New SCS Root Object"
+        bl_label = "Add SCS Root Dialog"
+        bl_description = "Create dialog for adding new scs root (shouldn't be executed by user)"
+        bl_options = {"INTERNAL"}
 
         scs_root_object_string = StringProperty(name="Name for a new 'SCS Root Object':")
 
@@ -1683,18 +1685,17 @@ class Animation:
 
         @classmethod
         def poll(cls, context):
-            if _object_utils.get_scs_root(context.active_object):
-                return True
-            else:
-                return False
+            return _object_utils.get_scs_root(context.active_object) is not None
 
         def execute(self, context):
             lprint('D Add SCS Animation to actual SCS Game Object...')
             active_object = context.active_object
             scs_root_object = _object_utils.get_scs_root(active_object)
 
-            # ADD NEW VARIANT
-            _animation_utils.add_animation_to_root(scs_root_object)
+            _animation_utils.add_animation_to_root(scs_root_object, scs_root_object.name)
+
+            # select last one as this is new animation
+            scs_root_object.scs_props.active_scs_animation = len(scs_root_object.scs_object_animation_inventory) - 1
 
             return {'FINISHED'}
 
@@ -1706,176 +1707,36 @@ class Animation:
 
         @classmethod
         def poll(cls, context):
-            if _object_utils.get_scs_root(context.active_object):
-                return True
-            else:
-                return False
+            active_obj = context.active_object
+            return active_obj and active_obj.type == "ARMATURE" and _object_utils.get_scs_root(active_obj)
 
         def execute(self, context):
             lprint('D Remove SCS Animation to actual SCS Game Object...')
             active_object = context.active_object
             scs_root_object = _object_utils.get_scs_root(active_object)
-            active_scs_animation = scs_root_object.scs_props.active_scs_animation
+            active_scs_anim_i = scs_root_object.scs_props.active_scs_animation
             inventory = scs_root_object.scs_object_animation_inventory
 
-            if active_scs_animation < len(inventory):
-                active_scs_animation_name = inventory[active_scs_animation].name
-                # print('len(inventory): %i - active_scs_animation: %i' % (len(inventory), active_scs_animation))
-                if len(inventory) > active_scs_animation:
-                    # children = _utils.get_children(scs_root_object)
-                    # for child in children:
-                    # if child.scs_props.scs_animation == active_scs_animation_name:
-                    # child.scs_props.scs_animation = "DefaultPart"
-                    lprint('I inventory[%i] - REMOVE item[%i] %r...', (len(inventory), active_scs_animation, inventory[active_scs_animation].name))
-                    inventory.remove(active_scs_animation)
+            if active_scs_anim_i < len(inventory):
+                active_scs_anim = inventory[active_scs_anim_i]
+                if len(inventory) > active_scs_anim_i:
+
+                    if active_scs_anim.action in bpy.data.actions and active_object.animation_data.action:
+
+                        active_object.animation_data.action = None
+
+                        # remove fake user from action if it was used only by removed scs animation
+                        action = bpy.data.actions[active_scs_anim.action]
+                        if action.users == 1 and action.use_fake_user:
+                            action.use_fake_user = False
+
+                    lprint('S inventory[%i] - REMOVE item[%i] %r...', (len(inventory), active_scs_anim_i, active_scs_anim.name))
+                    inventory.remove(active_scs_anim_i)
                 else:
                     lprint("W No active 'SCS Animation' in list!")
             else:
                 lprint("W No active 'SCS Animation' to remove!")
             return {'FINISHED'}
-
-    '''
-    class PerformEulerFilter(bpy.types.Operator):
-        bl_label = "Discontinuity (Euler) Filter"
-        bl_idname = "scene.euler_filter"
-        bl_description = "Apply discontinuity (euler) filter on current object's Action"
-
-        def execute(self, context):
-            lprint('D Discontinuity (Euler) Filter...')
-
-            def apply_euler_filter(curve):
-                """."""
-                XFLIPS = []  # A list of points on the RotX curve that are flipped
-                ZFLIPS = []  # A list of points on the RotZ curve that are flipped
-
-                # Get all relevant data for this curve
-                cTyp = curve.name  # Name of the current curve
-                keyframe_points = curve.keyframe_points  # The bezier points on the curve
-                newpoints = []  # All the new points
-                prev = 0  # The previous point on the curve
-                pDif = 0  # The previous "difference" between keys
-                fOffset = 0.0  # The current offset of the curve
-                invert = 0  # Whether or not the curve needs inversion
-                invertMethod = 0  # The type of inversion we need
-                iOffset = 0.0  # The value of inversion offset
-                cOffset = 0.0  # The offset to actually apply to a curve
-
-                for keyframe_point in keyframe_points:
-                    pnt = keyframe_point.co  # Current point
-                    cDif = 0
-
-                    # Only if we know a previous point can we do anything
-                    if not prev:
-                        newpoints.append([pnt[0], pnt[1]])
-                    else:
-                        cFr = pnt[0]  # Current place on the timeline
-                        cCo = pnt[1]  # Current position
-                        pCo = prev[1]  # Previous position
-                        pSet = pCo + cOffset  # The previously set value
-                        cDif = (-pCo) + cCo  # The difference between the previous and current position
-                        iOffset = 0.0  # Inversion offset is set every time
-                        cOffset = 0.0  # Offset for this frame for this point
-
-                        # For the roty curve we need to do something special
-                        # If all is well this is evaluated last and we have flips
-                        # This curve isn't flipped, but inverted relative to -90 or +90 degrees
-                        if cTyp == 'RotY' and cFr in XFLIPS and cFr in ZFLIPS:
-                            # We need to either invert or stop inverting
-                            if not invert:
-                                invert = 1
-                                # Depending on whether we are positive or negative we need a different inversion
-                                if cCo < 0:
-                                    invertMethod = 0
-                                else:
-                                    invertMethod = 1
-                            else:
-                                invert = 0
-                                iOffset = 0.0
-                                fOffset = 0.0
-
-                        # lets see if RotX or RotZ flip
-                        else:
-
-                            # If the previous point is positive and we go down more than 90 degrees... it's a flip
-                            if pCo > 0.0001 and (cDif < -9):
-                                fOffset += 18
-
-                                # The current value really should be bigger than the previous one
-                                # So keep adding 180 degrees until it is
-                                while pDif > 0.0001 and (cCo + fOffset) < pSet:
-                                    fOffset += 18
-
-                                if cTyp == 'RotX':
-                                    XFLIPS.append(cFr)
-                                else:
-                                    ZFLIPS.append(cFr)
-
-                            # If the previous point is negative and we go up more than 90 degrees it's a flip
-                            elif pCo < -0.0001 and (cDif > 9):
-                                fOffset -= 18
-
-                                # The current value really should be smaller than the previous one
-                                # So keep subtracting 180 degrees until it is
-                                while pDif < -0.0001 and (cCo + fOffset) > pSet:
-                                    fOffset -= 18
-
-                                if cTyp == 'RotX':
-                                    XFLIPS.append(cFr)
-                                else:
-                                    ZFLIPS.append(cFr)
-
-                        # Now if we need to invert it's simple, just get the offset relative to -90 or +90 and do negative twice the distance to
-                        that
-                        # value
-                        if invert:
-                            # Lets get the offset
-                            if not invertMethod:
-                                cDif = 9.0 + cCo
-                                iOffset = (-cDif) * 2
-                            else:
-                                cDif = -9.0 + cCo
-                                iOffset = (-cDif) * 2
-
-                            cOffset = iOffset
-
-                            # If there's also an flipping offset, lets invert that as well and add it to the inversion offset
-                            if fOffset:
-                                cOffset += (-fOffset)
-
-                        # if we're not inverting the current offset is just the "flipping offset"
-                        else:
-                            cOffset = fOffset
-
-                        # No matter what happened, lets apply the offset to every point
-                        newpoints.append([pnt[0], (pnt[1] + cOffset)])
-
-                    # Set this point as the previous one for the next loop
-                    prev = pnt
-                    pDif = cDif
-
-                # Apply the new points
-                if len(newpoints):
-                    for i, keyframe_point in enumerate(newpoints):
-                        keyframe_points[i].pt = [p[0], p[1]]
-
-            euler_curves = {}
-            if context.active_object:
-                if context.active_object.animation_data.action:
-                    for fcurve in context.active_object.animation_data.action.fcurves:
-                        if fcurve.data_path.endswith("rotation_euler"):
-                            data_id = str(fcurve.array_index)
-                            euler_curves[data_id] = fcurve
-                            # print('data_path: %s' % fcurve.data_path)
-                            # bpy.ops.graph.euler_filter()
-                        if len(euler_curves) == 3:
-                            fcurve_bone_name = fcurve.data_path.split('"', 2)[1]
-                            print("Performing Euler filter on %r bone's F-Curve..." % fcurve_bone_name)
-                            for euler_curve in euler_curves:
-                                print('  euler_curve %r - %s' % (euler_curve, euler_curves[euler_curve]))
-                                apply_euler_filter(euler_curves[euler_curve])
-                            euler_curves = {}
-            return {'FINISHED'}
-    '''
 
 
 class BlankOperator(bpy.types.Operator):

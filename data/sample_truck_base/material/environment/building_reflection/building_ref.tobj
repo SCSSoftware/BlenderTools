@@ -1,0 +1,16 @@
+map cube
+	building_ref.tga
+	building_ref.tga
+	building_ref.tga
+	building_ref.tga
+	building_ref.tga
+	building_ref.tga
+
+quality	high
+
+addr
+	clamp_to_edge
+	clamp_to_edge
+	clamp_to_edge
+
+nomips

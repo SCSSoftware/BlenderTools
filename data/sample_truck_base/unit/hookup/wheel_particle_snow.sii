@@ -1,0 +1,42 @@
+SiiNunit
+{
+vehicle_particle : wheel.particle.snow {
+ gen_array: 1
+ gen_array[0]: _nameless.00D3.C380
+}
+
+particle_gen : _nameless.00D3.C380 {
+ list_order_up: false
+ blend_alpha: true
+ gen_pos: (&bdcccccd, 0, &bdcccccd)
+ scale_acc: &3f4ccccd
+ rotation_speed: 57
+ alpha_blend_coef: &3e4ccccd
+ base_alpha: 1
+ alpha_attack_time: 0
+ flow_speed: (0, &3f4ccccd, 0)
+ flow_speed_acc: (0, -13, 0)
+ particle_size: (&3e19999a, &3e570a3d)
+ particle_size_var: (&3d4ccccc, &3d4ccccc)
+ particle_displacement: (&3e4ccccd, &3e4ccccd, &3e4ccccd)
+ color_multiplier: 4294967295
+ key_pos: 5
+ key_pos[0]: 0
+ key_pos[1]: 116
+ key_pos[2]: 159
+ key_pos[3]: 199
+ key_pos[4]: 255
+ key_color: 5
+ key_color[0]: 12895428
+ key_color[1]: 13224393
+ key_color[2]: 12566463
+ key_color[3]: 15132390
+ key_color[4]: 13553358
+ time_to_live: &3e99999a
+ particles_max_count: 10
+ relative_space: false
+ model_path: "/model/particle/smoke.pmd"
+ model_look: snow
+}
+
+}

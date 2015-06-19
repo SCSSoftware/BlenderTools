@@ -1,0 +1,81 @@
+Header {
+    FormatVersion: 3
+    Source: "Blender 2.74.0 (hash: 000dfc0), SCS Blender Tools: 0.5.bfcf60f"
+    Type: "Animation"
+    Name: "psi_s"
+}
+Global {
+    Skeleton: "anim.pis"
+    TotalTime: 0.10000000149011612
+    BoneChannelCount: 3
+    CustomChannelCount: 0
+}
+BoneChannel {
+    Name: "joint12"
+    StreamCount: 2
+    KeyframeCount: 2
+    Stream {
+        Format: FLOAT
+        Tag: "_TIME"
+        0    ( &3dcccccd )
+        1    ( &3dcccccd )
+    }
+    Stream {
+        Format: FLOAT4x4
+        Tag: "_MATRIX"
+        0    (  &3f800000  &00000000  &00000000  &00000000
+                &00000000  &3f800000  &00000000  &00000000
+                &00000000  &00000000  &3f800000  &00000000
+                &3e211e62  &bf077c40  &3fabeae5  &3f800000 )
+        1    (  &3f5f0b0b  &00000000  &00000000  &00000000
+                &00000000  &3f5f0b0b  &00000000  &00000000
+                &00000000  &00000000  &3f5f0b0b  &00000000
+                &3e22ff94  &bf07a4ac  &bf537cf2  &3f800000 )
+    }
+}
+BoneChannel {
+    Name: "joint11"
+    StreamCount: 2
+    KeyframeCount: 2
+    Stream {
+        Format: FLOAT
+        Tag: "_TIME"
+        0    ( &3dcccccd )
+        1    ( &3dcccccd )
+    }
+    Stream {
+        Format: FLOAT4x4
+        Tag: "_MATRIX"
+        0    (  &3f800000  &00000000  &00000000  &00000000
+                &00000000  &3f800000  &00000000  &00000000
+                &00000000  &00000000  &3f800000  &00000000
+                &3da5754b  &bf07dff7  &3fac02e6  &3f800000 )
+        1    (  &3f821da0  &00000000  &00000000  &00000000
+                &00000000  &3f821da0  &00000000  &00000000
+                &00000000  &00000000  &3f821da0  &00000000
+                &3da836bf  &bf07fe98  &bf535044  &3f800000 )
+    }
+}
+BoneChannel {
+    Name: "joint6"
+    StreamCount: 2
+    KeyframeCount: 2
+    Stream {
+        Format: FLOAT
+        Tag: "_TIME"
+        0    ( &3dcccccd )
+        1    ( &3dcccccd )
+    }
+    Stream {
+        Format: FLOAT4x4
+        Tag: "_MATRIX"
+        0    (  &3f800000  &00000000  &00000000  &00000000
+                &00000000  &3f7ffffd  &00000000  &00000000
+                &00000000  &00000000  &3f800000  &00000000
+                &bd44abf4  &bef0c865  &3fa72a7d  &3f800000 )
+        1    (  &3f800000  &00000000  &00000000  &00000000
+                &00000000  &3f7ffffd  &00000000  &00000000
+                &00000000  &00000000  &3f800000  &00000000
+                &bd44abf4  &bef0c865  &bf5cfa06  &3f800000 )
+    }
+}

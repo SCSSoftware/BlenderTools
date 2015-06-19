@@ -306,20 +306,21 @@ def _draw_export_panel(scene, layout, scs_globals):
         col_row.label("Default Export Path:", icon="FILE_FOLDER")
         col_row = col.row(align=True)
         default_export_path = scene.scs_props.default_export_filepath
-        col_row.alert = ((default_export_path != "" and not default_export_path.startswith(os.sep * 2)) or
-                         not os.path.isdir(os.path.join(scs_globals.scs_project_path, default_export_path.strip(os.sep * 2))))
+        col_row.alert = ((default_export_path != "" and not default_export_path.startswith("//")) or
+                         not os.path.isdir(os.path.join(scs_globals.scs_project_path, default_export_path.strip("//"))))
         if col_row.alert:
             _shared.draw_warning_operator(
                 col_row,
                 "Default Export Path Warning",
-                str("Current Default Export Path is unreachable, which may result into an error on export!\n" +
+                str("Current Default Export Path is unreachable, which may result into an error on export!\n"
                     "Make sure you did following:\n"
-                    "1. Properly set \"SCS Project Base Path\"\n" +
+                    "1. Properly set \"SCS Project Base Path\"\n"
                     "2. Properly set \"Default Export Path\" which must be relative on \"SCS Project Base Path\"")
             )
 
         col_row.prop(scene.scs_props, 'default_export_filepath', text='', icon='EXPORT')
-        col_row.operator('scene.select_default_export_filepath', text='', icon='FILESEL')
+        props = col_row.operator('scene.select_directory_inside_base', text='', icon='FILESEL')
+        props.type = "DefaultExportPath"
 
         _shared.draw_export_panel(layout_box)
     else:

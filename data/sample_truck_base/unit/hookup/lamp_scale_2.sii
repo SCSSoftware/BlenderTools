@@ -1,0 +1,9 @@
+SiiNunit
+{
+flare_lamp : flare.lamp.scale2
+{
+	dir_type: all
+	model: "/model/flare/lamp_flare.pmd"
+	scale_factor: 2
+}
+}

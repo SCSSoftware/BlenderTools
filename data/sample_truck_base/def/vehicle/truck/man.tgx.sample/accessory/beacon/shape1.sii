@@ -1,0 +1,11 @@
+SiiNunit
+{
+accessory_addon_data : shape1.man.tgx.sample.beacon
+{
+	name: "Bonfire"
+	price: 3120
+	unlock: 12
+	icon: "beacon_02"
+	exterior_model: "/vehicle/truck/upgrade/beacon/beacon_02.pmd"
+}
+}

@@ -1,0 +1,35 @@
+Header {
+    FormatVersion: 3
+    Source: "Blender 2.74.0 (hash: 000dfc0), SCS Blender Tools: 0.5.bfcf60f"
+    Type: "Animation"
+    Name: "water_s"
+}
+Global {
+    Skeleton: "anim.pis"
+    TotalTime: 0.10000000149011612
+    BoneChannelCount: 1
+    CustomChannelCount: 0
+}
+BoneChannel {
+    Name: "joint13"
+    StreamCount: 2
+    KeyframeCount: 2
+    Stream {
+        Format: FLOAT
+        Tag: "_TIME"
+        0    ( &3dcccccd )
+        1    ( &3dcccccd )
+    }
+    Stream {
+        Format: FLOAT4x4
+        Tag: "_MATRIX"
+        0    (  &3f800000  &00000000  &00000000  &00000000
+                &00000000  &3f800000  &00000000  &00000000
+                &00000000  &00000000  &3f800000  &00000000
+                &bd93f535  &bf06f760  &3fabc17c  &3f800000 )
+        1    (  &3f800000  &00000000  &00000000  &00000000
+                &00000000  &3f800000  &00000000  &00000000
+                &00000000  &00000000  &3f800000  &00000000
+                &bd93eae0  &bf06fc99  &bf5401a8  &3f800000 )
+    }
+}

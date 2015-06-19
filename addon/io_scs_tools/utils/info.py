@@ -21,10 +21,6 @@
 import bpy
 
 
-def get_tools_version():
-    return 0.5
-
-
 def get_blender_version():
     """Returns Blender's version and the build identifications as strings.
 
@@ -40,3 +36,12 @@ def get_blender_version():
     return b_ver_str, build_str
 
 
+def get_combined_ver_str():
+    """Returns combined version string from Blender version and Blender Tools version.
+    :return: combined version string
+    :rtype: str
+    """
+    from io_scs_tools import get_tools_version
+
+    (version, build) = get_blender_version()
+    return "Blender " + version + build + ", SCS Blender Tools: " + get_tools_version()

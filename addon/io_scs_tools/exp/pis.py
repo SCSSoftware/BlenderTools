@@ -20,10 +20,9 @@
 
 import bpy
 from mathutils import Matrix
-from io_scs_tools.utils.info import get_tools_version as _get_tools_version
-from io_scs_tools.utils.info import get_blender_version as _get_blender_version
 from io_scs_tools.utils import convert as _convert_utils
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
+from io_scs_tools.utils.info import get_combined_ver_str
 from io_scs_tools.internals.structure import SectionData as _SectionData
 from io_scs_tools.internals.containers import pix as _pix_container
 
@@ -32,8 +31,7 @@ def _fill_header_section(file_name, sign_export):
     """Fills up "Header" section."""
     section = _SectionData("Header")
     section.props.append(("FormatVersion", 1))
-    blender_version, blender_build = _get_blender_version()
-    section.props.append(("Source", "Blender " + blender_version + blender_build + ", PIS Exporter: " + str(_get_tools_version())))
+    section.props.append(("Source", get_combined_ver_str()))
     section.props.append(("Type", "Skeleton"))
     # section.props.append(("Name", str(os.path.basename(bpy.data.filepath)[:-6])))
     section.props.append(("Name", file_name))
@@ -52,41 +50,41 @@ def _fill_global_section(bone_cnt):
     return section
 
 
-def _fill_bones_sections(bones, export_scale):
+def _fill_bones_sections(scs_root_obj, armature_obj, used_bones, export_scale):
     """Creates "Bones" section."""
     section = _SectionData("Bones")
-    for bone_i, bone in enumerate(bones):
-        bone_mat = (Matrix.Scale(export_scale, 4) * _convert_utils.scs_to_blend_matrix().inverted() * bone.matrix_local).transposed()
-        section.data.append(("__bone__", bone.name, bone.parent, bone_mat))
+    for bone_name in used_bones:
+        bone = armature_obj.data.bones[bone_name]
+
+        # armature matrix stores transformation of armature object against scs root
+        # and has to be added to all bones as they only armature space transformations
+        armature_mat = scs_root_obj.matrix_world.inverted() * armature_obj.matrix_world
+
+        bone_mat = (Matrix.Scale(export_scale, 4) * _convert_utils.scs_to_blend_matrix().inverted() *
+                    armature_mat * bone.matrix_local)
+        section.data.append(("__bone__", bone.name, bone.parent, bone_mat.transposed()))
     return section
 
 
-def export(bone_list, filepath, filename):
-    scs_globals = _get_scs_globals()
-
+def export(filepath, scs_root_obj, armature_object, used_bones):
     print("\n************************************")
     print("**      SCS PIS Exporter          **")
     print("**      (c)2014 SCS Software      **")
     print("************************************\n")
 
-    # DATA GATHERING
-    # bone_list = []
-
-    # BONES...
-    # TODO: SORT "bone_list"...
+    scs_globals = _get_scs_globals()
 
     # DATA CREATION
-    header_section = _fill_header_section(filename, scs_globals.sign_export)
-    bones_section = _fill_bones_sections(bone_list, scs_globals.export_scale)
-    global_section = _fill_global_section(len(bone_list))
+    header_section = _fill_header_section(scs_root_obj.name, scs_globals.sign_export)
+    bones_section = _fill_bones_sections(scs_root_obj, armature_object, used_bones, scs_globals.export_scale)
+    global_section = _fill_global_section(len(used_bones))
 
     # DATA ASSEMBLING
     pis_container = [header_section, global_section, bones_section]
 
     # FILE EXPORT
     ind = "    "
-    pis_filepath = str(filepath + ".pis")
-    result = _pix_container.write_data_to_file(pis_container, pis_filepath, ind)
+    result = _pix_container.write_data_to_file(pis_container, filepath, ind)
 
     # print("************************************")
     return result

@@ -81,7 +81,7 @@ def make_scs_root_object(context, dialog=False):
 
     # SET PROPERTIES
 
-    name = _name.make_unique_name(bpy.data.objects[0], "game_object", "_")
+    name = _name.get_unique("game_object", bpy.data.objects)
     bpy.context.active_object.name = name
     new_scs_root = bpy.data.objects.get(name)
     new_scs_root.scs_props.scs_root_object_export_enabled = True
@@ -212,12 +212,21 @@ def get_children(obj, children=[], reset=True):
     for child in obj.children:
         # filter out multilevel scs roots
         isnt_root = not (child.scs_props.empty_object_type == "SCS Root" and child.type == 'EMPTY')
-        isnt_preview_model = not (child.data and "scs_props" in child.data and
+        isnt_preview_model = not (child.type == "MESH" and child.data and "scs_props" in child.data and
                                   child.data.scs_props.locator_preview_model_path != "")
         if isnt_root and isnt_preview_model and child not in children:
             children.append(child)
             children = get_children(child, children, False)
     return children
+
+
+def get_siblings(obj):
+    """Gets sibling objects of given object within SCS Game Object. If no siblings empty list is returned"""
+    root = get_scs_root(obj)
+    if root:
+        return get_children(root)
+    else:
+        return []
 
 
 def collect_parts_on_root(scs_root_object):
@@ -441,7 +450,7 @@ def create_convex_data(objects, convex_props={}, create_hull=False):
 
     # GET PROPERTIES FROM THE RESULTING OBJECT
     if not convex_props:
-        convex_props = {'name': _name.make_unique_name(obj, str(obj.name), sep=".")}
+        convex_props = {'name': obj.name}
         convex_props = get_collider_props(obj, convex_props)
 
     # CREATE CONVEX HULL DATA
@@ -701,21 +710,21 @@ def disable_modifier(modifier, disabled_modifiers):
     return disabled_modifiers
 
 
-def disable_edgesplit(obj, modifier_to_disable='EDGE_SPLIT', inverse=False):
+def disable_modifiers(obj, modifier_type_to_disable='EDGE_SPLIT', inverse=False):
     """
-    Disables all 'Edge Split' Modifiers on provided Object and returns its names in a list.
-    If 'inverse' is True, it disables all Modifiers except 'Edge Split' Modifiers.
+    Disables all instances of given modifier type on provided Object and returns its names in a list.
+    If 'inverse' is True, it disables all Modifiers except given modifier type.
     :param obj:
-    :param modifier_to_disable:
+    :param modifier_type_to_disable:
     :param inverse:
     :return:
     """
     disabled_modifiers = []
     for modifier in obj.modifiers:
-        if modifier_to_disable == 'ANY':
+        if modifier_type_to_disable == 'ANY':
             disabled_modifiers = disable_modifier(modifier, disabled_modifiers)
         else:
-            if modifier.type == modifier_to_disable:
+            if modifier.type == modifier_type_to_disable:
                 if not inverse:
                     disabled_modifiers = disable_modifier(modifier, disabled_modifiers)
             else:
@@ -728,16 +737,21 @@ def get_mesh(obj):
     """
     Returns Mesh data of provided Object (un)affected with specified Modifiers, which are
     evaluated as within provided Scene.
-    :param obj:
-    :return:
     """
     scene = bpy.context.scene
     disabled_modifiers = []
 
+    # always disable armature modifiers from SCS animations
+    # to prevent vertex rest position change because of the animation
+    sibling_objs = get_siblings(obj)
+    for modifier in obj.modifiers:
+        if modifier.type == "ARMATURE" and modifier.object in sibling_objs and modifier.object.type == "ARMATURE":
+            disabled_modifiers = disable_modifier(modifier, disabled_modifiers)
+
     if _get_scs_globals().output_type.startswith('def'):
         if _get_scs_globals().apply_modifiers:
             if _get_scs_globals().exclude_edgesplit:
-                disabled_modifiers = disable_edgesplit(obj, modifier_to_disable='EDGE_SPLIT')
+                disabled_modifiers.append(disable_modifiers(obj, modifier_type_to_disable='EDGE_SPLIT'))
             mesh = obj.to_mesh(scene, True, 'PREVIEW')
         else:
             mesh = obj.data
@@ -746,10 +760,10 @@ def get_mesh(obj):
             mesh = obj.to_mesh(scene, True, 'PREVIEW')
         else:
             if _get_scs_globals().include_edgesplit:
-                disabled_modifiers = disable_edgesplit(obj, modifier_to_disable='EDGE_SPLIT', inverse=True)
+                disabled_modifiers.append(disable_modifiers(obj, modifier_type_to_disable='EDGE_SPLIT', inverse=True))
                 mesh = obj.to_mesh(scene, True, 'PREVIEW')
             else:
-                disabled_modifiers = disable_edgesplit(obj, modifier_to_disable='ANY', inverse=True)
+                disabled_modifiers.append(disable_modifiers(obj, modifier_type_to_disable='ANY', inverse=True))
                 mesh = obj.to_mesh(scene, True, 'PREVIEW')
 
     restore_modifiers(obj, disabled_modifiers)
@@ -832,9 +846,8 @@ def create_locator_empty(name, loc, rot=(0, 0, 0), scale=(1, 1, 1), size=1.0, da
         rotation=rot,
     )
 
-    name = _name.make_unique_name(object, name)
-    bpy.context.active_object.name = name
-    locator = bpy.data.objects.get(name)
+    bpy.context.active_object.name = _name.get_unique(name, bpy.data.objects, sep=".")
+    locator = bpy.context.active_object
     locator.scs_props.object_identity = locator.name
 
     if rot_quaternion:

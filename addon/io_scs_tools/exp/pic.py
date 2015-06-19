@@ -26,8 +26,7 @@ from io_scs_tools.utils import convert as _convert_utils
 from io_scs_tools.utils import name as _name_utils
 from io_scs_tools.utils import mesh as _mesh_utils
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
-from io_scs_tools.utils.info import get_tools_version as _get_tools_version
-from io_scs_tools.utils.info import get_blender_version as _get_blender_version
+from io_scs_tools.utils.info import get_combined_ver_str
 from io_scs_tools.utils.object import get_scs_root as _get_scs_root
 
 
@@ -35,8 +34,7 @@ def _fill_header_section(file_name, sign_export):
     """Fills up "Header" section."""
     section = _SectionData("Header")
     section.props.append(("FormatVersion", 2))
-    blender_version, blender_build = _get_blender_version()
-    section.props.append(("Source", "Blender " + blender_version + blender_build + ", SCS Blender Tools: " + str(_get_tools_version())))
+    section.props.append(("Source", get_combined_ver_str()))
     section.props.append(("Type", "Collision"))
     # section.props.append(("Name", str(os.path.basename(bpy.data.filepath)[:-6])))
     section.props.append(("Name", file_name))
@@ -217,7 +215,7 @@ def _make_common_part(item, index, col_type):
     section.props.append(("Position", ["&&", loc]))
     section.props.append(("Rotation", ["&&", qua]))
     section.props.append(("Alias", ""))
-    section.props.append(("Weight", ["&", (item.scs_props.locator_collider_mass, )]))
+    section.props.append(("Weight", ["&", (item.scs_props.locator_collider_mass,)]))
     section.props.append(("Type", col_type))
     return section
 
