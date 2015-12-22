@@ -1,0 +1,40 @@
+SiiNunit
+{
+accessory_addon_int_data : ball_cue.man.tgx.sample.toyhang
+{
+	name: "Eight Ball"
+	icon: "ball_cue.dlc_toys"
+   
+	price: 105
+	unlock: 0
+	interior_model:  "/vehicle/truck/upgrade/interior_decors/toyhang/fastening.dlc_toys.pmd"
+
+	data[]: .ball_cue.phys_data
+}
+physics_toy_data : .ball_cue.phys_data
+{
+	phys_model:      "/vehicle/truck/upgrade/interior_decors/toyhang/cue_ball.dlc_toys.pmd"
+	phys_model_coll:      "/vehicle/truck/upgrade/interior_decors/toyhang/cue_ball.dlc_toys.pmc"
+	
+	phys_model_look: cue_8
+	
+	toy_type:		"TT_rope"			# TT_rope, TT_double_rope, TT_joint
+	toy_mass:		0.15				# toy mass
+	linear_damping:		0.2				# damping of swinging of toy
+	linear_stiffness: 	1.55				# rope - influences rope springing
+
+	locator_hook_offset:	(0.0f, -0.008f, 0.0f)		# offset of connection point on hook against toy locator
+
+	# definitions valid only for toys with rope
+	rope_width:			0.002			# width of rope
+	rope_length:		0.09				# lengt of rope, in the case of double_rope, distance between hook and toy
+	rope_hook_offset:	0.0				# double_rope - distance between hooks, locator is in the middle
+	rope_toy_offset:	0.0				# double_rope - distance between rope tingles at toy
+	rope_resolution:	3				# number of inner nodes of rope, except end nodes with anchores
+	rope_linear_density:	0.5435				# density, i.e. weight of rope per 1 m of length
+	position_iterations:	4				# number of iterations in position solver
+	node_damping:		0.2				# rope node velocity damping
+  
+  rope_material: 		"/material/ropes/rope_black.dlc_toys.mat"
+}
+}

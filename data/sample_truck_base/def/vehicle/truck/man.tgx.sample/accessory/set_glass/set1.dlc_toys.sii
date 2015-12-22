@@ -1,0 +1,12 @@
+SiiNunit
+{
+accessory_addon_data : glass_set1.man.tgx.sample.set_glass
+{
+	name: "Jewel"
+	price: 1
+	unlock: 0
+	icon: "glass_set_1.dlc_toys"
+   
+	interior_model: "/vehicle/truck/upgrade/interior_set/man_tgx/glass_set_1.dlc_toys.pmd"
+}
+}

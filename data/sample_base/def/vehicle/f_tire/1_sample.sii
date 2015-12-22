@@ -9,5 +9,9 @@ accessory_wheel_data : 1_sample.ftire
 	icon: "f_tire_01"
 	front_wheel:true
 	look: gestone
+
+	roll_resistance: 6.5
+	wet_grip: 0.9
+	noise_volume: 75
 }
 }

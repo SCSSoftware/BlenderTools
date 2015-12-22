@@ -20,29 +20,83 @@
 
 import struct
 import math
-from mathutils import Matrix, Quaternion, Vector
+from mathutils import Matrix, Quaternion, Vector, Color
+from io_scs_tools.consts import Colors as _COL_consts
 from io_scs_tools.utils.printout import lprint
 from io_scs_tools.utils import math as _math_utils
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
 
 
-def make_color_mtplr(prop_value):
-    """Takes color values as list or tuple of three values (RGB) and creates all values within range of 0.0-1.0 and generates multiplication value.
+def pre_gamma_corrected_col(color):
+    """Pre applys gamma decoding to color.
+    Usefull for preparation of color for Blender color pickers/nodes,
+    if we want Blender to output raw value as it was given to color picker/node
 
-    :param prop_value: Color values
-    :type prop_value: list of float | tuple of float
-    :return: Color and multiplier values
-    :rtype: tuple of tuple and float
+    :param color: color which should be pre applied
+    :type color: mathutils.Color
+    :return: pre applied gamma decoding
+    :rtype: mathutils.Color
     """
-    mult = 1.0
-    for val in prop_value:
-        if val > 1.0:
-            mult = val
-    if mult > 1.0:
-        rgb = ((prop_value[0] / mult), (prop_value[1] / mult), (prop_value[2] / mult))
-    else:
-        rgb = prop_value[:3]
-    return rgb, mult
+
+    c = Color(color)
+
+    for i in range(3):
+        c[i] **= _COL_consts.gamma
+
+    return c
+
+
+def to_node_color(color):
+    """Gets color ready for assigning to Blender nodes.
+    1. Sets minimal HSV value attribute for rendering
+    2. Applies pre gamma correction
+    3. Returns it as tuple of 4 floats RGBA
+
+    :param color: color to be converted for usage in node
+    :type color: mathutils.Color | collections.Iterable[float]
+    :return: RGBA as tuple of floats
+    :rtype: tuple[float]
+    """
+
+    c = Color(color[:3])  # copy color so changes won't reflect on original passed color object
+
+    c = pre_gamma_corrected_col(c)
+
+    # set minimal value for Blender to use it in rendering
+    if c.v == 0:
+        c.v = 0.000001  # this is the smallest value Blender still uses for rendering
+
+    return tuple(c) + (1,)
+
+
+def aux_to_node_color(aux_prop, from_index=0):
+    """Converts auxiliary item to color ready for assigning to Blender nodes.
+    1. Converts auxiliary item to color
+    2. Sets minimal HSV value attribute for rendering
+    3. Applies pre gamma correction
+    4. Returns it as tuple of 4 floats RGBA
+
+    :param aux_prop:
+    :type aux_prop: bpy.props.IDPropertyGroup
+    :param from_index: index in aux property collection from which to start taking RGB values
+    :type from_index: int
+    :return: RGBA as tuple of floats
+    :rtype: tuple[float]
+    """
+
+    col = []
+    for i, aux_item in enumerate(aux_prop):
+
+        if from_index <= i < from_index + 3:
+            col.append(max(0, aux_item['value']))
+
+    # just make sure to fill empty RGB channels so game won't complain
+    if len(col) < 3:
+        col.extend([0, ] * (3 - len(col)))
+        lprint("D Filling 0.0 for missing auxiliary item values of RGB color presentation (Actual/needed count: %s/3)",
+               (len(aux_prop),))
+
+    return to_node_color(col)
 
 
 def float_to_hex_string(value):

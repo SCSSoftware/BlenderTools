@@ -38,8 +38,6 @@ class MlaaWeight:
         start_pos_x = 0
         start_pos_y = 0
 
-        node_tree.nodes.clear()
-
         # node creation
         output_n = node_tree.nodes.new("ShaderNodeOutput")
         output_n.name = MlaaWeight.OUTPUT_NODE
@@ -57,6 +55,6 @@ class MlaaWeight:
         """
 
         material.use_transparency = True
-        material.transparency_method = "Z_TRANSPARENCY"
+        material.transparency_method = "MASK"
 
         node_tree.nodes[MlaaWeight.OUTPUT_NODE].inputs['Alpha'].default_value = 0

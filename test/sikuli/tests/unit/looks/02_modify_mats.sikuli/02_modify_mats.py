@@ -6,9 +6,9 @@ def switch_to_default():
     click(Pattern("looks_entries_2.png").similar(0.92).targetOffset(-15,-12))
 
 def switch_to_default_01():
-
+    
     click(Pattern("looks_entries_1.png").similar(0.92).targetOffset(-11,13))
-
+            
 try:
     wait(Pattern("startup.png").similar(0.91),5)
     find(Pattern("diffuse_attr.png").similar(0.92)).right().click(Pattern("diffuse_color.png").similar(0.94))

@@ -1,0 +1,2315 @@
+SiiNunit
+{
+sign_model : sign.dlc_no_0 {
+
+	sign_name: "lamp 01 scan"
+
+	model_desc: "/model2/lamp/lamp_01_sc.pmd"
+	model_coll: "/model2/lamp/lamp_01_sc.pmc"
+	look_name: default
+	category: "lamps"
+
+	dynamic: false
+	distance_type: 2
+	road_model: true
+	instanced: true
+}
+sign_model : sign.dlc_no_1 {
+
+	sign_name: "Pillar faroe"
+
+	model_desc: "/model2/pillar/faroe_sc.pmd"
+	model_coll: "/model2/pillar/faroe_sc.pmc"
+	look_name: default
+	category: "Pillar"
+
+
+	dynamic: false
+	distance_type: 2
+	road_model: true
+}
+sign_model : sign.dlc_no_2 {
+
+	sign_name: "lamp 02 scan"
+
+	model_desc: "/model2/lamp/lamp_02_sc.pmd"
+	model_coll: "/model2/lamp/lamp_02_sc.pmc"
+	look_name: default
+	category: "lamps"
+
+	dynamic: false
+	distance_type: 2
+	road_model: true
+	instanced: true
+}
+sign_model : sign.dlc_no_3 {
+
+	sign_name: "lamp 03 single scan"
+
+	model_desc: "/model2/lamp/lamp_03_single_sc.pmd"
+	model_coll: "/model2/lamp/lamp_03_single_sc.pmc"
+	look_name: default
+	category: "lamps"
+
+	dynamic: false
+	distance_type: 2
+	road_model: true
+	instanced: true
+}
+sign_model : sign.dlc_no_4 {
+
+	sign_name: "lamp 03 scan"
+
+	model_desc: "/model2/lamp/lamp_03_sc.pmd"
+	model_coll: "/model2/lamp/lamp_03_sc.pmc"
+	look_name: default
+	category: "lamps"
+
+	dynamic: false
+	distance_type: 2
+	road_model: true
+	instanced: true
+}
+sign_model : sign.dlc_no_5 {
+	
+	sign_name: "lamp 04 scan"
+	
+	model_desc: "/model2/lamp/lamp_04_sc.pmd"
+	model_coll: "/model2/lamp/lamp_04_sc.pmc"
+	look_name: default
+	category: "lamps"
+
+	dynamic: false
+	distance_type: 2
+	road_model: true
+	instanced: true
+}
+sign_model : sign.dlc_no_6 {
+	
+	sign_name: "lamp 05 scan"
+	
+	model_desc: "/model2/lamp/lamp_05_sc.pmd"
+	model_coll: "/model2/lamp/lamp_05_sc.pmc"
+	look_name: default
+	category: "lamps"
+
+	dynamic: false
+	distance_type: 2
+	road_model: true
+	instanced: true
+}
+sign_model : sign.dlc_no_7 {
+	
+	sign_name: "lamp 06 scan"
+	
+	model_desc: "/model2/lamp/lamp_06_sc.pmd"
+	model_coll: "/model2/lamp/lamp_06_sc.pmc"
+	look_name: default
+	category: "lamps"
+
+	dynamic: false
+	distance_type: 2	
+	road_model: true
+	instanced: true
+}
+sign_model : sign.dlc_no_8 {
+
+	sign_name: "lamp 03 double scan"
+
+	model_desc: "/model2/lamp/lamp_03_double_sc.pmd"
+	model_coll: "/model2/lamp/lamp_03_double_sc.pmc"
+	look_name: default
+	category: "lamps"
+
+	dynamic: false
+	distance_type: 2
+	road_model: true
+	instanced: true
+}
+sign_model : sign.dlc_no_9 {
+
+	sign_name: "lamp 03 bridge scan"
+
+	model_desc: "/model2/lamp/lamp_03_bridge_sc.pmd"
+	model_coll: "/model2/lamp/lamp_03_bridge_sc.pmc"
+	look_name: default
+	category: "lamps"
+
+	dynamic: false
+	distance_type: 2
+	road_model: true
+	instanced: true
+}
+
+sign_model : sign.dlc_no_10 {
+
+	sign_name: "logo agronord universal"
+
+	model_desc: "/model2/sign/company_logos/agronord/universal_sc.pmd"
+	model_coll: "/model2/sign/company_logos/agronord/universal_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_11 {
+
+	sign_name: "logo aria food universal"
+
+	model_desc: "/model2/sign/company_logos/aria_food/universal_sc.pmd"
+	model_coll: "/model2/sign/company_logos/aria_food/universal_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_13 {
+
+	sign_name: "logo bjork universal"
+
+	model_desc: "/model2/sign/company_logos/bjork/universal_sc.pmd"
+	model_coll: "/model2/sign/company_logos/bjork/universal_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_14 {
+
+	sign_name: "logo drekkartrans universal"
+
+	model_desc: "/model2/sign/company_logos/drekkartrans/universal_sc.pmd"
+	model_coll: "/model2/sign/company_logos/drekkartrans/universal_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_15 {
+
+	sign_name: "logo gnt universal"
+
+	model_desc: "/model2/sign/company_logos/gnt/universal_sc.pmd"
+	model_coll: "/model2/sign/company_logos/gnt/universal_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_16 {
+
+	sign_name: "logo ika bohag universal"
+
+	model_desc: "/model2/sign/company_logos/ika_bohag/universal_sc.pmd"
+	model_coll: "/model2/sign/company_logos/ika_bohag/universal_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_17 {
+
+	sign_name: "logo konstnorr universal"
+
+	model_desc: "/model2/sign/company_logos/konstnorr/universal_sc.pmd"
+	model_coll: "/model2/sign/company_logos/konstnorr/universal_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_18 {
+
+	sign_name: "logo ms stein universal"
+
+	model_desc: "/model2/sign/company_logos/ms_stein/universal_sc.pmd"
+	model_coll: "/model2/sign/company_logos/ms_stein/universal_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_19 {
+
+	sign_name: "logo nordic crown universal"
+
+	model_desc: "/model2/sign/company_logos/nordic_crown/universal_sc.pmd"
+	model_coll: "/model2/sign/company_logos/nordic_crown/universal_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_20 {
+
+	sign_name: "logo nordic stenbrott universal"
+
+	model_desc: "/model2/sign/company_logos/nordic_stenbrott/universal_sc.pmd"
+	model_coll: "/model2/sign/company_logos/nordic_stenbrott/universal_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_21 {
+
+	sign_name: "logo norrfood universal"
+
+	model_desc: "/model2/sign/company_logos/norrfood/universal_sc.pmd"
+	model_coll: "/model2/sign/company_logos/norrfood/universal_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_22 {
+
+	sign_name: "logo norrsken universal"
+
+	model_desc: "/model2/sign/company_logos/norrsken/universal_sc.pmd"
+	model_coll: "/model2/sign/company_logos/norrsken/universal_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_23 {
+
+	sign_name: "logo ns oil universal"
+
+	model_desc: "/model2/sign/company_logos/ns_oil/universal_sc.pmd"
+	model_coll: "/model2/sign/company_logos/ns_oil/universal_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_24 {
+
+	sign_name: "logo polar_fish universal"
+
+	model_desc: "/model2/sign/company_logos/polar_fish/universal_sc.pmd"
+	model_coll: "/model2/sign/company_logos/polar_fish/universal_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_25 {
+
+	sign_name: "logo renar logistik universal"
+
+	model_desc: "/model2/sign/company_logos/renar_logistik/universal_sc.pmd"
+	model_coll: "/model2/sign/company_logos/renar_logistik/universal_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_26 {
+
+	sign_name: "logo sag and tre universal"
+
+	model_desc: "/model2/sign/company_logos/sag_and_tre/universal_sc.pmd"
+	model_coll: "/model2/sign/company_logos/sag_and_tre/universal_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_27 {
+
+	sign_name: "logo vitas power universal"
+
+	model_desc: "/model2/sign/company_logos/vitas_power/universal_sc.pmd"
+	model_coll: "/model2/sign/company_logos/vitas_power/universal_sc.pmc"
+	look_name: default
+	dynamic: false
+
+}
+
+sign_model : sign.dlc_no_28 {
+
+	sign_name: "logo vpc universal"
+
+	model_desc: "/model2/sign/company_logos/vpc/universal_sc.pmd"
+	model_coll: "/model2/sign/company_logos/vpc/universal_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_29 {
+
+	sign_name: "logo agronord entrance universal"
+
+	model_desc: "/model2/sign/company_logos/agronord/entrance_universal_sc.pmd"
+	model_coll: "/model2/sign/company_logos/agronord/entrance_universal_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_30 {
+
+	sign_name: "logo aria food entrance universal"
+
+	model_desc: "/model2/sign/company_logos/aria_food/entrance_universal_sc.pmd"
+	model_coll: "/model2/sign/company_logos/aria_food/entrance_universal_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_32 {
+
+	sign_name: "logo bjork entrance universal"
+
+	model_desc: "/model2/sign/company_logos/bjork/entrance_universal_sc.pmd"
+	model_coll: "/model2/sign/company_logos/bjork/entrance_universal_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_33 {
+
+	sign_name: "logo drekkartrans entrance universal"
+
+	model_desc: "/model2/sign/company_logos/drekkartrans/entrance_universal_sc.pmd"
+	model_coll: "/model2/sign/company_logos/drekkartrans/entrance_universal_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_34 {
+
+	sign_name: "logo gnt entrance universal"
+
+	model_desc: "/model2/sign/company_logos/gnt/entrance_universal_sc.pmd"
+	model_coll: "/model2/sign/company_logos/gnt/entrance_universal_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_35 {
+
+	sign_name: "logo ika bohag entrance universal"
+
+	model_desc: "/model2/sign/company_logos/ika_bohag/entrance_universal_sc.pmd"
+	model_coll: "/model2/sign/company_logos/ika_bohag/entrance_universal_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_36 {
+
+	sign_name: "logo konstnorr entrance universal"
+
+	model_desc: "/model2/sign/company_logos/konstnorr/entrance_universal_sc.pmd"
+	model_coll: "/model2/sign/company_logos/konstnorr/entrance_universal_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_37 {
+
+	sign_name: "logo ms stein entrance universal"
+
+	model_desc: "/model2/sign/company_logos/ms_stein/entrance_universal_sc.pmd"
+	model_coll: "/model2/sign/company_logos/ms_stein/entrance_universal_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_38 {
+
+	sign_name: "logo nordic crown entrance universal"
+
+	model_desc: "/model2/sign/company_logos/nordic_crown/entrance_universal_sc.pmd"
+	model_coll: "/model2/sign/company_logos/nordic_crown/entrance_universal_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_39 {
+
+	sign_name: "logo nordic stenbrott entrance universal"
+
+	model_desc: "/model2/sign/company_logos/nordic_stenbrott/entrance_universal_sc.pmd"
+	model_coll: "/model2/sign/company_logos/nordic_stenbrott/entrance_universal_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_40 {
+
+	sign_name: "logo norrfood entrance universal"
+
+	model_desc: "/model2/sign/company_logos/norrfood/entrance_universal_sc.pmd"
+	model_coll: "/model2/sign/company_logos/norrfood/entrance_universal_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_41 {
+
+	sign_name: "logo norrsken entrance universal"
+
+	model_desc: "/model2/sign/company_logos/norrsken/entrance_universal_sc.pmd"
+	model_coll: "/model2/sign/company_logos/norrsken/entrance_universal_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_42 {
+
+	sign_name: "logo ns oil entrance universal"
+
+	model_desc: "/model2/sign/company_logos/ns_oil/entrance_universal_sc.pmd"
+	model_coll: "/model2/sign/company_logos/ns_oil/entrance_universal_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_43 {
+
+	sign_name: "logo polar_fish entrance universal"
+
+	model_desc: "/model2/sign/company_logos/polar_fish/entrance_universal_sc.pmd"
+	model_coll: "/model2/sign/company_logos/polar_fish/entrance_universal_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_44 {
+
+	sign_name: "logo renar logistik entrance universal"
+
+	model_desc: "/model2/sign/company_logos/renar_logistik/entrance_universal_sc.pmd"
+	model_coll: "/model2/sign/company_logos/renar_logistik/entrance_universal_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_45 {
+
+	sign_name: "logo sag and tre entrance universal"
+
+	model_desc: "/model2/sign/company_logos/sag_and_tre/entrance_universal_sc.pmd"
+	model_coll: "/model2/sign/company_logos/sag_and_tre/entrance_universal_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_46 {
+
+	sign_name: "logo vitas power entrance universal"
+
+	model_desc: "/model2/sign/company_logos/vitas_power/entrance_universal_sc.pmd"
+	model_coll: "/model2/sign/company_logos/vitas_power/entrance_universal_sc.pmc"
+	look_name: default
+	dynamic: false
+
+}
+
+sign_model : sign.dlc_no_47 {
+
+	sign_name: "logo vpc entrance universal"
+
+	model_desc: "/model2/sign/company_logos/vpc/entrance_universal_sc.pmd"
+	model_coll: "/model2/sign/company_logos/vpc/entrance_universal_sc.pmc"
+	look_name: default
+	dynamic: false
+
+
+
+
+}
+
+sign_model : sign.dlc_no_48 {
+
+	sign_name: "logo agronord entrance sign"
+
+	model_desc: "/model2/sign/company_logos/agronord/entrance_sign_sc.pmd"
+	model_coll: "/model2/sign/company_logos/agronord/entrance_sign_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_49 {
+
+	sign_name: "logo aria food entrance sign"
+
+	model_desc: "/model2/sign/company_logos/aria_food/entrance_sign_sc.pmd"
+	model_coll: "/model2/sign/company_logos/aria_food/entrance_sign_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_51 {
+
+	sign_name: "logo bjork entrance sign"
+
+	model_desc: "/model2/sign/company_logos/bjork/entrance_sign_sc.pmd"
+	model_coll: "/model2/sign/company_logos/bjork/entrance_sign_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_52 {
+
+	sign_name: "logo drekkartrans entrance sign"
+
+	model_desc: "/model2/sign/company_logos/drekkartrans/entrance_sign_sc.pmd"
+	model_coll: "/model2/sign/company_logos/drekkartrans/entrance_sign_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_53 {
+
+	sign_name: "logo gnt entrance sign"
+
+	model_desc: "/model2/sign/company_logos/gnt/entrance_sign_sc.pmd"
+	model_coll: "/model2/sign/company_logos/gnt/entrance_sign_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_54 {
+
+	sign_name: "logo ika bohag entrance sign"
+
+	model_desc: "/model2/sign/company_logos/ika_bohag/entrance_sign_sc.pmd"
+	model_coll: "/model2/sign/company_logos/ika_bohag/entrance_sign_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_55 {
+
+	sign_name: "logo konstnorr entrance sign"
+
+	model_desc: "/model2/sign/company_logos/konstnorr/entrance_sign_sc.pmd"
+	model_coll: "/model2/sign/company_logos/konstnorr/entrance_sign_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_56 {
+
+	sign_name: "logo ms stein entrance sign"
+
+	model_desc: "/model2/sign/company_logos/ms_stein/entrance_sign_sc.pmd"
+	model_coll: "/model2/sign/company_logos/ms_stein/entrance_sign_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_57 {
+
+	sign_name: "logo nordic crown entrance sign"
+
+	model_desc: "/model2/sign/company_logos/nordic_crown/entrance_sign_sc.pmd"
+	model_coll: "/model2/sign/company_logos/nordic_crown/entrance_sign_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_58 {
+
+	sign_name: "logo nordic stenbrott entrance sign"
+
+	model_desc: "/model2/sign/company_logos/nordic_stenbrott/entrance_sign_sc.pmd"
+	model_coll: "/model2/sign/company_logos/nordic_stenbrott/entrance_sign_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_59 {
+
+	sign_name: "logo norrfood entrance sign"
+
+	model_desc: "/model2/sign/company_logos/norrfood/entrance_sign_sc.pmd"
+	model_coll: "/model2/sign/company_logos/norrfood/entrance_sign_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_60 {
+
+	sign_name: "logo norrsken entrance sign"
+
+	model_desc: "/model2/sign/company_logos/norrsken/entrance_sign_sc.pmd"
+	model_coll: "/model2/sign/company_logos/norrsken/entrance_sign_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_61 {
+
+	sign_name: "logo ns oil entrance sign"
+
+	model_desc: "/model2/sign/company_logos/ns_oil/entrance_sign_sc.pmd"
+	model_coll: "/model2/sign/company_logos/ns_oil/entrance_sign_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_62 {
+
+	sign_name: "logo polar_fish entrance sign"
+
+	model_desc: "/model2/sign/company_logos/polar_fish/entrance_sign_sc.pmd"
+	model_coll: "/model2/sign/company_logos/polar_fish/entrance_sign_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_63 {
+
+	sign_name: "logo renar logistik entrance sign"
+
+	model_desc: "/model2/sign/company_logos/renar_logistik/entrance_sign_sc.pmd"
+	model_coll: "/model2/sign/company_logos/renar_logistik/entrance_sign_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_64 {
+
+	sign_name: "logo sag and tre entrance sign"
+
+	model_desc: "/model2/sign/company_logos/sag_and_tre/entrance_sign_sc.pmd"
+	model_coll: "/model2/sign/company_logos/sag_and_tre/entrance_sign_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_65 {
+
+	sign_name: "logo vitas power entrance sign"
+
+	model_desc: "/model2/sign/company_logos/vitas_power/entrance_sign_sc.pmd"
+	model_coll: "/model2/sign/company_logos/vitas_power/entrance_sign_sc.pmc"
+	look_name: default
+	dynamic: false
+
+}
+
+sign_model : sign.dlc_no_66 {
+
+	sign_name: "logo vpc entrance sign"
+
+	model_desc: "/model2/sign/company_logos/vpc/entrance_sign_sc.pmd"
+	model_coll: "/model2/sign/company_logos/vpc/entrance_sign_sc.pmc"
+	look_name: default
+	dynamic: false
+
+
+}
+
+sign_model : sign.dlc_no_67 {
+
+	sign_name: "logo agronord building sign"
+
+	model_desc: "/model2/sign/company_logos/agronord/building_sign_sc.pmd"
+	model_coll: "/model2/sign/company_logos/agronord/building_sign_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_68 {
+
+	sign_name: "logo aria food building sign"
+
+	model_desc: "/model2/sign/company_logos/aria_food/building_sign_sc.pmd"
+	model_coll: "/model2/sign/company_logos/aria_food/building_sign_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_70 {
+
+	sign_name: "logo bjork building sign"
+
+	model_desc: "/model2/sign/company_logos/bjork/building_sign_sc.pmd"
+	model_coll: "/model2/sign/company_logos/bjork/building_sign_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_71 {
+
+	sign_name: "logo drekkartrans building sign"
+
+	model_desc: "/model2/sign/company_logos/drekkartrans/building_sign_sc.pmd"
+	model_coll: "/model2/sign/company_logos/drekkartrans/building_sign_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_72 {
+
+	sign_name: "logo gnt building sign"
+
+	model_desc: "/model2/sign/company_logos/gnt/building_sign_sc.pmd"
+	model_coll: "/model2/sign/company_logos/gnt/building_sign_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_73 {
+
+	sign_name: "logo ika bohag building sign"
+
+	model_desc: "/model2/sign/company_logos/ika_bohag/building_sign_sc.pmd"
+	model_coll: "/model2/sign/company_logos/ika_bohag/building_sign_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_74 {
+
+	sign_name: "logo konstnorr building sign"
+
+	model_desc: "/model2/sign/company_logos/konstnorr/building_sign_sc.pmd"
+	model_coll: "/model2/sign/company_logos/konstnorr/building_sign_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_75 {
+
+	sign_name: "logo ms stein building sign"
+
+	model_desc: "/model2/sign/company_logos/ms_stein/building_sign_sc.pmd"
+	model_coll: "/model2/sign/company_logos/ms_stein/building_sign_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_76 {
+
+	sign_name: "logo nordic crown building sign"
+
+	model_desc: "/model2/sign/company_logos/nordic_crown/building_sign_sc.pmd"
+	model_coll: "/model2/sign/company_logos/nordic_crown/building_sign_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_77 {
+
+	sign_name: "logo nordic stenbrott building sign"
+
+	model_desc: "/model2/sign/company_logos/nordic_stenbrott/building_sign_sc.pmd"
+	model_coll: "/model2/sign/company_logos/nordic_stenbrott/building_sign_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_78 {
+
+	sign_name: "logo norrfood building sign"
+
+	model_desc: "/model2/sign/company_logos/norrfood/building_sign_sc.pmd"
+	model_coll: "/model2/sign/company_logos/norrfood/building_sign_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_79 {
+
+	sign_name: "logo norrsken building sign"
+
+	model_desc: "/model2/sign/company_logos/norrsken/building_sign_sc.pmd"
+	model_coll: "/model2/sign/company_logos/norrsken/building_sign_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_80 {
+
+	sign_name: "logo ns oil building sign"
+
+	model_desc: "/model2/sign/company_logos/ns_oil/building_sign_sc.pmd"
+	model_coll: "/model2/sign/company_logos/ns_oil/building_sign_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_81 {
+
+	sign_name: "logo polar_fish building sign"
+
+	model_desc: "/model2/sign/company_logos/polar_fish/building_sign_sc.pmd"
+	model_coll: "/model2/sign/company_logos/polar_fish/building_sign_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_82 {
+
+	sign_name: "logo renar logistik building sign"
+
+	model_desc: "/model2/sign/company_logos/renar_logistik/building_sign_sc.pmd"
+	model_coll: "/model2/sign/company_logos/renar_logistik/building_sign_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_83 {
+
+	sign_name: "logo sag and tre building sign"
+
+	model_desc: "/model2/sign/company_logos/sag_and_tre/building_sign_sc.pmd"
+	model_coll: "/model2/sign/company_logos/sag_and_tre/building_sign_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_84 {
+
+	sign_name: "logo vitas power building sign"
+
+	model_desc: "/model2/sign/company_logos/vitas_power/building_sign_sc.pmd"
+	model_coll: "/model2/sign/company_logos/vitas_power/building_sign_sc.pmc"
+	look_name: default
+	dynamic: false
+
+}
+
+sign_model : sign.dlc_no_85 {
+
+	sign_name: "logo vpc building sign"
+
+	model_desc: "/model2/sign/company_logos/vpc/building_sign_sc.pmd"
+	model_coll: "/model2/sign/company_logos/vpc/building_sign_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_86 {
+
+	sign_name: "traffic barrier 01 sign"
+
+	model_desc: "/model2/sign/traffic/traffic_barrier_01_sc.pmd"
+	model_coll: "/model2/sign/traffic/traffic_barrier_01_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_87 {
+
+	sign_name: "reflective post swe"
+
+	model_desc: "/model2/sign/reflective_post_swe_sc.pmd"
+	model_coll: "/model2/sign/reflective_post_swe_sc.pmc"
+	look_name: default
+  category: "reflective_posts"
+
+	dynamic: true
+	distance_type: 2
+	mass: 100
+	road_model: true
+	instanced: true
+}
+
+sign_model : sign.dlc_no_88 {
+
+	sign_name: "reflective post no"
+
+	model_desc: "/model2/sign/reflective_post_no_sc.pmd"
+	model_coll: "/model2/sign/reflective_post_no_sc.pmc"
+	look_name: default
+	category: "reflective_posts"
+
+	dynamic: true
+	distance_type: 2
+	mass: 100
+	road_model: true
+	instanced: true
+}
+
+sign_model : sign.dlc_no_92 {
+	
+	sign_name: "lamp 07 scan"
+	
+	model_desc: "/model2/lamp/lamp_07_sc.pmd"
+	model_coll: "/model2/lamp/lamp_07_sc.pmc"
+	look_name: default
+	category: "lamps"
+
+	dynamic: false
+	distance_type: 2
+	road_model: true
+	instanced: true
+}
+
+sign_model : sign.dlc_no_93 {
+
+	category: "Pillar"
+
+	sign_name: "Pillar middelfart sc"
+
+	model_desc: "/model2/pillar/middelfart_sc.pmd"
+	look_name: default
+
+	dynamic: false
+	distance_type: 2
+	road_model: true
+}
+sign_model : sign.dlc_no_94 {
+
+	sign_name: "lamp 08 port scan"
+
+	model_desc: "/model2/lamp/lamp_08_port_sc.pmd"
+	model_coll: "/model2/lamp/lamp_08_port_sc.pmc"
+	look_name: default
+	category: "lamps"
+
+	dynamic: false
+	distance_type: 2
+	instanced: true
+}
+sign_model : sign.dlc_no_95 {
+	
+	sign_name: "T_shape_lamp_nor"
+	
+	model_desc: "/model2/lamp/t_shaped_lamp_nor_sc.pmd"
+	model_coll: "/model2/lamp/t_shaped_lamp_nor_sc.pmc"
+	look_name: default
+	category: "lamps"
+
+	dynamic: false
+	distance_type: 2
+	road_model: true
+}
+sign_model : sign.dlc_no_99 {
+	
+	sign_name: "electrobox_04"
+	
+	model_desc: "/model2/props/street/electrobox_04_sc.pmd"
+	model_coll: "/model2/props/street/electrobox_04_sc.pmc"
+	look_name: default
+	category: "city"
+
+	dynamic: false
+	distance_type: 2	 
+}
+sign_model : sign.dlc_no_106 {
+	
+	sign_name: "trash_bin_01_grey"
+	
+	model_desc: "/model2/props/street/trash_bin_01_sc.pmd"
+	model_coll: "/model2/props/street/trash_bin_01_sc.pmc"
+	look_name: default
+	category: "city"
+
+	dynamic: true
+	distance_type: 2
+	mass: 80
+}
+sign_model : sign.dlc_no_107 {
+	
+	sign_name: "trash_bin_02_grey"
+	
+	model_desc: "/model2/props/street/trash_bin_02_sc.pmd"
+	model_coll: "/model2/props/street/trash_bin_02_sc.pmc"
+	look_name: default
+	category: "city"
+
+	dynamic: true
+	distance_type: 2
+	mass: 80
+}
+sign_model : sign.dlc_no_108 {
+	
+	sign_name: "sorting_container_01"
+	
+	model_desc: "/model2/props/street/sorting_container_01_sc.pmd"
+	model_coll: "/model2/props/street/sorting_container_01_sc.pmc"
+	look_name: default
+	category: "city"
+
+	dynamic: true
+	distance_type: 2
+	mass: 80
+}
+sign_model : sign.dlc_no_109 {
+	
+	sign_name: "sorting_container_02"
+	
+	model_desc: "/model2/props/street/sorting_container_02_sc.pmd"
+	model_coll: "/model2/props/street/sorting_container_02_sc.pmc"
+	look_name: default
+	category: "city"
+
+	dynamic: true
+	distance_type: 2
+	mass: 80
+}
+sign_model : sign.dlc_no_110 {
+	
+	sign_name: "sorting_container_03"
+	
+	model_desc: "/model2/props/street/sorting_container_03_sc.pmd"
+	model_coll: "/model2/props/street/sorting_container_03_sc.pmc"
+	look_name: default
+	category: "city"
+
+	dynamic: true
+	distance_type: 2
+	mass: 80
+
+}
+sign_model : sign.dlc_no_120 {
+	
+	sign_name: "garbage_container_02green"
+	
+	model_desc: "/model2/props/street/garbage_container_02green_sc.pmd"
+	model_coll: "/model2/props/street/garbage_container_02green_sc.pmc"
+	look_name: default
+	category: "city"
+
+	dynamic: true
+	distance_type: 2
+	mass: 300
+}
+sign_model : sign.dlc_no_121 {
+	
+	sign_name: "garbage_container_02red"
+	
+	model_desc: "/model2/props/street/garbage_container_02red_sc.pmd"
+	model_coll: "/model2/props/street/garbage_container_02red_sc.pmc"
+	look_name: default
+	category: "city"
+
+	dynamic: true
+	distance_type: 2
+	mass: 300
+}
+sign_model : sign.dlc_no_126 {
+
+	sign_name: "lamp_toll_storebelt scan"
+
+	model_desc: "/model2/lamp/lamp_toll_storebelt_sc.pmd"
+	model_coll: "/model2/lamp/lamp_toll_storebelt_sc.pmc"
+	look_name: default
+	category: "lamps"
+
+	dynamic: false
+	distance_type: 2
+	road_model: true
+}
+
+sign_model : sign.dlc_no_127 {
+
+	sign_name: "Price Denmark"
+
+	model_desc: "/model2/sign/company_logos/generic/gas_big_price_01_sc.pmd"
+	model_coll: "/model2/sign/company_logos/generic/gas_big_price_01_sc.pmc"
+	look_name: dk
+	category: "fuel"
+
+	dynamic: false
+	distance_type: 2
+	mass: 100
+}
+
+sign_model : sign.dlc_no_128 {
+
+	sign_name: "Price Sweden"
+
+	model_desc: "/model2/sign/company_logos/generic/gas_big_price_01_sc.pmd"
+	model_coll: "/model2/sign/company_logos/generic/gas_big_price_01_sc.pmc"
+	look_name: swe
+	category: "fuel"
+
+	dynamic: false
+	distance_type: 2
+	mass: 100
+}
+
+sign_model : sign.dlc_no_129 {
+
+	sign_name: "Price Norway"
+
+	model_desc: "/model2/sign/company_logos/generic/gas_big_price_01_sc.pmd"
+	model_coll: "/model2/sign/company_logos/generic/gas_big_price_01_sc.pmc"
+	look_name: nor
+	category: "fuel"
+
+	dynamic: false
+	distance_type: 2
+	mass: 100
+}
+sign_model : sign.dlc_no_130 {
+
+	sign_name: "lamp goteborg bridge"
+
+	model_desc: "/model2/lamp/lamp_goteborg_bridge_sc.pmd"
+	model_coll: "/model2/lamp/lamp_goteborg_bridge_sc.pmc"
+	look_name: default
+	category: "lamps"
+
+	dynamic: false
+	distance_type: 2
+	road_model: true
+	instanced: true
+}
+sign_model : sign.dlc_no_131 {
+
+	sign_name: "lamp erfjord bridge"
+
+	model_desc: "/model2/lamp/lamp_erfjord_bridge_sc.pmd"
+	model_coll: "/model2/lamp/lamp_erfjord_bridge_sc.pmc"
+	look_name: default
+	category: "lamps"
+
+	dynamic: false
+	distance_type: 2
+	road_model: true
+	instanced: true
+}
+
+sign_model : sign.dlc_no_132 {
+
+	sign_name: "logo ns_chemicals entrance sign"
+
+	model_desc: "/model2/sign/company_logos/ns_chemicals/entrance_sign_sc.pmd"
+	model_coll: "/model2/sign/company_logos/ns_chemicals/entrance_sign_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_133 {
+
+	sign_name: "logo ns_chemicals building sign"
+
+	model_desc: "/model2/sign/company_logos/ns_chemicals/building_sign_sc.pmd"
+	model_coll: "/model2/sign/company_logos/ns_chemicals/building_sign_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_134 {
+
+	sign_name: "logo ns_chemicals entrance universal"
+
+	model_desc: "/model2/sign/company_logos/ns_chemicals/entrance_universal_sc.pmd"
+	model_coll: "/model2/sign/company_logos/ns_chemicals/entrance_universal_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_135 {
+
+	sign_name: "logo ns_chemicals universal"
+
+	model_desc: "/model2/sign/company_logos/ns_chemicals/universal_sc.pmd"
+	model_coll: "/model2/sign/company_logos/ns_chemicals/universal_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_136 {
+
+	sign_name: "logo agronord arrow left"
+
+	model_desc: "/model2/sign/company_logos/agronord/arrow_left_sc.pmd"
+	model_coll: "/model2/sign/company_logos/agronord/arrow_left_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_137 {
+
+	sign_name: "logo agronord arrow right"
+
+	model_desc: "/model2/sign/company_logos/agronord/arrow_right_sc.pmd"
+	model_coll: "/model2/sign/company_logos/agronord/arrow_right_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_138 {
+
+	sign_name: "logo aria food arrow left"
+
+	model_desc: "/model2/sign/company_logos/aria_food/arrow_left_sc.pmd"
+	model_coll: "/model2/sign/company_logos/aria_food/arrow_left_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_139 {
+
+	sign_name: "logo aria food arrow right"
+
+	model_desc: "/model2/sign/company_logos/aria_food/arrow_right_sc.pmd"
+	model_coll: "/model2/sign/company_logos/aria_food/arrow_right_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_142 {
+
+	sign_name: "logo bjork arrow left"
+
+	model_desc: "/model2/sign/company_logos/bjork/arrow_left_sc.pmd"
+	model_coll: "/model2/sign/company_logos/bjork/arrow_left_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_143 {
+
+	sign_name: "logo bjork arrow right"
+
+	model_desc: "/model2/sign/company_logos/bjork/arrow_right_sc.pmd"
+	model_coll: "/model2/sign/company_logos/bjork/arrow_right_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_144 {
+
+	sign_name: "logo drekkartrans arrow left"
+
+	model_desc: "/model2/sign/company_logos/drekkartrans/arrow_left_sc.pmd"
+	model_coll: "/model2/sign/company_logos/drekkartrans/arrow_left_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_145 {
+
+	sign_name: "logo drekkartrans arrow right"
+
+	model_desc: "/model2/sign/company_logos/drekkartrans/arrow_right_sc.pmd"
+	model_coll: "/model2/sign/company_logos/drekkartrans/arrow_right_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_146 {
+
+	sign_name: "logo gnt arrow left"
+
+	model_desc: "/model2/sign/company_logos/gnt/arrow_left_sc.pmd"
+	model_coll: "/model2/sign/company_logos/gnt/arrow_left_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_147 {
+
+	sign_name: "logo gnt arrow right"
+
+	model_desc: "/model2/sign/company_logos/gnt/arrow_right_sc.pmd"
+	model_coll: "/model2/sign/company_logos/gnt/arrow_right_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_148 {
+
+	sign_name: "logo ika bohag arrow left"
+
+	model_desc: "/model2/sign/company_logos/ika_bohag/arrow_left_sc.pmd"
+	model_coll: "/model2/sign/company_logos/ika_bohag/arrow_left_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_149 {
+
+	sign_name: "logo ika bohag arrow right"
+
+	model_desc: "/model2/sign/company_logos/ika_bohag/arrow_right_sc.pmd"
+	model_coll: "/model2/sign/company_logos/ika_bohag/arrow_right_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_150 {
+
+	sign_name: "logo konstnorr arrow left"
+
+	model_desc: "/model2/sign/company_logos/konstnorr/arrow_left_sc.pmd"
+	model_coll: "/model2/sign/company_logos/konstnorr/arrow_left_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_151 {
+
+	sign_name: "logo konstnorr arrow right"
+
+	model_desc: "/model2/sign/company_logos/konstnorr/arrow_right_sc.pmd"
+	model_coll: "/model2/sign/company_logos/konstnorr/arrow_right_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_152 {
+
+	sign_name: "logo ms stein arrow left"
+
+	model_desc: "/model2/sign/company_logos/ms_stein/arrow_left_sc.pmd"
+	model_coll: "/model2/sign/company_logos/ms_stein/arrow_left_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_153 {
+
+	sign_name: "logo ms stein arrow right"
+
+	model_desc: "/model2/sign/company_logos/ms_stein/arrow_right_sc.pmd"
+	model_coll: "/model2/sign/company_logos/ms_stein/arrow_right_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_154 {
+
+	sign_name: "logo nordic crown arrow left"
+
+	model_desc: "/model2/sign/company_logos/nordic_crown/arrow_left_sc.pmd"
+	model_coll: "/model2/sign/company_logos/nordic_crown/arrow_left_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_155 {
+
+	sign_name: "logo nordic crown arrow right"
+
+	model_desc: "/model2/sign/company_logos/nordic_crown/arrow_right_sc.pmd"
+	model_coll: "/model2/sign/company_logos/nordic_crown/arrow_right_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_156 {
+
+	sign_name: "logo nordic stenbrott arrow left"
+
+	model_desc: "/model2/sign/company_logos/nordic_stenbrott/arrow_left_sc.pmd"
+	model_coll: "/model2/sign/company_logos/nordic_stenbrott/arrow_left_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_157 {
+
+	sign_name: "logo nordic stenbrott arrow right"
+
+	model_desc: "/model2/sign/company_logos/nordic_stenbrott/arrow_right_sc.pmd"
+	model_coll: "/model2/sign/company_logos/nordic_stenbrott/arrow_right_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_158 {
+
+	sign_name: "logo norrfood arrow left"
+
+	model_desc: "/model2/sign/company_logos/norrfood/arrow_left_sc.pmd"
+	model_coll: "/model2/sign/company_logos/norrfood/arrow_left_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_159 {
+
+	sign_name: "logo norrfood arrow right"
+
+	model_desc: "/model2/sign/company_logos/norrfood/arrow_right_sc.pmd"
+	model_coll: "/model2/sign/company_logos/norrfood/arrow_right_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_160 {
+
+	sign_name: "logo norrsken arrow left"
+
+	model_desc: "/model2/sign/company_logos/norrsken/arrow_left_sc.pmd"
+	model_coll: "/model2/sign/company_logos/norrsken/arrow_left_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_161 {
+
+	sign_name: "logo norrsken arrow right"
+
+	model_desc: "/model2/sign/company_logos/norrsken/arrow_right_sc.pmd"
+	model_coll: "/model2/sign/company_logos/norrsken/arrow_right_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_162 {
+
+	sign_name: "logo ns chemicals arrow left"
+
+	model_desc: "/model2/sign/company_logos/ns_chemicals/arrow_left_sc.pmd"
+	model_coll: "/model2/sign/company_logos/ns_chemicals/arrow_left_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_163 {
+
+	sign_name: "logo ns chemicals arrow right"
+
+	model_desc: "/model2/sign/company_logos/ns_chemicals/arrow_right_sc.pmd"
+	model_coll: "/model2/sign/company_logos/ns_chemicals/arrow_right_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_164 {
+
+	sign_name: "logo ns oil arrow left"
+
+	model_desc: "/model2/sign/company_logos/ns_oil/arrow_left_sc.pmd"
+	model_coll: "/model2/sign/company_logos/ns_oil/arrow_left_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_165 {
+
+	sign_name: "logo ns oil arrow right"
+
+	model_desc: "/model2/sign/company_logos/ns_oil/arrow_right_sc.pmd"
+	model_coll: "/model2/sign/company_logos/ns_oil/arrow_right_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_166 {
+
+	sign_name: "logo polar fish arrow left"
+
+	model_desc: "/model2/sign/company_logos/polar_fish/arrow_left_sc.pmd"
+	model_coll: "/model2/sign/company_logos/polar_fish/arrow_left_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_167 {
+
+	sign_name: "logo polar fish arrow right"
+
+	model_desc: "/model2/sign/company_logos/polar_fish/arrow_right_sc.pmd"
+	model_coll: "/model2/sign/company_logos/polar_fish/arrow_right_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_168 {
+
+	sign_name: "logo renar logistik arrow left"
+
+	model_desc: "/model2/sign/company_logos/renar_logistik/arrow_left_sc.pmd"
+	model_coll: "/model2/sign/company_logos/renar_logistik/arrow_left_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_169 {
+
+	sign_name: "logo renar logistik arrow right"
+
+	model_desc: "/model2/sign/company_logos/renar_logistik/arrow_right_sc.pmd"
+	model_coll: "/model2/sign/company_logos/renar_logistik/arrow_right_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_170 {
+
+	sign_name: "logo sag and tre arrow left"
+
+	model_desc: "/model2/sign/company_logos/sag_and_tre/arrow_left_sc.pmd"
+	model_coll: "/model2/sign/company_logos/sag_and_tre/arrow_left_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_171 {
+
+	sign_name: "logo sag and tre arrow right"
+
+	model_desc: "/model2/sign/company_logos/sag_and_tre/arrow_right_sc.pmd"
+	model_coll: "/model2/sign/company_logos/sag_and_tre/arrow_right_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_172 {
+
+	sign_name: "logo vitas power arrow left"
+
+	model_desc: "/model2/sign/company_logos/vitas_power/arrow_left_sc.pmd"
+	model_coll: "/model2/sign/company_logos/vitas_power/arrow_left_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_173 {
+
+	sign_name: "logo vitas power arrow right"
+
+	model_desc: "/model2/sign/company_logos/vitas_power/arrow_right_sc.pmd"
+	model_coll: "/model2/sign/company_logos/vitas_power/arrow_right_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_174 {
+
+	sign_name: "logo vpc arrow left"
+
+	model_desc: "/model2/sign/company_logos/vpc/arrow_left_sc.pmd"
+	model_coll: "/model2/sign/company_logos/vpc/arrow_left_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_175 {
+
+	sign_name: "logo vpc arrow right"
+
+	model_desc: "/model2/sign/company_logos/vpc/arrow_right_sc.pmd"
+	model_coll: "/model2/sign/company_logos/vpc/arrow_right_sc.pmc"
+	look_name: default
+	dynamic: false
+
+}
+
+sign_model : sign.dlc_no_176 {
+
+	sign_name: "logo agronord arrow up"
+
+	model_desc: "/model2/sign/company_logos/agronord/arrow_up_sc.pmd"
+	model_coll: "/model2/sign/company_logos/agronord/arrow_up_sc.pmc"
+	look_name: default
+	dynamic: false
+
+}
+
+sign_model : sign.dlc_no_177 {
+
+	sign_name: "logo aria food arrow up"
+
+	model_desc: "/model2/sign/company_logos/aria_food/arrow_up_sc.pmd"
+	model_coll: "/model2/sign/company_logos/aria_food/arrow_up_sc.pmc"
+	look_name: default
+	dynamic: false
+
+}
+
+sign_model : sign.dlc_no_179 {
+
+	sign_name: "logo bjork arrow up"
+
+	model_desc: "/model2/sign/company_logos/bjork/arrow_up_sc.pmd"
+	model_coll: "/model2/sign/company_logos/bjork/arrow_up_sc.pmc"
+	look_name: default
+	dynamic: false
+
+}
+
+sign_model : sign.dlc_no_180 {
+
+	sign_name: "logo drekkartrans arrow up"
+
+	model_desc: "/model2/sign/company_logos/drekkartrans/arrow_up_sc.pmd"
+	model_coll: "/model2/sign/company_logos/drekkartrans/arrow_up_sc.pmc"
+	look_name: default
+	dynamic: false
+
+}
+
+sign_model : sign.dlc_no_181 {
+
+	sign_name: "logo gnt arrow up"
+
+	model_desc: "/model2/sign/company_logos/gnt/arrow_up_sc.pmd"
+	model_coll: "/model2/sign/company_logos/gnt/arrow_up_sc.pmc"
+	look_name: default
+	dynamic: false
+
+}
+
+sign_model : sign.dlc_no_182 {
+
+	sign_name: "logo ika bohag arrow up"
+
+	model_desc: "/model2/sign/company_logos/ika_bohag/arrow_up_sc.pmd"
+	model_coll: "/model2/sign/company_logos/ika_bohag/arrow_up_sc.pmc"
+	look_name: default
+	dynamic: false
+
+}
+
+sign_model : sign.dlc_no_183 {
+
+	sign_name: "logo konstnorr arrow up"
+
+	model_desc: "/model2/sign/company_logos/konstnorr/arrow_up_sc.pmd"
+	model_coll: "/model2/sign/company_logos/konstnorr/arrow_up_sc.pmc"
+	look_name: default
+	dynamic: false
+
+}
+
+sign_model : sign.dlc_no_184 {
+
+	sign_name: "logo ms stein arrow up"
+
+	model_desc: "/model2/sign/company_logos/ms_stein/arrow_up_sc.pmd"
+	model_coll: "/model2/sign/company_logos/ms_stein/arrow_up_sc.pmc"
+	look_name: default
+	dynamic: false
+
+}
+
+sign_model : sign.dlc_no_185 {
+
+	sign_name: "logo nordic crown arrow up"
+
+	model_desc: "/model2/sign/company_logos/nordic_crown/arrow_up_sc.pmd"
+	model_coll: "/model2/sign/company_logos/nordic_crown/arrow_up_sc.pmc"
+	look_name: default
+	dynamic: false
+
+}
+
+sign_model : sign.dlc_no_186 {
+
+	sign_name: "logo nordic stenbrott arrow up"
+
+	model_desc: "/model2/sign/company_logos/nordic_stenbrott/arrow_up_sc.pmd"
+	model_coll: "/model2/sign/company_logos/nordic_stenbrott/arrow_up_sc.pmc"
+	look_name: default
+	dynamic: false
+
+}
+
+sign_model : sign.dlc_no_187 {
+
+	sign_name: "logo norrfood arrow up"
+
+	model_desc: "/model2/sign/company_logos/norrfood/arrow_up_sc.pmd"
+	model_coll: "/model2/sign/company_logos/norrfood/arrow_up_sc.pmc"
+	look_name: default
+	dynamic: false
+
+}
+
+sign_model : sign.dlc_no_188 {
+
+	sign_name: "logo norrsken arrow up"
+
+	model_desc: "/model2/sign/company_logos/norrsken/arrow_up_sc.pmd"
+	model_coll: "/model2/sign/company_logos/norrsken/arrow_up_sc.pmc"
+	look_name: default
+	dynamic: false
+
+}
+
+sign_model : sign.dlc_no_189 {
+
+	sign_name: "logo ns chemicals arrow up"
+
+	model_desc: "/model2/sign/company_logos/ns_chemicals/arrow_up_sc.pmd"
+	model_coll: "/model2/sign/company_logos/ns_chemicals/arrow_up_sc.pmc"
+	look_name: default
+	dynamic: false
+
+}
+
+sign_model : sign.dlc_no_190 {
+
+	sign_name: "logo ns oil arrow up"
+
+	model_desc: "/model2/sign/company_logos/ns_oil/arrow_up_sc.pmd"
+	model_coll: "/model2/sign/company_logos/ns_oil/arrow_up_sc.pmc"
+	look_name: default
+	dynamic: false
+
+}
+
+sign_model : sign.dlc_no_191 {
+
+	sign_name: "logo polar fish arrow up"
+
+	model_desc: "/model2/sign/company_logos/polar_fish/arrow_up_sc.pmd"
+	model_coll: "/model2/sign/company_logos/polar_fish/arrow_up_sc.pmc"
+	look_name: default
+	dynamic: false
+
+}
+
+sign_model : sign.dlc_no_192 {
+
+	sign_name: "logo renar logistik arrow up"
+
+	model_desc: "/model2/sign/company_logos/renar_logistik/arrow_up_sc.pmd"
+	model_coll: "/model2/sign/company_logos/renar_logistik/arrow_up_sc.pmc"
+	look_name: default
+	dynamic: false
+
+}
+
+sign_model : sign.dlc_no_193 {
+
+	sign_name: "logo sag and tre arrow up"
+
+	model_desc: "/model2/sign/company_logos/sag_and_tre/arrow_up_sc.pmd"
+	model_coll: "/model2/sign/company_logos/sag_and_tre/arrow_up_sc.pmc"
+	look_name: default
+	dynamic: false
+
+}
+
+sign_model : sign.dlc_no_194 {
+
+	sign_name: "logo vitas power arrow up"
+
+	model_desc: "/model2/sign/company_logos/vitas_power/arrow_up_sc.pmd"
+	model_coll: "/model2/sign/company_logos/vitas_power/arrow_up_sc.pmc"
+	look_name: default
+	dynamic: false
+
+}
+
+sign_model : sign.dlc_no_195 {
+
+	sign_name: "logo vpc arrow up"
+
+	model_desc: "/model2/sign/company_logos/vpc/arrow_up_sc.pmd"
+	model_coll: "/model2/sign/company_logos/vpc/arrow_up_sc.pmc"
+	look_name: default
+	dynamic: false
+
+}
+
+sign_model : sign.dlc_no_201 {
+
+	sign_name: "logo daf arrow left"
+
+	model_desc: "/model2/sign/truck_company_logos/daf/arrow_left_sc.pmd"
+	model_coll: "/model2/sign/truck_company_logos/daf/arrow_left_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_202 {
+
+	sign_name: "logo daf arrow right"
+
+	model_desc: "/model2/sign/truck_company_logos/daf/arrow_right_sc.pmd"
+	model_coll: "/model2/sign/truck_company_logos/daf/arrow_right_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_203 {
+
+	sign_name: "logo daf arrow up"
+
+	model_desc: "/model2/sign/truck_company_logos/daf/arrow_up_sc.pmd"
+	model_coll: "/model2/sign/truck_company_logos/daf/arrow_up_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_204 {
+
+	sign_name: "logo daf entrance sign"
+
+	model_desc: "/model2/sign/truck_company_logos/daf/entrance_sign_sc.pmd"
+	model_coll: "/model2/sign/truck_company_logos/daf/entrance_sign_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_205 {
+
+	sign_name: "logo daf entrance universal"
+
+	model_desc: "/model2/sign/truck_company_logos/daf/entrance_universal_sc.pmd"
+	model_coll: "/model2/sign/truck_company_logos/daf/entrance_universal_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_206 {
+
+	sign_name: "logo daf universal"
+
+	model_desc: "/model2/sign/truck_company_logos/daf/universal_sc.pmd"
+	model_coll: "/model2/sign/truck_company_logos/daf/universal_sc.pmc"
+	look_name: default
+	dynamic: false
+
+}
+
+sign_model : sign.dlc_no_207 {
+
+	sign_name: "logo iveco arrow left"
+
+	model_desc: "/model2/sign/truck_company_logos/iveco/arrow_left_sc.pmd"
+	model_coll: "/model2/sign/truck_company_logos/iveco/arrow_left_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_208 {
+
+	sign_name: "logo iveco arrow right"
+
+	model_desc: "/model2/sign/truck_company_logos/iveco/arrow_right_sc.pmd"
+	model_coll: "/model2/sign/truck_company_logos/iveco/arrow_right_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_209 {
+
+	sign_name: "logo iveco arrow up"
+
+	model_desc: "/model2/sign/truck_company_logos/iveco/arrow_up_sc.pmd"
+	model_coll: "/model2/sign/truck_company_logos/iveco/arrow_up_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_210 {
+
+	sign_name: "logo iveco entrance sign"
+
+	model_desc: "/model2/sign/truck_company_logos/iveco/entrance_sign_sc.pmd"
+	model_coll: "/model2/sign/truck_company_logos/iveco/entrance_sign_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_211 {
+
+	sign_name: "logo iveco entrance universal"
+
+	model_desc: "/model2/sign/truck_company_logos/iveco/entrance_universal_sc.pmd"
+	model_coll: "/model2/sign/truck_company_logos/iveco/entrance_universal_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_212 {
+
+	sign_name: "logo iveco universal"
+
+	model_desc: "/model2/sign/truck_company_logos/iveco/universal_sc.pmd"
+	model_coll: "/model2/sign/truck_company_logos/iveco/universal_sc.pmc"
+	look_name: default
+	dynamic: false
+
+}
+
+sign_model : sign.dlc_no_213 {
+
+	sign_name: "logo man arrow left"
+
+	model_desc: "/model2/sign/truck_company_logos/man/arrow_left_sc.pmd"
+	model_coll: "/model2/sign/truck_company_logos/man/arrow_left_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_214 {
+
+	sign_name: "logo man arrow right"
+
+	model_desc: "/model2/sign/truck_company_logos/man/arrow_right_sc.pmd"
+	model_coll: "/model2/sign/truck_company_logos/man/arrow_right_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_215 {
+
+	sign_name: "logo man arrow up"
+
+	model_desc: "/model2/sign/truck_company_logos/man/arrow_up_sc.pmd"
+	model_coll: "/model2/sign/truck_company_logos/man/arrow_up_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_216 {
+
+	sign_name: "logo man entrance sign"
+
+	model_desc: "/model2/sign/truck_company_logos/man/entrance_sign_sc.pmd"
+	model_coll: "/model2/sign/truck_company_logos/man/entrance_sign_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_217 {
+
+	sign_name: "logo man entrance universal"
+
+	model_desc: "/model2/sign/truck_company_logos/man/entrance_universal_sc.pmd"
+	model_coll: "/model2/sign/truck_company_logos/man/entrance_universal_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_218 {
+
+	sign_name: "logo man universal"
+
+	model_desc: "/model2/sign/truck_company_logos/man/universal_sc.pmd"
+	model_coll: "/model2/sign/truck_company_logos/man/universal_sc.pmc"
+	look_name: default
+	dynamic: false
+
+}
+
+sign_model : sign.dlc_no_219 {
+
+	sign_name: "logo mercedes arrow left"
+
+	model_desc: "/model2/sign/truck_company_logos/mercedes/arrow_left_sc.pmd"
+	model_coll: "/model2/sign/truck_company_logos/mercedes/arrow_left_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_220 {
+
+	sign_name: "logo mercedes arrow right"
+
+	model_desc: "/model2/sign/truck_company_logos/mercedes/arrow_right_sc.pmd"
+	model_coll: "/model2/sign/truck_company_logos/mercedes/arrow_right_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_221 {
+
+	sign_name: "logo mercedes arrow up"
+
+	model_desc: "/model2/sign/truck_company_logos/mercedes/arrow_up_sc.pmd"
+	model_coll: "/model2/sign/truck_company_logos/mercedes/arrow_up_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_222 {
+
+	sign_name: "logo mercedes entrance sign"
+
+	model_desc: "/model2/sign/truck_company_logos/mercedes/entrance_sign_sc.pmd"
+	model_coll: "/model2/sign/truck_company_logos/mercedes/entrance_sign_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_223 {
+
+	sign_name: "logo mercedes entrance universal"
+
+	model_desc: "/model2/sign/truck_company_logos/mercedes/entrance_universal_sc.pmd"
+	model_coll: "/model2/sign/truck_company_logos/mercedes/entrance_universal_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_224 {
+
+	sign_name: "logo mercedes universal"
+
+	model_desc: "/model2/sign/truck_company_logos/mercedes/universal_sc.pmd"
+	model_coll: "/model2/sign/truck_company_logos/mercedes/universal_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_225 {
+
+	sign_name: "logo renault arrow left"
+
+	model_desc: "/model2/sign/truck_company_logos/renault/arrow_left_sc.pmd"
+	model_coll: "/model2/sign/truck_company_logos/renault/arrow_left_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_226 {
+
+	sign_name: "logo renault arrow right"
+
+	model_desc: "/model2/sign/truck_company_logos/renault/arrow_right_sc.pmd"
+	model_coll: "/model2/sign/truck_company_logos/renault/arrow_right_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_227 {
+
+	sign_name: "logo renault arrow up"
+
+	model_desc: "/model2/sign/truck_company_logos/renault/arrow_up_sc.pmd"
+	model_coll: "/model2/sign/truck_company_logos/renault/arrow_up_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_228 {
+
+	sign_name: "logo renault entrance sign"
+
+	model_desc: "/model2/sign/truck_company_logos/renault/entrance_sign_sc.pmd"
+	model_coll: "/model2/sign/truck_company_logos/renault/entrance_sign_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_229 {
+
+	sign_name: "logo renault entrance universal"
+
+	model_desc: "/model2/sign/truck_company_logos/renault/entrance_universal_sc.pmd"
+	model_coll: "/model2/sign/truck_company_logos/renault/entrance_universal_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_230 {
+
+	sign_name: "logo renault universal"
+
+	model_desc: "/model2/sign/truck_company_logos/renault/universal_sc.pmd"
+	model_coll: "/model2/sign/truck_company_logos/renault/universal_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_231 {
+
+	sign_name: "logo scania arrow left"
+
+	model_desc: "/model2/sign/truck_company_logos/scania/arrow_left_sc.pmd"
+	model_coll: "/model2/sign/truck_company_logos/scania/arrow_left_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_232 {
+
+	sign_name: "logo scania arrow right"
+
+	model_desc: "/model2/sign/truck_company_logos/scania/arrow_right_sc.pmd"
+	model_coll: "/model2/sign/truck_company_logos/scania/arrow_right_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_233 {
+
+	sign_name: "logo scania arrow up"
+
+	model_desc: "/model2/sign/truck_company_logos/scania/arrow_up_sc.pmd"
+	model_coll: "/model2/sign/truck_company_logos/scania/arrow_up_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_234 {
+
+	sign_name: "logo scania entrance sign"
+
+	model_desc: "/model2/sign/truck_company_logos/scania/entrance_sign_sc.pmd"
+	model_coll: "/model2/sign/truck_company_logos/scania/entrance_sign_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_235 {
+
+	sign_name: "logo scania entrance universal"
+
+	model_desc: "/model2/sign/truck_company_logos/scania/entrance_universal_sc.pmd"
+	model_coll: "/model2/sign/truck_company_logos/scania/entrance_universal_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_236 {
+
+	sign_name: "logo scania universal"
+
+	model_desc: "/model2/sign/truck_company_logos/scania/universal_sc.pmd"
+	model_coll: "/model2/sign/truck_company_logos/scania/universal_sc.pmc"
+	look_name: default
+	dynamic: false
+
+}
+
+sign_model : sign.dlc_no_237 {
+
+	sign_name: "logo volvo arrow left"
+
+	model_desc: "/model2/sign/truck_company_logos/volvo/arrow_left_sc.pmd"
+	model_coll: "/model2/sign/truck_company_logos/volvo/arrow_left_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_238 {
+
+	sign_name: "logo volvo arrow right"
+
+	model_desc: "/model2/sign/truck_company_logos/volvo/arrow_right_sc.pmd"
+	model_coll: "/model2/sign/truck_company_logos/volvo/arrow_right_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_239 {
+
+	sign_name: "logo volvo arrow up"
+
+	model_desc: "/model2/sign/truck_company_logos/volvo/arrow_up_sc.pmd"
+	model_coll: "/model2/sign/truck_company_logos/volvo/arrow_up_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_240 {
+
+	sign_name: "logo volvo entrance sign"
+
+	model_desc: "/model2/sign/truck_company_logos/volvo/entrance_sign_sc.pmd"
+	model_coll: "/model2/sign/truck_company_logos/volvo/entrance_sign_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_241 {
+
+	sign_name: "logo volvo entrance universal"
+
+	model_desc: "/model2/sign/truck_company_logos/volvo/entrance_universal_sc.pmd"
+	model_coll: "/model2/sign/truck_company_logos/volvo/entrance_universal_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_242 {
+
+	sign_name: "logo volvo universal"
+
+	model_desc: "/model2/sign/truck_company_logos/volvo/universal_sc.pmd"
+	model_coll: "/model2/sign/truck_company_logos/volvo/universal_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_244 {
+
+	sign_name: "wash_set_gas"
+
+	model_desc: "/model2/props/street/wash_set_gas_sc.pmd"
+	model_coll: "/model2/props/street/wash_set_gas_sc.pmc"
+	look_name: default
+	category: "city"
+	
+	dynamic: true
+	distance_type: 2
+	mass: 20
+}
+
+sign_model : sign.dlc_no_255 {
+
+	sign_name: "gas logo big sc"
+
+	model_desc: "/model2/sign/company_logos/generic/gas_logo_big_01_sc.pmd"
+	look_name: sc
+	category: "fuel"
+
+	dynamic: false
+	distance_type: 2
+	mass: 100
+}
+
+sign_model : sign.dlc_no_256 {
+
+	sign_name: "gas logo small sc"
+
+	model_desc: "/model2/sign/company_logos/generic/gas_logo_small_01_sc.pmd"
+	look_name: sc
+	category: "fuel"
+
+	dynamic: false
+	distance_type: 2
+	mass: 100
+}
+
+sign_model : sign.dlc_no_257 {
+
+	sign_name: "oslo_tunnel_light_01"
+
+	model_desc: "/model2/panorama/oslo/oslo_tunnel_light_sc.pmd"
+	look_name: default
+	category: "tunnel"
+	road_model: true
+	
+	dynamic: false
+}
+sign_model : sign.dlc_no_258 {
+
+	sign_name: "oslo_tunnel_light_02"
+
+	model_desc: "/model2/panorama/oslo/oslo_tunnel_light_02_sc.pmd"
+	look_name: default
+	category: "tunnel"
+	road_model: true
+	
+	dynamic: false
+}
+sign_model : sign.dlc_no_259 {
+
+	sign_name: "logo container port entrance road sign"
+
+	model_desc: "/model2/sign/company_logos/container_port/entrance_road_sign_sc.pmd"
+	model_coll: "/model2/sign/company_logos/container_port/entrance_road_sign_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_260 {
+
+	sign_name: "logo polaris lines building sign"
+
+	model_desc: "/model2/sign/company_logos/polaris_lines/building_sign_sc.pmd"
+	model_coll: "/model2/sign/company_logos/polaris_lines/building_sign_sc.pmc"
+	look_name: default
+	dynamic: false
+}
+
+sign_model : sign.dlc_no_261 {
+
+	sign_name: "logo polaris lines entrance road sign"
+
+	model_desc: "/model2/sign/company_logos/polaris_lines/entrance_road_sign_sc.pmd"
+	model_coll: "/model2/sign/company_logos/polaris_lines/entrance_road_sign_sc.pmc"
+	look_name: default
+	dynamic: false
+
+}
+
+sign_model : sign.dlc_no_263 {
+	model_desc: "/model2/railing/tunnel/light_hw2_2_01_nl_sc.pmd"
+	category: "tunnel"
+	sign_name: "light hw2_2_01_nl"
+	road_model: true
+	
+	dynamic: false
+}
+
+}
+

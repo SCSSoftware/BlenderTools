@@ -18,11 +18,12 @@
 
 # Copyright (C) 2013-2014: SCS Software
 
-import re
 import os
+
 import bpy
 from mathutils import Matrix, Vector
-from io_scs_tools.internals.parsers import pix as _pix_parser
+from io_scs_tools.consts import Bones as _BONE_consts
+from io_scs_tools.internals.containers import pix as _pix_container
 from io_scs_tools.imp import pis as _pis
 from io_scs_tools.utils.printout import lprint
 from io_scs_tools.utils import animation as _animation_utils
@@ -122,74 +123,6 @@ def _get_anim_channels(pia_container, section_name="BoneChannel"):
     return channels
 
 
-def _fast_check_for_pia_skeleton(pia_filepath, skeleton):
-    """Check for the skeleton record in PIA file without parsing the whole file.
-    It takes filepath and skeleton name (string) and returns True if the skeleton
-    record in the file is the same as skeleton name provided, otherwise False."""
-    file = open(pia_filepath, 'r')
-    while 1:
-        data_type, line = _pix_parser.next_line(file)
-        if data_type in ('EOF', 'ERR'):
-            break
-        # print('%s  ==> "%s"' % (data_type, line))
-        if data_type == 'SE_S':
-            section_type = re.split(r'[ ]+', line)[0]
-            if section_type == "Global":
-                # print('  %s' % section_type)
-                data_type, line = _pix_parser.next_line(file)
-                ske = re.split(r'"', line)[1]
-                # print('  %r | %r' % (ske, skeleton))
-                pia_skeleton = os.path.join(os.path.dirname(pia_filepath), ske)
-                if os.path.samefile(pia_skeleton, skeleton):
-                    file.close()
-                    return True
-                break
-    file.close()
-    return False
-
-
-def _utter_check_for_pia_skeleton(pia_filepath, armature):
-    """Skeleton analysis in PIA file with reasonably quick searching the whole file.
-    It takes filepath and an Armature object and returns True if the skeleton in PIA file
-    can be used for the skeleton in provided Armature object, otherwise it returns False."""
-    file = open(pia_filepath, 'r')
-    skeleton = None
-    bone_matches = []
-    while 1:
-        data_type, line = _pix_parser.next_line(file)
-        if data_type == 'EOF':
-            if len(bone_matches) > 0:
-                break
-            else:
-                file.close()
-                return False, None
-        if data_type == 'ERR':
-            file.close()
-            return False, None
-        # print('%s  ==> "%s"' % (data_type, line))
-        if data_type == 'SE_S':
-            section_type = re.split(r'[ ]+', line)[0]
-            if section_type == "Global":
-                # print('  %s' % section_type)
-                data_type, line = _pix_parser.next_line(file)
-                line_split = re.split(r'"', line)
-                # print('  %r | %r' % (line_split, skeleton))
-                if line_split[0].strip() == "Skeleton:":
-                    skeleton = line_split[1].strip()
-            elif section_type == "BoneChannel":
-                data_type, line = _pix_parser.next_line(file)
-                # print('  %s - %s' % (data_type, line))
-                prop_name = re.split(r'"', line)[1]
-                # print('  %r' % prop_name)
-                if prop_name in armature.data.bones:
-                    bone_matches.append(prop_name)
-                else:
-                    file.close()
-                    return False, None
-    file.close()
-    return True, skeleton
-
-
 def _create_fcurves(anim_action, anim_group, anim_curve, rot_euler=True, types='LocRotSca'):
     """Creates animation curves for provided Action / Group (Bone).
 
@@ -268,9 +201,9 @@ def load(root_object, pia_files, armature, pis_filepath=None, bones=None):
     for pia_filepath in pia_files:
         # Check if PIA file is for the actual skeleton...
         if pis_filepath and bones:
-            skeleton_match = _fast_check_for_pia_skeleton(pia_filepath, pis_filepath)
+            skeleton_match = _pix_container.fast_check_for_pia_skeleton(pia_filepath, pis_filepath)
         else:
-            skeleton_match, pia_skeleton = _utter_check_for_pia_skeleton(pia_filepath, armature)
+            skeleton_match, pia_skeleton = _pix_container.utter_check_for_pia_skeleton(pia_filepath, armature)
 
             if skeleton_match:
 
@@ -287,12 +220,9 @@ def load(root_object, pia_files, armature, pis_filepath=None, bones=None):
 
         if skeleton_match:
             lprint('I ++ "%s" IMPORTING animation data...', (os.path.basename(pia_filepath),))
-            pia_container, state = _pix_parser.read_data(pia_filepath, ind)
+            pia_container = _pix_container.get_data_from_file(pia_filepath, ind)
             if not pia_container:
                 lprint('\nE File "%s" is empty!', (pia_filepath.replace("\\", "/"),))
-                continue
-            if state == 'ERR':
-                lprint('\nE File "%s" is not SCS Animation file!', (pia_filepath.replace("\\", "/"),))
                 continue
 
             # TEST PRINTOUTS
@@ -348,8 +278,11 @@ def load(root_object, pia_files, armature, pis_filepath=None, bones=None):
                         # CREATE ANIMATION GROUP
                         anim_group = anim_action.groups.new(bone_name)
                         armature.pose.bones[bone_name].rotation_mode = 'XYZ'  # Set rotation mode.
-                        active_bone = armature.data.bones[bone_name]
-                        # parent_bone = active_bone.parent
+
+                        # use pose bone scale set on PIS import
+                        init_scale = Vector((1, 1, 1))
+                        if _BONE_consts.init_scale_key in armature.pose.bones[bone_name]:
+                            init_scale = armature.pose.bones[bone_name][_BONE_consts.init_scale_key]
 
                         # CREATE FCURVES
                         (pos_fcurves,
@@ -378,8 +311,13 @@ def load(root_object, pia_files, armature, pis_filepath=None, bones=None):
                             # DECOMPOSE ANIMATION MATRIX
                             location, rotation, scale = delta_matrix.decompose()
 
-                            # NOTE: scaling should be always positive, because possible negative scale is "applied" on PIS import
-                            scale = Vector((abs(scale[0]), abs(scale[1]), abs(scale[2])))
+                            # CALCULATE CURRENT SCALE - subtract difference between initial bone scale and current scale from 1
+                            # NOTE: if imported PIS had initial bone scale different than 1,
+                            # initial scale was saved into pose bones custom properties and
+                            # has to be used here as bones after import in Blender always have scale of 1
+                            scale = Vector((1 + scale[0] - init_scale[0],
+                                            1 + scale[1] - init_scale[1],
+                                            1 + scale[2] - init_scale[2]))
 
                             # NOTE: this scaling rotation switch came from UK variants which had scale -1
                             loc, rot, sca = bone_rest_matrix_scs.decompose()

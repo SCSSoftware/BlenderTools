@@ -1,0 +1,15 @@
+SiiNunit
+{
+light_source : aquaducts.netherlands.light
+{
+	ambient_color: (0.0000, 0.0000, 0.0000)
+	diffuse_color: (1.0, 0.973, 0.749)
+	specular_color: (0.9911, 0.9823, 0.8879)
+
+	type: point
+	range: 25
+
+
+}
+
+}

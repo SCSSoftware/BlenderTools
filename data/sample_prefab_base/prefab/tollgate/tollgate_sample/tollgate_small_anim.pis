@@ -1,0 +1,33 @@
+Header {
+    FormatVersion: 1
+    Source: "Blender 2.76.0 (hash: 48f7dd6), SCS Blender Tools: 1.0.27abe27"
+    Type: "Skeleton"
+    Name: "tollgate_small_anim"
+}
+Global {
+    BoneCount: 3
+}
+Bones {
+    0     ( Name:  "__root__"
+            Parent: ""
+            Matrix: ( &3f800000  &00000000  &00000000  &00000000 
+                      &00000000  &3f800000  &00000000  &00000000
+                      &00000000  &333bbd2e  &3f800000  &00000000
+                      &00000000  &00000000  &00000000  &3f800000 )
+       )
+    1     ( Name:  "joint1"
+            Parent: "__root__"
+            Matrix: ( &3f800000  &00000000  &00000000  &00000000 
+                      &00000000  &3f800000  &00000000  &00000000
+                      &00000000  &333bbd2e  &3f800000  &00000000
+                      &00000000  &33f05ed1  &beac851f  &3f800000 )
+       )
+    2     ( Name:  "joint2"
+            Parent: "__root__"
+            Matrix: ( &3f800000  &00000000  &00000000  &00000000 
+                      &00000000  &3f800000  &b4effffe  &00000000
+                      &00000000  &3503bbd1  &3f800000  &00000000
+                      &3f55ff6e  &3f2f1f54  &be4dd6a1  &3f800000 )
+       )
+}
+

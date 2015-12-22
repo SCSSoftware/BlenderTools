@@ -40,3 +40,6 @@ class TruckpaintAirbrush(Truckpaint):
 
         blend_mix_n = node_tree.nodes[Truckpaint.BLEND_MIX_NODE]
         blend_mix_n.inputs['Fac'].default_value = 0.0
+
+        paint_mult_n = node_tree.nodes[Truckpaint.PAINT_MULT_NODE]
+        paint_mult_n.inputs['Fac'].default_value = 1.0

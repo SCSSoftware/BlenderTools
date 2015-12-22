@@ -166,11 +166,11 @@ def smooth_curve(point1, tang1, point2, tang2, coef):
     :param point1: position of the starting waypoint
     :type point1: mathutils.Vector
     :param tang1: tangential vector (direction vector) at the starting waypoint
-    :type tang1: mathutils.Quaternion
+    :type tang1: mathutils.Vector
     :param point2: position of the ending waypoint
     :type point2: mathutils.Vector
     :param tang2: tangential vector (direction vector) at the ending waypoint
-    :type tang2: mathutils.Quaternion
+    :type tang2: mathutils.Vector
     :param coef: coefficient ranging from 0.0 to 1.0 suggesting how far from start to end to generate a point
     :type coef: float
     :return:
@@ -195,11 +195,11 @@ def compute_smooth_curve_length(point1, tang1, point2, tang2, measure_steps):
     :param point1: position of the starting waypoint
     :type point1: mathutils.Vector
     :param tang1: tangential vector (direction vector) at the starting waypoint
-    :type tang1: mathutils.Quaternion
+    :type tang1: mathutils.Vector
     :param point2: position of the ending waypoint
     :type point2: mathutils.Vector
     :param tang2: tangential vector (direction vector) at the ending waypoint
-    :type tang2: mathutils.Quaternion
+    :type tang2: mathutils.Vector
     :param measure_steps:
     :type measure_steps: int
     :return:
@@ -218,34 +218,27 @@ def compute_smooth_curve_length(point1, tang1, point2, tang2, measure_steps):
     return lenth
 
 
-def compute_curve(obj_0, point1, obj_1, point2, curve_steps):
-    from mathutils import Vector
+def compute_curve(point1, tang1, point2, tang2, curve_steps):
+    """Compute curve points and return it as dictionary.
+    Points are storred in the list by the key "curve_points".
 
-    tang1 = obj_0.matrix_world.to_quaternion() * Vector((0, 1, 0))
-    tang2 = obj_1.matrix_world.to_quaternion() * Vector((0, 1, 0))
+    :param point1: start curve position
+    :type point1: mathutils.Vector
+    :param tang1: start curve rotation
+    :type tang1: mathutils.Vector
+    :param point2: end curve position
+    :type point2:  mathutils.Vector
+    :param tang2: end curve rotation
+    :type tang2: mathutils.Vector
+    :param curve_steps: number of curve segments to calculate
+    :type curve_steps: int
+    :return: dictionary with one entry of curve points as list
+    :rtype: dict[str, list]
+    """
+
     le = compute_smooth_curve_length(point1, tang1, point2, tang2, 300)
     curve_data = {'curve_points': []}
-    # if obj_0.scs_props.locator_prefab_np_crossroad:
-    # curve_data['curve_color0'] = (0, 0, 1)
-    # elif obj_0.scs_props.locator_prefab_np_low_prior:
-    # curve_data['curve_color0'] = (0.5, 0.5, 1)
-    # elif obj_0.scs_props.locator_prefab_np_allowed_veh == 'to':
-    # curve_data['curve_color0'] = (0, 1, 0)
-    # elif obj_0.scs_props.locator_prefab_np_allowed_veh == 'nt':
-    # curve_data['curve_color0'] = (1, 0, 0)
-    # else:
-    # curve_data['curve_color0'] = (bpy.context.scene.scs_props.curve_base_color.r, bpy.context.scene.scs_props.curve_base_color.g,
-    # bpy.context.scene.scs_props.curve_base_color.b)
-    # if obj_0.scs_props.locator_prefab_np_blinker == 'rb':
-    # curve_data['curve_color1'] = (0.2, 0.7, 1)
-    # elif obj_0.scs_props.locator_prefab_np_blinker == 'lb':
-    # curve_data['curve_color1'] = (1, 0.2, 0.7)
-    # else:
-    # curve_data['curve_color1'] = (bpy.context.scene.scs_props.curve_base_color.r, bpy.context.scene.scs_props.curve_base_color.g,
-    # bpy.context.scene.scs_props.curve_base_color.b)
-    # curve_steps = 16
-    # curve_steps = bpy.context.scene.scs_props.curve_segments
-    # curve_data['curve_steps'] = curve_steps
+
     for segment in range(curve_steps):
         coef = float(segment / curve_steps)
         # print('coef: %s' % coef)
@@ -257,49 +250,60 @@ def compute_curve(obj_0, point1, obj_1, point2, curve_steps):
     return curve_data
 
 
-def curves_intersect(curve1, curve2, part_count=10):
+def curves_intersect(curve1_p1, curve1_t1, curve1_p2, curve1_t2, length1,
+                     curve2_p1, curve2_t1, curve2_p2, curve2_t2, length2, part_count=10):
+    """Calculates first intersection point between two curves.
+
+    NOTE: what about the multiple intersection points?
+
+    :param curve1_p1: start point of 1st curve
+    :type curve1_p1: mathutils.Vector
+    :param curve1_t1: rotation of start point of 1st curve
+    :type curve1_t1: mathutils.Vector
+    :param curve1_p2: end point of 1st curve
+    :type curve1_p2: mathutils.Vector
+    :param curve1_t2: rotation of end point of 1st curve
+    :type curve1_t2: mathutils.Vector
+    :param length1: length of 1st curve
+    :type length1: float
+    :param curve2_p1: start point of 2nd curve
+    :type curve2_p1: mathutils.Vector
+    :param curve2_t1: rotation of start point of 2nd curve
+    :type curve2_t1: mathutils.Vector
+    :param curve2_p2: end point of 2nd curve
+    :type curve2_p2: mathutils.Vector
+    :param curve2_t2: rotation of end point of 2nd curve
+    :type curve2_t2: mathutils.Vector
+    :type length2: float
+    :param part_count: number of segments for curve to be calculated
+    :type part_count: int
+    :return: intersection point and position coefs where on curves that happend or None if not found
+    :rtype: (mathutils.Vector, float, float) | (None, int, int)
     """
-    :param curve1:
-    :type curve1: io_scs_tools.internals.structure.SectionData
-    :param curve2:
-    :type curve2: io_scs_tools.internals.structure.SectionData
-    :param part_count:
-    :return:
-    """
-    length1 = curve1.get_prop_value("Length")[1][0]
-    length2 = curve2.get_prop_value("Length")[1][0]
+
+    if curve1_p1 == curve2_p1:
+        return curve1_p1, 0, 0
+
+    if curve1_p2 == curve2_p2:
+        return curve1_p2, 1, 1
+
     step1 = length1 / part_count
     step2 = length2 / part_count
+
     pos1 = 0
     epsilon = 0.01
 
     for i in range(part_count):
-        # curve1_point1 = get_prop(get_section(get_section(curve1, "Bezier"), "Start").props, "Position")[1]
-        curve1_point1 = curve1.get_section("Bezier").get_section("Start").get_prop_value("Position")[1]
-        # curve1_tang1 = Vector(get_prop(get_section(get_section(curve1, "Bezier"), "Start").props, "Direction")[1])
-        curve1_tang1 = Vector(curve1.get_section("Bezier").get_section("Start").get_prop_value("Direction")[1])
-        # curve1_point2 = get_prop(get_section(get_section(curve1, "Bezier"), "End").props, "Position")[1]
-        curve1_point2 = curve1.get_section("Bezier").get_section("End").get_prop_value("Position")[1]
-        # curve1_tang2 = Vector(get_prop(get_section(get_section(curve1, "Bezier"), "End").props, "Direction")[1])
-        curve1_tang2 = Vector(curve1.get_section("Bezier").get_section("End").get_prop_value("Direction")[1])
-        start1 = smooth_curve(curve1_point1, curve1_tang1, curve1_point2, curve1_tang2, pos1 / length1)
-        end1 = smooth_curve(curve1_point1, curve1_tang1, curve1_point2, curve1_tang2, (pos1 + step1) / length1)
+
+        start1 = smooth_curve(curve1_p1, curve1_t1, curve1_p2, curve1_t2, pos1 / length1)
+        end1 = smooth_curve(curve1_p1, curve1_t1, curve1_p2, curve1_t2, (pos1 + step1) / length1)
 
         pos2 = 0
         for j in range(part_count):
-            # curve2_point1 = get_prop(get_section(get_section(curve2, "Bezier"), "Start").props, "Position")[1]
-            curve2_point1 = curve2.get_section("Bezier").get_section("Start").get_prop_value("Position")[1]
-            # curve2_tang1 = Vector(get_prop(get_section(get_section(curve2, "Bezier"), "Start").props, "Direction")[1])
-            curve2_tang1 = Vector(curve2.get_section("Bezier").get_section("Start").get_prop_value("Direction")[1])
-            # curve2_point2 = get_prop(get_section(get_section(curve2, "Bezier"), "End").props, "Position")[1]
-            curve2_point2 = curve2.get_section("Bezier").get_section("End").get_prop_value("Position")[1]
-            # curve2_tang2 = Vector(get_prop(get_section(get_section(curve2, "Bezier"), "End").props, "Direction")[1])
-            curve2_tang2 = Vector(curve2.get_section("Bezier").get_section("End").get_prop_value("Direction")[1])
-            start2 = smooth_curve(curve2_point1, curve2_tang1, curve2_point2, curve2_tang2, pos2 / length2)
-            end2 = smooth_curve(curve2_point1, curve2_tang1, curve2_point2, curve2_tang2, (pos2 + step2) / length2)
-            pos2 += step2
 
-            # if not 'moc vysoko':
+            start2 = smooth_curve(curve2_p1, curve2_t1, curve2_p2, curve2_t2, pos2 / length2)
+            end2 = smooth_curve(curve2_p1, curve2_t1, curve2_p2, curve2_t2, (pos2 + step2) / length2)
+
             denom = ((end2[2] - start2[2]) * (end1[0] - start1[0])) - ((end2[0] - start2[0]) * (end1[2] - start1[2]))
             nume_a = ((end2[0] - start2[0]) * (start1[2] - start2[2])) - ((end2[2] - start2[2]) * (start1[0] - start2[0]))
             nume_b = ((end1[0] - start1[0]) * (start1[2] - start2[2])) - ((end1[2] - start1[2]) * (start1[0] - start2[0]))
@@ -309,92 +313,22 @@ def curves_intersect(curve1, curve2, part_count=10):
 
             mu_a = nume_a / denom
             mu_b = nume_b / denom
-            if mu_a < 0 or mu_a > 1 or mu_b < 0 or mu_b > 1:
-                continue
+            if 0 <= mu_a <= 1 and 0 <= mu_b <= 1:
 
-            if (mu_a < epsilon and i == 0) or (mu_b < epsilon and j == 0):
-                return None
-            if (mu_a > 1 - epsilon and i == part_count - 1) or (mu_b > 1 - epsilon and j == part_count - 1):
-                return None
+                if (mu_a < epsilon and i == 0) or (mu_b < epsilon and j == 0):
+                    return None, -1, -1
+                if (mu_a > 1 - epsilon and i == part_count - 1) or (mu_b > 1 - epsilon and j == part_count - 1):
+                    return None, -1, -1
 
-            curve_intersect = Vector((0, 0, 0))
-            curve_intersect.x = start1[0] + mu_a * (end1[0] - start1[0])
-            curve_intersect.y = (start1[1] + end1[1] + start2[1] + end2[1]) / 4.0
-            curve_intersect.z = start1[2] + mu_a * (end1[2] - start1[2])
+                curve_intersect = Vector((0, 0, 0))
+                curve_intersect.x = start1[0] + mu_a * (end1[0] - start1[0])
+                curve_intersect.y = (start1[1] + end1[1] + start2[1] + end2[1]) / 4.0
+                curve_intersect.z = start1[2] + mu_a * (end1[2] - start1[2])
 
-            return curve_intersect
+                return curve_intersect, pos1 / length1, pos2 / length2
+
+            pos2 += step2
 
         pos1 += step1
 
-    return None
-
-
-def compute_curve_intersections(nav_curve_sections):
-    """
-    :param nav_curve_sections: Navigation Curves' data section
-    :type nav_curve_sections: list[io_scs_tools.internals.structure.SectionData]
-    :return: ...?
-    :rtype: dict
-    """
-    curve_dict = {'START': [], 'END': [], 'CROSS': []}
-
-    for nav_curve_section_i, nav_curve_section in enumerate(nav_curve_sections):
-        if nav_curve_section.get_prop_value("NextCurves")[1] != -1:
-            curve_dict['START'].append((nav_curve_section, None, 0))
-        if nav_curve_section.get_prop_value("PrevCurves")[1] != -1:
-            curve_dict['END'].append((nav_curve_section, None, 0))
-        for curve_index in range(nav_curve_section_i + 1, len(nav_curve_sections)):
-            curve_to_test = nav_curve_sections[curve_index]
-            curve_intersect = curves_intersect(nav_curve_section, curve_to_test)
-            print('curve_intersect: %s' % str(curve_intersect))
-            if curve_intersect:
-                curve_dict['CROSS'].append((nav_curve_section, curve_to_test, curve_intersect))
-
-    return curve_dict
-
-
-'''
-def define_curve(lines, obj_0, obj_1):
-    from mathutils import Vector
-
-    point1 = Vector(obj_0.location)
-    # tang1 = Vector((-1, 0, 0))
-    tang1 = obj_0.matrix_world.to_quaternion() * Vector((0, 1, 0))
-    # point2 = Vector((4, -1, 0))
-    point2 = Vector(obj_1.location)
-    # tang2 = Vector((1, 0, 0))
-    tang2 = obj_1.matrix_world.to_quaternion() * Vector((0, 1, 0))
-    le = compute_smooth_curve_length(point1, tang1, point2, tang2, 300)
-    line = {}
-    if obj_0.scs_props.locator_prefab_np_crossroad:
-        line['line_color1'] = (0, 0, 1)
-    elif obj_0.scs_props.locator_prefab_np_low_prior:
-        line['line_color1'] = (0.5, 0.5, 1)
-    elif obj_0.scs_props.locator_prefab_np_allowed_veh == 'to':
-        line['line_color1'] = (0, 1, 0)
-    elif obj_0.scs_props.locator_prefab_np_allowed_veh == 'nt':
-        line['line_color1'] = (1, 0, 0)
-    else:
-        line['line_color1'] = (bpy.context.scene.scs_props.curve_base_color.r, bpy.context.scene.scs_props.curve_base_color.g,
-                               bpy.context.scene.scs_props.curve_base_color.b)
-    if obj_0.scs_props.locator_prefab_np_blinker == 'rb':
-        line['line_color2'] = (0.2, 0.7, 1)
-    elif obj_0.scs_props.locator_prefab_np_blinker == 'lb':
-        line['line_color2'] = (1, 0.2, 0.7)
-    else:
-        line['line_color2'] = (bpy.context.scene.scs_props.curve_base_color.r, bpy.context.scene.scs_props.curve_base_color.g,
-                               bpy.context.scene.scs_props.curve_base_color.b)
-    curve_steps = 15
-    line['line_steps'] = curve_steps
-    line['line_points'] = []
-    for segment in range(curve_steps):
-        coef = float(segment / curve_steps)
-        # print('coef: %s' % coef)
-        pos = utils_curve.smooth_curve(point1, tang1 * (le / 3), point2, tang2 * (le / 3), coef)
-        # print('pos: %s' % str(pos))
-        # lines[obj_0.name].append(pos)
-        line['line_points'].append(pos)
-        # points['point ' + str(coef)] = Vector(pos)
-    lines[str(obj_0.name + obj_1.name)] = line
-    return lines
-'''
+    return None, -1, -1

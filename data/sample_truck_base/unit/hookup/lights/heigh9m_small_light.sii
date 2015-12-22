@@ -3,8 +3,8 @@ SiiNunit
 light_source : heigh9m.small.light
 {
 	ambient_color: (0.0, 0.0, 0.0)
-	diffuse_color: (0.1, 0.1, 0.1)
-	specular_color: (0.1, 0.1, 0.1)
+	diffuse_color: (0.9047, 0.8632, 0.6038)
+	specular_color: (0.9911, 0.9911, 0.9387)
 
 	range: 9.0
 	cut_range: 9

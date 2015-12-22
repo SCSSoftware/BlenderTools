@@ -37,7 +37,7 @@ accessory_chassis_data : 6x2_4_ml.man.tgx.sample.chassis
 	liftable_axle[0]: false
 	liftable_axle[1]: true
 	liftable_axle[2]: false
-
+  
   defaults[]: "/def/vehicle/truck/man.tgx.sample/chs_badges/chs_badges_26.sii"
 }
 }

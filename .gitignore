@@ -56,4 +56,5 @@ target/
 
 # SCS Blender Tools
 addon/io_scs_tools/config.txt
+addon/io_scs_tools/debug.py
 *.patch

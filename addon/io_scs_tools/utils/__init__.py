@@ -21,13 +21,31 @@
 import bpy
 
 
-def get_scs_globals():
-    """Function for accessing SCS globals
+def __get_world__():
+    """Ensures and gets world data block.
 
-    :return: global settings for SCS Blender Tools
-    :rtype: GlobalSCSProps
+    :return: world data block
+    :rtype: bpy.types.World
     """
     if len(bpy.data.worlds) == 0:
         bpy.data.worlds.new('World')
 
-    return bpy.data.worlds[0].scs_globals
+    return bpy.data.worlds[0]
+
+
+def get_scs_globals():
+    """Function for accessing SCS globals
+
+    :return: global settings for SCS Blender Tools
+    :rtype: io_scs_tools.properties.world.GlobalSCSProps
+    """
+    return __get_world__().scs_globals
+
+
+def get_shader_presets_inventory():
+    """Function for accessing shader presets inventory.
+
+    :return: global shader presets inventory for SCS Blender Tools
+    :rtype: list[io_scs_tools.properties.world.ShaderPresetsInventoryItem]
+    """
+    return __get_world__().scs_shader_presets_inventory

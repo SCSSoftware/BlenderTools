@@ -18,6 +18,8 @@
 
 # Copyright (C) 2013-2014: SCS Software
 
+from io_scs_tools.utils.printout import lprint
+
 
 def remove_items_by_id(inventory, index):
     """Removes item from inventory (if given index is within inventory range)
@@ -124,11 +126,40 @@ def add_item(inventory, new_item_name, conditional=True):
         return item
 
 
-def get_inventory_name(inventory, data_id):
-    """Takes data Inventory and an item ID and returns item's name."""
+def get_item_name(inventory, data_id, report_errors=False):
+    """Takes data Inventory and an item ID and returns item's name.
+
+    NOTE: don't use it on inventories without "item_id" attribute!
+
+    :param inventory: inventory
+    :type inventory: bpy.types.PropertyGroup
+    :param data_id: ID of the item we are searching for
+    :type data_id: str
+    :param report_errors: True if errors shall be printed out; False otherwise
+    :type report_errors: bool
+    """
     result = ""
+
     for rec in inventory:
         if rec.item_id == data_id:
             result = rec.name
             break
+    else:
+
+        if report_errors:
+
+            if len(inventory) > 0:
+                inventory_class_name = type(inventory[0]).__name__.strip("Inventory")
+
+                lprint("W Entry with ID: %s not found in %r inventory.", (data_id, inventory_class_name))
+
+            else:
+                inventory.add()
+                inventory_class_name = type(inventory[0]).__name__.strip("Inventory")
+                inventory.remove(0)
+
+                lprint(str("W Searching %s inventory for entry with ID: %r failed because inventory is empty.\n\t   "
+                           "Please check inventory path in SCS Tools Path Settings!"),
+                       (inventory_class_name, data_id))
+
     return result

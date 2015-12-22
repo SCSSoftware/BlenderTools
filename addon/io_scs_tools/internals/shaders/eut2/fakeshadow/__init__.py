@@ -38,8 +38,6 @@ class Fakeshadow:
         start_pos_x = 0
         start_pos_y = 0
 
-        node_tree.nodes.clear()
-
         # node creation
         output_n = node_tree.nodes.new("ShaderNodeOutput")
         output_n.name = Fakeshadow.OUTPUT_NODE

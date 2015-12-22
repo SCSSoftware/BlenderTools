@@ -20,25 +20,44 @@
 
 
 import bpy
-import os
 from bpy.props import (StringProperty,
                        BoolProperty,
                        IntProperty,
                        FloatProperty,
                        CollectionProperty,
-                       EnumProperty,
-                       PointerProperty)
+                       EnumProperty)
 from io_scs_tools.internals.containers import config as _config_container
 from io_scs_tools.utils import material as _material_utils
 from io_scs_tools.utils import path as _path_utils
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
+from io_scs_tools.utils import get_shader_presets_inventory as _get_shader_presets_inventory
 
 
-class SceneShaderPresetsInventory(bpy.types.PropertyGroup):
+class ShaderPresetsInventoryItem(bpy.types.PropertyGroup):
     """
-    Shader Presets inventory on Scene.
+    Shader Presets inventory on World.
     """
-    name = StringProperty(name="Shader Presets Name", default="")
+
+    class Flavor(bpy.types.PropertyGroup):
+        class FlavorVariant(bpy.types.PropertyGroup):
+            name = StringProperty(
+                description="Name of flavor variant inside effect name"
+            )
+            preset_name = StringProperty(
+                description="Name of the preset where this flavor variant belongs too"
+            )
+
+        variants = CollectionProperty(
+            description="Represents one variant of same flavor (eg. tsnmap, tsnmapuv)",
+            type=FlavorVariant
+        )
+
+    name = StringProperty(name="Shader Presets Name")
+    effect = StringProperty(name="Full Effect Name")
+    flavors = CollectionProperty(
+        description="Collection of flavors for this shader ordered by the name of apperance in the effect name",
+        type=Flavor
+    )
 
 
 class GlobalSCSProps(bpy.types.PropertyGroup):
@@ -47,11 +66,16 @@ class GlobalSCSProps(bpy.types.PropertyGroup):
     :return:
     """
 
-    edit_part_name_mode = BoolProperty(
-        name="Edit SCS Part Name",
-        description="Edit SCS Part name mode",
-        default=False,
-        # update=edit_part_name_mode_update,
+    # TRIGGER LOCATOR ACTIONS INVENTORY
+    class TriggerActionsInventory(bpy.types.PropertyGroup):
+        """
+        Triger Actions Inventory.
+        """
+        item_id = StringProperty(default="")
+
+    scs_trigger_actions_inventory = CollectionProperty(
+        type=TriggerActionsInventory,
+        options={'SKIP_SAVE'},
     )
 
     # SIGN LOCATOR MODEL INVENTORY
@@ -205,7 +229,7 @@ class GlobalSCSProps(bpy.types.PropertyGroup):
 
         if self.shader_preset_list_sorted:
             inventory = {}
-            for preset_i, preset in enumerate(bpy.data.worlds[0].scs_shader_presets_inventory):
+            for preset_i, preset in enumerate(_get_shader_presets_inventory()):
                 inventory[preset.name] = preset_i
             for preset in sorted(inventory):
                 preset_i = inventory[preset]
@@ -215,7 +239,7 @@ class GlobalSCSProps(bpy.types.PropertyGroup):
                 if icon_str is not None:  # if None then it's <none> preset which is already added
                     items.append((act_preset, act_preset, "", icon_str, preset_i))
         else:
-            for preset_i, preset in enumerate(bpy.data.worlds[0].scs_shader_presets_inventory):
+            for preset_i, preset in enumerate(_get_shader_presets_inventory()):
                 act_preset = shader_presets_container.add(preset.name)
                 # print(' + %i act_preset: %s (%s)' % (preset_i, str(act_preset), str(preset)))
                 icon_str = GlobalSCSProps.get_shader_icon_str(act_preset)
@@ -233,7 +257,7 @@ class GlobalSCSProps(bpy.types.PropertyGroup):
         material = bpy.context.active_object.active_material
         result = 0
 
-        for preset_i, preset in enumerate(bpy.data.worlds[0].scs_shader_presets_inventory):
+        for preset_i, preset in enumerate(_get_shader_presets_inventory()):
             if preset.name == material.scs_props.active_shader_preset_name:
                 result = preset_i
 
@@ -251,9 +275,15 @@ class GlobalSCSProps(bpy.types.PropertyGroup):
         if value == 0:  # No Shader...
             material.scs_props.active_shader_preset_name = "<none>"
             material.scs_props.mat_effect_name = "None"
+
+            # reset material nodes when user selects none shader
+            if material.node_tree:
+                material.node_tree.nodes.clear()
+                material.use_nodes = False
+
             material["scs_shader_attributes"] = {}
         else:
-            for preset_i, preset in enumerate(bpy.data.worlds[0].scs_shader_presets_inventory):
+            for preset_i, preset in enumerate(_get_shader_presets_inventory()):
                 if value == preset_i:
 
                     # Set Shader Preset in the Material
@@ -265,7 +295,7 @@ class GlobalSCSProps(bpy.types.PropertyGroup):
                         material.scs_props.mat_effect_name = preset_effect
 
                         if preset_name:
-                            _material_utils.set_shader_data_to_material(material, preset_section, preset_effect)
+                            _material_utils.set_shader_data_to_material(material, preset_section)
                             material.scs_props.active_shader_preset_name = preset_name
                         else:
                             material.scs_props.active_shader_preset_name = "<none>"
@@ -301,7 +331,7 @@ class GlobalSCSProps(bpy.types.PropertyGroup):
 
         if self.shader_preset_search_value != "":
 
-            for preset_i, preset in enumerate(bpy.data.worlds[0].scs_shader_presets_inventory):
+            for preset_i, preset in enumerate(_get_shader_presets_inventory()):
 
                 if self.shader_preset_search_value == preset.name:
                     self.set_shader_presets_item(preset_i)
@@ -324,7 +354,6 @@ class GlobalSCSProps(bpy.types.PropertyGroup):
     def scs_project_path_update(self, context):
         # Update all related paths so their libraries gets reloaded from new "SCS Project Path" location.
         if not _get_scs_globals().config_update_lock:
-            # utils.update_cgfx_library_rel_path(_get_scs_globals().cgfx_library_rel_path)
             _config_container.update_sign_library_rel_path(_get_scs_globals().scs_sign_model_inventory,
                                                            _get_scs_globals().sign_library_rel_path)
 
@@ -342,44 +371,68 @@ class GlobalSCSProps(bpy.types.PropertyGroup):
 
             _config_container.update_item_in_file('Paths.ProjectPath', self.scs_project_path)
 
-        # Update Blender image textures according to SCS texture records, so the images are loaded always from the correct locations.
-        _material_utils.correct_blender_texture_paths()
-
         return None
 
     def shader_presets_filepath_update(self, context):
         # print('Shader Presets Library Path UPDATE: "%s"' % self.shader_presets_filepath)
-        _config_container.update_shader_presets_path(bpy.data.worlds[0].scs_shader_presets_inventory, self.shader_presets_filepath)
+        _config_container.update_shader_presets_path(_get_shader_presets_inventory(), self.shader_presets_filepath)
         return None
 
-    '''
-    # def cgfx_templates_filepath_update(self, context):
-    #     # print('CgFX Template Library Path UPDATE: "%s"' % self.cgfx_templates_filepath)
-    #     utils.update_cgfx_template_path(self.cgfx_templates_filepath)
-    #     return None
+    def trigger_actions_rel_path_update(self, context):
+        _config_container.update_trigger_actions_rel_path(_get_scs_globals().scs_trigger_actions_inventory,
+                                                          self.trigger_actions_rel_path)
+        return None
 
-    # def cgfx_library_rel_path_update(self, context):
-    #     #print('CgFX Library Path UPDATE: "%s"' % self.cgfx_library_rel_path)
-    #     utils.update_cgfx_library_rel_path(self.cgfx_library_rel_path)
-    #     return None
-    '''
+    def trigger_actions_use_infixed_update(self, context):
+
+        if not _get_scs_globals().config_update_lock:  # prevent reloading library when blender is starting
+            _config_container.update_trigger_actions_rel_path(_get_scs_globals().scs_trigger_actions_inventory,
+                                                              self.trigger_actions_rel_path,
+                                                              readonly=True)
+
+        _config_container.update_item_in_file('Paths.TriggerActionsUseInfixed', int(self.trigger_actions_use_infixed))
 
     def sign_library_rel_path_update(self, context):
-        # print('Sign Library Path UPDATE: "%s"' % self.sign_library_rel_path)
         _config_container.update_sign_library_rel_path(_get_scs_globals().scs_sign_model_inventory,
                                                        self.sign_library_rel_path)
         return None
 
+    def sign_library_use_infixed_update(self, context):
+
+        if not _get_scs_globals().config_update_lock:  # prevent reloading library when blender is starting
+            _config_container.update_sign_library_rel_path(_get_scs_globals().scs_sign_model_inventory,
+                                                           self.sign_library_rel_path,
+                                                           readonly=True)
+
+        _config_container.update_item_in_file('Paths.SignUseInfixed', int(self.sign_library_use_infixed))
+
     def tsem_library_rel_path_update(self, context):
-        # print('Traffic Semaphore Profile Path UPDATE: "%s"' % self.tsem_library_rel_path)
         _config_container.update_tsem_library_rel_path(_get_scs_globals().scs_tsem_profile_inventory,
                                                        self.tsem_library_rel_path)
         return None
 
+    def tsem_library_use_infixed_update(self, context):
+
+        if not _get_scs_globals().config_update_lock:  # prevent reloading library when blender is starting
+            _config_container.update_tsem_library_rel_path(_get_scs_globals().scs_tsem_profile_inventory,
+                                                           self.tsem_library_rel_path,
+                                                           readonly=True)
+
+        _config_container.update_item_in_file('Paths.TSemProfileUseInfixed', int(self.tsem_library_use_infixed))
+
     def traffic_rules_library_rel_path_update(self, context):
-        # print('Traffic Rules Path UPDATE: "%s"' % self.traffic_rules_library_rel_path)
         _config_container.update_traffic_rules_library_rel_path(_get_scs_globals().scs_traffic_rules_inventory,
                                                                 self.traffic_rules_library_rel_path)
+        return None
+
+    def traffic_rules_library_use_infixed_update(self, context):
+
+        if not _get_scs_globals().config_update_lock:  # prevent reloading library when blender is starting
+            _config_container.update_traffic_rules_library_rel_path(_get_scs_globals().scs_traffic_rules_inventory,
+                                                                    self.traffic_rules_library_rel_path,
+                                                                    readonly=True)
+
+        _config_container.update_item_in_file('Paths.TrafficRulesUseInfixed', int(self.traffic_rules_library_use_infixed))
         return None
 
     def hookup_library_rel_path_update(self, context):
@@ -411,63 +464,74 @@ class GlobalSCSProps(bpy.types.PropertyGroup):
         # subtype="FILE_PATH",
         update=shader_presets_filepath_update,
     )
-    # cgfx_templates_filepath = StringProperty(
-    # name="CgFX Template Library",
-    # description="CgFX template library file path (absolute file path; *.txt)",
-    # default=utils.get_cgfx_templates_filepath(),
-    # subtype='NONE',
-    # subtype="FILE_PATH",
-    # # update=cgfx_templates_filepath_update,
-    # )
-    # cgfx_library_rel_path = StringProperty(
-    # name="CgFX Library Dir",
-    # description="CgFX shaders directory (relative path to 'SCS Project Main Directory')",
-    # default=str(os_rs + 'effect' + os.sep + 'eut2' + os.sep + 'cgfx'),
-    # subtype='NONE',
-    # # update=cgfx_library_rel_path_update,
-    # )
+    trigger_actions_rel_path = StringProperty(
+        name="Trigger Actions Lib",
+        description="Trigger actions library (absolute or relative file path to 'SCS Project Base Directory'; *.sii)",
+        default=str(os_rs + 'def/world/trigger_action.sii'),
+        subtype='NONE',
+        update=trigger_actions_rel_path_update,
+    )
+    trigger_actions_use_infixed = BoolProperty(
+        name="Trigger Actions Use Infixed Files",
+        description="Also load library items from any infixed SII files from same directory.",
+        default=True,
+        update=trigger_actions_use_infixed_update,
+    )
     sign_library_rel_path = StringProperty(
         name="Sign Library",
-        description="Sign library (relative file path to 'SCS Project Main Directory'; *.sii)",
+        description="Sign library (absolute or relative file path to 'SCS Project Base Directory'; *.sii)",
         default=str(os_rs + 'def/world/sign.sii'),
         subtype='NONE',
         update=sign_library_rel_path_update,
     )
+    sign_library_use_infixed = BoolProperty(
+        name="Sign Library Use Infixed Files",
+        description="Also load library items from any infixed SII files from same directory.",
+        default=True,
+        update=sign_library_use_infixed_update,
+    )
     tsem_library_rel_path = StringProperty(
         name="Traffic Semaphore Profile Library",
-        description="Traffic Semaphore Profile library (relative file path to 'SCS Project Main Directory'; *.sii)",
+        description="Traffic Semaphore Profile library (absolute or relative file path to 'SCS Project Base Directory'; *.sii)",
         default=str(os_rs + 'def/world/semaphore_profile.sii'),
         subtype='NONE',
         update=tsem_library_rel_path_update,
     )
+    tsem_library_use_infixed = BoolProperty(
+        name="Traffic Semaphore Lib Use Infixed Files",
+        description="Also load library items from any infixed SII files from same directory.",
+        default=True,
+        update=tsem_library_use_infixed_update,
+    )
     traffic_rules_library_rel_path = StringProperty(
         name="Traffic Rules Library",
-        description="Traffic rules library (relative file path to 'SCS Project Main Directory'; *.sii)",
+        description="Traffic rules library (absolute or relative file path to 'SCS Project Base Directory'; *.sii)",
         default=str(os_rs + 'def/world/traffic_rules.sii'),
         subtype='NONE',
         update=traffic_rules_library_rel_path_update,
     )
+    traffic_rules_library_use_infixed = BoolProperty(
+        name="Traffic Rules Lib Use Infixed Files",
+        description="Also load library items from any infixed SII files from same directory.",
+        default=True,
+        update=traffic_rules_library_use_infixed_update,
+    )
     hookup_library_rel_path = StringProperty(
         name="Hookup Library Dir",
-        description="Hookup library directory (relative path to 'SCS Project Main Directory')",
+        description="Hookup library directory (absolute or relative path to 'SCS Project Base Directory')",
         default=str(os_rs + 'unit/hookup'),
         subtype='NONE',
         update=hookup_library_rel_path_update,
     )
     matsubs_library_rel_path = StringProperty(
         name="Material Substance Library",
-        description="Material substance library (relative file path to 'SCS Project Main Directory'; *.db)",
+        description="Material substance library (absolute or relative file path to 'SCS Project Base Directory'; *.db)",
         default=str(os_rs + 'material/material.db'),
         subtype='NONE',
         update=matsubs_library_rel_path_update,
     )
 
     # UPDATE LOCKS (FOR AVOIDANCE OF RECURSION)
-    # cgfx_update_lock = BoolProperty(
-    # name="Update Lock for CgFX UI",
-    # description="Allows temporarily lock CgFX UI updates",
-    # default=False,
-    # )
     config_update_lock = BoolProperty(
         name="Update Lock For Config Items",
         description="Allows temporarily lock automatic updates for all items which are stored in config file",
@@ -499,6 +563,10 @@ class GlobalSCSProps(bpy.types.PropertyGroup):
 
     def welding_precision_update(self, context):
         _config_container.update_item_in_file('Import.WeldingPrecision', int(self.welding_precision))
+        return None
+
+    def use_normals_update(self, context):
+        _config_container.update_item_in_file('Import.UseNormals', int(self.use_normals))
         return None
 
     def import_pit_file_update(self, context):
@@ -535,10 +603,6 @@ class GlobalSCSProps(bpy.types.PropertyGroup):
 
     def search_subdirs_for_pia_update(self, context):
         _config_container.update_item_in_file('Import.IncludeSubdirsForPia', int(self.include_subdirs_for_pia))
-        return None
-
-    def mesh_creation_type_update(self, context):
-        _config_container.update_item_in_file('Import.MeshCreationType', self.mesh_creation_type)
         return None
 
     def content_type_update(self, context):
@@ -634,6 +698,7 @@ class GlobalSCSProps(bpy.types.PropertyGroup):
             ('2', "2 - Errors, Warnings, Info", "Print Errors, Warnings and Info to the console"),
             ('3', "3 - Errors, Warnings, Info, Debugs", "Print Errors, Warnings, Info and Debugs to the console"),
             ('4', "4 - Errors, Warnings, Info, Debugs, Specials", "Print Errors, Warnings, Info, Debugs and Specials to the console"),
+            ('5', "5 - Test mode (DEVELOPER ONLY)", "Extra developer mode. (Don't use it if you don't know what you are doing!)"),
         ),
         default='2',
         update=dump_level_update,
@@ -666,6 +731,13 @@ class GlobalSCSProps(bpy.types.PropertyGroup):
         min=1, max=6,
         default=4,
         update=welding_precision_update
+    )
+    use_normals = BoolProperty(
+        name="Use Normals",
+        description="When used meshes will get custom normals data from PIM file; "
+                    "otherwise Blender calculated normals will be used.",
+        default=True,
+        update=use_normals_update
     )
     import_pit_file = BoolProperty(
         name="Import Trait (PIT)",
@@ -722,17 +794,6 @@ class GlobalSCSProps(bpy.types.PropertyGroup):
         description="Search also all subdirectories for animation files (PIA)",
         default=True,
         update=search_subdirs_for_pia_update,
-    )
-    mesh_creation_type = EnumProperty(
-        name="Mesh CT",
-        description="This is a DEBUG option, that refers to Mesh Creation Type",
-        items=(
-            ('mct_bm', "BMesh", "Use 'BMesh' method to create a geometry"),
-            ('mct_tf', "TessFaces", "Use 'TessFaces' method to create a geometry"),
-            ('mct_mp', "MeshPolygons", "Use 'MeshPolygons' method to create a geometry")
-        ),
-        default='mct_bm',
-        update=mesh_creation_type_update,
     )
 
     # EXPORT OPTIONS
@@ -869,8 +930,8 @@ class GlobalSCSProps(bpy.types.PropertyGroup):
         default=False,
         update=sign_export_update,
     )
-    # not used at the moment...
-    skeleton_name = StringProperty(
-        name="Skeleton Name",
-        default="_INHERITED",
+    last_load_bt_version = StringProperty(
+        name="Last Load BT Version",
+        description="Version string of SCS Blender Tools on last file load (used for applying fixes on older versions)",
+        default="0.0",
     )

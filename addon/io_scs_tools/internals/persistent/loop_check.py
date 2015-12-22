@@ -25,6 +25,7 @@ from bpy.app.handlers import persistent
 from io_scs_tools.internals import looks as _looks
 from io_scs_tools.internals import preview_models as _preview_models
 from io_scs_tools.internals.connections.wrappers import group as _connections_group_wrapper
+from io_scs_tools.internals.shaders import update_shaders as _update_shaders
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
 from io_scs_tools.utils import object as _object_utils
 from io_scs_tools.utils import view3d as _view3d_utils
@@ -51,7 +52,6 @@ class _Timer:
 
 @persistent
 def object_data_check(scene):
-
     # during rendering in Blender active_object doesn't exists so ignore this case
     if not hasattr(bpy.context, "active_object"):
         return
@@ -84,6 +84,10 @@ def object_data_check(scene):
     # BREAK EXECUTION IF TIMER SAYS SO
     if not _Timer.can_execute():
         return
+
+    # DO ANY SHADER RELATED TIME UPDATES WHEN ANIMATION PLAYBACK IS ACTIVE
+    if bpy.context.screen and bpy.context.screen.is_animation_playing:
+        _update_shaders()
 
     # GET UPDATE STATES
     updated = _Timer.updated > 0
@@ -135,7 +139,7 @@ def object_data_check(scene):
         unparented_objects = []
         for obj in scene.objects:
 
-            if obj.scs_props.parent_identity != "" and not obj.scs_props.parent_identity in bpy.data.objects:
+            if obj.scs_props.parent_identity != "" and obj.scs_props.parent_identity not in bpy.data.objects:
                 obj.scs_props.parent_identity = ""
                 unparented_objects.append(obj)
 
@@ -312,7 +316,9 @@ def __objects_reparent__(parent, new_objs):
 
         new_mats = []
         for new_obj in new_objs:
-            if _object_utils.has_part_property(new_obj):
+            # NOTE: second condition prevents overwriting part on object which already have
+            # valid part from before (This might happen when re-parenting from one SCS Root to another)
+            if _object_utils.has_part_property(new_obj) and new_obj.scs_props.scs_part not in part_inventory:
                 new_obj.scs_props.scs_part = part_inventory[assign_part_index].name
 
             for slot in new_obj.material_slots:
@@ -397,5 +403,13 @@ def _fix_ex_parent(obj):
 
 
 def _fix_children(obj):
+    """Fixes ex children which wrer caused by re/unparenting.
+    It takes children of given object and resets their parent to
+    given object.
+    
+    :param obj: SCS Blender object which children should be fixed
+    :type obj: bpy.types.Object
+    """
+
     for child in obj.children:
         child.scs_props.parent_identity = obj.name

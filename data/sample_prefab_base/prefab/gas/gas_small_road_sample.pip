@@ -1,0 +1,1779 @@
+Header {
+    FormatVersion: 2
+    Source: "Blender 2.76.0 (hash: 48f7dd6), SCS Blender Tools: 1.0.27abe27"
+    Type: "Prefab"
+    Name: "gas_small_road_sample"
+}
+Global {
+    NodeCount: 2
+    TerrainPointCount: 188
+    TerrainPointVariantCount: 8
+    NavCurveCount: 24
+    SignCount: 34
+    SpawnPointCount: 1
+    SemaphoreCount: 2
+    MapPointCount: 52
+    TriggerPointCount: 4
+    IntersectionCount: 8
+}
+Node {
+    Index: 0
+    Position: ( &428a199a  &3838c79c  &c1580001 )
+    Direction: ( &bf7fffff  &b4a2216c  &34200000 )
+    InputLanes: ( 6 -1 -1 -1 -1 -1 -1 -1 )
+    OutputLanes: ( 4 -1 -1 -1 -1 -1 -1 -1 )
+
+    TerrainPointCount: 144
+    TerrainPointVariantCount: 4
+    StreamCount: 3
+    Stream {
+        Format: FLOAT3
+        Tag: "_POSITION"
+        0    ( &428a1999  &36caa9c3  &c1a00000 )
+        1    ( &428125cb  &36d4ec0c  &c1a8196b )
+        2    ( &426ab029  &36e505c1  &c1b4cf74 )
+        3    ( &42534d3d  &36fb7bad  &c1c68af2 )
+        4    ( &42428425  &3708a48f  &c1d7c16c )
+        5    ( &42318d33  &3715c3d6  &c1ec79a3 )
+        6    ( &4221a93d  &37241986  &c2018dfe )
+        7    ( &4212b185  &3733b846  &c20de2f4 )
+        8    ( &42060158  &3740b202  &c218216c )
+        9    ( &41f53145  &374adb35  &c2202709 )
+        10   ( &41dac933  &3753c7da  &c22732bc )
+        11   ( &41c168e4  &3759c2e4  &c22beb78 )
+        12   ( &41a23d72  &375c92d3  &c22e23d9 )
+        13   ( &4123af9e  &375c92d3  &c22e23d9 )
+        14   ( &410dbf29  &375c92d3  &c22e23d9 )
+        15   ( &409c2e7b  &375c92d3  &c22e23d9 )
+        16   ( &405ed029  &375c92d3  &c22e23d9 )
+        17   ( &3f80891f  &375c92d3  &c22e23d9 )
+        18   ( &bd82d999  &375c92d3  &c22e23d9 )
+        19   ( &bfcc1c00  &375c92d3  &c22e23d9 )
+        20   ( &c0d57614  &375c92d3  &c22e23d9 )
+        21   ( &c102317b  &375c92d3  &c22e23d9 )
+        22   ( &c12a4e47  &375c92d3  &c22e23d9 )
+        23   ( &c1a1cf19  &375c92d3  &c22e23d9 )
+        24   ( &c1c0fa8f  &3759c2e4  &c22beb78 )
+        25   ( &c1da5ae1  &3753c7d9  &c22732bb )
+        26   ( &c1f4c2f0  &374adb32  &c2202707 )
+        27   ( &c205ca30  &3740b201  &c218216b )
+        28   ( &c2127a5c  &3733b844  &c20de2f3 )
+        29   ( &c2217212  &37241985  &c2018dfd )
+        30   ( &c2315607  &3715c3d5  &c1ec79a1 )
+        31   ( &c2424cfd  &3708a48d  &c1d7c169 )
+        32   ( &c2531614  &36fb7ba9  &c1c68aef )
+        33   ( &c26a7900  &36e505be  &c1b4cf72 )
+        34   ( &c2810a36  &36d4ec09  &c1a81969 )
+        35   ( &c28a1999  &36caa9c3  &c1a00000 )
+        36   ( &428a1999  &36caa9c3  &c1a00000 )
+        37   ( &428125cb  &36d4ec0c  &c1a8196b )
+        38   ( &426ab029  &36e505c1  &c1b4cf74 )
+        39   ( &42534d3d  &36fb7bad  &c1c68af2 )
+        40   ( &42428425  &3708a48f  &c1d7c16c )
+        41   ( &42318d33  &3715c3d6  &c1ec79a3 )
+        42   ( &4221a93d  &37241986  &c2018dfe )
+        43   ( &4212b185  &3733b846  &c20de2f4 )
+        44   ( &42060158  &3740b202  &c218216c )
+        45   ( &41f53145  &374adb35  &c2202709 )
+        46   ( &41dac933  &3753c7da  &c22732bc )
+        47   ( &41c168e4  &3759c2e4  &c22beb78 )
+        48   ( &41a23d72  &375c92d3  &c22e23d9 )
+        49   ( &4123af9e  &375c92d3  &c22e23d9 )
+        50   ( &410dbf29  &375c92d3  &c22e23d9 )
+        51   ( &409c2e7b  &375c92d3  &c22e23d9 )
+        52   ( &405ed029  &375c92d3  &c22e23d9 )
+        53   ( &3f80891f  &375c92d3  &c22e23d9 )
+        54   ( &bd82d999  &375c92d3  &c22e23d9 )
+        55   ( &bfcc1c00  &375c92d3  &c22e23d9 )
+        56   ( &c0d57614  &375c92d3  &c22e23d9 )
+        57   ( &c102317b  &375c92d3  &c22e23d9 )
+        58   ( &c12a4e47  &375c92d3  &c22e23d9 )
+        59   ( &c1a1cf19  &375c92d3  &c22e23d9 )
+        60   ( &c1c0fa8f  &3759c2e4  &c22beb78 )
+        61   ( &c1da5ae1  &3753c7d9  &c22732bb )
+        62   ( &c1f4c2f0  &374adb32  &c2202707 )
+        63   ( &c205ca30  &3740b201  &c218216b )
+        64   ( &c2127a5c  &3733b844  &c20de2f3 )
+        65   ( &c2217212  &37241985  &c2018dfd )
+        66   ( &c2315607  &3715c3d5  &c1ec79a1 )
+        67   ( &c2424cfd  &3708a48d  &c1d7c169 )
+        68   ( &c2531614  &36fb7ba9  &c1c68aef )
+        69   ( &c26a7900  &36e505be  &c1b4cf72 )
+        70   ( &c2810a36  &36d4ec09  &c1a81969 )
+        71   ( &c28a1999  &36caa9c3  &c1a00000 )
+        72   ( &428a1999  &36caa9c3  &c1a00000 )
+        73   ( &428125cb  &36d4ec0c  &c1a8196b )
+        74   ( &426ab029  &36e505c1  &c1b4cf74 )
+        75   ( &42534d3d  &36fb7bad  &c1c68af2 )
+        76   ( &42428425  &3708a48f  &c1d7c16c )
+        77   ( &42318d33  &3715c3d6  &c1ec79a3 )
+        78   ( &4221a93d  &37241986  &c2018dfe )
+        79   ( &4212b185  &3733b846  &c20de2f4 )
+        80   ( &42060158  &3740b202  &c218216c )
+        81   ( &41f53145  &374adb35  &c2202709 )
+        82   ( &41dac933  &3753c7da  &c22732bc )
+        83   ( &41c168e4  &3759c2e4  &c22beb78 )
+        84   ( &41a23d72  &375c92d3  &c22e23d9 )
+        85   ( &4123af9e  &375c92d3  &c22e23d9 )
+        86   ( &410dbf29  &375c92d3  &c22e23d9 )
+        87   ( &409c2e7b  &375c92d3  &c22e23d9 )
+        88   ( &405ed029  &375c92d3  &c22e23d9 )
+        89   ( &3f80891f  &375c92d3  &c22e23d9 )
+        90   ( &bd82d999  &375c92d3  &c22e23d9 )
+        91   ( &bfcc1c00  &375c92d3  &c22e23d9 )
+        92   ( &c0d57614  &375c92d3  &c22e23d9 )
+        93   ( &c102317b  &375c92d3  &c22e23d9 )
+        94   ( &c12a4e47  &375c92d3  &c22e23d9 )
+        95   ( &c1a1cf19  &375c92d3  &c22e23d9 )
+        96   ( &c1c0fa8f  &3759c2e4  &c22beb78 )
+        97   ( &c1da5ae1  &3753c7d9  &c22732bb )
+        98   ( &c1f4c2f0  &374adb32  &c2202707 )
+        99   ( &c205ca30  &3740b201  &c218216b )
+        100  ( &c2127a5c  &3733b844  &c20de2f3 )
+        101  ( &c2217212  &37241985  &c2018dfd )
+        102  ( &c2315607  &3715c3d5  &c1ec79a1 )
+        103  ( &c2424cfd  &3708a48d  &c1d7c169 )
+        104  ( &c2531614  &36fb7ba9  &c1c68aef )
+        105  ( &c26a7900  &36e505be  &c1b4cf72 )
+        106  ( &c2810a36  &36d4ec09  &c1a81969 )
+        107  ( &c28a1999  &36caa9c3  &c1a00000 )
+        108  ( &428a1999  &36caa9c3  &c1a00000 )
+        109  ( &428125cb  &36d4ec0c  &c1a8196b )
+        110  ( &426ab029  &36e505c1  &c1b4cf74 )
+        111  ( &42534d3d  &36fb7bad  &c1c68af2 )
+        112  ( &42428425  &3708a48f  &c1d7c16c )
+        113  ( &42318d33  &3715c3d6  &c1ec79a3 )
+        114  ( &4221a93d  &37241986  &c2018dfe )
+        115  ( &4212b185  &3733b846  &c20de2f4 )
+        116  ( &42060158  &3740b202  &c218216c )
+        117  ( &41f53145  &374adb35  &c2202709 )
+        118  ( &41dac933  &3753c7da  &c22732bc )
+        119  ( &41c168e4  &3759c2e4  &c22beb78 )
+        120  ( &41a23d72  &375c92d3  &c22e23d9 )
+        121  ( &4123af9e  &375c92d3  &c22e23d9 )
+        122  ( &410dbf29  &375c92d3  &c22e23d9 )
+        123  ( &409c2e7b  &375c92d3  &c22e23d9 )
+        124  ( &405ed029  &375c92d3  &c22e23d9 )
+        125  ( &3f80891f  &375c92d3  &c22e23d9 )
+        126  ( &bd82d999  &375c92d3  &c22e23d9 )
+        127  ( &bfcc1c00  &375c92d3  &c22e23d9 )
+        128  ( &c0d57614  &375c92d3  &c22e23d9 )
+        129  ( &c102317b  &375c92d3  &c22e23d9 )
+        130  ( &c12a4e47  &375c92d3  &c22e23d9 )
+        131  ( &c1a1cf19  &375c92d3  &c22e23d9 )
+        132  ( &c1c0fa8f  &3759c2e4  &c22beb78 )
+        133  ( &c1da5ae1  &3753c7d9  &c22732bb )
+        134  ( &c1f4c2f0  &374adb32  &c2202707 )
+        135  ( &c205ca30  &3740b201  &c218216b )
+        136  ( &c2127a5c  &3733b844  &c20de2f3 )
+        137  ( &c2217212  &37241985  &c2018dfd )
+        138  ( &c2315607  &3715c3d5  &c1ec79a1 )
+        139  ( &c2424cfd  &3708a48d  &c1d7c169 )
+        140  ( &c2531614  &36fb7ba9  &c1c68aef )
+        141  ( &c26a7900  &36e505be  &c1b4cf72 )
+        142  ( &c2810a36  &36d4ec09  &c1a81969 )
+        143  ( &c28a1999  &36caa9c3  &c1a00000 )
+    }
+    Stream {
+        Format: FLOAT3
+        Tag: "_NORMAL"
+        0    ( &a9e8e590  &3f800000  &34a22189 )
+        1    ( &a9e8e590  &3f800000  &34a22189 )
+        2    ( &a9e8e590  &3f800000  &34a22189 )
+        3    ( &a9e8e590  &3f800000  &34a22189 )
+        4    ( &a9e8e590  &3f800000  &34a22189 )
+        5    ( &a9e8e590  &3f800000  &34a22189 )
+        6    ( &a9e8e590  &3f800000  &34a22189 )
+        7    ( &a9e8e590  &3f800000  &34a22189 )
+        8    ( &a9e8e590  &3f800000  &34a22189 )
+        9    ( &a9e8e590  &3f800000  &34a22189 )
+        10   ( &a9e8e590  &3f800000  &34a22189 )
+        11   ( &a9e8e590  &3f800000  &34a22189 )
+        12   ( &a9e8e590  &3f800000  &34a22189 )
+        13   ( &a9e8e590  &3f800000  &34a22189 )
+        14   ( &a9e8e590  &3f800000  &34a22189 )
+        15   ( &a9e8e590  &3f800000  &34a22189 )
+        16   ( &a9e8e590  &3f800000  &34a22189 )
+        17   ( &a9e8e590  &3f800000  &34a22189 )
+        18   ( &a9e8e590  &3f800000  &34a22189 )
+        19   ( &a9e8e590  &3f800000  &34a22189 )
+        20   ( &a9e8e590  &3f800000  &34a22189 )
+        21   ( &a9e8e590  &3f800000  &34a22189 )
+        22   ( &a9e8e590  &3f800000  &34a22189 )
+        23   ( &a9e8e590  &3f800000  &34a22189 )
+        24   ( &a9e8e590  &3f800000  &34a22189 )
+        25   ( &a9e8e590  &3f800000  &34a22189 )
+        26   ( &a9e8e590  &3f800000  &34a22189 )
+        27   ( &a9e8e590  &3f800000  &34a22189 )
+        28   ( &a9e8e590  &3f800000  &34a22189 )
+        29   ( &a9e8e590  &3f800000  &34a22189 )
+        30   ( &a9e8e590  &3f800000  &34a22189 )
+        31   ( &a9e8e590  &3f800000  &34a22189 )
+        32   ( &a9e8e590  &3f800000  &34a22189 )
+        33   ( &a9e8e590  &3f800000  &34a22189 )
+        34   ( &a9e8e590  &3f800000  &34a22189 )
+        35   ( &a9e8e590  &3f800000  &34a22189 )
+        36   ( &a9e8e590  &3f800000  &34a22189 )
+        37   ( &a9e8e590  &3f800000  &34a22189 )
+        38   ( &a9e8e590  &3f800000  &34a22189 )
+        39   ( &a9e8e590  &3f800000  &34a22189 )
+        40   ( &a9e8e590  &3f800000  &34a22189 )
+        41   ( &a9e8e590  &3f800000  &34a22189 )
+        42   ( &a9e8e590  &3f800000  &34a22189 )
+        43   ( &a9e8e590  &3f800000  &34a22189 )
+        44   ( &a9e8e590  &3f800000  &34a22189 )
+        45   ( &a9e8e590  &3f800000  &34a22189 )
+        46   ( &a9e8e590  &3f800000  &34a22189 )
+        47   ( &a9e8e590  &3f800000  &34a22189 )
+        48   ( &a9e8e590  &3f800000  &34a22189 )
+        49   ( &a9e8e590  &3f800000  &34a22189 )
+        50   ( &a9e8e590  &3f800000  &34a22189 )
+        51   ( &a9e8e590  &3f800000  &34a22189 )
+        52   ( &a9e8e590  &3f800000  &34a22189 )
+        53   ( &a9e8e590  &3f800000  &34a22189 )
+        54   ( &a9e8e590  &3f800000  &34a22189 )
+        55   ( &a9e8e590  &3f800000  &34a22189 )
+        56   ( &a9e8e590  &3f800000  &34a22189 )
+        57   ( &a9e8e590  &3f800000  &34a22189 )
+        58   ( &a9e8e590  &3f800000  &34a22189 )
+        59   ( &a9e8e590  &3f800000  &34a22189 )
+        60   ( &a9e8e590  &3f800000  &34a22189 )
+        61   ( &a9e8e590  &3f800000  &34a22189 )
+        62   ( &a9e8e590  &3f800000  &34a22189 )
+        63   ( &a9e8e590  &3f800000  &34a22189 )
+        64   ( &a9e8e590  &3f800000  &34a22189 )
+        65   ( &a9e8e590  &3f800000  &34a22189 )
+        66   ( &a9e8e590  &3f800000  &34a22189 )
+        67   ( &a9e8e590  &3f800000  &34a22189 )
+        68   ( &a9e8e590  &3f800000  &34a22189 )
+        69   ( &a9e8e590  &3f800000  &34a22189 )
+        70   ( &a9e8e590  &3f800000  &34a22189 )
+        71   ( &a9e8e590  &3f800000  &34a22189 )
+        72   ( &a9e8e590  &3f800000  &34a22189 )
+        73   ( &a9e8e590  &3f800000  &34a22189 )
+        74   ( &a9e8e590  &3f800000  &34a22189 )
+        75   ( &a9e8e590  &3f800000  &34a22189 )
+        76   ( &a9e8e590  &3f800000  &34a22189 )
+        77   ( &a9e8e590  &3f800000  &34a22189 )
+        78   ( &a9e8e590  &3f800000  &34a22189 )
+        79   ( &a9e8e590  &3f800000  &34a22189 )
+        80   ( &a9e8e590  &3f800000  &34a22189 )
+        81   ( &a9e8e590  &3f800000  &34a22189 )
+        82   ( &a9e8e590  &3f800000  &34a22189 )
+        83   ( &a9e8e590  &3f800000  &34a22189 )
+        84   ( &a9e8e590  &3f800000  &34a22189 )
+        85   ( &a9e8e590  &3f800000  &34a22189 )
+        86   ( &a9e8e590  &3f800000  &34a22189 )
+        87   ( &a9e8e590  &3f800000  &34a22189 )
+        88   ( &a9e8e590  &3f800000  &34a22189 )
+        89   ( &a9e8e590  &3f800000  &34a22189 )
+        90   ( &a9e8e590  &3f800000  &34a22189 )
+        91   ( &a9e8e590  &3f800000  &34a22189 )
+        92   ( &a9e8e590  &3f800000  &34a22189 )
+        93   ( &a9e8e590  &3f800000  &34a22189 )
+        94   ( &a9e8e590  &3f800000  &34a22189 )
+        95   ( &a9e8e590  &3f800000  &34a22189 )
+        96   ( &a9e8e590  &3f800000  &34a22189 )
+        97   ( &a9e8e590  &3f800000  &34a22189 )
+        98   ( &a9e8e590  &3f800000  &34a22189 )
+        99   ( &a9e8e590  &3f800000  &34a22189 )
+        100  ( &a9e8e590  &3f800000  &34a22189 )
+        101  ( &a9e8e590  &3f800000  &34a22189 )
+        102  ( &a9e8e590  &3f800000  &34a22189 )
+        103  ( &a9e8e590  &3f800000  &34a22189 )
+        104  ( &a9e8e590  &3f800000  &34a22189 )
+        105  ( &a9e8e590  &3f800000  &34a22189 )
+        106  ( &a9e8e590  &3f800000  &34a22189 )
+        107  ( &a9e8e590  &3f800000  &34a22189 )
+        108  ( &a9e8e590  &3f800000  &34a22189 )
+        109  ( &a9e8e590  &3f800000  &34a22189 )
+        110  ( &a9e8e590  &3f800000  &34a22189 )
+        111  ( &a9e8e590  &3f800000  &34a22189 )
+        112  ( &a9e8e590  &3f800000  &34a22189 )
+        113  ( &a9e8e590  &3f800000  &34a22189 )
+        114  ( &a9e8e590  &3f800000  &34a22189 )
+        115  ( &a9e8e590  &3f800000  &34a22189 )
+        116  ( &a9e8e590  &3f800000  &34a22189 )
+        117  ( &a9e8e590  &3f800000  &34a22189 )
+        118  ( &a9e8e590  &3f800000  &34a22189 )
+        119  ( &a9e8e590  &3f800000  &34a22189 )
+        120  ( &a9e8e590  &3f800000  &34a22189 )
+        121  ( &a9e8e590  &3f800000  &34a22189 )
+        122  ( &a9e8e590  &3f800000  &34a22189 )
+        123  ( &a9e8e590  &3f800000  &34a22189 )
+        124  ( &a9e8e590  &3f800000  &34a22189 )
+        125  ( &a9e8e590  &3f800000  &34a22189 )
+        126  ( &a9e8e590  &3f800000  &34a22189 )
+        127  ( &a9e8e590  &3f800000  &34a22189 )
+        128  ( &a9e8e590  &3f800000  &34a22189 )
+        129  ( &a9e8e590  &3f800000  &34a22189 )
+        130  ( &a9e8e590  &3f800000  &34a22189 )
+        131  ( &a9e8e590  &3f800000  &34a22189 )
+        132  ( &a9e8e590  &3f800000  &34a22189 )
+        133  ( &a9e8e590  &3f800000  &34a22189 )
+        134  ( &a9e8e590  &3f800000  &34a22189 )
+        135  ( &a9e8e590  &3f800000  &34a22189 )
+        136  ( &a9e8e590  &3f800000  &34a22189 )
+        137  ( &a9e8e590  &3f800000  &34a22189 )
+        138  ( &a9e8e590  &3f800000  &34a22189 )
+        139  ( &a9e8e590  &3f800000  &34a22189 )
+        140  ( &a9e8e590  &3f800000  &34a22189 )
+        141  ( &a9e8e590  &3f800000  &34a22189 )
+        142  ( &a9e8e590  &3f800000  &34a22189 )
+        143  ( &a9e8e590  &3f800000  &34a22189 )
+    }
+    Stream {
+        Format: INT2
+        Tag: "_VARIANT_BLOCK"
+        0    ( 0     36 )
+        1    ( 36    36 )
+        2    ( 72    36 )
+        3    ( 108   36 )
+    }
+}
+Node {
+    Index: 1
+    Position: ( &c28a199a  &3838c79c  &c1580001 )
+    Direction: ( &3f7fffff  &b4a2216e  &34200000 )
+    InputLanes: ( 4 -1 -1 -1 -1 -1 -1 -1 )
+    OutputLanes: ( 13 -1 -1 -1 -1 -1 -1 -1 )
+
+    TerrainPointCount: 44
+    TerrainPointVariantCount: 4
+    StreamCount: 3
+    Stream {
+        Format: FLOAT3
+        Tag: "_POSITION"
+        0    ( &c28a1999  &38308be8  &c0e00002 )
+        1    ( &c25bd6c5  &360d8ac8  &c0dffffd )
+        2    ( &c2237a57  &360d8ac8  &c0dffffd )
+        3    ( &c1d63bcc  &360d8ac8  &c0dffffd )
+        4    ( &c14b05e1  &360d8ac8  &c0dffffd )
+        5    ( &3fb35ee1  &360d8ac8  &c0dffffd )
+        6    ( &416ee8f0  &360d8ac8  &c0dffffd )
+        7    ( &41e3b302  &360d8ac8  &c0dffffd )
+        8    ( &4227f8c7  &360d8ac8  &c0dffffd )
+        9    ( &425e180c  &360d8ac8  &c0dffffd )
+        10   ( &428a1ba9  &360d8ac8  &c0dffffd )
+        11   ( &c28a1999  &38308be8  &c0e00002 )
+        12   ( &c25bd6c5  &360d8ac8  &c0dffffd )
+        13   ( &c2237a57  &360d8ac8  &c0dffffd )
+        14   ( &c1d63bcc  &360d8ac8  &c0dffffd )
+        15   ( &c14b05e1  &360d8ac8  &c0dffffd )
+        16   ( &3fb35ee1  &360d8ac8  &c0dffffd )
+        17   ( &416ee8f0  &360d8ac8  &c0dffffd )
+        18   ( &41e3b302  &360d8ac8  &c0dffffd )
+        19   ( &4227f8c7  &360d8ac8  &c0dffffd )
+        20   ( &425e180c  &360d8ac8  &c0dffffd )
+        21   ( &428a1ba9  &360d8ac8  &c0dffffd )
+        22   ( &c28a1999  &38308be8  &c0e00002 )
+        23   ( &c25bd6c5  &360d8ac8  &c0dffffd )
+        24   ( &c2237a57  &360d8ac8  &c0dffffd )
+        25   ( &c1d63bcc  &360d8ac8  &c0dffffd )
+        26   ( &c14b05e1  &360d8ac8  &c0dffffd )
+        27   ( &3fb35ee1  &360d8ac8  &c0dffffd )
+        28   ( &416ee8f0  &360d8ac8  &c0dffffd )
+        29   ( &41e3b302  &360d8ac8  &c0dffffd )
+        30   ( &4227f8c7  &360d8ac8  &c0dffffd )
+        31   ( &425e180c  &360d8ac8  &c0dffffd )
+        32   ( &428a1ba9  &360d8ac8  &c0dffffd )
+        33   ( &c28a1999  &38308be8  &c0e00002 )
+        34   ( &c25bd6c5  &360d8ac8  &c0dffffd )
+        35   ( &c2237a57  &360d8ac8  &c0dffffd )
+        36   ( &c1d63bcc  &360d8ac8  &c0dffffd )
+        37   ( &c14b05e1  &360d8ac8  &c0dffffd )
+        38   ( &3fb35ee1  &360d8ac8  &c0dffffd )
+        39   ( &416ee8f0  &360d8ac8  &c0dffffd )
+        40   ( &41e3b302  &360d8ac8  &c0dffffd )
+        41   ( &4227f8c7  &360d8ac8  &c0dffffd )
+        42   ( &425e180c  &360d8ac8  &c0dffffd )
+        43   ( &428a1ba9  &360d8ac8  &c0dffffd )
+    }
+    Stream {
+        Format: FLOAT3
+        Tag: "_NORMAL"
+        0    ( &aa9c11ff  &3f800000  &b63a1bd8 )
+        1    ( &aa9c11ff  &3f800000  &b63a1bd8 )
+        2    ( &aa9c11ff  &3f800000  &b63a1bd8 )
+        3    ( &aa9c11ff  &3f800000  &b63a1bd8 )
+        4    ( &aa9c11ff  &3f800000  &b63a1bd8 )
+        5    ( &aa9c11ff  &3f800000  &b63a1bd8 )
+        6    ( &aa9c11ff  &3f800000  &b63a1bd8 )
+        7    ( &aa9c11ff  &3f800000  &b63a1bd8 )
+        8    ( &aa9c11ff  &3f800000  &b63a1bd8 )
+        9    ( &aa9c11ff  &3f800000  &b63a1bd8 )
+        10   ( &aa9c11ff  &3f800000  &b63a1bd8 )
+        11   ( &aa9c11ff  &3f800000  &b63a1bd8 )
+        12   ( &aa9c11ff  &3f800000  &b63a1bd8 )
+        13   ( &aa9c11ff  &3f800000  &b63a1bd8 )
+        14   ( &aa9c11ff  &3f800000  &b63a1bd8 )
+        15   ( &aa9c11ff  &3f800000  &b63a1bd8 )
+        16   ( &aa9c11ff  &3f800000  &b63a1bd8 )
+        17   ( &aa9c11ff  &3f800000  &b63a1bd8 )
+        18   ( &aa9c11ff  &3f800000  &b63a1bd8 )
+        19   ( &aa9c11ff  &3f800000  &b63a1bd8 )
+        20   ( &aa9c11ff  &3f800000  &b63a1bd8 )
+        21   ( &aa9c11ff  &3f800000  &b63a1bd8 )
+        22   ( &aa9c11ff  &3f800000  &b63a1bd8 )
+        23   ( &aa9c11ff  &3f800000  &b63a1bd8 )
+        24   ( &aa9c11ff  &3f800000  &b63a1bd8 )
+        25   ( &aa9c11ff  &3f800000  &b63a1bd8 )
+        26   ( &aa9c11ff  &3f800000  &b63a1bd8 )
+        27   ( &aa9c11ff  &3f800000  &b63a1bd8 )
+        28   ( &aa9c11ff  &3f800000  &b63a1bd8 )
+        29   ( &aa9c11ff  &3f800000  &b63a1bd8 )
+        30   ( &aa9c11ff  &3f800000  &b63a1bd8 )
+        31   ( &aa9c11ff  &3f800000  &b63a1bd8 )
+        32   ( &aa9c11ff  &3f800000  &b63a1bd8 )
+        33   ( &aa9c11ff  &3f800000  &b63a1bd8 )
+        34   ( &aa9c11ff  &3f800000  &b63a1bd8 )
+        35   ( &aa9c11ff  &3f800000  &b63a1bd8 )
+        36   ( &aa9c11ff  &3f800000  &b63a1bd8 )
+        37   ( &aa9c11ff  &3f800000  &b63a1bd8 )
+        38   ( &aa9c11ff  &3f800000  &b63a1bd8 )
+        39   ( &aa9c11ff  &3f800000  &b63a1bd8 )
+        40   ( &aa9c11ff  &3f800000  &b63a1bd8 )
+        41   ( &aa9c11ff  &3f800000  &b63a1bd8 )
+        42   ( &aa9c11ff  &3f800000  &b63a1bd8 )
+        43   ( &aa9c11ff  &3f800000  &b63a1bd8 )
+    }
+    Stream {
+        Format: INT2
+        Tag: "_VARIANT_BLOCK"
+        0    ( 0     11 )
+        1    ( 11    11 )
+        2    ( 22    11 )
+        3    ( 33    11 )
+    }
+}
+Curve {
+    Index: 0
+    # start locator: 'Nav_Point_7'
+    Name: "nav_point_7"
+
+    Flags: 8288
+
+    LeadsToNodes: 16843010
+
+    NextCurves: ( 21 18 -1 -1 )
+    PrevCurves: ( 6 -1 -1 -1 )
+
+    Length: &3f41d900
+
+    Bezier {
+        Start {
+            Position: ( &4284101a  &369f98e4  &c17c0001 )
+            Rotation: ( &3f3504f2  &28d55297  &3f3504f4  &a807c3b6 )
+        }
+        End {
+            Position: ( &42828c68  &369f98e4  &c17c0001 )
+            Rotation: ( &3f3504f2  &28d55297  &3f3504f4  &a807c3b6 )
+        }
+    }
+}
+Curve {
+    Index: 1
+    # start locator: 'Nav_Point_7'
+    Name: "nav_point_7"
+
+    Flags: 96
+
+    LeadsToNodes: 16843010
+
+    NextCurves: ( 9 -1 -1 -1 )
+    PrevCurves: ( 6 -1 -1 -1 )
+
+    Length: &42a1201e
+
+    Bezier {
+        Start {
+            Position: ( &4284101a  &369f98e4  &c17c0001 )
+            Rotation: ( &3f3504f2  &28d55297  &3f3504f4  &a807c3b6 )
+        }
+        End {
+            Position: ( &c168801e  &369f98e4  &c17c0001 )
+            Rotation: ( &3f3504f2  &28d55297  &3f3504f4  &a807c3b6 )
+        }
+    }
+}
+Curve {
+    Index: 2
+    # start locator: 'Nav_Point_40'
+    Name: "nav_point_40"
+
+    Flags: 32
+
+    LeadsToNodes: 16843010
+
+    SemaphoreID: 1
+
+    NextCurves: ( 19 -1 -1 -1 )
+    PrevCurves: ( 5 -1 -1 -1 )
+
+    Length: &3f470c0a
+
+    Bezier {
+        Start {
+            Position: ( &401a28ef  &3732c9a5  &c20d268f )
+            Rotation: ( &3f3504f2  &28d55297  &3f3504f4  &a807c3b6 )
+        }
+        End {
+            Position: ( &3fd0cbd9  &3732c9a5  &c20d268f )
+            Rotation: ( &3f3504f2  &28d55297  &3f3504f4  &a807c3b6 )
+        }
+    }
+}
+Curve {
+    Index: 3
+    # start locator: 'Nav_Point_17'
+    Name: "nav_point_17"
+
+    Flags: 786528
+
+    LeadsToNodes: 16843010
+
+    NextCurves: ( 16 -1 -1 -1 )
+    PrevCurves: ( 19 -1 -1 -1 )
+
+    Length: &41a2b5c8
+
+    Bezier {
+        Start {
+            Position: ( &c0e07a72  &372cbaf9  &c2085e53 )
+            Rotation: ( &3f13610c  &a75e5697  &3f515241  &275e5693 )
+        }
+        End {
+            Position: ( &c1c641c8  &36f6ec7c  &c1c2f176 )
+            Rotation: ( &3f1bda97  &a7523f8c  &3f4b170e  &a7d23f8c )
+        }
+    }
+}
+Curve {
+    Index: 4
+    # start locator: 'Nav_Point_29'
+    Name: "nav_point_29"
+
+    Flags: 96
+
+    LeadsToNodes: 16908545
+
+    NextCurves: ( -1 -1 -1 -1 )
+    PrevCurves: ( -1 -1 -1 -1 )
+
+    Length: &430a1659
+
+    Bezier {
+        Start {
+            Position: ( &c28a1318  &3663fefd  &c1340001 )
+            Rotation: ( &3f3504f2  &28d55297  &bf3504f4  &2807c3b6 )
+        }
+        End {
+            Position: ( &428a199a  &3663fefd  &c1340001 )
+            Rotation: ( &3f3504f2  &28d55297  &bf3504f4  &2807c3b6 )
+        }
+    }
+}
+Curve {
+    Index: 5
+    # start locator: 'Nav_Point_12'
+    Name: "nav_point_12"
+
+    Flags: 32
+
+    LeadsToNodes: 16843010
+
+    NextCurves: ( 2 -1 -1 -1 )
+    PrevCurves: ( 14 -1 -1 -1 )
+
+    Length: &40f55cfd
+
+    Bezier {
+        Start {
+            Position: ( &412137f6  &3733091c  &c20d58aa )
+            Rotation: ( &3f3504f2  &28d55297  &3f3504f4  &a807c3b6 )
+        }
+        End {
+            Position: ( &401a28ef  &3732c9a5  &c20d268f )
+            Rotation: ( &3f3504f2  &28d55297  &3f3504f4  &a807c3b6 )
+        }
+    }
+}
+Curve {
+    Index: 6
+    # start locator: 'Nav_Point_45'
+    Name: "nav_point_45"
+
+    Flags: 96
+
+    LeadsToNodes: 16843010
+
+    NextCurves: ( 0 1 -1 -1 )
+    PrevCurves: ( -1 -1 -1 -1 )
+
+    Length: &40413000
+
+    Bezier {
+        Start {
+            Position: ( &428a199a  &369f98e4  &c17c0001 )
+            Rotation: ( &3f3504f2  &28d55297  &3f3504f4  &a807c3b6 )
+        }
+        End {
+            Position: ( &4284101a  &369f98e4  &c17c0001 )
+            Rotation: ( &3f3504f2  &28d55297  &3f3504f4  &a807c3b6 )
+        }
+    }
+}
+Curve {
+    Index: 7
+    # start locator: 'Nav_Point_31'
+    Name: "nav_point_31"
+
+    Flags: 32
+
+    LeadsToNodes: 16843010
+
+    NextCurves: ( 14 -1 -1 -1 )
+    PrevCurves: ( 18 -1 -1 -1 )
+
+    Length: &41d1b123
+
+    Bezier {
+        Start {
+            Position: ( &4244aba4  &36c975c0  &c19f0cd4 )
+            Rotation: ( &3f5a3412  &00000000  &3f05e0ba  &00000000 )
+        }
+        End {
+            Position: ( &41d44360  &3726cda4  &c203b069 )
+            Rotation: ( &3f4d2fa2  &a61fb2ef  &3f19157a  &00000000 )
+        }
+    }
+}
+Curve {
+    Index: 8
+    # start locator: 'Nav_Point_5'
+    Name: "nav_point_5"
+
+    Flags: 96
+
+    LeadsToNodes: 16843010
+
+    NextCurves: ( 12 -1 -1 -1 )
+    PrevCurves: ( 15 -1 -1 -1 )
+
+    Length: &4106e913
+
+    Bezier {
+        Start {
+            Position: ( &3fcf5966  &3717b0e3  &c1ef8427 )
+            Rotation: ( &3f3504f2  &28d55297  &3f3504f4  &a807c3b6 )
+        }
+        End {
+            Position: ( &c0d7fc07  &3712d668  &c1e7da4f )
+            Rotation: ( &3f291928  &a71155eb  &3f4033d3  &a741c7e4 )
+        }
+    }
+}
+Curve {
+    Index: 9
+    # start locator: 'Nav_Point_28'
+    Name: "nav_point_28"
+
+    Flags: 786528
+
+    LeadsToNodes: 16843010
+
+    NextCurves: ( 17 -1 -1 -1 )
+    PrevCurves: ( 1 -1 -1 -1 )
+
+    Length: &41a61fe9
+
+    Bezier {
+        Start {
+            Position: ( &c168801e  &369f98e4  &c17c0001 )
+            Rotation: ( &3f3504f2  &28d55297  &3f3504f4  &a807c3b6 )
+        }
+        End {
+            Position: ( &c20d2ffc  &369f98e4  &c17c0001 )
+            Rotation: ( &3f3504f2  &28d55297  &3f3504f4  &a807c3b6 )
+        }
+    }
+}
+Curve {
+    Index: 10
+    # start locator: 'Nav_Point_22'
+    Name: "nav_point_22"
+
+    Flags: 64
+
+    LeadsToNodes: 16843010
+
+    NextCurves: ( 22 -1 -1 -1 )
+    PrevCurves: ( 23 -1 -1 -1 )
+
+    Length: &418349b4
+
+    Bezier {
+        Start {
+            Position: ( &420ef464  &36e6ad54  &c1b61ddc )
+            Rotation: ( &3f5883cf  &a71757cb  &3f08977d  &27e303b1 )
+        }
+        End {
+            Position: ( &41a3be86  &37112769  &c1e531c6 )
+            Rotation: ( &3f45e6eb  &00000000  &3f22640f  &00000000 )
+        }
+    }
+}
+Curve {
+    Index: 11
+    # start locator: 'Nav_Point_15'
+    Name: "nav_point_15"
+
+    Flags: 262256
+
+    LeadsToNodes: 16843010
+
+    NextCurves: ( 13 -1 -1 -1 )
+    PrevCurves: ( 20 -1 -1 -1 )
+
+    Length: &41c1c953
+
+    Bezier {
+        Start {
+            Position: ( &c22c54c6  &36c2421c  &c1995d4c )
+            Rotation: ( &3f21b899  &a7b14afc  &3f467321  &a87d468c )
+        }
+        End {
+            Position: ( &c28608ea  &369f98e4  &c17c0001 )
+            Rotation: ( &3f3504f2  &28d55297  &3f3504f4  &a807c3b6 )
+        }
+    }
+}
+Curve {
+    Index: 12
+    # start locator: 'Nav_Point_6'
+    Name: "nav_point_6"
+
+    Flags: 786528
+
+    LeadsToNodes: 16843010
+
+    NextCurves: ( 16 -1 -1 -1 )
+    PrevCurves: ( 8 -1 -1 -1 )
+
+    Length: &419510ac
+
+    Bezier {
+        Start {
+            Position: ( &c0d7fc07  &3712d668  &c1e7da4f )
+            Rotation: ( &3f291928  &a71155eb  &3f4033d3  &a741c7e4 )
+        }
+        End {
+            Position: ( &c1c641c8  &36f6ec7c  &c1c2f176 )
+            Rotation: ( &3f1bda97  &a7523f8c  &3f4b170e  &a7d23f8c )
+        }
+    }
+}
+Curve {
+    Index: 13
+    # start locator: 'Nav_Point_4'
+    Name: "nav_point_4"
+
+    Flags: 96
+
+    LeadsToNodes: 16843010
+
+    NextCurves: ( -1 -1 -1 -1 )
+    PrevCurves: ( 17 11 -1 -1 )
+
+    Length: &400145c0
+
+    Bezier {
+        Start {
+            Position: ( &c28608ea  &369f98e4  &c17c0001 )
+            Rotation: ( &3f3504f2  &28d55297  &3f3504f4  &a807c3b6 )
+        }
+        End {
+            Position: ( &c28a1318  &369f98e4  &c17c0001 )
+            Rotation: ( &3f3504f2  &28d55297  &3f3504f4  &a807c3b6 )
+        }
+    }
+}
+Curve {
+    Index: 14
+    # start locator: 'Nav_Point_11'
+    Name: "nav_point_11"
+
+    Flags: 32
+
+    LeadsToNodes: 16843010
+
+    NextCurves: ( 5 -1 -1 -1 )
+    PrevCurves: ( 7 -1 -1 -1 )
+
+    Length: &41858687
+
+    Bezier {
+        Start {
+            Position: ( &41d44360  &3726cda4  &c203b069 )
+            Rotation: ( &3f4d2fa2  &a61fb2ef  &3f19157a  &00000000 )
+        }
+        End {
+            Position: ( &412137f6  &3733091c  &c20d58aa )
+            Rotation: ( &3f3504f2  &28d55297  &3f3504f4  &a807c3b6 )
+        }
+    }
+}
+Curve {
+    Index: 15
+    # start locator: 'Nav_Point_2'
+    Name: "nav_point_2"
+
+    Flags: 64
+
+    LeadsToNodes: 16843010
+
+    SemaphoreID: 0
+
+    NextCurves: ( 8 -1 -1 -1 )
+    PrevCurves: ( 22 -1 -1 -1 )
+
+    Length: &3eebfb74
+
+    Bezier {
+        Start {
+            Position: ( &40052b22  &3717a811  &c1ef763a )
+            Rotation: ( &3f3718a0  &a8186699  &3f32eb1b  &a732f74e )
+        }
+        End {
+            Position: ( &3fcf5966  &3717b0e3  &c1ef8427 )
+            Rotation: ( &3f3504f2  &28d55297  &3f3504f4  &a807c3b6 )
+        }
+    }
+}
+Curve {
+    Index: 16
+    # start locator: 'Nav_Point_9'
+    Name: "nav_point_9"
+
+    Flags: 96
+
+    LeadsToNodes: 16843010
+
+    NextCurves: ( 20 -1 -1 -1 )
+    PrevCurves: ( 3 12 -1 -1 )
+
+    Length: &3fc4d11a
+
+    Bezier {
+        Start {
+            Position: ( &c1c641c8  &36f6ec7c  &c1c2f176 )
+            Rotation: ( &3f1bda97  &a7523f8c  &3f4b170e  &a7d23f8c )
+        }
+        End {
+            Position: ( &c1d231e3  &36f32b01  &c1bffa63 )
+            Rotation: ( &3f1bda97  &a7523f8c  &3f4b170e  &a7d23f8c )
+        }
+    }
+}
+Curve {
+    Index: 17
+    # start locator: 'Nav_Point_3'
+    Name: "nav_point_3"
+
+    Flags: 786528
+
+    LeadsToNodes: 16843010
+
+    NextCurves: ( 13 -1 -1 -1 )
+    PrevCurves: ( 9 -1 -1 -1 )
+
+    Length: &41fdc3b0
+
+    Bezier {
+        Start {
+            Position: ( &c20d2ffc  &369f98e4  &c17c0001 )
+            Rotation: ( &3f3504f2  &28d55297  &3f3504f4  &a807c3b6 )
+        }
+        End {
+            Position: ( &c28608ea  &369f98e4  &c17c0001 )
+            Rotation: ( &3f3504f2  &28d55297  &3f3504f4  &a807c3b6 )
+        }
+    }
+}
+Curve {
+    Index: 18
+    # start locator: 'Nav_Point_8'
+    Name: "nav_point_8"
+
+    Flags: 40
+
+    LeadsToNodes: 16843010
+
+    NextCurves: ( 7 -1 -1 -1 )
+    PrevCurves: ( 0 -1 -1 -1 )
+
+    Length: &4186404b
+
+    Bezier {
+        Start {
+            Position: ( &42828c68  &369f98e4  &c17c0001 )
+            Rotation: ( &3f3504f2  &28d55297  &3f3504f4  &a807c3b6 )
+        }
+        End {
+            Position: ( &4244aba4  &36c975c0  &c19f0cd4 )
+            Rotation: ( &3f5a3412  &00000000  &3f05e0ba  &00000000 )
+        }
+    }
+}
+Curve {
+    Index: 19
+    # start locator: 'Nav_Point_41'
+    Name: "nav_point_41"
+
+    Flags: 32
+
+    LeadsToNodes: 16843010
+
+    NextCurves: ( 3 -1 -1 -1 )
+    PrevCurves: ( 2 -1 -1 -1 )
+
+    Length: &410c5bd9
+
+    Bezier {
+        Start {
+            Position: ( &3fd0cbd9  &3732c9a5  &c20d268f )
+            Rotation: ( &3f3504f2  &28d55297  &3f3504f4  &a807c3b6 )
+        }
+        End {
+            Position: ( &c0e07a72  &372cbaf9  &c2085e53 )
+            Rotation: ( &3f13610c  &a75e5697  &3f515241  &275e5693 )
+        }
+    }
+}
+Curve {
+    Index: 20
+    # start locator: 'Nav_Point_10'
+    Name: "nav_point_10"
+
+    Flags: 96
+
+    LeadsToNodes: 16843010
+
+    NextCurves: ( 11 -1 -1 -1 )
+    PrevCurves: ( 16 -1 -1 -1 )
+
+    Length: &418bf3e7
+
+    Bezier {
+        Start {
+            Position: ( &c1d231e3  &36f32b01  &c1bffa63 )
+            Rotation: ( &3f1bda97  &a7523f8c  &3f4b170e  &a7d23f8c )
+        }
+        End {
+            Position: ( &c22c54c6  &36c2421c  &c1995d4c )
+            Rotation: ( &3f21b899  &a7b14afc  &3f467321  &a87d468c )
+        }
+    }
+}
+Curve {
+    Index: 21
+    # start locator: 'Nav_Point_8'
+    Name: "nav_point_8"
+
+    Flags: 72
+
+    LeadsToNodes: 16843010
+
+    NextCurves: ( 23 -1 -1 -1 )
+    PrevCurves: ( 0 -1 -1 -1 )
+
+    Length: &40999310
+
+    Bezier {
+        Start {
+            Position: ( &42828c68  &369f98e4  &c17c0001 )
+            Rotation: ( &3f3504f2  &28d55297  &3f3504f4  &a807c3b6 )
+        }
+        End {
+            Position: ( &4271e66e  &369f98e4  &c17c0001 )
+            Rotation: ( &3f3504f2  &28d55297  &3f3504f4  &a807c3b6 )
+        }
+    }
+}
+Curve {
+    Index: 22
+    # start locator: 'Nav_Point_1'
+    Name: "nav_point_1"
+
+    Flags: 64
+
+    LeadsToNodes: 16843010
+
+    NextCurves: ( 15 -1 -1 -1 )
+    PrevCurves: ( 10 -1 -1 -1 )
+
+    Length: &4193aa10
+
+    Bezier {
+        Start {
+            Position: ( &41a3be86  &37112769  &c1e531c6 )
+            Rotation: ( &3f45e6eb  &00000000  &3f22640f  &00000000 )
+        }
+        End {
+            Position: ( &40052b22  &3717a811  &c1ef763a )
+            Rotation: ( &3f3718a0  &a8186699  &3f32eb1b  &a732f74e )
+        }
+    }
+}
+Curve {
+    Index: 23
+    # start locator: 'Nav_Point_14'
+    Name: "nav_point_14"
+
+    Flags: 72
+
+    LeadsToNodes: 16843010
+
+    NextCurves: ( 10 -1 -1 -1 )
+    PrevCurves: ( 21 -1 -1 -1 )
+
+    Length: &41cf7269
+
+    Bezier {
+        Start {
+            Position: ( &4271e66e  &369f98e4  &c17c0001 )
+            Rotation: ( &3f3504f2  &28d55297  &3f3504f4  &a807c3b6 )
+        }
+        End {
+            Position: ( &420ef464  &36e6ad54  &c1b61ddc )
+            Rotation: ( &3f5883cf  &a71757cb  &3f08977d  &27e303b1 )
+        }
+    }
+}
+Sign {
+    Name: "PrefabLoc19"
+    Position: ( &423fa380  &bbc65718  &c1cd1dc4 )
+    Rotation: ( &3f62917d  &2690a0a1  &3eee59db  &00000000 )
+    Model: "dlc_no_2"
+    Part: "sc"
+}
+Sign {
+    Name: "PrefabLoc175"
+    Position: ( &c274c87e  &bbb7dfd5  &c1aa59c3 )
+    Rotation: ( &3f1fd406  &a64d0527  &3f47fa34  &00000000 )
+    Model: "1328"
+    Part: "nor"
+}
+Sign {
+    Name: "PrefabLoc15"
+    Position: ( &c1f681a6  &bbc634d4  &c21caae2 )
+    Rotation: ( &3ee3a6e3  &270ff066  &3f654d73  &00000000 )
+    Model: "dlc_no_2"
+    Part: "sc"
+}
+Sign {
+    Name: "PrefabLoc188"
+    Position: ( &4127d441  &40d3ea12  &c1e26250 )
+    Rotation: ( &3f800000  &00000000  &00000000  &00000000 )
+    Model: "dlc_no_256"
+    Part: "sc"
+}
+Sign {
+    Name: "PrefabLoc181"
+    Position: ( &c15d7e9f  &3dc95720  &c19ca8e8 )
+    Rotation: ( &3f349546  &a59ec649  &bf35745c  &00000000 )
+    Model: "1277"
+    Part: "swe"
+}
+Sign {
+    Name: "PrefabLoc17"
+    Position: ( &41d67108  &bbc63158  &c2222b58 )
+    Rotation: ( &3f4a7fdd  &2621d156  &3f1c9ed6  &00000000 )
+    Model: "dlc_no_2"
+    Part: "sc"
+}
+Sign {
+    Name: "PrefabLoc183"
+    Position: ( &c0fea0c2  &3dc58a8b  &c19ca8e8 )
+    Rotation: ( &3f35745c  &a659443d  &3f349546  &00000000 )
+    Model: "1283"
+    Part: "swe"
+}
+Sign {
+    Name: "PrefabLoc177"
+    Position: ( &c1e7afc9  &bbc631f8  &c2212f39 )
+    Rotation: ( &3f1fd406  &a64d0527  &3f47fa34  &00000000 )
+    Model: "1352"
+    Part: "nor"
+}
+Sign {
+    Name: "PrefabLoc168"
+    Position: ( &419e50aa  &3c2e96ea  &c2267a5b )
+    Rotation: ( &248d3132  &00000000  &3f800000  &00000000 )
+    Model: "dlc_no_96"
+    Part: "sc"
+}
+Sign {
+    Name: "PrefabLoc50"
+    Position: ( &c15d7e9f  &3dc6cb95  &c1b522ca )
+    Rotation: ( &3b1dbe6e  &24c00023  &3f7fffd0  &00000000 )
+    Model: "1225"
+    Part: "dk"
+}
+Sign {
+    Name: "PrefabLoc174"
+    Position: ( &c274c87e  &bbb7dfd5  &c1aa59c3 )
+    Rotation: ( &3f1fd406  &a64d0527  &3f47fa34  &00000000 )
+    Model: "1265"
+    Part: "swe"
+}
+Sign {
+    Name: "PrefabLoc186"
+    Position: ( &408656fc  &40d3ea16  &c1f7a57f )
+    Rotation: ( &3f3504f2  &28d55297  &bf3504f4  &2807c3b6 )
+    Model: "dlc_no_256"
+    Part: "sc"
+}
+Sign {
+    Name: "PrefabLoc185"
+    Position: ( &41289edd  &40e9dd4d  &c1f7a57f )
+    Rotation: ( &26a8d313  &00000000  &3f800000  &00000000 )
+    Model: "dlc_no_255"
+    Part: "sc"
+}
+Sign {
+    Name: "PrefabLoc171"
+    Position: ( &415b3448  &3e98ffe1  &c1ac8a23 )
+    Rotation: ( &3f3504f2  &28d55297  &3f3504f4  &a807c3b6 )
+    Model: "dlc_no_127"
+    Part: "sc"
+}
+Sign {
+    Name: "PrefabLoc47"
+    Position: ( &c15d7e9f  &3dc95720  &c19ca8e8 )
+    Rotation: ( &3f349546  &a59ec649  &bf35745c  &00000000 )
+    Model: "1237"
+    Part: "dk"
+}
+Sign {
+    Name: "PrefabLoc44"
+    Position: ( &c28ba382  &bbc685ec  &c0e4fdc7 )
+    Rotation: ( &3f349546  &a59ec649  &bf35745c  &00000000 )
+    Model: "1242"
+    Part: "dk"
+}
+Sign {
+    Name: "PrefabLoc42"
+    Position: ( &428a0491  &bbc664e0  &c1a19871 )
+    Rotation: ( &3f35745c  &a659443d  &3f349546  &00000000 )
+    Model: "1224"
+    Part: "dk"
+}
+Sign {
+    Name: "PrefabLoc184"
+    Position: ( &c0fea0c2  &3dc58a8b  &c19ca8e8 )
+    Rotation: ( &3f35745c  &a659443d  &3f349546  &00000000 )
+    Model: "1351"
+    Part: "nor"
+}
+Sign {
+    Name: "PrefabLoc167"
+    Position: ( &4192fac9  &3dcad19b  &c22575ab )
+    Rotation: ( &248d3132  &00000000  &3f800000  &00000000 )
+    Model: "dlc_no_105"
+    Part: "sc"
+}
+Sign {
+    Name: "PrefabLoc35"
+    Position: ( &406b146e  &bbc65f1c  &c1b3ce1e )
+    Rotation: ( &3f345886  &a76ba2df  &bf35b0bd  &2735b206 )
+    Model: "dlc_no_2"
+    Part: "sc"
+}
+Sign {
+    Name: "PrefabLoc169"
+    Position: ( &c1e7afc9  &bbc631f8  &c2212f39 )
+    Rotation: ( &3f1fd406  &a64d0527  &3f47fa34  &00000000 )
+    Model: "1244"
+    Part: "dk"
+}
+Sign {
+    Name: "PrefabLoc166"
+    Position: ( &c0afae00  &bb868f2a  &c222ec21 )
+    Rotation: ( &248d3132  &00000000  &3f800000  &00000000 )
+    Model: "dlc_no_117"
+    Part: "sc"
+}
+Sign {
+    Name: "PrefabLoc49"
+    Position: ( &c274c87e  &bbc6621c  &c1aa59c3 )
+    Rotation: ( &3f1fd406  &a64d0527  &3f47fa34  &00000000 )
+    Model: "1225"
+    Part: "dk"
+}
+Sign {
+    Name: "PrefabLoc179"
+    Position: ( &c15d7e9f  &3dc6cb95  &c1b522ca )
+    Rotation: ( &3b1dbe6e  &24c00023  &3f7fffd0  &00000000 )
+    Model: "1265"
+    Part: "swe"
+}
+Sign {
+    Name: "PrefabLoc173"
+    Position: ( &c28ba382  &bbc685ec  &c0e4fdc7 )
+    Rotation: ( &3f349546  &a59ec649  &bf35745c  &00000000 )
+    Model: "1350"
+    Part: "nor"
+}
+Sign {
+    Name: "PrefabLoc176"
+    Position: ( &c1e7afc9  &bbc631f8  &c2212f39 )
+    Rotation: ( &3f1fd406  &a64d0527  &3f47fa34  &00000000 )
+    Model: "1284"
+    Part: "swe"
+}
+Sign {
+    Name: "PrefabLoc32"
+    Position: ( &c24ed0cf  &bbc659e4  &c1c449b7 )
+    Rotation: ( &3ef77827  &a82583f7  &3f601c6b  &a8046990 )
+    Model: "dlc_no_2"
+    Part: "sc"
+}
+Sign {
+    Name: "PrefabLoc178"
+    Position: ( &428a0491  &bbc664e0  &c1a19871 )
+    Rotation: ( &3f35745c  &a659443d  &3f349546  &00000000 )
+    Model: "1327"
+    Part: "nor"
+}
+Sign {
+    Name: "PrefabLoc187"
+    Position: ( &4187dda7  &40d3ea16  &c1f7a57f )
+    Rotation: ( &3f3504f2  &28d55297  &3f3504f4  &a807c3b6 )
+    Model: "dlc_no_256"
+    Part: "sc"
+}
+Sign {
+    Name: "PrefabLoc172"
+    Position: ( &c28ba382  &bbc685ec  &c0e4fdc7 )
+    Rotation: ( &3f349546  &a59ec649  &bf35745c  &00000000 )
+    Model: "1282"
+    Part: "swe"
+}
+Sign {
+    Name: "PrefabLoc46"
+    Position: ( &c0fea0c2  &3dc58a8b  &c19ca8e8 )
+    Rotation: ( &3f35745c  &a659443d  &3f349546  &00000000 )
+    Model: "1243"
+    Part: "dk"
+}
+Sign {
+    Name: "PrefabLoc182"
+    Position: ( &c15d7e9f  &3dc95720  &c19ca8e8 )
+    Rotation: ( &3f349546  &a59ec649  &bf35745c  &00000000 )
+    Model: "1345"
+    Part: "nor"
+}
+Sign {
+    Name: "PrefabLoc165"
+    Position: ( &c072f2fc  &bb868f2a  &c222ec21 )
+    Rotation: ( &248d3132  &00000000  &3f800000  &00000000 )
+    Model: "dlc_no_115"
+    Part: "sc"
+}
+Sign {
+    Name: "PrefabLoc180"
+    Position: ( &c15d7e9f  &3dc6cb95  &c1b522ca )
+    Rotation: ( &3b1dbe6e  &24c00023  &3f7fffd0  &00000000 )
+    Model: "1328"
+    Part: "nor"
+}
+SpawnPoint {
+    Name: "PrefabLoc31"
+    Position: ( &4103d326  &3d5d2690  &c1eb26e7 )
+    Rotation: ( &3f3504f2  &28d55297  &3f3504f4  &a807c3b6 )
+    Type: 3
+}
+Semaphore {
+    Position: ( &413cbd4f  &375f487b  &c24072ac )
+    Rotation: ( &3f3504f2  &28d55297  &3f3504f4  &a807c3b6 )
+    Type: 0
+    SemaphoreID: 1
+    Intervals: ( &3f800000  &40c00000  &40c00000  &40c00000 )
+    Cycle: &00000000
+    Profile: "gas_car"
+}
+Semaphore {
+    Position: ( &413cbd4f  &37522eaf  &c2361ae3 )
+    Rotation: ( &3f3504f2  &28d55297  &3f3504f4  &a807c3b6 )
+    Type: 0
+    SemaphoreID: 0
+    Intervals: ( &3f800000  &40c00000  &40a00000  &40c00000 )
+    Cycle: &00000000
+    Profile: "gas_truck"
+}
+MapPoint {
+    Index: 0
+    MapVisualFlags: 1641728
+    MapNavFlags: 0
+    Position: ( &4184cc61  &00000000  &c199d8ec )
+    Neighbours: ( 1 2 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 18
+    MapVisualFlags: 3328
+    MapNavFlags: 0
+    Position: ( &41a86933  &00000000  &c1540000 )
+    Neighbours: ( 19 20 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 6
+    MapVisualFlags: 3328
+    MapNavFlags: 0
+    Position: ( &c28a194f  &00000000  &c1540000 )
+    Neighbours: ( 7 8 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 9
+    MapVisualFlags: 3328
+    MapNavFlags: 0
+    Position: ( &c1b4f6e9  &00000000  &c229ae51 )
+    Neighbours: ( 10 11 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 12
+    MapVisualFlags: 3328
+    MapNavFlags: 0
+    Position: ( &4273cdbf  &00000000  &c1540000 )
+    Neighbours: ( 13 14 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 15
+    MapVisualFlags: 3328
+    MapNavFlags: 0
+    Position: ( &4244e762  &00000000  &c1cb8e51 )
+    Neighbours: ( 16 17 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 3
+    MapVisualFlags: 3328
+    MapNavFlags: 0
+    Position: ( &c22c12d6  &00000000  &c1540000 )
+    Neighbours: ( 4 5 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 7
+    MapVisualFlags: 3328
+    MapNavFlags: 0
+    Position: ( &c2590f24  &00000000  &c1540000 )
+    Neighbours: ( 6 27 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 21
+    MapVisualFlags: 3328
+    MapNavFlags: 0
+    Position: ( &41ec5c43  &00000000  &c1540000 )
+    Neighbours: ( 22 23 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 24
+    MapVisualFlags: 3328
+    MapNavFlags: 0
+    Position: ( &c22c12d6  &00000000  &c1e84527 )
+    Neighbours: ( 25 26 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 27
+    MapVisualFlags: 3328
+    MapNavFlags: 0
+    Position: ( &c2590f24  &00000000  &c1bc3de0 )
+    Neighbours: ( 8 7 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 28
+    MapVisualFlags: 3328
+    MapNavFlags: 0
+    Position: ( &c2018886  &00000000  &c1540000 )
+    Neighbours: ( 11 10 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 4
+    MapVisualFlags: 3328
+    MapNavFlags: 0
+    Position: ( &c2018886  &00000000  &c1540000 )
+    Neighbours: ( 3 29 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 30
+    MapVisualFlags: 3328
+    MapNavFlags: 0
+    Position: ( &4244e762  &00000000  &c1cb8e51 )
+    Neighbours: ( 13 14 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 19
+    MapVisualFlags: 3328
+    MapNavFlags: 0
+    Position: ( &41ec5c43  &00000000  &c1540000 )
+    Neighbours: ( 18 31 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 32
+    MapVisualFlags: 1379584
+    MapNavFlags: 0
+    Position: ( &408830ab  &00000000  &c234aba5 )
+    Neighbours: ( 33 34 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 33
+    MapVisualFlags: 1379584
+    MapNavFlags: 0
+    Position: ( &408830ab  &00000000  &c1e28731 )
+    Neighbours: ( 32 35 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 35
+    MapVisualFlags: 1379584
+    MapNavFlags: 0
+    Position: ( &4186d6a4  &00000000  &c1e28731 )
+    Neighbours: ( 34 33 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 39
+    MapVisualFlags: 3328
+    MapNavFlags: 0
+    Position: ( &c1b4f6e9  &00000000  &c1540000 )
+    Neighbours: ( 40 41 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 48
+    MapVisualFlags: 3328
+    MapNavFlags: 0
+    Position: ( &428a1363  &00000000  &c19073c8 )
+    Neighbours: ( 38 37 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 25
+    MapVisualFlags: 3328
+    MapNavFlags: 0
+    Position: ( &c2590f24  &00000000  &c1bc3de0 )
+    Neighbours: ( 42 24 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 26
+    MapVisualFlags: 3328
+    MapNavFlags: 0
+    Position: ( &c22c12d6  &00000000  &c1540000 )
+    Neighbours: ( 24 42 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 50
+    MapVisualFlags: 3584
+    MapNavFlags: 769
+    Position: ( &428a199a  &00000000  &c1580001 )
+    Neighbours: ( 51 -1 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 16
+    MapVisualFlags: 3328
+    MapNavFlags: 0
+    Position: ( &4244e762  &00000000  &c1540000 )
+    Neighbours: ( 43 15 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 5
+    MapVisualFlags: 3328
+    MapNavFlags: 0
+    Position: ( &c22c12d6  &00000000  &c1e84527 )
+    Neighbours: ( 29 3 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 43
+    MapVisualFlags: 3328
+    MapNavFlags: 0
+    Position: ( &421e23c2  &00000000  &c1540000 )
+    Neighbours: ( 16 17 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 40
+    MapVisualFlags: 3328
+    MapNavFlags: 0
+    Position: ( &41a86933  &00000000  &c1540000 )
+    Neighbours: ( 39 44 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 31
+    MapVisualFlags: 3328
+    MapNavFlags: 0
+    Position: ( &41ec5c43  &00000000  &c21f4a62 )
+    Neighbours: ( 20 19 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 8
+    MapVisualFlags: 3328
+    MapNavFlags: 0
+    Position: ( &c28a194f  &00000000  &c1934059 )
+    Neighbours: ( 6 27 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 42
+    MapVisualFlags: 3328
+    MapNavFlags: 0
+    Position: ( &c2590f24  &00000000  &c1540000 )
+    Neighbours: ( 25 26 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 10
+    MapVisualFlags: 3328
+    MapNavFlags: 0
+    Position: ( &c2018886  &00000000  &c2174af6 )
+    Neighbours: ( 9 28 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 13
+    MapVisualFlags: 3328
+    MapNavFlags: 0
+    Position: ( &4273cdbf  &00000000  &c1a8244a )
+    Neighbours: ( 30 12 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 45
+    MapVisualFlags: 1641728
+    MapNavFlags: 0
+    Position: ( &c17f94e0  &00000000  &c1bf230e )
+    Neighbours: ( 2 1 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 11
+    MapVisualFlags: 3328
+    MapNavFlags: 0
+    Position: ( &c1b4f6e9  &00000000  &c1540000 )
+    Neighbours: ( 28 9 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 14
+    MapVisualFlags: 3328
+    MapNavFlags: 0
+    Position: ( &4244e762  &00000000  &c1540000 )
+    Neighbours: ( 30 12 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 29
+    MapVisualFlags: 3328
+    MapNavFlags: 0
+    Position: ( &c2018886  &00000000  &c2174af6 )
+    Neighbours: ( 5 4 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 46
+    MapVisualFlags: 256
+    MapNavFlags: 257
+    Position: ( &428a199a  &00000000  &c1580001 )
+    Neighbours: ( 47 -1 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 38
+    MapVisualFlags: 3328
+    MapNavFlags: 0
+    Position: ( &4273cdbf  &00000000  &c1a8244a )
+    Neighbours: ( 48 36 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 44
+    MapVisualFlags: 3328
+    MapNavFlags: 0
+    Position: ( &41a86933  &00000000  &c22aa633 )
+    Neighbours: ( 41 40 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 37
+    MapVisualFlags: 3328
+    MapNavFlags: 0
+    Position: ( &428a1363  &00000000  &c1540000 )
+    Neighbours: ( 36 48 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 47
+    MapVisualFlags: 256
+    MapNavFlags: 258
+    Position: ( &c28a199a  &00000000  &c1580001 )
+    Neighbours: ( 46 -1 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 1
+    MapVisualFlags: 1641728
+    MapNavFlags: 0
+    Position: ( &41b53162  &00000000  &c1bf230e )
+    Neighbours: ( 0 45 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 2
+    MapVisualFlags: 1641728
+    MapNavFlags: 0
+    Position: ( &c17f94e0  &00000000  &c199d8ec )
+    Neighbours: ( 45 0 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 49
+    MapVisualFlags: 3328
+    MapNavFlags: 0
+    Position: ( &421e23c2  &00000000  &c1fd53c3 )
+    Neighbours: ( 22 23 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 20
+    MapVisualFlags: 3328
+    MapNavFlags: 0
+    Position: ( &41a86933  &00000000  &c22aa633 )
+    Neighbours: ( 18 31 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 17
+    MapVisualFlags: 3328
+    MapNavFlags: 0
+    Position: ( &421e23c2  &00000000  &c1fd53c3 )
+    Neighbours: ( 43 15 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 34
+    MapVisualFlags: 1379584
+    MapNavFlags: 0
+    Position: ( &4186d6a4  &00000000  &c234aba5 )
+    Neighbours: ( 35 32 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 23
+    MapVisualFlags: 3328
+    MapNavFlags: 0
+    Position: ( &41ec5c43  &00000000  &c21f4a62 )
+    Neighbours: ( 21 49 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 41
+    MapVisualFlags: 3328
+    MapNavFlags: 0
+    Position: ( &c1b4f6e9  &00000000  &c229ae51 )
+    Neighbours: ( 44 39 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 51
+    MapVisualFlags: 3584
+    MapNavFlags: 770
+    Position: ( &c28a199a  &00000000  &c1580001 )
+    Neighbours: ( 50 -1 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 36
+    MapVisualFlags: 3328
+    MapNavFlags: 0
+    Position: ( &4273cdbf  &00000000  &c1540000 )
+    Neighbours: ( 37 38 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 22
+    MapVisualFlags: 3328
+    MapNavFlags: 0
+    Position: ( &421e23c2  &00000000  &c1540000 )
+    Neighbours: ( 21 49 -1 -1 -1 -1 )
+}
+TriggerPoint {
+    Index: 0
+    TriggerID: 0
+    TriggerAction: "hud_parking"
+    TriggerRange: 3.0
+    TriggerResetDelay: 0.0
+    TriggerResetDist: 0.0
+    Flags: 0
+    Position: ( &c230bce8  &3711d79c  &c1e647fd )
+    Neighbours: ( 1 2 )
+}
+TriggerPoint {
+    Index: 1
+    TriggerID: 0
+    TriggerAction: "hud_parking"
+    TriggerRange: 3.0
+    TriggerResetDelay: 0.0
+    TriggerResetDist: 0.0
+    Flags: 0
+    Position: ( &c223aa3d  &36ef02b9  &c1bcb226 )
+    Neighbours: ( 0 3 )
+}
+TriggerPoint {
+    Index: 3
+    TriggerID: 0
+    TriggerAction: "hud_parking"
+    TriggerRange: 3.0
+    TriggerResetDelay: 0.0
+    TriggerResetDist: 0.0
+    Flags: 0
+    Position: ( &c1b16df9  &373a69ff  &c2132beb )
+    Neighbours: ( 2 1 )
+}
+TriggerPoint {
+    Index: 2
+    TriggerID: 0
+    TriggerAction: "hud_parking"
+    TriggerRange: 3.0
+    TriggerResetDelay: 0.0
+    TriggerResetDist: 0.0
+    Flags: 0
+    Position: ( &c1d88ebf  &37549c09  &c227da40 )
+    Neighbours: ( 3 0 )
+}
+Intersection {
+    # curve start locator: 'Nav_Point_7'
+    InterCurveID: 0
+    InterPosition: 0.0
+    InterRadius: 24.1
+    Flags: 65568
+}
+Intersection {
+    # curve start locator: 'Nav_Point_7'
+    InterCurveID: 1
+    InterPosition: 0.0
+    InterRadius: 24.1
+    Flags: 0
+}
+Intersection {
+    # curve start locator: 'Nav_Point_8'
+    InterCurveID: 18
+    InterPosition: 0.0
+    InterRadius: 25.3
+    Flags: 65568
+}
+Intersection {
+    # curve start locator: 'Nav_Point_8'
+    InterCurveID: 21
+    InterPosition: 0.0
+    InterRadius: 25.3
+    Flags: 0
+}
+Intersection {
+    # curve start locator: 'Nav_Point_17'
+    InterCurveID: 3
+    InterPosition: 20.338761
+    InterRadius: 16.1
+    Flags: 131104
+}
+Intersection {
+    # curve start locator: 'Nav_Point_6'
+    InterCurveID: 12
+    InterPosition: 18.633141
+    InterRadius: 16.1
+    Flags: 0
+}
+Intersection {
+    # curve start locator: 'Nav_Point_15'
+    InterCurveID: 11
+    InterPosition: 24.223303
+    InterRadius: 26.8
+    Flags: 131104
+}
+Intersection {
+    # curve start locator: 'Nav_Point_3'
+    InterCurveID: 17
+    InterPosition: 31.720551
+    InterRadius: 26.8
+    Flags: 0
+}
+

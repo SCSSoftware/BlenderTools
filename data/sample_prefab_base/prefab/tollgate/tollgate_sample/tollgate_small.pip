@@ -1,0 +1,2262 @@
+Header {
+    FormatVersion: 2
+    Source: "Blender 2.76.0 (hash: 48f7dd6), SCS Blender Tools: 1.0.27abe27"
+    Type: "Prefab"
+    Name: "tollgate_small"
+}
+Global {
+    NodeCount: 2
+    TerrainPointCount: 162
+    TerrainPointVariantCount: 6
+    NavCurveCount: 27
+    SignCount: 94
+    SpawnPointCount: 0
+    SemaphoreCount: 4
+    MapPointCount: 62
+    TriggerPointCount: 0
+    IntersectionCount: 8
+}
+Node {
+    Index: 0
+    Position: ( &428a199a  &383d0dfe  &c1580001 )
+    Direction: ( &bf7fffff  &b4caa9c8  &34200001 )
+    InputLanes: ( 6 -1 -1 -1 -1 -1 -1 -1 )
+    OutputLanes: ( 5 -1 -1 -1 -1 -1 -1 -1 )
+
+    TerrainPointCount: 81
+    TerrainPointVariantCount: 3
+    StreamCount: 3
+    Stream {
+        Format: FLOAT3
+        Tag: "_POSITION"
+        0    ( &428a199a  &36fd60c5  &c1a00000 )
+        1    ( &428125cb  &3be8428c  &c1a8196b )
+        2    ( &426ab029  &3be29b84  &c1b4cf73 )
+        3    ( &42534d3d  &3bdb9455  &c1c68af2 )
+        4    ( &42428425  &3bd6083e  &c1d7c16c )
+        5    ( &42318d33  &3bc75d2f  &c1ec79a3 )
+        6    ( &4221a93e  &3b762e1c  &c2018dff )
+        7    ( &4212b186  &374c2612  &c20de2f5 )
+        8    ( &42060159  &375c63a2  &c218216c )
+        9    ( &41f53145  &37691724  &c220270a )
+        10   ( &41dac933  &37743eee  &c22732bc )
+        11   ( &41c168e4  &377bb8bc  &c22beb78 )
+        12   ( &41a23d71  &377f3ca7  &c22e23d9 )
+        13   ( &3d1a4e14  &3792d187  &c22e23d9 )
+        14   ( &c1a23d73  &37ba7f9a  &c22e23d9 )
+        15   ( &c1c168e6  &37b8bda4  &c22beb78 )
+        16   ( &c1dac935  &37a085dd  &c22732bc )
+        17   ( &c1f53146  &379af1f8  &c220270a )
+        18   ( &c206015a  &37949838  &c218216d )
+        19   ( &c212b187  &378c7c22  &c20de2f5 )
+        20   ( &c221a93e  &3b769f09  &c2018dff )
+        21   ( &c2318d34  &3bc76f83  &c1ec79a3 )
+        22   ( &c2428426  &3bd60b2b  &c1d7c16c )
+        23   ( &c2534d3e  &3bdbb26f  &c1c68af2 )
+        24   ( &c26ab02a  &3be2b5a4  &c1b4cf73 )
+        25   ( &c28125cc  &3be85eb4  &c1a8196b )
+        26   ( &c28a199a  &3736fc05  &c1a00000 )
+        27   ( &428a199a  &36fd60c5  &c1a00000 )
+        28   ( &428125cb  &3be8428c  &c1a8196b )
+        29   ( &426ab029  &3be29b84  &c1b4cf73 )
+        30   ( &42534d3d  &3bdb9455  &c1c68af2 )
+        31   ( &42428425  &3bd6083e  &c1d7c16c )
+        32   ( &42318d33  &3bc75d2f  &c1ec79a3 )
+        33   ( &4221a93e  &3b762e1c  &c2018dff )
+        34   ( &4212b186  &374c2612  &c20de2f5 )
+        35   ( &42060159  &375c63a2  &c218216c )
+        36   ( &41f53145  &37691724  &c220270a )
+        37   ( &41dac933  &37743eee  &c22732bc )
+        38   ( &41c168e4  &377bb8bc  &c22beb78 )
+        39   ( &41a23d71  &377f3ca7  &c22e23d9 )
+        40   ( &3d1a4e14  &3792d187  &c22e23d9 )
+        41   ( &c1a23d73  &37ba7f9a  &c22e23d9 )
+        42   ( &c1c168e6  &37b8bda4  &c22beb78 )
+        43   ( &c1dac935  &37a085dd  &c22732bc )
+        44   ( &c1f53146  &379af1f8  &c220270a )
+        45   ( &c206015a  &37949838  &c218216d )
+        46   ( &c212b187  &378c7c22  &c20de2f5 )
+        47   ( &c221a93e  &3b769f09  &c2018dff )
+        48   ( &c2318d34  &3bc76f83  &c1ec79a3 )
+        49   ( &c2428426  &3bd60b2b  &c1d7c16c )
+        50   ( &c2534d3e  &3bdbb26f  &c1c68af2 )
+        51   ( &c26ab02a  &3be2b5a4  &c1b4cf73 )
+        52   ( &c28125cc  &3be85eb4  &c1a8196b )
+        53   ( &c28a199a  &3736fc05  &c1a00000 )
+        54   ( &428a199a  &36fd60c5  &c1a00000 )
+        55   ( &428125cb  &3be8428c  &c1a8196b )
+        56   ( &426ab029  &3be29b84  &c1b4cf73 )
+        57   ( &42534d3d  &3bdb9455  &c1c68af2 )
+        58   ( &42428425  &3bd6083e  &c1d7c16c )
+        59   ( &42318d33  &3bc75d2f  &c1ec79a3 )
+        60   ( &4221a93e  &3b762e1c  &c2018dff )
+        61   ( &4212b186  &374c2612  &c20de2f5 )
+        62   ( &42060159  &375c63a2  &c218216c )
+        63   ( &41f53145  &37691724  &c220270a )
+        64   ( &41dac933  &37743eee  &c22732bc )
+        65   ( &41c168e4  &377bb8bc  &c22beb78 )
+        66   ( &41a23d71  &377f3ca7  &c22e23d9 )
+        67   ( &3d1a4e14  &3792d187  &c22e23d9 )
+        68   ( &c1a23d73  &37ba7f9a  &c22e23d9 )
+        69   ( &c1c168e6  &37b8bda4  &c22beb78 )
+        70   ( &c1dac935  &37a085dd  &c22732bc )
+        71   ( &c1f53146  &379af1f8  &c220270a )
+        72   ( &c206015a  &37949838  &c218216d )
+        73   ( &c212b187  &378c7c22  &c20de2f5 )
+        74   ( &c221a93e  &3b769f09  &c2018dff )
+        75   ( &c2318d34  &3bc76f83  &c1ec79a3 )
+        76   ( &c2428426  &3bd60b2b  &c1d7c16c )
+        77   ( &c2534d3e  &3bdbb26f  &c1c68af2 )
+        78   ( &c26ab02a  &3be2b5a4  &c1b4cf73 )
+        79   ( &c28125cc  &3be85eb4  &c1a8196b )
+        80   ( &c28a199a  &3736fc05  &c1a00000 )
+    }
+    Stream {
+        Format: FLOAT3
+        Tag: "_NORMAL"
+        0    ( &b833f0b0  &3f800000  &3861d8ae )
+        1    ( &b833f0b0  &3f800000  &3861d8ae )
+        2    ( &b833f0b0  &3f800000  &3861d8ae )
+        3    ( &b833f0b0  &3f800000  &3861d8ae )
+        4    ( &b833f0b0  &3f800000  &3861d8ae )
+        5    ( &b833f0b0  &3f800000  &3861d8ae )
+        6    ( &b833f0b0  &3f800000  &3861d8ae )
+        7    ( &b833f0b0  &3f800000  &3861d8ae )
+        8    ( &b833f0b0  &3f800000  &3861d8ae )
+        9    ( &b833f0b0  &3f800000  &3861d8ae )
+        10   ( &b833f0b0  &3f800000  &3861d8ae )
+        11   ( &b833f0b0  &3f800000  &3861d8ae )
+        12   ( &b833f0b0  &3f800000  &3861d8ae )
+        13   ( &b833f0b0  &3f800000  &3861d8ae )
+        14   ( &b833f0b0  &3f800000  &3861d8ae )
+        15   ( &b833f0b0  &3f800000  &3861d8ae )
+        16   ( &b833f0b0  &3f800000  &3861d8ae )
+        17   ( &b833f0b0  &3f800000  &3861d8ae )
+        18   ( &b833f0b0  &3f800000  &3861d8ae )
+        19   ( &b833f0b0  &3f800000  &3861d8ae )
+        20   ( &b833f0b0  &3f800000  &3861d8ae )
+        21   ( &b833f0b0  &3f800000  &3861d8ae )
+        22   ( &b833f0b0  &3f800000  &3861d8ae )
+        23   ( &b833f0b0  &3f800000  &3861d8ae )
+        24   ( &b833f0b0  &3f800000  &3861d8ae )
+        25   ( &b833f0b0  &3f800000  &3861d8ae )
+        26   ( &b833f0b0  &3f800000  &3861d8ae )
+        27   ( &b833f0b0  &3f800000  &3861d8ae )
+        28   ( &b833f0b0  &3f800000  &3861d8ae )
+        29   ( &b833f0b0  &3f800000  &3861d8ae )
+        30   ( &b833f0b0  &3f800000  &3861d8ae )
+        31   ( &b833f0b0  &3f800000  &3861d8ae )
+        32   ( &b833f0b0  &3f800000  &3861d8ae )
+        33   ( &b833f0b0  &3f800000  &3861d8ae )
+        34   ( &b833f0b0  &3f800000  &3861d8ae )
+        35   ( &b833f0b0  &3f800000  &3861d8ae )
+        36   ( &b833f0b0  &3f800000  &3861d8ae )
+        37   ( &b833f0b0  &3f800000  &3861d8ae )
+        38   ( &b833f0b0  &3f800000  &3861d8ae )
+        39   ( &b833f0b0  &3f800000  &3861d8ae )
+        40   ( &b833f0b0  &3f800000  &3861d8ae )
+        41   ( &b833f0b0  &3f800000  &3861d8ae )
+        42   ( &b833f0b0  &3f800000  &3861d8ae )
+        43   ( &b833f0b0  &3f800000  &3861d8ae )
+        44   ( &b833f0b0  &3f800000  &3861d8ae )
+        45   ( &b833f0b0  &3f800000  &3861d8ae )
+        46   ( &b833f0b0  &3f800000  &3861d8ae )
+        47   ( &b833f0b0  &3f800000  &3861d8ae )
+        48   ( &b833f0b0  &3f800000  &3861d8ae )
+        49   ( &b833f0b0  &3f800000  &3861d8ae )
+        50   ( &b833f0b0  &3f800000  &3861d8ae )
+        51   ( &b833f0b0  &3f800000  &3861d8ae )
+        52   ( &b833f0b0  &3f800000  &3861d8ae )
+        53   ( &b833f0b0  &3f800000  &3861d8ae )
+        54   ( &b833f0b0  &3f800000  &3861d8ae )
+        55   ( &b833f0b0  &3f800000  &3861d8ae )
+        56   ( &b833f0b0  &3f800000  &3861d8ae )
+        57   ( &b833f0b0  &3f800000  &3861d8ae )
+        58   ( &b833f0b0  &3f800000  &3861d8ae )
+        59   ( &b833f0b0  &3f800000  &3861d8ae )
+        60   ( &b833f0b0  &3f800000  &3861d8ae )
+        61   ( &b833f0b0  &3f800000  &3861d8ae )
+        62   ( &b833f0b0  &3f800000  &3861d8ae )
+        63   ( &b833f0b0  &3f800000  &3861d8ae )
+        64   ( &b833f0b0  &3f800000  &3861d8ae )
+        65   ( &b833f0b0  &3f800000  &3861d8ae )
+        66   ( &b833f0b0  &3f800000  &3861d8ae )
+        67   ( &b833f0b0  &3f800000  &3861d8ae )
+        68   ( &b833f0b0  &3f800000  &3861d8ae )
+        69   ( &b833f0b0  &3f800000  &3861d8ae )
+        70   ( &b833f0b0  &3f800000  &3861d8ae )
+        71   ( &b833f0b0  &3f800000  &3861d8ae )
+        72   ( &b833f0b0  &3f800000  &3861d8ae )
+        73   ( &b833f0b0  &3f800000  &3861d8ae )
+        74   ( &b833f0b0  &3f800000  &3861d8ae )
+        75   ( &b833f0b0  &3f800000  &3861d8ae )
+        76   ( &b833f0b0  &3f800000  &3861d8ae )
+        77   ( &b833f0b0  &3f800000  &3861d8ae )
+        78   ( &b833f0b0  &3f800000  &3861d8ae )
+        79   ( &b833f0b0  &3f800000  &3861d8ae )
+        80   ( &b833f0b0  &3f800000  &3861d8ae )
+    }
+    Stream {
+        Format: INT2
+        Tag: "_VARIANT_BLOCK"
+        0    ( 0     27 )
+        1    ( 27    27 )
+        2    ( 54    27 )
+    }
+}
+Node {
+    Index: 1
+    Position: ( &c28a199a  &383d0dfe  &c1580001 )
+    Direction: ( &3f7fffff  &b4caa9cb  &34200001 )
+    InputLanes: ( 9 -1 -1 -1 -1 -1 -1 -1 )
+    OutputLanes: ( 10 -1 -1 -1 -1 -1 -1 -1 )
+
+    TerrainPointCount: 81
+    TerrainPointVariantCount: 3
+    StreamCount: 3
+    Stream {
+        Format: FLOAT3
+        Tag: "_POSITION"
+        0    ( &c28a199b  &36c94e1f  &c0e00001 )
+        1    ( &c28125cc  &3be82f20  &c0bf9a53 )
+        2    ( &c26ab02a  &3be27c01  &c08cc235 )
+        3    ( &c2534d3e  &3bdb6ac1  &c00ba894 )
+        4    ( &c2428426  &3bd5ca56  &bcfa690b )
+        5    ( &c2318d33  &3bc709d0  &4023cd05 )
+        6    ( &c221a93e  &3b7586d6  &40ac6fea )
+        7    ( &c212b187  &342ab3b0  &41078bd6 )
+        8    ( &c206015a  &b558d590  &413085ad )
+        9    ( &c1f53147  &b5d206d6  &41509c27 )
+        10   ( &c1dac934  &b615a298  &416ccae9 )
+        11   ( &c1c168e5  &b47b2c80  &417fade0 )
+        12   ( &c1a23d73  &b4ee1390  &418447b2 )
+        13   ( &3d1a4e14  &b6ad998b  &418447b2 )
+        14   ( &41a23d71  &b6fa6658  &418447b2 )
+        15   ( &41c168e2  &b6f35e82  &417fade0 )
+        16   ( &41dac932  &b6e46ae6  &416ccaea )
+        17   ( &41f53145  &b6ce1b4e  &41509c27 )
+        18   ( &42060159  &b6b4b44b  &413085ad )
+        19   ( &4212b185  &b6943de3  &41078bd6 )
+        20   ( &4221a93d  &3b753eed  &40ac6fe9 )
+        21   ( &42318d32  &3bc6f779  &4023cd05 )
+        22   ( &42428425  &3bd5b2dd  &bcfa68f5 )
+        23   ( &42534d3d  &3bdb4ca1  &c00ba894 )
+        24   ( &426ab029  &3be261e6  &c08cc236 )
+        25   ( &428125cc  &3be812f2  &c0bf9a54 )
+        26   ( &428a199a  &3631000b  &c0e00002 )
+        27   ( &c28a199b  &36c94e1f  &c0e00001 )
+        28   ( &c28125cc  &3be82f20  &c0bf9a53 )
+        29   ( &c26ab02a  &3be27c01  &c08cc235 )
+        30   ( &c2534d3e  &3bdb6ac1  &c00ba894 )
+        31   ( &c2428426  &3bd5ca56  &bcfa690b )
+        32   ( &c2318d33  &3bc709d0  &4023cd05 )
+        33   ( &c221a93e  &3b7586d6  &40ac6fea )
+        34   ( &c212b187  &342ab3b0  &41078bd6 )
+        35   ( &c206015a  &b558d590  &413085ad )
+        36   ( &c1f53147  &b5d206d6  &41509c27 )
+        37   ( &c1dac934  &b615a298  &416ccae9 )
+        38   ( &c1c168e5  &b47b2c80  &417fade0 )
+        39   ( &c1a23d73  &b4ee1390  &418447b2 )
+        40   ( &3d1a4e14  &b6ad998b  &418447b2 )
+        41   ( &41a23d71  &b6fa6658  &418447b2 )
+        42   ( &41c168e2  &b6f35e82  &417fade0 )
+        43   ( &41dac932  &b6e46ae6  &416ccaea )
+        44   ( &41f53145  &b6ce1b4e  &41509c27 )
+        45   ( &42060159  &b6b4b44b  &413085ad )
+        46   ( &4212b185  &b6943de3  &41078bd6 )
+        47   ( &4221a93d  &3b753eed  &40ac6fe9 )
+        48   ( &42318d32  &3bc6f779  &4023cd05 )
+        49   ( &42428425  &3bd5b2dd  &bcfa68f5 )
+        50   ( &42534d3d  &3bdb4ca1  &c00ba894 )
+        51   ( &426ab029  &3be261e6  &c08cc236 )
+        52   ( &428125cc  &3be812f2  &c0bf9a54 )
+        53   ( &428a199a  &3631000b  &c0e00002 )
+        54   ( &c28a199b  &36c94e1f  &c0e00001 )
+        55   ( &c28125cc  &3be82f20  &c0bf9a53 )
+        56   ( &c26ab02a  &3be27c01  &c08cc235 )
+        57   ( &c2534d3e  &3bdb6ac1  &c00ba894 )
+        58   ( &c2428426  &3bd5ca56  &bcfa690b )
+        59   ( &c2318d33  &3bc709d0  &4023cd05 )
+        60   ( &c221a93e  &3b7586d6  &40ac6fea )
+        61   ( &c212b187  &342ab3b0  &41078bd6 )
+        62   ( &c206015a  &b558d590  &413085ad )
+        63   ( &c1f53147  &b5d206d6  &41509c27 )
+        64   ( &c1dac934  &b615a298  &416ccae9 )
+        65   ( &c1c168e5  &b47b2c80  &417fade0 )
+        66   ( &c1a23d73  &b4ee1390  &418447b2 )
+        67   ( &3d1a4e14  &b6ad998b  &418447b2 )
+        68   ( &41a23d71  &b6fa6658  &418447b2 )
+        69   ( &41c168e2  &b6f35e82  &417fade0 )
+        70   ( &41dac932  &b6e46ae6  &416ccaea )
+        71   ( &41f53145  &b6ce1b4e  &41509c27 )
+        72   ( &42060159  &b6b4b44b  &413085ad )
+        73   ( &4212b185  &b6943de3  &41078bd6 )
+        74   ( &4221a93d  &3b753eed  &40ac6fe9 )
+        75   ( &42318d32  &3bc6f779  &4023cd05 )
+        76   ( &42428425  &3bd5b2dd  &bcfa68f5 )
+        77   ( &42534d3d  &3bdb4ca1  &c00ba894 )
+        78   ( &426ab029  &3be261e6  &c08cc236 )
+        79   ( &428125cc  &3be812f2  &c0bf9a54 )
+        80   ( &428a199a  &3631000b  &c0e00002 )
+    }
+    Stream {
+        Format: FLOAT3
+        Tag: "_NORMAL"
+        0    ( &b833f0ad  &3f800000  &b85eb136 )
+        1    ( &b833f0ad  &3f800000  &b85eb136 )
+        2    ( &b833f0ad  &3f800000  &b85eb136 )
+        3    ( &b833f0ad  &3f800000  &b85eb136 )
+        4    ( &b833f0ad  &3f800000  &b85eb136 )
+        5    ( &b833f0ad  &3f800000  &b85eb136 )
+        6    ( &b833f0ad  &3f800000  &b85eb136 )
+        7    ( &b833f0ad  &3f800000  &b85eb136 )
+        8    ( &b833f0ad  &3f800000  &b85eb136 )
+        9    ( &b833f0ad  &3f800000  &b85eb136 )
+        10   ( &b833f0ad  &3f800000  &b85eb136 )
+        11   ( &b833f0ad  &3f800000  &b85eb136 )
+        12   ( &b833f0ad  &3f800000  &b85eb136 )
+        13   ( &b833f0ad  &3f800000  &b85eb136 )
+        14   ( &b833f0ad  &3f800000  &b85eb136 )
+        15   ( &b833f0ad  &3f800000  &b85eb136 )
+        16   ( &b833f0ad  &3f800000  &b85eb136 )
+        17   ( &b833f0ad  &3f800000  &b85eb136 )
+        18   ( &b833f0ad  &3f800000  &b85eb136 )
+        19   ( &b833f0ad  &3f800000  &b85eb136 )
+        20   ( &b833f0ad  &3f800000  &b85eb136 )
+        21   ( &b833f0ad  &3f800000  &b85eb136 )
+        22   ( &b833f0ad  &3f800000  &b85eb136 )
+        23   ( &b833f0ad  &3f800000  &b85eb136 )
+        24   ( &b833f0ad  &3f800000  &b85eb136 )
+        25   ( &b833f0ad  &3f800000  &b85eb136 )
+        26   ( &b833f0ad  &3f800000  &b85eb136 )
+        27   ( &b833f0ad  &3f800000  &b85eb136 )
+        28   ( &b833f0ad  &3f800000  &b85eb136 )
+        29   ( &b833f0ad  &3f800000  &b85eb136 )
+        30   ( &b833f0ad  &3f800000  &b85eb136 )
+        31   ( &b833f0ad  &3f800000  &b85eb136 )
+        32   ( &b833f0ad  &3f800000  &b85eb136 )
+        33   ( &b833f0ad  &3f800000  &b85eb136 )
+        34   ( &b833f0ad  &3f800000  &b85eb136 )
+        35   ( &b833f0ad  &3f800000  &b85eb136 )
+        36   ( &b833f0ad  &3f800000  &b85eb136 )
+        37   ( &b833f0ad  &3f800000  &b85eb136 )
+        38   ( &b833f0ad  &3f800000  &b85eb136 )
+        39   ( &b833f0ad  &3f800000  &b85eb136 )
+        40   ( &b833f0ad  &3f800000  &b85eb136 )
+        41   ( &b833f0ad  &3f800000  &b85eb136 )
+        42   ( &b833f0ad  &3f800000  &b85eb136 )
+        43   ( &b833f0ad  &3f800000  &b85eb136 )
+        44   ( &b833f0ad  &3f800000  &b85eb136 )
+        45   ( &b833f0ad  &3f800000  &b85eb136 )
+        46   ( &b833f0ad  &3f800000  &b85eb136 )
+        47   ( &b833f0ad  &3f800000  &b85eb136 )
+        48   ( &b833f0ad  &3f800000  &b85eb136 )
+        49   ( &b833f0ad  &3f800000  &b85eb136 )
+        50   ( &b833f0ad  &3f800000  &b85eb136 )
+        51   ( &b833f0ad  &3f800000  &b85eb136 )
+        52   ( &b833f0ad  &3f800000  &b85eb136 )
+        53   ( &b833f0ad  &3f800000  &b85eb136 )
+        54   ( &b833f0ad  &3f800000  &b85eb136 )
+        55   ( &b833f0ad  &3f800000  &b85eb136 )
+        56   ( &b833f0ad  &3f800000  &b85eb136 )
+        57   ( &b833f0ad  &3f800000  &b85eb136 )
+        58   ( &b833f0ad  &3f800000  &b85eb136 )
+        59   ( &b833f0ad  &3f800000  &b85eb136 )
+        60   ( &b833f0ad  &3f800000  &b85eb136 )
+        61   ( &b833f0ad  &3f800000  &b85eb136 )
+        62   ( &b833f0ad  &3f800000  &b85eb136 )
+        63   ( &b833f0ad  &3f800000  &b85eb136 )
+        64   ( &b833f0ad  &3f800000  &b85eb136 )
+        65   ( &b833f0ad  &3f800000  &b85eb136 )
+        66   ( &b833f0ad  &3f800000  &b85eb136 )
+        67   ( &b833f0ad  &3f800000  &b85eb136 )
+        68   ( &b833f0ad  &3f800000  &b85eb136 )
+        69   ( &b833f0ad  &3f800000  &b85eb136 )
+        70   ( &b833f0ad  &3f800000  &b85eb136 )
+        71   ( &b833f0ad  &3f800000  &b85eb136 )
+        72   ( &b833f0ad  &3f800000  &b85eb136 )
+        73   ( &b833f0ad  &3f800000  &b85eb136 )
+        74   ( &b833f0ad  &3f800000  &b85eb136 )
+        75   ( &b833f0ad  &3f800000  &b85eb136 )
+        76   ( &b833f0ad  &3f800000  &b85eb136 )
+        77   ( &b833f0ad  &3f800000  &b85eb136 )
+        78   ( &b833f0ad  &3f800000  &b85eb136 )
+        79   ( &b833f0ad  &3f800000  &b85eb136 )
+        80   ( &b833f0ad  &3f800000  &b85eb136 )
+    }
+    Stream {
+        Format: INT2
+        Tag: "_VARIANT_BLOCK"
+        0    ( 0     27 )
+        1    ( 27    27 )
+        2    ( 54    27 )
+    }
+}
+Curve {
+    Index: 0
+    # start locator: 'Nav_Point_5'
+    Name: "nav_point_5"
+
+    Flags: 64
+
+    LeadsToNodes: 16843010
+
+    NextCurves: ( 4 -1 -1 -1 )
+    PrevCurves: ( 6 -1 -1 -1 )
+
+    Length: &41eaa065
+
+    Bezier {
+        Start {
+            Position: ( &42797efb  &38410698  &c18010a2 )
+            Rotation: ( &3f3ae549  &262f53ea  &3f2ef21d  &00000000 )
+        }
+        End {
+            Position: ( &4207f5d8  &384c4a49  &c1b8fb18 )
+            Rotation: ( &3f4b33e4  &a78d19ba  &3f1bb4fd  &27a141f9 )
+        }
+    }
+}
+Curve {
+    Index: 1
+    # start locator: 'Nav_Point_7'
+    Name: "nav_point_7"
+
+    Flags: 32
+
+    LeadsToNodes: 16908545
+
+    NextCurves: ( 14 -1 -1 -1 )
+    PrevCurves: ( 9 -1 -1 -1 )
+
+    Length: &41ac2fc1
+
+    Bezier {
+        Start {
+            Position: ( &c26f29c6  &3838c311  &c12c9ef7 )
+            Rotation: ( &3f2d111d  &a63d5655  &bf3ca309  &a7bd5655 )
+        }
+        End {
+            Position: ( &c2194b2c  &38365d56  &c11464e3 )
+            Rotation: ( &3f31ddbd  &27046a07  &bf381e57  &a80a2bdb )
+        }
+    }
+}
+Curve {
+    Index: 2
+    # start locator: 'Nav_Point_8'
+    Name: "nav_point_8"
+
+    Flags: 96
+
+    LeadsToNodes: 16908545
+
+    NextCurves: ( 13 -1 -1 -1 )
+    PrevCurves: ( 11 -1 -1 -1 )
+
+    Length: &41f9446c
+
+    Bezier {
+        Start {
+            Position: ( &c218da93  &382ec6d1  &c08f6e08 )
+            Rotation: ( &3f1b7987  &00000000  &bf4b6166  &00000000 )
+        }
+        End {
+            Position: ( &c0e9c1d1  &382a3c51  &bfce9a5f )
+            Rotation: ( &3f38033a  &a8442915  &bf31f9ca  &27b21324 )
+        }
+    }
+}
+Curve {
+    Index: 3
+    # start locator: 'Nav_Point_13'
+    Name: "nav_point_13"
+
+    Flags: 96
+
+    LeadsToNodes: 16908545
+
+    NextCurves: ( 21 -1 -1 -1 )
+    PrevCurves: ( 15 -1 -1 -1 )
+
+    Length: &4203c98e
+
+    Bezier {
+        Start {
+            Position: ( &40830406  &38376b6a  &c11f0e38 )
+            Rotation: ( &3f3504f2  &290c9a39  &bf3504f4  &283504f2 )
+        }
+        End {
+            Position: ( &42142942  &38371787  &c11bbe6c )
+            Rotation: ( &3f3504f2  &290c9a39  &bf3504f4  &283504f2 )
+        }
+    }
+}
+Curve {
+    Index: 4
+    # start locator: 'Nav_Point_6'
+    Name: "nav_point_6"
+
+    Flags: 96
+
+    LeadsToNodes: 16843010
+
+    NextCurves: ( 18 -1 -1 -1 )
+    PrevCurves: ( 0 -1 -1 -1 )
+
+    Length: &41e6868c
+
+    Bezier {
+        Start {
+            Position: ( &4207f5d8  &384c4a49  &c1b8fb18 )
+            Rotation: ( &3f4b33e4  &a78d19ba  &3f1bb4fd  &27a141f9 )
+        }
+        End {
+            Position: ( &40aba783  &384ffb2b  &c1cba15b )
+            Rotation: ( &3f341b92  &28480edf  &3f35ed29  &a7b5ef83 )
+        }
+    }
+}
+Curve {
+    Index: 5
+    # start locator: 'Nav_Point_12'
+    Name: "nav_point_12"
+
+    Flags: 96
+
+    LeadsToNodes: 16908545
+
+    NextCurves: ( -1 -1 -1 -1 )
+    PrevCurves: ( 25 21 -1 -1 )
+
+    Length: &4101a8d4
+
+    Bezier {
+        Start {
+            Position: ( &4273d20b  &3838f9c1  &c12ec790 )
+            Rotation: ( &3f3c4609  &a743ccd9  &bf2d7645  &28028891 )
+        }
+        End {
+            Position: ( &428a199a  &38397e00  &c1340001 )
+            Rotation: ( &3f3504f2  &290c9a39  &bf3504f4  &283504f2 )
+        }
+    }
+}
+Curve {
+    Index: 6
+    # start locator: 'Nav_Point_51'
+    Name: "nav_point_51"
+
+    Flags: 96
+
+    LeadsToNodes: 16843010
+
+    NextCurves: ( 0 24 -1 -1 )
+    PrevCurves: ( -1 -1 -1 -1 )
+
+    Length: &40d5d4c2
+
+    Bezier {
+        Start {
+            Position: ( &428a199a  &38409df7  &c17c0001 )
+            Rotation: ( &3f3504f2  &290c9a39  &3f3504f4  &a83504f2 )
+        }
+        End {
+            Position: ( &42797efb  &38410698  &c18010a2 )
+            Rotation: ( &3f3ae549  &262f53ea  &3f2ef21d  &00000000 )
+        }
+    }
+}
+Curve {
+    Index: 7
+    # start locator: 'Nav_Point_17'
+    Name: "nav_point_17"
+
+    Flags: 96
+
+    LeadsToNodes: 16843010
+
+    SemaphoreID: 2
+
+    NextCurves: ( 16 -1 -1 -1 )
+    PrevCurves: ( 20 -1 -1 -1 )
+
+    Length: &3fef0446
+
+    Bezier {
+        Start {
+            Position: ( &c00f9d55  &38429904  &c18801f7 )
+            Rotation: ( &3f3504f2  &290c9a39  &3f3504f4  &a83504f2 )
+        }
+        End {
+            Position: ( &c0838fbc  &38429904  &c18801f7 )
+            Rotation: ( &3f3504f2  &290c9a39  &3f3504f4  &a83504f2 )
+        }
+    }
+}
+Curve {
+    Index: 8
+    # start locator: 'Nav_Point_9'
+    Name: "nav_point_9"
+
+    Flags: 196704
+
+    LeadsToNodes: 16843010
+
+    NextCurves: ( 10 -1 -1 -1 )
+    PrevCurves: ( 16 -1 -1 -1 )
+
+    Length: &41a6b004
+
+    Bezier {
+        Start {
+            Position: ( &c1fd7916  &3843e039  &c18e7745 )
+            Rotation: ( &3f3504f2  &290c9a39  &3f3504f4  &a83504f2 )
+        }
+        End {
+            Position: ( &c2520ac5  &384339db  &c18b2eaf )
+            Rotation: ( &3f2e1f8a  &a7c7f34d  &3f3ba988  &00000000 )
+        }
+    }
+}
+Curve {
+    Index: 9
+    # start locator: 'Nav_Point_19'
+    Name: "nav_point_19"
+
+    Flags: 96
+
+    LeadsToNodes: 16908545
+
+    NextCurves: ( 11 1 -1 -1 )
+    PrevCurves: ( -1 -1 -1 -1 )
+
+    Length: &41142c9c
+
+    Bezier {
+        Start {
+            Position: ( &c28a1318  &38397e00  &c1340001 )
+            Rotation: ( &3f3504f2  &290c9a39  &bf3504f4  &283504f2 )
+        }
+        End {
+            Position: ( &c26f29c6  &3838c311  &c12c9ef7 )
+            Rotation: ( &3f2d111d  &a63d5655  &bf3ca309  &a7bd5655 )
+        }
+    }
+}
+Curve {
+    Index: 10
+    # start locator: 'Nav_Point_2'
+    Name: "nav_point_2"
+
+    Flags: 96
+
+    LeadsToNodes: 16843010
+
+    NextCurves: ( -1 -1 -1 -1 )
+    PrevCurves: ( 12 8 -1 -1 )
+
+    Length: &4184f39f
+
+    Bezier {
+        Start {
+            Position: ( &c2520ac5  &384339db  &c18b2eaf )
+            Rotation: ( &3f2e1f8a  &a7c7f34d  &3f3ba988  &00000000 )
+        }
+        End {
+            Position: ( &c28a1318  &38409df7  &c17c0001 )
+            Rotation: ( &3f3504f2  &290c9a39  &3f3504f4  &a83504f2 )
+        }
+    }
+}
+Curve {
+    Index: 11
+    # start locator: 'Nav_Point_7'
+    Name: "nav_point_7"
+
+    Flags: 64
+
+    LeadsToNodes: 16908545
+
+    NextCurves: ( 2 -1 -1 -1 )
+    PrevCurves: ( 9 -1 -1 -1 )
+
+    Length: &41b44ac0
+
+    Bezier {
+        Start {
+            Position: ( &c26f29c6  &3838c311  &c12c9ef7 )
+            Rotation: ( &3f2d111d  &a63d5655  &bf3ca309  &a7bd5655 )
+        }
+        End {
+            Position: ( &c218da93  &382ec6d1  &c08f6e08 )
+            Rotation: ( &3f1b7987  &00000000  &bf4b6166  &00000000 )
+        }
+    }
+}
+Curve {
+    Index: 12
+    # start locator: 'Nav_Point_1'
+    Name: "nav_point_1"
+
+    Flags: 196704
+
+    LeadsToNodes: 16843010
+
+    NextCurves: ( 10 -1 -1 -1 )
+    PrevCurves: ( 23 -1 -1 -1 )
+
+    Length: &41b0ae8a
+
+    Bezier {
+        Start {
+            Position: ( &c1fd7916  &384e3bbf  &c1c2cca3 )
+            Rotation: ( &3f2d5e92  &a5bd01be  &3f3c5bdc  &00000000 )
+        }
+        End {
+            Position: ( &c2520ac5  &384339db  &c18b2eaf )
+            Rotation: ( &3f2e1f8a  &a7c7f34d  &3f3ba988  &00000000 )
+        }
+    }
+}
+Curve {
+    Index: 13
+    # start locator: 'Nav_Point_16'
+    Name: "nav_point_16"
+
+    Flags: 96
+
+    LeadsToNodes: 16908545
+
+    NextCurves: ( 22 -1 -1 -1 )
+    PrevCurves: ( 2 -1 -1 -1 )
+
+    Length: &411a9898
+
+    Bezier {
+        Start {
+            Position: ( &c0e9c1d1  &382a3c51  &bfce9a5f )
+            Rotation: ( &3f38033a  &a8442915  &bf31f9ca  &27b21324 )
+        }
+        End {
+            Position: ( &4016cbc6  &382a6b0e  &bfdd5d6f )
+            Rotation: ( &3f3504f2  &290c9a39  &bf3504f4  &283504f2 )
+        }
+    }
+}
+Curve {
+    Index: 14
+    # start locator: 'Nav_Point_3'
+    Name: "nav_point_3"
+
+    Flags: 96
+
+    LeadsToNodes: 16908545
+
+    NextCurves: ( 17 -1 -1 -1 )
+    PrevCurves: ( 1 -1 -1 -1 )
+
+    Length: &4202b819
+
+    Bezier {
+        Start {
+            Position: ( &c2194b2c  &38365d56  &c11464e3 )
+            Rotation: ( &3f31ddbd  &27046a07  &bf381e57  &a80a2bdb )
+        }
+        End {
+            Position: ( &c0b4fecf  &38372d08  &c11c97bc )
+            Rotation: ( &3f38ca1f  &a5b15379  &bf312b3f  &00000000 )
+        }
+    }
+}
+Curve {
+    Index: 15
+    # start locator: 'Nav_Point_21'
+    Name: "nav_point_21"
+
+    Flags: 96
+
+    LeadsToNodes: 16908545
+
+    SemaphoreID: 1
+
+    NextCurves: ( 3 -1 -1 -1 )
+    PrevCurves: ( 17 -1 -1 -1 )
+
+    Length: &3fde788c
+
+    Bezier {
+        Start {
+            Position: ( &4016cbc6  &38376b6a  &c11f0e38 )
+            Rotation: ( &3f3504f2  &290c9a39  &bf3504f4  &283504f2 )
+        }
+        End {
+            Position: ( &40830406  &38376b6a  &c11f0e38 )
+            Rotation: ( &3f3504f2  &290c9a39  &bf3504f4  &283504f2 )
+        }
+    }
+}
+Curve {
+    Index: 16
+    # start locator: 'Nav_Point_18'
+    Name: "nav_point_18"
+
+    Flags: 96
+
+    LeadsToNodes: 16843010
+
+    NextCurves: ( 8 -1 -1 -1 )
+    PrevCurves: ( 7 -1 -1 -1 )
+
+    Length: &41dcb230
+
+    Bezier {
+        Start {
+            Position: ( &c0838fbc  &38429904  &c18801f7 )
+            Rotation: ( &3f3504f2  &290c9a39  &3f3504f4  &a83504f2 )
+        }
+        End {
+            Position: ( &c1fd7916  &3843e039  &c18e7745 )
+            Rotation: ( &3f3504f2  &290c9a39  &3f3504f4  &a83504f2 )
+        }
+    }
+}
+Curve {
+    Index: 17
+    # start locator: 'Nav_Point_4'
+    Name: "nav_point_4"
+
+    Flags: 96
+
+    LeadsToNodes: 16908545
+
+    NextCurves: ( 15 -1 -1 -1 )
+    PrevCurves: ( 14 -1 -1 -1 )
+
+    Length: &41003ad7
+
+    Bezier {
+        Start {
+            Position: ( &c0b4fecf  &38372d08  &c11c97bc )
+            Rotation: ( &3f38ca1f  &a5b15379  &bf312b3f  &00000000 )
+        }
+        End {
+            Position: ( &4016cbc6  &38376b6a  &c11f0e38 )
+            Rotation: ( &3f3504f2  &290c9a39  &bf3504f4  &283504f2 )
+        }
+    }
+}
+Curve {
+    Index: 18
+    # start locator: 'Nav_Point_25'
+    Name: "nav_point_25"
+
+    Flags: 96
+
+    LeadsToNodes: 16843010
+
+    NextCurves: ( 19 -1 -1 -1 )
+    PrevCurves: ( 4 -1 -1 -1 )
+
+    Length: &40f377fc
+
+    Bezier {
+        Start {
+            Position: ( &40aba783  &384ffb2b  &c1cba15b )
+            Rotation: ( &3f341b92  &28480edf  &3f35ed29  &a7b5ef83 )
+        }
+        End {
+            Position: ( &c00f9d55  &384fe5a0  &c1cb3485 )
+            Rotation: ( &3f3504f2  &290c9a39  &3f3504f4  &a83504f2 )
+        }
+    }
+}
+Curve {
+    Index: 19
+    # start locator: 'Nav_Point_26'
+    Name: "nav_point_26"
+
+    Flags: 96
+
+    LeadsToNodes: 16843010
+
+    SemaphoreID: 3
+
+    NextCurves: ( 23 -1 -1 -1 )
+    PrevCurves: ( 18 -1 -1 -1 )
+
+    Length: &3fef0446
+
+    Bezier {
+        Start {
+            Position: ( &c00f9d55  &384fe5a0  &c1cb3485 )
+            Rotation: ( &3f3504f2  &290c9a39  &3f3504f4  &a83504f2 )
+        }
+        End {
+            Position: ( &c0838fbc  &384fe5a0  &c1cb3485 )
+            Rotation: ( &3f3504f2  &290c9a39  &3f3504f4  &a83504f2 )
+        }
+    }
+}
+Curve {
+    Index: 20
+    # start locator: 'Nav_Point_30'
+    Name: "nav_point_30"
+
+    Flags: 96
+
+    LeadsToNodes: 16843010
+
+    NextCurves: ( 7 -1 -1 -1 )
+    PrevCurves: ( 24 -1 -1 -1 )
+
+    Length: &40e1840f
+
+    Bezier {
+        Start {
+            Position: ( &4099ad09  &3842c4a1  &c188de53 )
+            Rotation: ( &3f32ac1d  &253765ae  &3f375619  &27b765ae )
+        }
+        End {
+            Position: ( &c00f9d55  &38429904  &c18801f7 )
+            Rotation: ( &3f3504f2  &290c9a39  &3f3504f4  &a83504f2 )
+        }
+    }
+}
+Curve {
+    Index: 21
+    # start locator: 'Nav_Point_14'
+    Name: "nav_point_14"
+
+    Flags: 196704
+
+    LeadsToNodes: 16908545
+
+    NextCurves: ( 5 -1 -1 -1 )
+    PrevCurves: ( 3 -1 -1 -1 )
+
+    Length: &41bf9c35
+
+    Bezier {
+        Start {
+            Position: ( &42142942  &38371787  &c11bbe6c )
+            Rotation: ( &3f3504f2  &290c9a39  &bf3504f4  &283504f2 )
+        }
+        End {
+            Position: ( &4273d20b  &3838f9c1  &c12ec790 )
+            Rotation: ( &3f3c4609  &a743ccd9  &bf2d7645  &28028891 )
+        }
+    }
+}
+Curve {
+    Index: 22
+    # start locator: 'Nav_Point_31'
+    Name: "nav_point_31"
+
+    Flags: 96
+
+    LeadsToNodes: 16908545
+
+    SemaphoreID: 0
+
+    NextCurves: ( 26 -1 -1 -1 )
+    PrevCurves: ( 13 -1 -1 -1 )
+
+    Length: &3fde788c
+
+    Bezier {
+        Start {
+            Position: ( &4016cbc6  &382a6b0e  &bfdd5d6f )
+            Rotation: ( &3f3504f2  &290c9a39  &bf3504f4  &283504f2 )
+        }
+        End {
+            Position: ( &40830406  &382a6b0e  &bfdd5d6f )
+            Rotation: ( &3f3504f2  &290c9a39  &bf3504f4  &283504f2 )
+        }
+    }
+}
+Curve {
+    Index: 23
+    # start locator: 'Nav_Point_42'
+    Name: "nav_point_42"
+
+    Flags: 96
+
+    LeadsToNodes: 16843010
+
+    NextCurves: ( 12 -1 -1 -1 )
+    PrevCurves: ( 19 -1 -1 -1 )
+
+    Length: &41dcce5b
+
+    Bezier {
+        Start {
+            Position: ( &c0838fbc  &384fe5a0  &c1cb3485 )
+            Rotation: ( &3f3504f2  &290c9a39  &3f3504f4  &a83504f2 )
+        }
+        End {
+            Position: ( &c1fd7916  &384e3bbf  &c1c2cca3 )
+            Rotation: ( &3f2d5e92  &a5bd01be  &3f3c5bdc  &00000000 )
+        }
+    }
+}
+Curve {
+    Index: 24
+    # start locator: 'Nav_Point_5'
+    Name: "nav_point_5"
+
+    Flags: 32
+
+    LeadsToNodes: 16843010
+
+    NextCurves: ( 20 -1 -1 -1 )
+    PrevCurves: ( 6 -1 -1 -1 )
+
+    Length: &426668d3
+
+    Bezier {
+        Start {
+            Position: ( &42797efb  &38410698  &c18010a2 )
+            Rotation: ( &3f3ae549  &262f53ea  &3f2ef21d  &00000000 )
+        }
+        End {
+            Position: ( &4099ad09  &3842c4a1  &c188de53 )
+            Rotation: ( &3f32ac1d  &253765ae  &3f375619  &27b765ae )
+        }
+    }
+}
+Curve {
+    Index: 25
+    # start locator: 'Nav_Point_11'
+    Name: "nav_point_11"
+
+    Flags: 196720
+
+    LeadsToNodes: 16908545
+
+    NextCurves: ( 5 -1 -1 -1 )
+    PrevCurves: ( 26 -1 -1 -1 )
+
+    Length: &41b76660
+
+    Bezier {
+        Start {
+            Position: ( &421dbe8a  &382d0d9b  &c059316c )
+            Rotation: ( &3f3fa86f  &a7eb15e5  &bf29b714  &290aea05 )
+        }
+        End {
+            Position: ( &4273d20b  &3838f9c1  &c12ec790 )
+            Rotation: ( &3f3c4609  &a743ccd9  &bf2d7645  &28028891 )
+        }
+    }
+}
+Curve {
+    Index: 26
+    # start locator: 'Nav_Point_27'
+    Name: "nav_point_27"
+
+    Flags: 96
+
+    LeadsToNodes: 16908545
+
+    NextCurves: ( 25 -1 -1 -1 )
+    PrevCurves: ( 22 -1 -1 -1 )
+
+    Length: &420d9d03
+
+    Bezier {
+        Start {
+            Position: ( &40830406  &382a6b0e  &bfdd5d6f )
+            Rotation: ( &3f3504f2  &290c9a39  &bf3504f4  &283504f2 )
+        }
+        End {
+            Position: ( &421dbe8a  &382d0d9b  &c059316c )
+            Rotation: ( &3f3fa86f  &a7eb15e5  &bf29b714  &290aea05 )
+        }
+    }
+}
+Sign {
+    Name: "PrefabLoc83"
+    Position: ( &c1a6aeac  &36b2a816  &c161ace7 )
+    Rotation: ( &3e05a8ad  &aa9939da  &bf7dcf55  &28f5291f )
+    Model: "295"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc45"
+    Position: ( &418a9af8  &371093a5  &c1b6a05e )
+    Rotation: ( &3f7f0e57  &00000000  &bdafb6d6  &00000000 )
+    Model: "294"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc33"
+    Position: ( &417be5a4  &35d1116d  &c0840b98 )
+    Rotation: ( &3f800000  &00000000  &00000000  &00000000 )
+    Model: "295"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc74"
+    Position: ( &c17785a7  &36c1c654  &c174c5b8 )
+    Rotation: ( &248d3132  &00000000  &3f800000  &00000000 )
+    Model: "295"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc24"
+    Position: ( &419574a8  &369b2e78  &c14405ae )
+    Rotation: ( &3f7dcf54  &00000000  &3e05a8b2  &27a16172 )
+    Model: "295"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc46"
+    Position: ( &419574a8  &370f236f  &c1b4cf40 )
+    Rotation: ( &3f7ec3e3  &00000000  &bdc8e912  &a7b0da62 )
+    Model: "295"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc96"
+    Position: ( &c1886af9  &36117e2b  &c0b7c89c )
+    Rotation: ( &3dafb6db  &ab8bdd0b  &bf7f0e58  &29cbf6f6 )
+    Model: "294"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc29"
+    Position: ( &41aa4444  &36a391f8  &c14e9e5c )
+    Rotation: ( &3f7dcf54  &00000000  &3e05a8b2  &27a16172 )
+    Model: "295"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc32"
+    Position: ( &41680dfc  &35d1116d  &c0840b98 )
+    Rotation: ( &3f800000  &00000000  &00000000  &00000000 )
+    Model: "294"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc81"
+    Position: ( &c19dffb5  &369f9705  &c149973d )
+    Rotation: ( &3e05a8ad  &aa9939da  &3f7dcf55  &a8f5291f )
+    Model: "294"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc44"
+    Position: ( &41a02fb4  &36073747  &c0aacd52 )
+    Rotation: ( &3f7f1ab3  &00000000  &bdab2b7e  &2700730d )
+    Model: "294"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc23"
+    Position: ( &418a9af8  &3696daae  &c13e8e58 )
+    Rotation: ( &3f7dcf54  &00000000  &3e05a8b2  &27a16172 )
+    Model: "294"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc14"
+    Position: ( &41594e64  &3770e471  &c218252b )
+    Rotation: ( &3f3504f2  &290c9a39  &bf3504f4  &283504f2 )
+    Model: "285"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc22"
+    Position: ( &41898090  &36bf4c28  &c171a4a6 )
+    Rotation: ( &3f7dcf54  &00000000  &be05a8b2  &a7a16172 )
+    Model: "294"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc125"
+    Position: ( &c13a5378  &37497c14  &c1fe82eb )
+    Rotation: ( &3f6d19bf  &a68a33f5  &3ec112c2  &278a33f5 )
+    Model: "12"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc126"
+    Position: ( &41404c9f  &37480e87  &c1fcb529 )
+    Rotation: ( &3eb31b94  &aa20151a  &3f6fd33e  &a9b6f389 )
+    Model: "12"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc88"
+    Position: ( &c17785a7  &35cf52bf  &c082f17a )
+    Rotation: ( &248d3132  &00000000  &3f800000  &00000000 )
+    Model: "295"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc76"
+    Position: ( &c163adff  &3694d464  &c13bffa6 )
+    Rotation: ( &248d3132  &00000000  &3f800000  &00000000 )
+    Model: "294"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc60"
+    Position: ( &c19dffb5  &370dad5d  &c1b2f6bb )
+    Rotation: ( &3dab298f  &aabf71d8  &bf7f1ab9  &290f9502 )
+    Model: "294"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc95"
+    Position: ( &c163adff  &3613bed8  &c0baa10e )
+    Rotation: ( &248d3132  &00000000  &3f800000  &00000000 )
+    Model: "294"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc67"
+    Position: ( &c1a5b73d  &370bd946  &c1b0a773 )
+    Rotation: ( &3f3504f2  &290c9a39  &bf3504f4  &283504f2 )
+    Model: "294"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc72"
+    Position: ( &c14fe2e6  &3694d464  &c13bffa6 )
+    Rotation: ( &248d3132  &00000000  &3f800000  &00000000 )
+    Model: "295"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc128"
+    Position: ( &c14038a6  &b5d54e76  &4086b8e4 )
+    Rotation: ( &3f7035cf  &268869f3  &beb10825  &28197731 )
+    Model: "12"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc21"
+    Position: ( &415442e4  &3694d464  &c13bffa6 )
+    Rotation: ( &3f800000  &00000000  &00000000  &00000000 )
+    Model: "295"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc49"
+    Position: ( &419574a8  &370825c1  &c1abfa8f )
+    Rotation: ( &3f7ec3e3  &00000000  &3dc8e912  &27b0da62 )
+    Model: "295"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc123"
+    Position: ( &421f1280  &3741efe2  &c1f4fa35 )
+    Rotation: ( &3f669ce2  &a68e174a  &3ede4b6f  &268e174a )
+    Model: "12"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc80"
+    Position: ( &c191d411  &36bb5e94  &c16cae6a )
+    Rotation: ( &3e05a8ad  &aa9939da  &bf7dcf55  &28f5291f )
+    Model: "295"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc58"
+    Position: ( &c1886af9  &371071d9  &c1b675ac )
+    Rotation: ( &3dafb6db  &ab8bdd0b  &bf7f0e58  &29cbf6f6 )
+    Model: "294"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc47"
+    Position: ( &41a02fb4  &370dcf29  &c1b3216c )
+    Rotation: ( &3f7f1ab3  &00000000  &bdab2b7e  &2700730d )
+    Model: "294"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc15"
+    Position: ( &41594e64  &3780a1f8  &c2227c7a )
+    Rotation: ( &3f3504f2  &290c9a39  &bf3504f4  &283504f2 )
+    Model: "286"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc"
+    Position: ( &41680dfc  &36c1c654  &c174c5b8 )
+    Rotation: ( &3f800000  &00000000  &00000000  &00000000 )
+    Model: "294"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc39"
+    Position: ( &415442e4  &361489e4  &c0bba18a )
+    Rotation: ( &3f800000  &00000000  &00000000  &00000000 )
+    Model: "295"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc124"
+    Position: ( &c227b441  &373a94d2  &c1ebaf8f )
+    Rotation: ( &3ef1bb00  &00000000  &3f61abe3  &00000000 )
+    Model: "12"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc70"
+    Position: ( &c163adff  &37110204  &c1b72bc8 )
+    Rotation: ( &248d3132  &00000000  &3f800000  &00000000 )
+    Model: "294"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc62"
+    Position: ( &c19344a9  &3707fb9a  &c1abc551 )
+    Rotation: ( &3dc8e7cf  &ab18e875  &3f7ec3e8  &a88eb6d3 )
+    Model: "295"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc57"
+    Position: ( &41680dfc  &371123d0  &c1b7567a )
+    Rotation: ( &3f800000  &00000000  &00000000  &00000000 )
+    Model: "294"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc86"
+    Position: ( &c14fe2e6  &35cf52bf  &c082f17a )
+    Rotation: ( &248d3132  &00000000  &3f800000  &00000000 )
+    Model: "295"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc40"
+    Position: ( &417be5a4  &361489e4  &c0bba18a )
+    Rotation: ( &3f800000  &00000000  &00000000  &00000000 )
+    Model: "295"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc77"
+    Position: ( &c1875091  &36bf4c28  &c171a4a6 )
+    Rotation: ( &3e05a8ad  &aa9939da  &bf7dcf55  &28f5291f )
+    Model: "294"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc87"
+    Position: ( &c163adff  &35cf52bf  &c082f17a )
+    Rotation: ( &248d3132  &00000000  &3f800000  &00000000 )
+    Model: "294"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc16"
+    Position: ( &c15ff6b2  &b6b0f481  &415f86af )
+    Rotation: ( &3f3504f2  &290c9a39  &3f3504f4  &a83504f2 )
+    Model: "285"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc121"
+    Position: ( &c2214409  &b5a799a6  &4053b58e )
+    Rotation: ( &3ee5f276  &a90e8099  &bf64bab2  &28f9610c )
+    Model: "12"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc36"
+    Position: ( &41a02fb4  &35ec415a  &c095376a )
+    Rotation: ( &3f7f1ab3  &00000000  &3dab2b7e  &a700730d )
+    Model: "294"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc65"
+    Position: ( &c163adff  &3705e9e2  &c1a9282f )
+    Rotation: ( &248d3132  &00000000  &3f800000  &00000000 )
+    Model: "294"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc28"
+    Position: ( &41a8deab  &36b2a816  &c161ace7 )
+    Rotation: ( &3f7dcf54  &00000000  &be05a8b2  &a7a16172 )
+    Model: "295"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc31"
+    Position: ( &415442e4  &35d1116d  &c0840b98 )
+    Rotation: ( &3f800000  &00000000  &00000000  &00000000 )
+    Model: "295"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc38"
+    Position: ( &41a7e73c  &35fd50b7  &c09ffdcc )
+    Rotation: ( &3f3504f2  &290c9a39  &bf3504f4  &283504f2 )
+    Model: "294"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc56"
+    Position: ( &415442e4  &371123d0  &c1b7567a )
+    Rotation: ( &3f800000  &00000000  &00000000  &00000000 )
+    Model: "295"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc93"
+    Position: ( &c14fe2e6  &3613bed8  &c0baa10e )
+    Rotation: ( &248d3132  &00000000  &3f800000  &00000000 )
+    Model: "295"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc54"
+    Position: ( &41a7e73c  &370bd946  &c1b0a773 )
+    Rotation: ( &3f3504f2  &290c9a39  &bf3504f4  &283504f2 )
+    Model: "294"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc91"
+    Position: ( &c19dffb5  &35ea82ac  &c0941d4c )
+    Rotation: ( &3dab298f  &aabf71d8  &3f7f1ab9  &a90f9502 )
+    Model: "294"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc64"
+    Position: ( &c17785a7  &3705e9e2  &c1a9282f )
+    Rotation: ( &248d3132  &00000000  &3f800000  &00000000 )
+    Model: "295"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc55"
+    Position: ( &417be5a4  &371123d0  &c1b7567a )
+    Rotation: ( &3f800000  &00000000  &00000000  &00000000 )
+    Model: "295"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc17"
+    Position: ( &c15ff6b2  &b690357f  &41362971 )
+    Rotation: ( &3f3504f2  &290c9a39  &3f3504f4  &a83504f2 )
+    Model: "286"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc122"
+    Position: ( &421f1280  &b5a799a6  &4053b58e )
+    Rotation: ( &3f610e0b  &a691999d  &bef404db  &00000000 )
+    Model: "12"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc84"
+    Position: ( &c1a81445  &36a391f8  &c14e9e5c )
+    Rotation: ( &3e05a8ad  &aa9939da  &3f7dcf55  &a8f5291f )
+    Model: "295"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc79"
+    Position: ( &c19344a9  &369b2e78  &c14405ae )
+    Rotation: ( &3e05a8ad  &aa9939da  &3f7dcf55  &a8f5291f )
+    Model: "295"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc82"
+    Position: ( &c19c30ee  &36b7088c  &c1673440 )
+    Rotation: ( &3e05a8ad  &aa9939da  &bf7dcf55  &28f5291f )
+    Model: "294"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc68"
+    Position: ( &c17785a7  &37110204  &c1b72bc8 )
+    Rotation: ( &248d3132  &00000000  &3f800000  &00000000 )
+    Model: "295"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc73"
+    Position: ( &c163adff  &36c1c654  &c174c5b8 )
+    Rotation: ( &248d3132  &00000000  &3f800000  &00000000 )
+    Model: "294"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc35"
+    Position: ( &419574a8  &35e19f2e  &c08e801e )
+    Rotation: ( &3f7ec3e3  &00000000  &3dc8e912  &27b0da62 )
+    Model: "295"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc92"
+    Position: ( &c1a5b73d  &35fd50b7  &c09ffdcc )
+    Rotation: ( &3f3504f2  &290c9a39  &bf3504f4  &283504f2 )
+    Model: "294"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc85"
+    Position: ( &c1aede59  &36ab8422  &c158a7e0 )
+    Rotation: ( &3f3504f2  &290c9a39  &bf3504f4  &283504f2 )
+    Model: "294"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc89"
+    Position: ( &c1886af9  &35d45ecc  &c0862186 )
+    Rotation: ( &3dafb6db  &ab8bdd0b  &3f7f0e58  &a9cbf6f6 )
+    Model: "294"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc34"
+    Position: ( &418a9af8  &35d61d7b  &c0873ba5 )
+    Rotation: ( &3f7f0e57  &00000000  &3dafb6d6  &00000000 )
+    Model: "294"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc51"
+    Position: ( &417be5a4  &37061408  &c1a95d6e )
+    Rotation: ( &3f800000  &00000000  &00000000  &00000000 )
+    Model: "295"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc66"
+    Position: ( &c14fe2e6  &3705e9e2  &c1a9282f )
+    Rotation: ( &248d3132  &00000000  &3f800000  &00000000 )
+    Model: "295"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc50"
+    Position: ( &418a9af8  &3706b58a  &c1aa2971 )
+    Rotation: ( &3f7f0e57  &00000000  &3dafb6d6  &00000000 )
+    Model: "294"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc97"
+    Position: ( &c19344a9  &360bbd51  &c0b08423 )
+    Rotation: ( &3dc8e7cf  &ab18e875  &bf7ec3e8  &288eb6d3 )
+    Model: "295"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc48"
+    Position: ( &41a02fb4  &37097a06  &c1ada862 )
+    Rotation: ( &3f7f1ab3  &00000000  &3dab2b7e  &a700730d )
+    Model: "294"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc42"
+    Position: ( &418a9af8  &36124937  &c0b8c918 )
+    Rotation: ( &3f7f0e57  &00000000  &bdafb6d6  &00000000 )
+    Model: "294"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc13"
+    Position: ( &415442e4  &36c1c654  &c174c5b8 )
+    Rotation: ( &3f800000  &00000000  &00000000  &00000000 )
+    Model: "295"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc78"
+    Position: ( &c1886af9  &3696daae  &c13e8e58 )
+    Rotation: ( &3e05a8ad  &aa9939da  &3f7dcf55  &a8f5291f )
+    Model: "294"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc75"
+    Position: ( &c17785a7  &3694d464  &c13bffa6 )
+    Rotation: ( &248d3132  &00000000  &3f800000  &00000000 )
+    Model: "295"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc94"
+    Position: ( &c17785a7  &3613bed8  &c0baa10e )
+    Rotation: ( &248d3132  &00000000  &3f800000  &00000000 )
+    Model: "295"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc53"
+    Position: ( &415442e4  &37061408  &c1a95d6e )
+    Rotation: ( &3f800000  &00000000  &00000000  &00000000 )
+    Model: "295"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc26"
+    Position: ( &41a02fb4  &369f9705  &c149973d )
+    Rotation: ( &3f7dcf54  &00000000  &3e05a8b2  &27a16172 )
+    Model: "294"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc63"
+    Position: ( &c1886af9  &37068b64  &c1a9f433 )
+    Rotation: ( &3dafb6db  &ab8bdd0b  &3f7f0e58  &a9cbf6f6 )
+    Model: "294"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc27"
+    Position: ( &419e60ed  &36b7088c  &c1673440 )
+    Rotation: ( &3f7dcf54  &00000000  &be05a8b2  &a7a16172 )
+    Model: "294"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc18"
+    Position: ( &417be5a4  &36c1c654  &c174c5b8 )
+    Rotation: ( &3f800000  &00000000  &00000000  &00000000 )
+    Model: "295"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc71"
+    Position: ( &c14fe2e6  &36c1c654  &c174c5b8 )
+    Rotation: ( &248d3132  &00000000  &3f800000  &00000000 )
+    Model: "295"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc90"
+    Position: ( &c19344a9  &35dfe07f  &c08d65ff )
+    Rotation: ( &3dc8e7cf  &ab18e875  &3f7ec3e8  &a88eb6d3 )
+    Model: "295"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc52"
+    Position: ( &41680dfc  &37061408  &c1a95d6e )
+    Rotation: ( &3f800000  &00000000  &00000000  &00000000 )
+    Model: "294"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc43"
+    Position: ( &419574a8  &360c885d  &c0b1849f )
+    Rotation: ( &3f7ec3e3  &00000000  &bdc8e912  &a7b0da62 )
+    Model: "295"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc20"
+    Position: ( &41680dfc  &3694d464  &c13bffa6 )
+    Rotation: ( &3f800000  &00000000  &00000000  &00000000 )
+    Model: "294"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc61"
+    Position: ( &c19dffb5  &37094fe0  &c1ad7324 )
+    Rotation: ( &3dab298f  &aabf71d8  &3f7f1ab9  &a90f9502 )
+    Model: "294"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc30"
+    Position: ( &41b10e58  &36ab8422  &c158a7e0 )
+    Rotation: ( &3f3504f2  &290c9a39  &bf3504f4  &283504f2 )
+    Model: "294"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc127"
+    Position: ( &41404c9f  &b5d54e76  &4086b8e4 )
+    Rotation: ( &3ee417e6  &a933935a  &bf65315f  &28d77d9b )
+    Model: "12"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc59"
+    Position: ( &c19344a9  &370f01a2  &c1b4a48e )
+    Rotation: ( &3dc8e7cf  &ab18e875  &bf7ec3e8  &288eb6d3 )
+    Model: "295"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc98"
+    Position: ( &c19dffb5  &36066c3b  &c0a9ccd6 )
+    Rotation: ( &3dab298f  &aabf71d8  &bf7f1ab9  &290f9502 )
+    Model: "294"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc25"
+    Position: ( &41940410  &36bb5e94  &c16cae6a )
+    Rotation: ( &3f7dcf54  &00000000  &be05a8b2  &a7a16172 )
+    Model: "295"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc19"
+    Position: ( &417be5a4  &3694d464  &c13bffa6 )
+    Rotation: ( &3f800000  &00000000  &00000000  &00000000 )
+    Model: "295"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc41"
+    Position: ( &41680dfc  &361489e4  &c0bba18a )
+    Rotation: ( &3f800000  &00000000  &00000000  &00000000 )
+    Model: "294"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc69"
+    Position: ( &c14fe2e6  &37110204  &c1b72bc8 )
+    Rotation: ( &248d3132  &00000000  &3f800000  &00000000 )
+    Model: "295"
+    Part: "vis"
+}
+Semaphore {
+    Position: ( &c04b8a9a  &3ecdf372  &c176f7d3 )
+    Rotation: ( &2611a626  &00000000  &3f800000  &00000000 )
+    Type: 0
+    SemaphoreID: 2
+    Intervals: ( &3f800000  &3f800000  &40400000  &3f800000 )
+    Cycle: &00000000
+    Profile: "toll_sample"
+}
+Semaphore {
+    Position: ( &40505d13  &3ed47492  &c07f4614 )
+    Rotation: ( &3f7ff517  &00000000  &bc957b22  &00000000 )
+    Type: 0
+    SemaphoreID: 0
+    Intervals: ( &40600000  &3f800000  &40400000  &3f800000 )
+    Cycle: &00000000
+    Profile: "toll_sample"
+}
+Semaphore {
+    Position: ( &c04b8a9a  &3ed4757f  &c1b7f542 )
+    Rotation: ( &2611a626  &00000000  &3f800000  &00000000 )
+    Type: 0
+    SemaphoreID: 3
+    Intervals: ( &40600000  &3f800000  &40400000  &3f800000 )
+    Cycle: &00000000
+    Profile: "toll_sample"
+}
+Semaphore {
+    Position: ( &40505d13  &3ed474f1  &c138b643 )
+    Rotation: ( &3f7ffbe4  &00000000  &bc377c1c  &00000000 )
+    Type: 0
+    SemaphoreID: 1
+    Intervals: ( &3f800000  &3f800000  &40400000  &3f800000 )
+    Cycle: &00000000
+    Profile: "toll_sample"
+}
+MapPoint {
+    Index: 0
+    MapVisualFlags: 0
+    MapNavFlags: 0
+    Position: ( &c21d7391  &00000000  &c1d1ca70 )
+    Neighbours: ( 1 2 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 3
+    MapVisualFlags: 1379584
+    MapNavFlags: 0
+    Position: ( &4146ce87  &00000000  &c138735c )
+    Neighbours: ( 4 5 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 6
+    MapVisualFlags: 199936
+    MapNavFlags: 0
+    Position: ( &4144a8b9  &00000000  &40aaf0f5 )
+    Neighbours: ( 7 8 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 4
+    MapVisualFlags: 1379584
+    MapNavFlags: 0
+    Position: ( &c1462071  &00000000  &c138735c )
+    Neighbours: ( 3 45 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 13
+    MapVisualFlags: 1379584
+    MapNavFlags: 0
+    Position: ( &4146ce87  &00000000  &c06e21a4 )
+    Neighbours: ( 14 15 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 31
+    MapVisualFlags: 1379584
+    MapNavFlags: 0
+    Position: ( &411a921a  &00000000  &bf8c7513 )
+    Neighbours: ( 32 33 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 22
+    MapVisualFlags: 0
+    MapNavFlags: 0
+    Position: ( &423ae976  &00000000  &c0c238ac )
+    Neighbours: ( 23 24 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 25
+    MapVisualFlags: 1379584
+    MapNavFlags: 0
+    Position: ( &c1498e62  &00000000  &3fca4ce1 )
+    Neighbours: ( 26 27 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 28
+    MapVisualFlags: 0
+    MapNavFlags: 0
+    Position: ( &423ae976  &00000000  &c1aacfef )
+    Neighbours: ( 23 29 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 12
+    MapVisualFlags: 0
+    MapNavFlags: 0
+    Position: ( &c23ae976  &00000000  &c0c238ac )
+    Neighbours: ( 30 9 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 16
+    MapVisualFlags: 1379584
+    MapNavFlags: 0
+    Position: ( &c1462071  &00000000  &c1b94069 )
+    Neighbours: ( 17 18 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 34
+    MapVisualFlags: 1379584
+    MapNavFlags: 0
+    Position: ( &4146ce87  &00000000  &c1a634f2 )
+    Neighbours: ( 17 18 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 49
+    MapVisualFlags: 1379584
+    MapNavFlags: 0
+    Position: ( &c1462071  &00000000  &c0c33eaf )
+    Neighbours: ( 15 14 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 57
+    MapVisualFlags: 199936
+    MapNavFlags: 0
+    Position: ( &c143b785  &00000000  &418901fb )
+    Neighbours: ( 7 8 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 21
+    MapVisualFlags: 1379584
+    MapNavFlags: 0
+    Position: ( &40f76685  &00000000  &4071e7fb )
+    Neighbours: ( 35 19 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 29
+    MapVisualFlags: 0
+    MapNavFlags: 0
+    Position: ( &421d7391  &00000000  &c1d1ca70 )
+    Neighbours: ( 36 28 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 37
+    MapVisualFlags: 0
+    MapNavFlags: 0
+    Position: ( &41bb16eb  &00000000  &412b34e9 )
+    Neighbours: ( 38 39 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 42
+    MapVisualFlags: 1379584
+    MapNavFlags: 0
+    Position: ( &c1498e62  &00000000  &c1f528db )
+    Neighbours: ( 43 44 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 45
+    MapVisualFlags: 1379584
+    MapNavFlags: 0
+    Position: ( &c1462071  &00000000  &c17f20a0 )
+    Neighbours: ( 4 5 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 9
+    MapVisualFlags: 256
+    MapNavFlags: 258
+    Position: ( &c28a199a  &00000000  &c1580001 )
+    Neighbours: ( 10 11 1 12 -1 -1 )
+}
+MapPoint {
+    Index: 8
+    MapVisualFlags: 199936
+    MapNavFlags: 0
+    Position: ( &c143b785  &00000000  &40aaf0f5 )
+    Neighbours: ( 6 57 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 10
+    MapVisualFlags: 256
+    MapNavFlags: 1
+    Position: ( &3dbd2a45  &00000000  &c09d1e37 )
+    Neighbours: ( 9 23 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 47
+    MapVisualFlags: 0
+    MapNavFlags: 0
+    Position: ( &c1bb16eb  &00000000  &c2187c47 )
+    Neighbours: ( 48 2 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 56
+    MapVisualFlags: 0
+    MapNavFlags: 0
+    Position: ( &c143b785  &00000000  &412b34e9 )
+    Neighbours: ( 54 -1 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 50
+    MapVisualFlags: 1379584
+    MapNavFlags: 0
+    Position: ( &c11905f8  &00000000  &c1d03cac )
+    Neighbours: ( 33 32 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 36
+    MapVisualFlags: 0
+    MapNavFlags: 0
+    Position: ( &41fa8aff  &00000000  &c205730e )
+    Neighbours: ( 40 29 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 38
+    MapVisualFlags: 0
+    MapNavFlags: 0
+    Position: ( &4143b785  &00000000  &412b34e9 )
+    Neighbours: ( 37 -1 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 61
+    MapVisualFlags: 3584
+    MapNavFlags: 770
+    Position: ( &c28a199a  &00000000  &c1580001 )
+    Neighbours: ( 60 -1 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 20
+    MapVisualFlags: 1379584
+    MapNavFlags: 0
+    Position: ( &c0f97365  &00000000  &c1f5f7b3 )
+    Neighbours: ( 35 19 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 24
+    MapVisualFlags: 0
+    MapNavFlags: 0
+    Position: ( &421d7391  &00000000  &bf993a9c )
+    Neighbours: ( 22 39 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 33
+    MapVisualFlags: 1379584
+    MapNavFlags: 0
+    Position: ( &411a921a  &00000000  &c1d03cac )
+    Neighbours: ( 31 50 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 18
+    MapVisualFlags: 1379584
+    MapNavFlags: 0
+    Position: ( &4146ce87  &00000000  &c1b94069 )
+    Neighbours: ( 16 34 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 35
+    MapVisualFlags: 1379584
+    MapNavFlags: 0
+    Position: ( &c0f97365  &00000000  &4071e7fb )
+    Neighbours: ( 21 20 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 41
+    MapVisualFlags: 0
+    MapNavFlags: 0
+    Position: ( &4143b785  &00000000  &c2187c47 )
+    Neighbours: ( 40 -1 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 51
+    MapVisualFlags: 199936
+    MapNavFlags: 0
+    Position: ( &c143b785  &00000000  &c234f325 )
+    Neighbours: ( 52 53 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 54
+    MapVisualFlags: 0
+    MapNavFlags: 0
+    Position: ( &c1bb16eb  &00000000  &412b34e9 )
+    Neighbours: ( 55 56 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 19
+    MapVisualFlags: 1379584
+    MapNavFlags: 0
+    Position: ( &40f76685  &00000000  &c1f5f7b3 )
+    Neighbours: ( 20 21 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 39
+    MapVisualFlags: 0
+    MapNavFlags: 0
+    Position: ( &41fa8aff  &00000000  &40be2008 )
+    Neighbours: ( 24 37 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 5
+    MapVisualFlags: 1379584
+    MapNavFlags: 0
+    Position: ( &4146ce87  &00000000  &c17f20a0 )
+    Neighbours: ( 3 45 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 48
+    MapVisualFlags: 0
+    MapNavFlags: 0
+    Position: ( &c143b785  &00000000  &c2187c47 )
+    Neighbours: ( 47 -1 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 26
+    MapVisualFlags: 1379584
+    MapNavFlags: 0
+    Position: ( &41436097  &00000000  &3fca4ce1 )
+    Neighbours: ( 25 58 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 55
+    MapVisualFlags: 0
+    MapNavFlags: 0
+    Position: ( &c1fa8aff  &00000000  &40be2008 )
+    Neighbours: ( 30 54 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 15
+    MapVisualFlags: 1379584
+    MapNavFlags: 0
+    Position: ( &4146ce87  &00000000  &c0c33eaf )
+    Neighbours: ( 49 13 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 40
+    MapVisualFlags: 0
+    MapNavFlags: 0
+    Position: ( &41bb16eb  &00000000  &c2187c47 )
+    Neighbours: ( 36 41 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 14
+    MapVisualFlags: 1379584
+    MapNavFlags: 0
+    Position: ( &c1462071  &00000000  &c06e21a4 )
+    Neighbours: ( 13 49 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 30
+    MapVisualFlags: 0
+    MapNavFlags: 0
+    Position: ( &c21d7391  &00000000  &bf993a9c )
+    Neighbours: ( 12 55 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 2
+    MapVisualFlags: 0
+    MapNavFlags: 0
+    Position: ( &c1fa8aff  &00000000  &c205730e )
+    Neighbours: ( 0 47 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 27
+    MapVisualFlags: 1379584
+    MapNavFlags: 0
+    Position: ( &c1498e62  &00000000  &407d822a )
+    Neighbours: ( 58 25 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 23
+    MapVisualFlags: 256
+    MapNavFlags: 257
+    Position: ( &428a199a  &00000000  &c1580001 )
+    Neighbours: ( 22 28 10 11 -1 -1 )
+}
+MapPoint {
+    Index: 7
+    MapVisualFlags: 199936
+    MapNavFlags: 0
+    Position: ( &4144a8b9  &00000000  &418901fb )
+    Neighbours: ( 6 57 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 17
+    MapVisualFlags: 1379584
+    MapNavFlags: 0
+    Position: ( &c1462071  &00000000  &c1a634f2 )
+    Neighbours: ( 34 16 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 59
+    MapVisualFlags: 199936
+    MapNavFlags: 0
+    Position: ( &4144a8b9  &00000000  &c2023804 )
+    Neighbours: ( 53 52 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 32
+    MapVisualFlags: 1379584
+    MapNavFlags: 0
+    Position: ( &c11905f8  &00000000  &bf8c7513 )
+    Neighbours: ( 31 50 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 43
+    MapVisualFlags: 1379584
+    MapNavFlags: 0
+    Position: ( &41436097  &00000000  &c1f528db )
+    Neighbours: ( 42 46 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 44
+    MapVisualFlags: 1379584
+    MapNavFlags: 0
+    Position: ( &c1498e62  &00000000  &c1e21d64 )
+    Neighbours: ( 46 42 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 60
+    MapVisualFlags: 3584
+    MapNavFlags: 769
+    Position: ( &428a199a  &00000000  &c1580001 )
+    Neighbours: ( 61 -1 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 1
+    MapVisualFlags: 0
+    MapNavFlags: 0
+    Position: ( &c23ae976  &00000000  &c1aacfef )
+    Neighbours: ( 0 9 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 46
+    MapVisualFlags: 1379584
+    MapNavFlags: 0
+    Position: ( &41436097  &00000000  &c1e21d64 )
+    Neighbours: ( 43 44 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 58
+    MapVisualFlags: 1379584
+    MapNavFlags: 0
+    Position: ( &41436097  &00000000  &407d822a )
+    Neighbours: ( 27 26 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 53
+    MapVisualFlags: 199936
+    MapNavFlags: 0
+    Position: ( &c143b785  &00000000  &c2023804 )
+    Neighbours: ( 59 51 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 52
+    MapVisualFlags: 199936
+    MapNavFlags: 0
+    Position: ( &4144a8b9  &00000000  &c234f325 )
+    Neighbours: ( 51 59 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 11
+    MapVisualFlags: 256
+    MapNavFlags: 2
+    Position: ( &3dbd2a45  &00000000  &c1af8ee1 )
+    Neighbours: ( 9 23 -1 -1 -1 -1 )
+}
+Intersection {
+    # curve start locator: 'Nav_Point_7'
+    InterCurveID: 1
+    InterPosition: 0.0
+    InterRadius: 19.3
+    Flags: 65568
+}
+Intersection {
+    # curve start locator: 'Nav_Point_7'
+    InterCurveID: 11
+    InterPosition: 0.0
+    InterRadius: 19.3
+    Flags: 0
+}
+Intersection {
+    # curve start locator: 'Nav_Point_5'
+    InterCurveID: 0
+    InterPosition: 0.0
+    InterRadius: 22.0
+    Flags: 65568
+}
+Intersection {
+    # curve start locator: 'Nav_Point_5'
+    InterCurveID: 24
+    InterPosition: 0.0
+    InterRadius: 22.0
+    Flags: 0
+}
+Intersection {
+    # curve start locator: 'Nav_Point_14'
+    InterCurveID: 21
+    InterPosition: 23.951272
+    InterRadius: 14.2
+    Flags: 131104
+}
+Intersection {
+    # curve start locator: 'Nav_Point_11'
+    InterCurveID: 25
+    InterPosition: 22.924987
+    InterRadius: 14.2
+    Flags: 0
+}
+Intersection {
+    # curve start locator: 'Nav_Point_9'
+    InterCurveID: 8
+    InterPosition: 20.835946
+    InterRadius: 16.7
+    Flags: 131104
+}
+Intersection {
+    # curve start locator: 'Nav_Point_1'
+    InterCurveID: 12
+    InterPosition: 22.085224
+    InterRadius: 16.7
+    Flags: 0
+}
+

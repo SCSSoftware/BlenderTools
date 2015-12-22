@@ -18,10 +18,15 @@
 
 # Copyright (C) 2015: SCS Software
 
+from io_scs_tools.consts import Mesh as _MESH_consts
+from io_scs_tools.internals.shaders.eut2.std_node_groups import vcolor_input
+
 
 class Reflective:
     GEOM_NODE = "Geometry"
     BASE_TEX_NODE = "BaseTex"
+    VCOL_GROUP_NODE = "VColorGroup"
+    OPACITY_NODE = "OpacityMultiplier"
     VCOLOR_MULT_NODE = "VertexColorMultiplier"
     VCOLOR_SCALE_NODE = "VertexColorScale"
     OUT_MAT_NODE = "InputMaterial"
@@ -45,13 +50,24 @@ class Reflective:
 
         pos_x_shift = 185
 
-        node_tree.nodes.clear()
-
         # node creation
+        vcol_group_n = node_tree.nodes.new("ShaderNodeGroup")
+        vcol_group_n.name = Reflective.VCOL_GROUP_NODE
+        vcol_group_n.label = Reflective.VCOL_GROUP_NODE
+        vcol_group_n.location = (start_pos_x - pos_x_shift, start_pos_y + 1650)
+        vcol_group_n.node_tree = vcolor_input.get_node_group()
+
         geometry_n = node_tree.nodes.new("ShaderNodeGeometry")
         geometry_n.name = Reflective.GEOM_NODE
         geometry_n.label = Reflective.GEOM_NODE
-        geometry_n.location = (start_pos_x - pos_x_shift, start_pos_y + 1900)
+        geometry_n.location = (start_pos_x - pos_x_shift, start_pos_y + 1500)
+        geometry_n.uv_layer = _MESH_consts.none_uv
+
+        opacity_n = node_tree.nodes.new("ShaderNodeMath")
+        opacity_n.name = Reflective.OPACITY_NODE
+        opacity_n.label = Reflective.OPACITY_NODE
+        opacity_n.location = (start_pos_x + pos_x_shift * 3, start_pos_y + 1300)
+        opacity_n.operation = "MULTIPLY"
 
         vcol_scale_n = node_tree.nodes.new("ShaderNodeMixRGB")
         vcol_scale_n.name = Reflective.VCOLOR_SCALE_NODE
@@ -59,7 +75,7 @@ class Reflective:
         vcol_scale_n.location = (start_pos_x + pos_x_shift * 3, start_pos_y + 1750)
         vcol_scale_n.blend_type = "MULTIPLY"
         vcol_scale_n.inputs['Fac'].default_value = 1
-        vcol_scale_n.inputs['Color2'].default_value = (4,) * 4
+        vcol_scale_n.inputs['Color2'].default_value = (2,) * 4
 
         base_tex_n = node_tree.nodes.new("ShaderNodeTexture")
         base_tex_n.name = Reflective.BASE_TEX_NODE
@@ -89,13 +105,15 @@ class Reflective:
 
         # links creation
         node_tree.links.new(base_tex_n.inputs['Vector'], geometry_n.outputs['UV'])
-        node_tree.links.new(vcol_scale_n.inputs['Color1'], geometry_n.outputs['Vertex Color'])
+        node_tree.links.new(vcol_scale_n.inputs['Color1'], vcol_group_n.outputs['Vertex Color'])
 
         node_tree.links.new(vcol_mult_n.inputs['Color1'], vcol_scale_n.outputs['Color'])
         node_tree.links.new(vcol_mult_n.inputs['Color2'], base_tex_n.outputs['Color'])
+        node_tree.links.new(opacity_n.inputs[0], base_tex_n.outputs["Value"])
+        node_tree.links.new(opacity_n.inputs[1], vcol_group_n.outputs["Vertex Color Alpha"])
 
         node_tree.links.new(out_mat_n.inputs['Color'], vcol_mult_n.outputs['Color'])
-        node_tree.links.new(out_mat_n.inputs['Alpha'], base_tex_n.outputs['Value'])
+        node_tree.links.new(out_mat_n.inputs['Alpha'], opacity_n.outputs['Value'])
 
         node_tree.links.new(output_n.inputs['Color'], out_mat_n.outputs['Color'])
         node_tree.links.new(output_n.inputs['Alpha'], out_mat_n.outputs['Alpha'])
@@ -137,5 +155,8 @@ class Reflective:
         :param uv_layer: uv layer string used for base texture
         :type uv_layer: str
         """
+
+        if uv_layer is None or uv_layer == "":
+            uv_layer = _MESH_consts.none_uv
 
         node_tree.nodes[Reflective.GEOM_NODE].uv_layer = uv_layer

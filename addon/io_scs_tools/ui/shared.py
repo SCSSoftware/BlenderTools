@@ -23,7 +23,7 @@ import bpy
 from io_scs_tools.consts import Icons as _ICONS_consts
 from io_scs_tools.utils import object as _object_utils
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
-from io_scs_tools.internals.icons.wrapper import get_icon
+from io_scs_tools.internals.icons import get_icon
 
 _ICON_TYPES = _ICONS_consts.Types
 
@@ -168,7 +168,7 @@ def draw_debug_settings(layout):
     row.prop(_get_scs_globals(), 'dump_level', text="Dump Level")
 
 
-def draw_warning_operator(layout, title, message, icon="ERROR"):
+def draw_warning_operator(layout, title, message, text="", icon="ERROR"):
     """Draws operator for showing popup window with given title and message.
 
     :param layout: Blender UI layout to draw operator to
@@ -177,10 +177,12 @@ def draw_warning_operator(layout, title, message, icon="ERROR"):
     :type title: str
     :param message: message used in popup window
     :type message: str
-    :param icon: blender icon string
+    :param text: text of warning operator button (optional)
+    :type text: str
+    :param icon: blender icon string (optional)
     :type icon: str
     """
-    props = layout.operator('wm.show_warning_message', text="", icon=icon)
+    props = layout.operator('wm.show_warning_message', text=text, icon=icon)
     props.is_modal = False
     props.icon = icon
     props.title = title

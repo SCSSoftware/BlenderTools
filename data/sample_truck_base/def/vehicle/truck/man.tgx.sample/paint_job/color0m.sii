@@ -9,23 +9,23 @@ accessory_paint_job_data : color0m.man.tgx.sample.paint_job
 	base_color : (0.4, 0.4, 0.4)
 	base_color_locked: true
 	stock: false
-
+  
   flipflake : true
-
+  
   flip_color : (0.15, 0.15, 0.15)
   flake_color: (1, 1, 1)
-
+  
   flip_strength: 1.3
   flake_uvscale :  48.0
   flake_density :  0.6
   flake_shininess :  20.0
   flake_clearcoat_rolloff :  4.5
   flake_noise: "/material/custom/flake_noise.tobj"
-
+  
   base_color_locked: false
   flip_color_locked: false
   flake_color_locked: false
-
+  
   alternate_uvset: true
 }
 }

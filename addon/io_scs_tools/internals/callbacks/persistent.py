@@ -22,6 +22,7 @@ import bpy
 from io_scs_tools.internals.persistent import initialization as _persistent_init
 from io_scs_tools.internals.persistent import loop_check as _persistent_loop
 from io_scs_tools.internals.persistent import file_save as _persistent_file_save
+from io_scs_tools.internals.persistent import file_load as _persistent_file_load
 
 
 def enable():
@@ -38,6 +39,8 @@ def enable():
 
     bpy.app.handlers.scene_update_pre.append(_persistent_loop.object_data_check)
 
+    bpy.app.handlers.load_post.append(_persistent_file_load.post_load)
+
     bpy.app.handlers.save_pre.append(_persistent_file_save.pre_save)
     bpy.app.handlers.save_post.append(_persistent_file_save.post_save)
 
@@ -49,6 +52,8 @@ def disable():
         bpy.app.handlers.load_post.remove(_persistent_init.initialise_scs_dict)
     if _persistent_loop.object_data_check in bpy.app.handlers.scene_update_pre:
         bpy.app.handlers.scene_update_pre.remove(_persistent_loop.object_data_check)
+    if _persistent_file_load.post_load in bpy.app.handlers.load_post:
+        bpy.app.handlers.load_post.remove(_persistent_file_load.post_load)
     if _persistent_file_save.pre_save in bpy.app.handlers.save_pre:
         bpy.app.handlers.save_pre.remove(_persistent_file_save.pre_save)
     if _persistent_file_save.post_save in bpy.app.handlers.save_pre:

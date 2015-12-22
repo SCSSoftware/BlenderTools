@@ -8,6 +8,7 @@ accessory_interior_data: standard.low.ex.man.tgx.sample.interior
 	icon: "interior_man_tgx_lux"
 
 	model: "/vehicle/truck/man_tgx_sample/interior/model.pmd"
+	collision: "/vehicle/truck/man_tgx_sample/interior/model.pmc"
 	animated_model: "/vehicle/truck/man_tgx_sample/interior/anim.pmd"
 	active_mirrors_part: a_e_mirrors
 	passive_mirrors_part: p_e_mirrors
@@ -17,13 +18,17 @@ accessory_interior_data: standard.low.ex.man.tgx.sample.interior
 @include "animations.sui"
 
 	dashboard_path:"/ui/dashboard/man_tgx.sii"
-  gps_path:"/ui/gps.sii"
+	gps_path:"/ui/gps.sii"
 
 	glass_panes[]: .man.tgx.sample.pane.front
 	glass_panes[]: .man.tgx.sample.pane.close
 	glass_panes[]: .man.tgx.sample.pane.far
+  
+	suitable_for[]: "xl_cab.man.tgx.sample.cabin"
 
-    suitable_for[]: "xl_cab.man.tgx.sample.cabin"
+	ext_model: "/vehicle/truck/upgrade/ext_interior/man_tgx_sample/stock.pmd"
+	ext_variant: cab_low_eu
+	ext_look: exclusive
 
 @include "dashboard_color.sui"
 @include "seat.sui"

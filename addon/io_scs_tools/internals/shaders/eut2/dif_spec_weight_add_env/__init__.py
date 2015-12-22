@@ -20,14 +20,14 @@
 
 
 from io_scs_tools.internals.shaders.eut2.dif_spec_weight import DifSpecWeight
-from io_scs_tools.internals.shaders.eut2.std_node_groups import add_env
+from io_scs_tools.internals.shaders.eut2.std_passes.add_env import StdAddEnv
 
 
-class DifSpecWeightAddEnv(DifSpecWeight):
-    REFL_TEX_NODE = "ReflectionTex"
-    ENV_COLOR_NODE = "EnvFactorColor"
-    ADD_ENV_GROUP_NODE = "AddEnvGroup"
-    OUT_ADD_REFL_NODE = "OutputAddRefl"
+class DifSpecWeightAddEnv(DifSpecWeight, StdAddEnv):
+    @staticmethod
+    def get_name():
+        """Get name of this shader file with full modules path."""
+        return __name__
 
     @staticmethod
     def init(node_tree):
@@ -37,66 +37,14 @@ class DifSpecWeightAddEnv(DifSpecWeight):
         :type node_tree: bpy.types.NodeTree
         """
 
-        start_pos_x = 0
-        start_pos_y = 0
-
-        pos_x_shift = 185
-
-        # init parent
+        # init parents
         DifSpecWeight.init(node_tree)
-
-        geometry_n = node_tree.nodes[DifSpecWeight.GEOM_NODE]
-        spec_col_n = node_tree.nodes[DifSpecWeight.SPEC_COL_NODE]
-        base_tex_n = node_tree.nodes[DifSpecWeight.BASE_TEX_NODE]
-        out_mat_n = node_tree.nodes[DifSpecWeight.OUT_MAT_NODE]
-        output_n = node_tree.nodes[DifSpecWeight.OUTPUT_NODE]
-
-        # move existing
-        output_n.location.x += pos_x_shift
-
-        # node creation
-        refl_tex_n = node_tree.nodes.new("ShaderNodeTexture")
-        refl_tex_n.name = DifSpecWeightAddEnv.REFL_TEX_NODE
-        refl_tex_n.label = DifSpecWeightAddEnv.REFL_TEX_NODE
-        refl_tex_n.location = (start_pos_x + pos_x_shift, start_pos_y + 2500)
-
-        env_col_n = node_tree.nodes.new("ShaderNodeRGB")
-        env_col_n.name = DifSpecWeightAddEnv.ENV_COLOR_NODE
-        env_col_n.label = DifSpecWeightAddEnv.ENV_COLOR_NODE
-        env_col_n.location = (start_pos_x + pos_x_shift, start_pos_y + 2200)
-
-        add_env_gn = node_tree.nodes.new("ShaderNodeGroup")
-        add_env_gn.name = DifSpecWeightAddEnv.ADD_ENV_GROUP_NODE
-        add_env_gn.label = DifSpecWeightAddEnv.ADD_ENV_GROUP_NODE
-        add_env_gn.location = (start_pos_x + pos_x_shift * 3, start_pos_y + 2300)
-        add_env_gn.node_tree = add_env.get_node_group()
-        add_env_gn.inputs['Apply Fresnel'].default_value = 1.0
-        add_env_gn.inputs['Fresnel Scale'].default_value = 0.9
-        add_env_gn.inputs['Fresnel Bias'].default_value = 0.2
-
-        out_add_refl_n = node_tree.nodes.new("ShaderNodeMixRGB")
-        out_add_refl_n.name = DifSpecWeightAddEnv.OUT_ADD_REFL_NODE
-        out_add_refl_n.label = DifSpecWeightAddEnv.OUT_ADD_REFL_NODE
-        out_add_refl_n.location = (output_n.location.x - pos_x_shift, start_pos_y + 1950)
-        out_add_refl_n.blend_type = "ADD"
-        out_add_refl_n.inputs['Fac'].default_value = 1
-
-        # geometry links
-        node_tree.links.new(add_env_gn.inputs['Normal Vector'], geometry_n.outputs['Normal'])
-        node_tree.links.new(add_env_gn.inputs['View Vector'], geometry_n.outputs['View'])
-        node_tree.links.new(refl_tex_n.inputs['Vector'], geometry_n.outputs['Normal'])
-
-        node_tree.links.new(add_env_gn.inputs['Env Factor Color'], env_col_n.outputs['Color'])
-        node_tree.links.new(add_env_gn.inputs['Reflection Texture Color'], refl_tex_n.outputs['Color'])
-
-        node_tree.links.new(add_env_gn.inputs['Specular Color'], spec_col_n.outputs['Color'])
-        node_tree.links.new(add_env_gn.inputs['Base Texture Alpha'], base_tex_n.outputs['Value'])
-
-        # output pass
-        node_tree.links.new(out_add_refl_n.inputs['Color1'], add_env_gn.outputs['Environment Addition Color'])
-        node_tree.links.new(out_add_refl_n.inputs['Color2'], out_mat_n.outputs['Color'])
-
-        node_tree.links.new(output_n.inputs['Color'], out_add_refl_n.outputs['Color'])
+        StdAddEnv.add(node_tree,
+                      DifSpecWeight.GEOM_NODE,
+                      DifSpecWeight.SPEC_COL_NODE,
+                      DifSpecWeight.BASE_TEX_NODE,
+                      DifSpecWeight.OUT_MAT_NODE,
+                      DifSpecWeight.OUTPUT_NODE)
 
     @staticmethod
     def set_reflection_texture(node_tree, texture):
@@ -109,31 +57,3 @@ class DifSpecWeightAddEnv(DifSpecWeight):
         """
 
         node_tree.nodes[DifSpecWeightAddEnv.REFL_TEX_NODE].texture = texture
-
-    @staticmethod
-    def set_env_factor(node_tree, color):
-        """Set environment factor color to shader.
-
-        :param node_tree: node tree of current shader
-        :type node_tree: bpy.types.NodeTree
-        :param color: environment color
-        :type color: Color or tuple
-        """
-
-        if len(color) == 3:
-            color = tuple(color) + (1,)
-
-        node_tree.nodes[DifSpecWeightAddEnv.ENV_COLOR_NODE].outputs[0].default_value = color
-
-    @staticmethod
-    def set_fresnel(node_tree, bias_scale):
-        """Set fresnel bias and scale value to shader.
-
-        :param node_tree: node tree of current shader
-        :type node_tree: bpy.types.NodeTree
-        :param bias_scale: bias and scale factors as tuple: (bias, scale)
-        :type bias_scale: (float, float)
-        """
-
-        node_tree.nodes[DifSpecWeightAddEnv.ADD_ENV_GROUP_NODE].inputs['Fresnel Bias'].default_value = bias_scale[0]
-        node_tree.nodes[DifSpecWeightAddEnv.ADD_ENV_GROUP_NODE].inputs['Fresnel Scale'].default_value = bias_scale[1]

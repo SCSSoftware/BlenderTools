@@ -66,35 +66,60 @@ def _draw_path_settings_panel(scene, layout, scs_globals):
         layout_box_row.prop(scs_globals, 'scs_project_path', text='', icon='PACKAGE')
         layout_box_row.operator('scene.select_scs_project_path', text='', icon='FILESEL')
 
+        # Divide labels and sub paths to columns
+        sub_paths_layout = layout_box_col.row().split(percentage=0.3)
+        sub_paths_left_col = sub_paths_layout.column()
+        sub_paths_right_col = sub_paths_layout.column()
+
+        # Trigger Actions File (FILE_PATH - relative)
+        icon = 'SNAP_ON' if _get_scs_globals().trigger_actions_use_infixed else 'SNAP_OFF'
+        sub_paths_left_col.label("Trigger Action Lib:")
+        sub_path_right_col_row = sub_paths_right_col.row(align=True)
+        sub_path_right_col_row.alert = not _path_utils.is_valid_trigger_actions_rel_path()
+        sub_path_right_col_row.prop(scs_globals, 'trigger_actions_rel_path', text='', icon='FILE_SCRIPT')
+        sub_path_right_col_row.prop(scs_globals, 'trigger_actions_use_infixed', icon=icon, icon_only=True)
+        sub_path_right_col_row.operator('scene.select_trigger_actions_rel_path', text='', icon='FILESEL')
+
         # Sign Library Directory (FILE_PATH - relative)
-        layout_box_row = layout_box_col.row(align=True)
-        layout_box_row.alert = not _path_utils.is_valid_sign_library_rel_path()
-        layout_box_row.prop(scs_globals, 'sign_library_rel_path', icon='FILE_SCRIPT')
-        layout_box_row.operator('scene.select_sign_library_rel_path', text='', icon='FILESEL')
+        icon = 'SNAP_ON' if _get_scs_globals().sign_library_use_infixed else 'SNAP_OFF'
+        sub_paths_left_col.label("Sign Library:")
+        sub_path_right_col_row = sub_paths_right_col.row(align=True)
+        sub_path_right_col_row.alert = not _path_utils.is_valid_sign_library_rel_path()
+        sub_path_right_col_row.prop(scs_globals, 'sign_library_rel_path', text='', icon='FILE_SCRIPT')
+        sub_path_right_col_row.prop(scs_globals, 'sign_library_use_infixed', icon=icon, icon_only=True)
+        sub_path_right_col_row.operator('scene.select_sign_library_rel_path', text='', icon='FILESEL')
 
         # Traffic Semaphore Profile Library Directory (FILE_PATH - relative)
-        layout_box_row = layout_box_col.row(align=True)
-        layout_box_row.alert = not _path_utils.is_valid_tsem_library_rel_path()
-        layout_box_row.prop(scs_globals, 'tsem_library_rel_path', text="Semaphore Lib", icon='FILE_SCRIPT')
-        layout_box_row.operator('scene.select_tsem_library_rel_path', text='', icon='FILESEL')
+        icon = 'SNAP_ON' if _get_scs_globals().tsem_library_use_infixed else 'SNAP_OFF'
+        sub_paths_left_col.label("Semaphore Lib:")
+        sub_path_right_col_row = sub_paths_right_col.row(align=True)
+        sub_path_right_col_row.alert = not _path_utils.is_valid_tsem_library_rel_path()
+        sub_path_right_col_row.prop(scs_globals, 'tsem_library_rel_path', text='', icon='FILE_SCRIPT')
+        sub_path_right_col_row.prop(scs_globals, 'tsem_library_use_infixed', icon=icon, icon_only=True)
+        sub_path_right_col_row.operator('scene.select_tsem_library_rel_path', text='', icon='FILESEL')
 
         # Traffic Rules Library Directory (FILE_PATH - relative)
-        layout_box_row = layout_box_col.row(align=True)
-        layout_box_row.alert = not _path_utils.is_valid_traffic_rules_library_rel_path()
-        layout_box_row.prop(scs_globals, 'traffic_rules_library_rel_path', text="Traffic Rules Lib", icon='FILE_SCRIPT')
-        layout_box_row.operator('scene.select_traffic_rules_library_rel_path', text='', icon='FILESEL')
+        icon = 'SNAP_ON' if _get_scs_globals().traffic_rules_library_use_infixed else 'SNAP_OFF'
+        sub_paths_left_col.label("Traffic Rules Lib:")
+        sub_path_right_col_row = sub_paths_right_col.row(align=True)
+        sub_path_right_col_row.alert = not _path_utils.is_valid_traffic_rules_library_rel_path()
+        sub_path_right_col_row.prop(scs_globals, 'traffic_rules_library_rel_path', text='', icon='FILE_SCRIPT')
+        sub_path_right_col_row.prop(scs_globals, 'traffic_rules_library_use_infixed', icon=icon, icon_only=True)
+        sub_path_right_col_row.operator('scene.select_traffic_rules_library_rel_path', text='', icon='FILESEL')
 
         # Hookup Library Directory (DIR_PATH - relative)
-        layout_box_row = layout_box_col.row(align=True)
-        layout_box_row.alert = not _path_utils.is_valid_hookup_library_rel_path()
-        layout_box_row.prop(scs_globals, 'hookup_library_rel_path', text="Hookup Lib Dir", icon='FILE_FOLDER')
-        layout_box_row.operator('scene.select_hookup_library_rel_path', text='', icon='FILESEL')
+        sub_paths_left_col.label("Hookup Lib Dir:")
+        sub_path_right_col_row = sub_paths_right_col.row(align=True)
+        sub_path_right_col_row.alert = not _path_utils.is_valid_hookup_library_rel_path()
+        sub_path_right_col_row.prop(scs_globals, 'hookup_library_rel_path', text='', icon='FILE_FOLDER')
+        sub_path_right_col_row.operator('scene.select_hookup_library_rel_path', text='', icon='FILESEL')
 
         # Material Substance Library Directory (FILE_PATH - relative)
-        layout_box_row = layout_box_col.row(align=True)
-        layout_box_row.alert = not _path_utils.is_valid_matsubs_library_rel_path()
-        layout_box_row.prop(scs_globals, 'matsubs_library_rel_path', text="Mat Substance Lib", icon='FILE_SCRIPT')
-        layout_box_row.operator('scene.select_matsubs_library_rel_path', text='', icon='FILESEL')
+        sub_paths_left_col.label("Mat Substance Lib:")
+        sub_path_right_col_row = sub_paths_right_col.row(align=True)
+        sub_path_right_col_row.alert = not _path_utils.is_valid_matsubs_library_rel_path()
+        sub_path_right_col_row.prop(scs_globals, 'matsubs_library_rel_path', text='', icon='FILE_SCRIPT')
+        sub_path_right_col_row.operator('scene.select_matsubs_library_rel_path', text='', icon='FILESEL')
 
         layout_box_row = layout_box_col.row()
         layout_box_row.separator()
@@ -108,24 +133,6 @@ def _draw_path_settings_panel(scene, layout, scs_globals):
             layout_box_row.alert = True
         layout_box_row.prop(scs_globals, 'shader_presets_filepath', text='', icon='NONE')
         layout_box_row.operator('scene.select_shader_presets_filepath', text='', icon='FILESEL')
-
-        # ## CgFX Templates File (FILE_PATH)
-        # layout_box_row = layout_box_col.row(align=True)
-        # if utils.is_valid_cgfx_template_library_path():
-        # layout_box_row.alert = False
-        # else:
-        # layout_box_row.alert = True
-        # layout_box_row.prop(scs_globals, 'cgfx_templates_filepath', icon='FILE_TEXT')
-        # layout_box_row.operator('scene.select_cgfx_templates_filepath', text='', icon='FILESEL')
-        #
-        # ## CgFX Library Directory (DIR_PATH - relative)
-        # layout_box_row = layout_box_col.row(align=True)
-        # if utils.is_valid_cgfx_library_rel_path():
-        # layout_box_row.alert = False
-        # else:
-        # layout_box_row.alert = True
-        # layout_box_row.prop(scs_globals, 'cgfx_library_rel_path', icon='FILE_FOLDER')
-        # layout_box_row.operator('scene.select_cgfx_library_rel_path', text='', icon='FILESEL')
 
     else:
         layout_box_row = layout_box.row()

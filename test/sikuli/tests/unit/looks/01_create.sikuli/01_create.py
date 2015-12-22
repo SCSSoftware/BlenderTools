@@ -10,7 +10,7 @@ try:
 
     find(Pattern("startup.png").similar(0.91))
     find(Pattern("look_entries.png").similar(0.91))
-
+    
 except:
     configurator.save_screenshot(getBundlePath(), Screen())
     raise

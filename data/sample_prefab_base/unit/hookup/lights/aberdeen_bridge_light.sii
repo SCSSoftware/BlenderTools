@@ -1,0 +1,17 @@
+SiiNunit
+{
+light_source : aberdeen.bridge.light
+{
+	ambient_color: (0.0000, 0.0000, 0.0000)
+	diffuse_color: (0.9047, 0.8632, 0.6038)
+	specular_color: (0.9911, 0.9911, 0.9387)
+
+	type: point
+	range: 16
+
+	dir_type: all
+	model: "/model/flare/lamp_flare_small.pmd"
+	scale_factor: 2
+}
+
+}

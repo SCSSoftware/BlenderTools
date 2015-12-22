@@ -1,0 +1,11 @@
+material : "eut2.dif.spec.weight"
+{
+	texture : "shoulder_01.tobj"
+	texture_name : "texture_base"
+	substance : "road"
+
+	specular : { 0.2, 0.2, 0.2 }
+	shininess : 12
+}
+
+

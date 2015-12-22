@@ -26,8 +26,10 @@ from io_scs_tools.exp import tobj as _tobj
 from io_scs_tools.internals import looks as _looks
 from io_scs_tools.internals.structure import SectionData as _SectionData
 from io_scs_tools.internals.containers import pix as _pix_container
+from io_scs_tools.internals.shader_presets import cache as _shader_presets_cache
 from io_scs_tools.utils import path as _path_utils
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
+from io_scs_tools.utils import get_shader_presets_inventory as _get_shader_presets_inventory
 from io_scs_tools.utils.info import get_combined_ver_str
 from io_scs_tools.utils.printout import lprint
 
@@ -98,9 +100,9 @@ def _default_material(alias):
     attribute_data = [
         ('FLOAT3', "diffuse", (1.0, 1.0, 1.0)),
         ('FLOAT3', "specular", (0.0, 0.0, 0.0)),
-        ('FLOAT', "shininess", (5.0, )),
-        ('FLOAT', "add_ambient", (0.0, )),
-        ('FLOAT', "reflection", (0.0, )),
+        ('FLOAT', "shininess", (5.0,)),
+        ('FLOAT', "add_ambient", (0.0,)),
+        ('FLOAT', "reflection", (0.0,)),
     ]
     texture_data = [
         ('texture[0]:texture_base', ""),
@@ -147,48 +149,84 @@ def _get_texture_path_from_material(material, texture_type, export_path):
                     if "Value" in tex_entry and tex_entry["Value"] != "":
                         return tex_entry["Value"]
 
-    # TEXTURE PATH
+    # CALCULATING TOBJ AND TEXTURE PATHS
     texture_raw_path = getattr(material.scs_props, "shader_" + texture_type, "NO PATH")
-    texture_abs_filepath = _path_utils.get_abs_path(texture_raw_path)
-
-    # TOBJ PATH
+    tobj_rel_filepath = tobj_abs_filepath = texture_abs_filepath = ""
     scs_project_path = _get_scs_globals().scs_project_path.rstrip("\\").rstrip("/")
-    if os.path.isfile(scs_project_path + os.sep + texture_raw_path):  # relative within base
 
-        tobj_rel_filepath = os.path.splitext(texture_raw_path)[0][1:]
-        tobj_abs_filepath = str(os.path.splitext(texture_abs_filepath)[0] + ".tobj")
+    extensions, texture_raw_path = _path_utils.get_texture_extens_and_strip_path(texture_raw_path)
 
-    elif os.path.isfile(texture_raw_path):  # absolute
+    for ext in extensions:
+        if texture_raw_path.startswith("//"):  # relative
 
-        # if we are exporting somewhere into SCS Project Base Path texture still can be saved
-        if scs_project_path != "" and export_path.startswith(scs_project_path):
+            # search for relative path inside current scs project base and
+            # possible dlc/mod parent folders; use first found
+            for infix in ("", "../base/", "../../base/"):
 
-            tex_dir, tex_filename = os.path.split(texture_raw_path)
-            tobj_filename = tex_filename.rsplit(".", 1)[0] + ".tobj"
+                curr_path = os.path.join(scs_project_path, infix + texture_raw_path[2:] + ext)
 
-            # copy texture beside exported files
-            shutil.copy2(texture_raw_path, os.path.join(export_path, tex_filename))
+                if os.path.isfile(curr_path):
 
-            # copy also TOBJ if exists
-            texture_raw_tobj_path = tex_dir + os.sep + tobj_filename
-            if os.path.isfile(texture_raw_tobj_path):
-                shutil.copy2(texture_raw_tobj_path, os.path.join(export_path, tobj_filename))
+                    tobj_rel_filepath = texture_raw_path.replace("//", "/")
 
-            tobj_rel_filepath = ""
-            if export_path != scs_project_path:
-                tobj_rel_filepath = os.sep + os.path.relpath(export_path, scs_project_path)
+                    # if tobj is used by user then get texture path from tobj
+                    # otherwise get tobj path from texture path
+                    if ext == ".tobj":
+                        tobj_abs_filepath = curr_path
+                        texture_abs_filepath = _path_utils.get_texture_path_from_tobj(curr_path)
+                    else:
+                        tobj_abs_filepath = _path_utils.get_tobj_path_from_shader_texture(curr_path, check_existance=False)
+                        texture_abs_filepath = curr_path
+                    break
 
-            tobj_rel_filepath = tobj_rel_filepath + os.sep + tobj_filename[:-5]
-            tobj_abs_filepath = os.path.join(export_path, tobj_filename)
+            # break searching for texture if texture was found
+            if tobj_rel_filepath != "":
+                break
 
-        else:
-            lprint("E Can not properly export texture %r from material %r!\n\t   " +
-                   "Make sure you are exporting somewhere into Project Base Path and texture is properly set!",
-                   (texture_raw_path, material.name))
-            return ""
+        elif ext != ".tobj" and os.path.isfile(texture_raw_path + ext):  # absolute
+
+            texture_raw_path_with_ext = texture_raw_path + ext
+
+            # if we are exporting somewhere into SCS Project Base Path texture still can be saved
+            if scs_project_path != "" and _path_utils.startswith(export_path, scs_project_path):
+
+                tex_dir, tex_filename = os.path.split(texture_raw_path_with_ext)
+                tobj_filename = tex_filename + ".tobj"
+
+                # copy texture beside exported files
+                try:
+                    shutil.copy2(texture_raw_path_with_ext, os.path.join(export_path, tex_filename))
+                except OSError as e:
+                    # ignore copying the same file
+                    # NOTE: happens if absolute texture paths are used
+                    # even if they are referring to texture inside scs project path
+                    if type(e).__name__ != "SameFileError":
+                        raise e
+
+                # copy also TOBJ if exists
+                texture_raw_tobj_path = str(tex_dir) + os.sep + tobj_filename
+                if os.path.isfile(texture_raw_tobj_path):
+                    shutil.copy2(texture_raw_tobj_path, os.path.join(export_path, tobj_filename))
+
+                # get copied TOBJ relative path to current scs project path
+                tobj_rel_filepath = ""
+                if export_path != scs_project_path:
+                    tobj_rel_filepath = os.sep + os.path.relpath(export_path, scs_project_path)
+
+                tobj_rel_filepath = tobj_rel_filepath + os.sep + tobj_filename[:-5]
+                tobj_abs_filepath = os.path.join(export_path, tobj_filename)
+                texture_abs_filepath = texture_raw_path_with_ext
+                break
+
+            else:
+                lprint("E Can not properly export texture %r from material %r!\n\t   " +
+                       "Make sure you are exporting somewhere into Project Base Path and texture is properly set!",
+                       (texture_raw_path, material.name))
+                return ""
 
     else:
-        lprint("E Texture file %r from material %r doesn't exists inside current Project Base Path, TOBJ can not be exported!",
+        lprint("E Texture file %r from material %r doesn't exists inside current Project Base Path.\n\t   " +
+               "TOBJ  won't be exported and reference will remain empty, expect problems!",
                (texture_raw_path, material.name))
         return ""
 
@@ -197,9 +235,8 @@ def _get_texture_path_from_material(material, texture_type, export_path):
 
         # export tobj only if file of texture exists
         if os.path.isfile(texture_abs_filepath):
-            settings = getattr(material.scs_props, "shader_" + texture_type + "_settings", set())
-            texture_name = os.path.basename(_path_utils.strip_sep(texture_raw_path))
-            _tobj.export(tobj_abs_filepath, texture_name, settings)
+            texture_name = os.path.basename(_path_utils.strip_sep(texture_abs_filepath))
+            _tobj.export(tobj_abs_filepath, texture_name, set())
         else:
             lprint("E Texture file %r from material %r doesn't exists, TOBJ can not be exported!",
                    (texture_raw_path, material.name))
@@ -227,7 +264,7 @@ def _fill_atr_section(atr):
     section = _SectionData("Attribute")
     section.props.append(("Format", atr[0]))
     section.props.append(("Tag", atr[1]))
-    section.props.append(("Value", ["&&", (atr[2], )]))
+    section.props.append(("Value", ["&&", (atr[2],)]))
     return section
 
 
@@ -255,20 +292,20 @@ def _fill_variant_sections(data_list):
     return sections
 
 
-def _fill_part_list(parts, used_parts, all_parts=False):
+def _fill_part_list(parts, used_parts_names, all_parts=False):
     """Fills up "Part" sections in "Varian" section
 
     :param parts: SCS Root part inventory or parts collection property from variant inventory
-    :type parts: ObjectPartInventory | list of ObjectVariantPartInclusion
-    :param used_parts: dictionary of part names that are actually used in game object (if some part is not yet in it will be added)
-    :type used_parts: dict
+    :type parts: io_scs_tools.properties.object.ObjectPartInventoryItem | list[io_scs_tools.properties.object.ObjectVariantPartInclusion]
+    :param used_parts_names: list of part names that are actually used in game object
+    :type used_parts_names: list[str]
     :param all_parts: flag for all parts are visible (handy for creating default visibilities)
     :type all_parts: bool
     :return: Part records (name, attributes)
     :rtype: list
     """
     part_list = []
-    for part_name in used_parts:
+    for part_name in used_parts_names:
         for part in parts:
 
             if part.name == part_name:
@@ -288,21 +325,21 @@ def _fill_part_list(parts, used_parts, all_parts=False):
     return part_list
 
 
-def _get_properties(section):
-    """Returns all the properties from given section.
+def export(root_object, filepath, used_materials, used_parts):
+    """Export PIT.
 
-    :param section: PIX section data
-    :type section: SectionData
-    :return: properties of the section
-    :rtype: dict
+    :param root_object: SCS root object
+    :type root_object: bpy.types.Object
+    :param filepath: PIT file path
+    :type filepath: str
+    :param used_materials: materials transitional structure for accessing stored materials from PIM
+    :type used_materials: io_scs_tools.exp.transition_structs.materials.MaterialsTrans
+    :param used_parts: parts transitional structure for accessing stored parts from PIM, PIC and PIP
+    :type used_parts: io_scs_tools.exp.transition_structs.parts.PartsTrans
+    :return: True if successful; False otherwise;
+    :rtype: bool
     """
-    properties = {}
-    for prop in section.props:
-        properties[prop[0]] = prop[1]
-    return properties
 
-
-def export(root_object, used_parts, used_materials, scene, filepath):
     scs_globals = _get_scs_globals()
     output_type = scs_globals.output_type
 
@@ -323,6 +360,7 @@ def export(root_object, used_parts, used_materials, scene, filepath):
     if looks_count <= 0:
         looks_count = 1
 
+    used_materials_pairs = used_materials.get_as_pairs()
     for i in range(0, looks_count):
 
         # apply each look from inventory first
@@ -339,248 +377,229 @@ def export(root_object, used_parts, used_materials, scene, filepath):
         material_dict = {}
         material_list = []
         # get materials data
-        for material in used_materials:
-            if material is not None:
-                # if material in ("_empty_slot_", "_empty_material_"):
-                # NOTE: only workaround until module doesn't gets rewritten
-                if material in bpy.data.materials:
-                    material = bpy.data.materials[material]
+        for material_name, material in used_materials_pairs:
+            if material is None:
+                material_name = str("_default_material_-_default_settings_")
 
-                if isinstance(material, str):
-                    material_name = str(material + "-_default_settings_")
+                # DEFAULT MATERIAL
+                material_export_data = _default_material(material_name)
+                material_list.append(material_name)
 
-                    # DEFAULT MATERIAL
-                    material_export_data = _default_material(material_name)
-                    material_list.append(material_name)
+            else:
+                # print('material name: %r' % material.name)
+                material_list.append(material)
 
-                else:
-                    # print('material name: %r' % material.name)
-                    material_name = material.name
-                    material_list.append(material)
+                # MATERIAL EFFECT
+                effect_name = material.scs_props.mat_effect_name
 
-                    # SUBSTANCE
-                    if material.scs_props.substance != 'None':
-                        lprint('D material.name: %r\tmat.scs_props.substance: "%s"', (material.name, str(material.scs_props.substance)))
-                        # TODO: Substance Export...
+                # PRESET SHADERS
+                flags = 0
+                def_cnt = attribute_cnt = texture_cnt = 0
+                def_sections = []
+                attribute_sections = []
+                texture_sections = []
+                active_shader_preset_name = material.scs_props.active_shader_preset_name
 
-                    # MATERIAL EFFECT
-                    # shader_data = material.get("scs_shader_attributes", {})
-                    # effect_name = shader_data.get('effect', "NO EFFECT")
-                    effect_name = material.scs_props.mat_effect_name
+                # SUBSTANCE
+                substance_value = material.scs_props.substance
+                # only write substance to material if it's assigned
+                if substance_value != "None" and substance_value != "":
 
-                    # CgFX SHADERS
-                    # print("\n=== GET SHADER EXPORT DATA =======================") ## NOTE: The following code is OBSOLETE!!!
-                    # cgfx_export_data = None
-                    # print("  cgfx_export_data:\n%s" % str(cgfx_export_data))
-                    # if cgfx_export_data:
-                    # print("\nAttributes:")
-                    # for attribute in cgfx_export_data['attributes']:
-                    # if cgfx_export_data['attributes'][attribute]:
-                    # print("  %s:" % str(attribute))
-                    # for rec in cgfx_export_data['attributes'][attribute]:
-                    # print("    %s: %s" % (str(rec), str(cgfx_export_data['attributes'][attribute][rec])))
-                    # else:
-                    # print("%s:\n  %s" % (str(attribute), cgfx_export_data['attributes'][attribute]))
-                    # print("\nTextures:")
-                    # for attribute in cgfx_export_data['textures']:
-                    # if cgfx_export_data['textures'][attribute]:
-                    # print("  %s:" % str(attribute))
-                    # for rec in cgfx_export_data['textures'][attribute]:
-                    # print("    %s: %s" % (str(rec), str(cgfx_export_data['textures'][attribute][rec])))
-                    # else:
-                    # print("%s:\n  %s" % (str(attribute), cgfx_export_data['textures'][attribute]))
-                    # else:
-                    # Print(1, 'E No CgFX data for material %r!' % material.name)
-                    # print("==================================================")
+                    substance_data = _SectionData("Attribute")
+                    substance_data.props.append(("Format", "STRING"))
+                    substance_data.props.append(("Tag", "substance"))
+                    substance_data.props.append(("Value", ["i", (substance_value,)]))
+                    attribute_sections.append(substance_data)
+                    attribute_cnt += 1
 
-                    # PRESET SHADERS
-                    preset_found = False
-                    alias = "NO SHADER"
-                    def_cnt = attribute_cnt = texture_cnt = 0
-                    def_sections = []
-                    attribute_sections = []
-                    texture_sections = []
-                    active_shader_preset_name = material.scs_props.active_shader_preset_name
-                    # print(' active_shader_preset_name: %r' % active_shader_preset_name)
-                    for preset_i, preset in enumerate(bpy.data.worlds[0].scs_shader_presets_inventory):
-                        # print(' preset[%i]: %r' % (preset_i, preset.name))
-                        if preset.name == active_shader_preset_name:
-                            # print('   - material %r - %r' % (material.name, preset.name))
+                if active_shader_preset_name in _get_shader_presets_inventory() and active_shader_preset_name != "<none>":
 
-                            # LOAD PRESET
-                            shader_presets_abs_path = _path_utils.get_abs_path(scs_globals.shader_presets_filepath)
-                            # shader_presets_filepath = _get_scs_globals().shader_presets_filepath
-                            # print('shader_presets_filepath: %r' % shader_presets_filepath)
-                            # if shader_presets_filepath.startswith(str(os.sep + os.sep)): ## RELATIVE PATH
-                            # shader_presets_abs_path = get_abs_path(shader_presets_filepath)
-                            # else:
-                            # shader_presets_abs_path = shader_presets_filepath
+                    preset = _get_shader_presets_inventory()[active_shader_preset_name]
+                    flavors_str = effect_name[len(preset.effect):]
+                    section = _shader_presets_cache.get_section(preset, flavors_str)
 
-                            if os.path.isfile(shader_presets_abs_path):
-                                presets_container = _pix_container.get_data_from_file(shader_presets_abs_path, '    ')
+                    # FLAGS
+                    for prop in section.props:
 
-                                # FIND THE PRESET IN FILE
-                                if presets_container:
-                                    for section in presets_container:
-                                        if section.type == "Shader":
-                                            section_properties = _get_properties(section)
-                                            if 'PresetName' in section_properties:
-                                                preset_name = section_properties['PresetName']
-                                                if preset_name == active_shader_preset_name:
-                                                    alias = material.name
-                                                    # print('   + preset name: %r' % preset_name)
-
-                                                    # COLLECT ATTRIBUTES AND TEXTURES
-                                                    for item in section.sections:
-
-                                                        # DATA EXCHANGE FORMAT ATRIBUTE
-                                                        if item.type == "DataExchangeFormat":
-                                                            def_data = _SectionData("DataExchangeFormat")
-                                                            for rec in item.props:
-                                                                def_data.props.append((rec[0], rec[1]))
-                                                            def_sections.append(def_data)
-                                                            def_cnt += 1
-
-                                                        # ATTRIBUTES
-                                                        if item.type == "Attribute":
-                                                            # print('     Attribute:')
-
-                                                            attribute_data = _SectionData("Attribute")
-                                                            for rec in item.props:
-                                                                # print('       rec: %r' % str(rec))
-                                                                if rec[0] == "Format":
-                                                                    attribute_data.props.append((rec[0], rec[1]))
-                                                                elif rec[0] == "Tag":
-                                                                    # tag_prop = rec[1].replace("[", "").replace("]", "")
-                                                                    # attribute_data.props.append((rec[0], tag_prop))
-                                                                    attribute_data.props.append((rec[0], rec[1]))
-                                                                elif rec[0] == "Value":
-                                                                    format_prop = item.get_prop("Format")[1]
-                                                                    tag_prop = item.get_prop("Tag")[1]
-                                                                    tag_prop = tag_prop.replace("[", "").replace("]", "")
-                                                                    # print('         format_prop: %r' % str(format_prop))
-                                                                    # print('         tag_prop: %r' % str(tag_prop))
-                                                                    if "aux" in tag_prop:
-                                                                        aux_props = getattr(material.scs_props, "shader_attribute_" + tag_prop)
-                                                                        value = []
-                                                                        for aux_prop in aux_props:
-                                                                            value.append(aux_prop.value)
-                                                                    else:
-                                                                        value = getattr(material.scs_props, "shader_attribute_" + tag_prop, "NO TAG")
-                                                                    # print('         value: %s' % str(value))
-                                                                    if format_prop == 'FLOAT':
-                                                                        attribute_data.props.append((rec[0], ["&&", (value,)]))
-                                                                    else:
-                                                                        attribute_data.props.append((rec[0], ["i", tuple(value)]))
-                                                            attribute_sections.append(attribute_data)
-                                                            attribute_cnt += 1
-
-                                                        # TEXTURES
-                                                        elif item.type == "Texture":
-                                                            # print('     Texture:')
-
-                                                            texture_data = _SectionData("Texture")
-                                                            for rec in item.props:
-                                                                # print('       rec: %r' % str(rec))
-                                                                if rec[0] == "Tag":
-                                                                    tag_prop = rec[1].split(":")[1]
-                                                                    tag = str("texture[" + str(texture_cnt) + "]:" + tag_prop)
-                                                                    texture_data.props.append((rec[0], tag))
-                                                                elif rec[0] == "Value":
-                                                                    tag_prop = item.get_prop("Tag")[1].split(":")[1]
-                                                                    # print('         tag_prop: %r' % str(tag_prop))
-
-                                                                    # create and get path to tobj
-                                                                    tobj_rel_path = _get_texture_path_from_material(material, tag_prop,
-                                                                                                                    os.path.dirname(filepath))
-
-                                                                    texture_data.props.append((rec[0], tobj_rel_path))
-
-                                                            texture_sections.append(texture_data)
-                                                            texture_cnt += 1
-
-                                                    preset_found = True
-                                                    break
-
-                            else:
-                                lprint('\nW The file path "%s" is not valid!', (shader_presets_abs_path,))
-                        if preset_found:
+                        if prop[0] == "Flags":
+                            flags = int(not material.scs_props.enable_aliasing)
                             break
 
-                    if preset_found:
+                    # COLLECT ATTRIBUTES AND TEXTURES
+                    for item in section.sections:
 
-                        material_export_data = _SectionData("Material")
-                        material_export_data.props.append(("Alias", alias))
-                        material_export_data.props.append(("Effect", effect_name))
-                        material_export_data.props.append(("Flags", 0))
-                        if output_type.startswith('def'):
-                            material_export_data.props.append(("DataExchangeFormatCount", def_cnt))
-                        material_export_data.props.append(("AttributeCount", attribute_cnt))
-                        material_export_data.props.append(("TextureCount", texture_cnt))
-                        if output_type.startswith('def'):
-                            for def_section in def_sections:
-                                material_export_data.sections.append(def_section)
-                        for attribute in attribute_sections:
-                            material_export_data.sections.append(attribute)
-                        for texture in texture_sections:
-                            material_export_data.sections.append(texture)
+                        # DATA EXCHANGE FORMAT ATRIBUTE
+                        if item.type == "DataExchangeFormat":
+                            def_data = _SectionData("DataExchangeFormat")
+                            for rec in item.props:
+                                def_data.props.append((rec[0], rec[1]))
+                            def_sections.append(def_data)
+                            def_cnt += 1
 
-                    elif active_shader_preset_name == "<imported>":
+                        # if attribute is hidden in shader preset ignore it on export
+                        # this is useful for flavor hiding some attributes from original material
+                        # eg: airbrush on "truckpaint" hides R G B aux attributes which are not present
+                        # when using airbrush flavor
+                        hidden = item.get_prop_value("Hide")
+                        if hidden and hidden == "True":
+                            continue
 
-                        material_attributes = material['scs_shader_attributes']['attributes'].to_dict().values()
-                        material_textures = material['scs_shader_attributes']['textures'].to_dict().values()
+                        preview_only = item.get_prop_value("PreviewOnly")
+                        if preview_only and preview_only == "True":
+                            continue
 
-                        material_export_data = _SectionData("Material")
-                        material_export_data.props.append(("Alias", material.name))
-                        material_export_data.props.append(("Effect", effect_name))
-                        material_export_data.props.append(("Flags", 0))
-                        material_export_data.props.append(("AttributeCount", len(material_attributes)))
-                        material_export_data.props.append(("TextureCount", len(material_textures)))
+                        # ATTRIBUTES
+                        if item.type == "Attribute":
+                            # print('     Attribute:')
 
-                        for attribute_dict in material_attributes:
-                            attribute_section = _SectionData("Attribute")
+                            attribute_data = _SectionData("Attribute")
+                            for rec in item.props:
+                                # print('       rec: %r' % str(rec))
+                                if rec[0] == "Format":
+                                    attribute_data.props.append((rec[0], rec[1]))
+                                elif rec[0] == "Tag":
+                                    # tag_prop = rec[1].replace("[", "").replace("]", "")
+                                    # attribute_data.props.append((rec[0], tag_prop))
+                                    attribute_data.props.append((rec[0], rec[1]))
+                                elif rec[0] == "Value":
+                                    format_prop = item.get_prop("Format")[1]
+                                    tag_prop = item.get_prop("Tag")[1]
+                                    tag_prop = tag_prop.replace("[", "").replace("]", "")
+                                    # print('         format_prop: %r' % str(format_prop))
+                                    # print('         tag_prop: %r' % str(tag_prop))
+                                    if "aux" in tag_prop:
+                                        aux_props = getattr(material.scs_props, "shader_attribute_" + tag_prop)
+                                        value = []
+                                        for aux_prop in aux_props:
+                                            value.append(aux_prop.value)
 
-                            format_value = ""
-                            for attr_prop in sorted(attribute_dict.keys()):
+                                        # extract list if there is only one value inside and tagged as FLOAT
+                                        # otherwise it gets saved as: "Value: ( [0.0] )" instead of: "Value: ( 0.0 )"
+                                        if len(value) == 1 and format_prop == "FLOAT":
+                                            value = value[0]
 
-                                # get the format of current attribute (we assume that "Format" attribute is before "Value" attribute in this for loop)
-                                if attr_prop == "Format":
-                                    format_value = attribute_dict[attr_prop]
+                                    else:
+                                        value = getattr(material.scs_props, "shader_attribute_" + tag_prop, "NO TAG")
+                                    # print('         value: %s' % str(value))
+                                    if format_prop == 'FLOAT':
+                                        attribute_data.props.append((rec[0], ["&&", (value,)]))
+                                    else:
+                                        attribute_data.props.append((rec[0], ["i", tuple(value)]))
+                            attribute_sections.append(attribute_data)
+                            attribute_cnt += 1
 
-                                if attr_prop == "Value" and ("FLOAT" in format_value or "STRING" in format_value):
+                        # TEXTURES
+                        elif item.type == "Texture":
+                            # print('     Texture:')
+
+                            texture_data = _SectionData("Texture")
+                            for rec in item.props:
+                                # print('       rec: %r' % str(rec))
+                                if rec[0] == "Tag":
+                                    tag_prop = rec[1].split(":")[1]
+                                    tag = str("texture[" + str(texture_cnt) + "]:" + tag_prop)
+                                    texture_data.props.append((rec[0], tag))
+                                elif rec[0] == "Value":
+                                    tag_prop = item.get_prop("Tag")[1].split(":")[1]
+                                    # print('         tag_prop: %r' % str(tag_prop))
+
+                                    # create and get path to tobj
+                                    tobj_rel_path = _get_texture_path_from_material(material, tag_prop,
+                                                                                    os.path.dirname(filepath))
+
+                                    texture_data.props.append((rec[0], tobj_rel_path))
+
+                            texture_sections.append(texture_data)
+                            texture_cnt += 1
+
+                    material_export_data = _SectionData("Material")
+                    material_export_data.props.append(("Alias", material.name))
+                    material_export_data.props.append(("Effect", effect_name))
+                    material_export_data.props.append(("Flags", flags))
+                    if output_type.startswith('def'):
+                        material_export_data.props.append(("DataExchangeFormatCount", def_cnt))
+                    material_export_data.props.append(("AttributeCount", attribute_cnt))
+                    material_export_data.props.append(("TextureCount", texture_cnt))
+                    if output_type.startswith('def'):
+                        for def_section in def_sections:
+                            material_export_data.sections.append(def_section)
+                    for attribute in attribute_sections:
+                        material_export_data.sections.append(attribute)
+                    for texture in texture_sections:
+                        material_export_data.sections.append(texture)
+
+                elif active_shader_preset_name == "<imported>":
+
+                    material_attributes = material['scs_shader_attributes']['attributes'].to_dict().values()
+                    material_textures = material['scs_shader_attributes']['textures'].to_dict().values()
+
+                    material_export_data = _SectionData("Material")
+                    material_export_data.props.append(("Alias", material.name))
+                    material_export_data.props.append(("Effect", effect_name))
+                    material_export_data.props.append(("Flags", int(not material.scs_props.enable_aliasing)))
+                    material_export_data.props.append(("AttributeCount", len(material_attributes)))
+                    material_export_data.props.append(("TextureCount", len(material_textures)))
+
+                    for attribute_dict in material_attributes:
+                        attribute_section = _SectionData("Attribute")
+
+                        format_value = ""
+                        for attr_prop in sorted(attribute_dict.keys()):
+
+                            # get the format of current attribute (we assume that "Format" attribute is before "Value" attribute in this for loop)
+                            if attr_prop == "Format":
+                                format_value = attribute_dict[attr_prop]
+
+                            if attr_prop == "Value" and ("FLOAT" in format_value or "STRING" in format_value):
+
+                                tag_prop = attribute_dict["Tag"].replace("[", "").replace("]", "")
+                                if "aux" in tag_prop:
+                                    aux_props = getattr(material.scs_props, "shader_attribute_" + tag_prop)
+                                    value = []
+                                    for aux_prop in aux_props:
+                                        value.append(aux_prop.value)
+                                else:
+                                    value = getattr(material.scs_props, "shader_attribute_" + tag_prop, None)
+                                    if isinstance(value, float):
+                                        value = [value]
+
+                                if value is None:
                                     attribute_section.props.append((attr_prop, ["i", tuple(attribute_dict[attr_prop])]))
-                                elif attr_prop == "Tag" and "aux" in attribute_dict[attr_prop]:
-                                    attribute_section.props.append((attr_prop, "aux[" + attribute_dict[attr_prop][3:] + "]"))
                                 else:
-                                    attribute_section.props.append((attr_prop, attribute_dict[attr_prop]))
+                                    attribute_section.props.append((attr_prop, ["i", tuple(value)]))
 
-                            material_export_data.sections.append(attribute_section)
+                            elif attr_prop == "Tag" and "aux" in attribute_dict[attr_prop]:
+                                attribute_section.props.append((attr_prop, "aux[" + attribute_dict[attr_prop][3:] + "]"))
+                            else:
+                                attribute_section.props.append((attr_prop, attribute_dict[attr_prop]))
 
-                        for texture_dict in material_textures:
-                            texture_section = _SectionData("Texture")
+                        material_export_data.sections.append(attribute_section)
 
-                            tag_id_string = ""
-                            for tex_prop in sorted(texture_dict.keys()):
+                    for texture_dict in material_textures:
+                        texture_section = _SectionData("Texture")
 
-                                if tex_prop == "Tag":
-                                    tag_id_string = texture_dict[tex_prop].split(':')[1]
+                        tag_id_string = ""
+                        for tex_prop in sorted(texture_dict.keys()):
 
-                                if tex_prop == "Value" and tag_id_string != "":
+                            if tex_prop == "Tag":
+                                tag_id_string = texture_dict[tex_prop].split(':')[1]
 
-                                    tobj_rel_path = _get_texture_path_from_material(material, tag_id_string, os.path.dirname(filepath))
-                                    texture_section.props.append((tex_prop, tobj_rel_path))
+                            if tex_prop == "Value" and tag_id_string != "":
 
-                                else:
-                                    texture_section.props.append((tex_prop, texture_dict[tex_prop]))
+                                tobj_rel_path = _get_texture_path_from_material(material, tag_id_string, os.path.dirname(filepath))
+                                texture_section.props.append((tex_prop, tobj_rel_path))
 
-                            material_export_data.sections.append(texture_section)
+                            else:
+                                texture_section.props.append((tex_prop, texture_dict[tex_prop]))
 
-                    else:
-                        # DEFAULT MATERIAL
-                        material_name = str("_" + material_name + "_-_default_settings_")
-                        material_export_data = _default_material(material_name)
+                        material_export_data.sections.append(texture_section)
 
-                material_dict[material_name] = material_export_data
+                else:
+                    # DEFAULT MATERIAL
+                    material_name = str("_" + material_name + "_-_default_settings_")
+                    material_export_data = _default_material(material_name)
+
+            material_dict[material_name] = material_export_data
 
         # create materials sections for looks
         material_sections = _fill_material_sections(material_list, material_dict)
@@ -594,14 +613,15 @@ def export(root_object, used_parts, used_materials, scene, filepath):
     root_object.scs_props.active_scs_look = saved_active_look
 
     # PARTS AND VARIANTS...
-    part_list_cnt = len(used_parts.keys())
+    used_parts_names = used_parts.get_as_list()
+    part_list_cnt = len(used_parts_names)
     if len(root_object.scs_object_variant_inventory) == 0:
         # If there is no Variant, add the Default one...
-        part_list = _fill_part_list(root_object.scs_object_part_inventory, used_parts, all_parts=True)
+        part_list = _fill_part_list(root_object.scs_object_part_inventory, used_parts_names, all_parts=True)
         variant_list.append((_VARIANT_consts.default_name, part_list), )
     else:
         for variant in root_object.scs_object_variant_inventory:
-            part_list = _fill_part_list(variant.parts, used_parts)
+            part_list = _fill_part_list(variant.parts, used_parts_names)
             variant_list.append((variant.name, part_list), )
 
     # DATA CREATION
@@ -610,7 +630,7 @@ def export(root_object, used_parts, used_materials, scene, filepath):
     # part_sections = fill_part_section(part_list)
     variant_section = _fill_variant_sections(variant_list)
     comment_header_section = _fill_comment_header_section(look_list, variant_list)
-    global_section = _fill_global_section(len(look_list), len(variant_list), part_list_cnt, len(used_materials))
+    global_section = _fill_global_section(len(look_list), len(variant_list), part_list_cnt, len(used_materials_pairs))
 
     # DATA ASSEMBLING
     pit_container = [comment_header_section, header_section, global_section]

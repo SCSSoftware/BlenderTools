@@ -1,6 +1,6 @@
 Header {
     FormatVersion: 3
-    Source: "Blender 2.74.0 (hash: 000dfc0), SCS Blender Tools: 0.5.bfcf60f"
+    Source: "Blender 2.76.0 (hash: 48f7dd6), SCS Blender Tools: 0.6.e9daf33"
     Type: "Animation"
     Name: "psi"
 }
@@ -9,39 +9,6 @@ Global {
     TotalTime: 0.125
     BoneChannelCount: 2
     CustomChannelCount: 0
-}
-BoneChannel {
-    Name: "joint33"
-    StreamCount: 2
-    KeyframeCount: 4
-    Stream {
-        Format: FLOAT
-        Tag: "_TIME"
-        0    ( &3d2aaaab )
-        1    ( &3d2aaaab )
-        2    ( &3d2aaaab )
-        3    ( &3d2aaaab )
-    }
-    Stream {
-        Format: FLOAT4x4
-        Tag: "_MATRIX"
-        0    (  &b9fbfb1c  &3ef1e9ee  &3f619f44  &00000000
-                &befe928c  &3f43ba3d  &bed1ffd3  &00000000
-                &bf5e1ce9  &bee07708  &3e703043  &00000000
-                &3e2af42c  &bf0b5a8a  &bf53c803  &3f800000 )
-        1    (  &b9fbfa5e  &3ef1e9ee  &3f619f44  &00000000
-                &be3a25d5  &3f5dda37  &beedec2c  &00000000
-                &bf7bbc06  &be2449a0  &3daf0d5d  &00000000
-                &3e2af42c  &bf0b5a8a  &bf53c803  &3f800000 )
-        2    (  &b9fbf7bb  &3ef1e9ef  &3f619f45  &00000000
-                &3e1ddcb6  &3f5eef17  &beeefd07  &00000000
-                &bf7cf081  &3e0ae664  &bd960871  &00000000
-                &3e2af42c  &bf0b5a8a  &bf53c803  &3f800000 )
-        3    (  &b9fbfaf8  &3ef1e9ee  &3f619f44  &00000000
-                &3ef206ab  &3f46d99e  &bed5139a  &00000000
-                &bf61978e  &3ed5343d  &be651753  &00000000
-                &3e2af42c  &bf0b5a8a  &bf53c803  &3f800000 )
-    }
 }
 BoneChannel {
     Name: "joint35"
@@ -58,21 +25,55 @@ BoneChannel {
     Stream {
         Format: FLOAT4x4
         Tag: "_MATRIX"
-        0    (  &b9fad1d5  &3ef1e9fc  &3f619f49  &00000000
-                &bef24132  &3f46bdc6  &bed5393b  &00000000
-                &bf6187e1  &bed59c22  &3e648b6c  &00000000
-                &3db764d2  &bf0b652d  &bf53c49b  &3f800000 )
-        1    (  &b9facfdf  &3ef1e9fc  &3f619f49  &00000000
-                &be256eec  &3f5ea62a  &beeec564  &00000000
-                &bf7ca313  &be1207df  &3d9b7a77  &00000000
-                &3db764d2  &bf0b652d  &bf53c49b  &3f800000 )
-        2    (  &b9facf32  &3ef1e9fc  &3f619f49  &00000000
-                &3e2b8f54  &3f5e7163  &beee7565  &00000000
-                &bf7c61a9  &3e16f957  &bda2f8b0  &00000000
-                &3db764d2  &bf0b652d  &bf53c49b  &3f800000 )
-        3    (  &b9fad21d  &3ef1e9fd  &3f619f49  &00000000
-                &3ef4fc77  &3f462524  &bed451e0  &00000000
-                &bf60cab5  &3ed7d054  &be67e2ac  &00000000
-                &3db764d2  &bf0b652d  &bf53c49b  &3f800000 )
+        0    (  &b9fae38a  &3ef1e9f8  &3f619f46  &00000000 
+                &bef24130  &3f46bdc4  &bed53939  &00000000
+                &bf6187e2  &bed59c24  &3e648b68  &00000000
+                &3db764d5  &bf0b652d  &bf53c49b  &3f800000 )
+        1    (  &b9fae213  &3ef1e9f8  &3f619f46  &00000000 
+                &be256ee9  &3f5ea626  &beeec562  &00000000
+                &bf7ca317  &be1207e5  &3d9b7a6d  &00000000
+                &3db764d5  &bf0b652d  &bf53c49b  &3f800000 )
+        2    (  &b9fae343  &3ef1e9f8  &3f619f46  &00000000 
+                &3e2b8f57  &3f5e7161  &beee7561  &00000000
+                &bf7c61ad  &3e16f955  &bda2f8c1  &00000000
+                &3db764d5  &bf0b652d  &bf53c49b  &3f800000 )
+        3    (  &b9fae881  &3ef1e9fa  &3f619f46  &00000000 
+                &3ef4fc75  &3f462523  &bed451db  &00000000
+                &bf60cab6  &3ed7d053  &be67e2b0  &00000000
+                &3db764d5  &bf0b652d  &bf53c49b  &3f800000 )
     }
 }
+BoneChannel {
+    Name: "joint33"
+    StreamCount: 2
+    KeyframeCount: 4
+    Stream {
+        Format: FLOAT
+        Tag: "_TIME"
+        0    ( &3d2aaaab )
+        1    ( &3d2aaaab )
+        2    ( &3d2aaaab )
+        3    ( &3d2aaaab )
+    }
+    Stream {
+        Format: FLOAT4x4
+        Tag: "_MATRIX"
+        0    (  &b9fbfd20  &3ef1e9ea  &3f619f41  &00000000 
+                &befe9284  &3f43ba37  &bed1ffcd  &00000000
+                &bf5e1ced  &bee0770c  &3e703047  &00000000
+                &3e2af42c  &bf0b5a89  &bf53c803  &3f800000 )
+        1    (  &b9fbfb33  &3ef1e9e9  &3f619f41  &00000000 
+                &be3a25cf  &3f5dda30  &beedec26  &00000000
+                &bf7bbc0a  &be24499f  &3daf0d5c  &00000000
+                &3e2af42c  &bf0b5a89  &bf53c803  &3f800000 )
+        2    (  &b9fbf789  &3ef1e9ea  &3f619f42  &00000000 
+                &3e1ddcb5  &3f5eef10  &beeefcff  &00000000
+                &bf7cf086  &3e0ae66b  &bd96087a  &00000000
+                &3e2af42c  &bf0b5a89  &bf53c803  &3f800000 )
+        3    (  &b9fbffd0  &3ef1e9ea  &3f619f41  &00000000 
+                &3ef206ad  &3f46d99b  &bed51396  &00000000
+                &bf61978c  &3ed53442  &be651758  &00000000
+                &3e2af42c  &bf0b5a89  &bf53c803  &3f800000 )
+    }
+}
+

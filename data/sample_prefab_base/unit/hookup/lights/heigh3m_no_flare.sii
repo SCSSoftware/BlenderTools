@@ -1,0 +1,18 @@
+SiiNunit
+{
+light_source : heigh3m.no.flare
+{
+	ambient_color: (0.0000, 0.0000, 0.0000)
+	diffuse_color: (0.7238, 0.6906, 0.4830)
+	specular_color: (0.7238, 0.6906, 0.4830)
+
+	range: 4
+	cut_range: 4
+	inner_angle: 50.0
+	outer_angle: 120.0
+	attenuation_start_range: 1.5
+
+
+}
+
+}

@@ -1,0 +1,348 @@
+# Look Names:
+#	grass
+#	gr_dust_main
+#
+# Variant Names:
+#	default
+#
+Header {
+    FormatVersion: 1
+    Source: "Blender 2.76.0 (hash: 48f7dd6), SCS Blender Tools: 1.0.27abe27"
+    Type: "Trait"
+    Name: "road2_x_road1_sample"
+}
+Global {
+    LookCount: 2
+    VariantCount: 1
+    PartCount: 3
+    MaterialCount: 3
+}
+Look {
+    Name: "grass"
+    Material {
+        Alias: "trans"
+        Effect: "eut2.dif.spec.weight.weight.dif.spec.weight.tg0"
+        Flags: 0
+        AttributeCount: 8
+        TextureCount: 2
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.10000000149011612 0.10000000149011612 0.10000000149011612 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 12.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT4
+            Tag: "aux[3]"
+            Value: ( 1.600000023841858 1.600000023841858 1.600000023841858 15.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection2"
+            Value: ( 1.0 )
+        }
+        Attribute {
+            Format: FLOAT2
+            Tag: "aux[0]"
+            Value: ( 13.0 13.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/terrain/grass_ger_main"
+        }
+        Texture {
+            Tag: "texture[1]:texture_over"
+            Value: "/material/road/asphalt"
+        }
+    }
+    Material {
+        Alias: "lines"
+        Effect: "eut2.dif.decal"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.10000000149011612 0.10000000149011612 0.10000000149011612 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/road/lines"
+        }
+    }
+    Material {
+        Alias: "transition"
+        Effect: "eut2.dif.spec.weight.weight.dif.spec.weight.tg0"
+        Flags: 0
+        AttributeCount: 8
+        TextureCount: 2
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 8.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 1.0 )
+        }
+        Attribute {
+            Format: FLOAT4
+            Tag: "aux[3]"
+            Value: ( 1.600000023841858 1.600000023841858 1.600000023841858 15.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection2"
+            Value: ( 1.0 )
+        }
+        Attribute {
+            Format: FLOAT2
+            Tag: "aux[0]"
+            Value: ( 5.0 5.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/road/dark_c2"
+        }
+        Texture {
+            Tag: "texture[1]:texture_over"
+            Value: "/material/road/asphalt"
+        }
+    }
+}
+Look {
+    Name: "gr_dust_main"
+    Material {
+        Alias: "trans"
+        Effect: "eut2.dif.spec.weight.weight.dif.spec.weight.tg0"
+        Flags: 0
+        AttributeCount: 8
+        TextureCount: 2
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.10000000149011612 0.10000000149011612 0.10000000149011612 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 12.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT4
+            Tag: "aux[3]"
+            Value: ( 1.600000023841858 1.600000023841858 1.600000023841858 15.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection2"
+            Value: ( 1.0 )
+        }
+        Attribute {
+            Format: FLOAT2
+            Tag: "aux[0]"
+            Value: ( 13.0 13.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/terrain/grass_dusty_main"
+        }
+        Texture {
+            Tag: "texture[1]:texture_over"
+            Value: "/material/road/asphalt"
+        }
+    }
+    Material {
+        Alias: "lines"
+        Effect: "eut2.dif.decal"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.10000000149011612 0.10000000149011612 0.10000000149011612 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/road/lines"
+        }
+    }
+    Material {
+        Alias: "transition"
+        Effect: "eut2.dif.spec.weight.weight.dif.spec.weight.tg0"
+        Flags: 0
+        AttributeCount: 8
+        TextureCount: 2
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 8.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 1.0 )
+        }
+        Attribute {
+            Format: FLOAT4
+            Tag: "aux[3]"
+            Value: ( 1.600000023841858 1.600000023841858 1.600000023841858 15.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection2"
+            Value: ( 1.0 )
+        }
+        Attribute {
+            Format: FLOAT2
+            Tag: "aux[0]"
+            Value: ( 5.0 5.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/road/dark_c2"
+        }
+        Texture {
+            Tag: "texture[1]:texture_over"
+            Value: "/material/road/asphalt"
+        }
+    }
+}
+Variant {
+    Name: "default"
+    Part {
+        Name: "ntl"
+        AttributeCount: 1
+        Attribute {
+            Format: INT
+            Tag: "visible"
+            Value: ( 1 )
+        }
+    }
+    Part {
+        Name: "vis"
+        AttributeCount: 1
+        Attribute {
+            Format: INT
+            Tag: "visible"
+            Value: ( 1 )
+        }
+    }
+    Part {
+        Name: "coll"
+        AttributeCount: 1
+        Attribute {
+            Format: INT
+            Tag: "visible"
+            Value: ( 1 )
+        }
+    }
+}
+

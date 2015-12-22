@@ -1,6 +1,6 @@
 Header {
     FormatVersion: 3
-    Source: "Blender 2.74.0 (hash: 000dfc0), SCS Blender Tools: 0.5.bfcf60f"
+    Source: "Blender 2.76.0 (hash: 48f7dd6), SCS Blender Tools: 0.6.e9daf33"
     Type: "Animation"
     Name: "cl_light"
 }
@@ -23,13 +23,14 @@ BoneChannel {
     Stream {
         Format: FLOAT4x4
         Tag: "_MATRIX"
-        0    (  &3f7ffffc  &3336a34e  &b23da052  &00000000
-                &b384c8c5  &3f7ffffa  &327fd926  &00000000
-                &323dde07  &b280b397  &3f800000  &00000000
-                &3dfcfa07  &b454e3cc  &b31246e2  &3f800000 )
-        1    (  &3f7ffffc  &33365488  &b0fa7168  &00000000
-                &b33d1565  &3f30fb9c  &bf38f7bd  &00000000
-                &b33a34e9  &3f38f7bc  &3f30fb9b  &00000000
-                &3dfcfa07  &b454e3cc  &b31246e2  &3f800000 )
+        0    (  &3f7ffffc  &b329579c  &b237f6e3  &00000000 
+                &32ad29fd  &3f800001  &2f120b9b  &00000000
+                &323758f5  &af4ef0fe  &3f7ffffa  &00000000
+                &3dfcfa0f  &b48d9e74  &b3869089  &3f800000 )
+        1    (  &3f7ffffc  &b329b1e9  &31758c0c  &00000000 
+                &328e9a41  &3f30fb9d  &bf38f7be  &00000000
+                &325062e4  &3f38f7bc  &3f30fb9b  &00000000
+                &3dfcfa0f  &b48d9e74  &b3869089  &3f800000 )
     }
 }
+

@@ -20,20 +20,18 @@
 
 import bpy
 import os
-
 from io_scs_tools.exp import pia
 from io_scs_tools.exp import pic
 from io_scs_tools.exp import pip
 from io_scs_tools.exp import pis
 from io_scs_tools.exp import pix
-
 from io_scs_tools.utils import object as _object_utils
 from io_scs_tools.utils import path as _path_utils
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
 from io_scs_tools.utils.printout import lprint
 
 
-def batch_export(operator_instance, init_obj_list, exclude_switched_off=True, menu_filepath=None):
+def batch_export(operator_instance, init_obj_list, menu_filepath=None):
     """This function calls other sorting functions and depending on the resulting output
     dictionary it exports all available 'SCS Game Objects' into specified locations.
 
@@ -41,16 +39,15 @@ def batch_export(operator_instance, init_obj_list, exclude_switched_off=True, me
     :type operator_instance: bpy.types.Operator
     :param init_obj_list: initial object list which should be exported
     :type init_obj_list: tuple of Blender objects
-    :param exclude_switched_off: exlude game object wich root is excplicity exluded by property
-    :type exclude_switched_off: bool
     :param menu_filepath: filepath used from menu export
     :type menu_filepath: str
     """
 
     lprint("", report_errors=-1, report_warnings=-1)  # Clear the 'error_messages' and 'warning_messages'
     game_objects_dict = _object_utils.sort_out_game_objects_for_export(init_obj_list)
-    if exclude_switched_off:
-        game_objects_dict = _object_utils.exclude_switched_off(game_objects_dict)
+
+    # exclude game objects that were manually omitted from export by property
+    game_objects_dict = _object_utils.exclude_switched_off(game_objects_dict)
 
     if game_objects_dict:
         scs_game_objects_exported = []
@@ -84,11 +81,16 @@ def batch_export(operator_instance, init_obj_list, exclude_switched_off=True, me
                 filepath_message = "Default export path used for \"" + root_object.name + "\":\n\t   \"" + filepath + "\""
 
             scs_project_path = _get_scs_globals().scs_project_path
-            if os.path.isdir(filepath) and filepath.startswith(scs_project_path) and scs_project_path != "":
-                if pix.export(filepath, root_object, game_object_list):
+            if os.path.isdir(filepath) and _path_utils.startswith(filepath, scs_project_path) and scs_project_path != "":
+
+                # EXPORT ENTRY POINT
+                export_success = pix.export(filepath, root_object, game_object_list)
+
+                if export_success:
                     scs_game_objects_exported.append("> \"" + root_object.name + "\" exported to: '" + filepath + "'")
                 else:
                     scs_game_objects_rejected.append("> \"" + root_object.name + "\"")
+
             else:
                 if filepath:
                     message = (
@@ -105,6 +107,7 @@ def batch_export(operator_instance, init_obj_list, exclude_switched_off=True, me
 
         if not lprint("\nI Export procces completed, summaries are printed below!", report_errors=True, report_warnings=True):
             operator_instance.report({'INFO'}, "Export successfully completed!")
+            bpy.ops.wm.show_3dview_report('INVOKE_DEFAULT', abort=True)  # abort 3d view reporting operator
 
         if len(scs_game_objects_exported) > 0:
             print("\n\nEXPORTED GAME OBJECTS (" + str(len(scs_game_objects_exported)) + "):\n" + "=" * 26)
@@ -122,10 +125,10 @@ def batch_export(operator_instance, init_obj_list, exclude_switched_off=True, me
             operator_instance.report({'ERROR'}, message)
             return {'CANCELLED'}
     else:
-        message = "Please create at least one 'SCS Root Object' and parent your objects to it in order to export a 'SCS Game Object'!\n" \
+        message = "No 'SCS Root Object' present or all of them were manually exluded from export in their settings.\n\t   " \
                   "(For more information, please refer to 'SCS Blender Tools' documentation.)"
         lprint('E ' + message)
-        operator_instance.report({'ERROR'}, message)
+        operator_instance.report({'ERROR'}, message.replace("\n\t   ", "\n"))
         return {'CANCELLED'}
 
     return {'FINISHED'}

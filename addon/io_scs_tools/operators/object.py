@@ -18,14 +18,19 @@
 
 # Copyright (C) 2013-2014: SCS Software
 
+
+import bmesh
 import bpy
+import re
 from bpy.props import BoolProperty, StringProperty, IntProperty
 from io_scs_tools.consts import Look as _LOOK_consts
 from io_scs_tools.consts import Part as _PART_consts
 from io_scs_tools.consts import Variant as _VARIANT_consts
+from io_scs_tools.consts import Operators as _OP_consts
 from io_scs_tools.internals import inventory as _inventory
 from io_scs_tools.internals import looks as _looks
 from io_scs_tools.internals.connections.wrappers import group as _connection_group_wrapper
+from io_scs_tools.internals.open_gl.storage import terrain_points as _terrain_points_storage
 from io_scs_tools.operators.bases.selection import Selection as _BaseSelectionOperator
 from io_scs_tools.operators.bases.view import View as _BaseViewOperator
 from io_scs_tools.utils.printout import lprint
@@ -268,7 +273,7 @@ class Part:
                             bpy.ops.object.select_all(action='DESELECT')
 
                         obj.select = actual_select_state
-                    elif not self.select_type in (self.SHIFT_SELECT, self.CTRL_SELECT):
+                    elif self.select_type not in (self.SHIFT_SELECT, self.CTRL_SELECT):
                         obj.select = False
             return
 
@@ -606,7 +611,7 @@ class Variant:
                             bpy.ops.object.select_all(action='DESELECT')
 
                         obj.select = actual_select_state
-                    elif not self.select_type in (self.SHIFT_SELECT, self.CTRL_SELECT):
+                    elif self.select_type not in (self.SHIFT_SELECT, self.CTRL_SELECT):
                         obj.select = False
             else:
 
@@ -761,7 +766,7 @@ class ModelObjects:
         def execute(self, context):
             lprint('D Select Model Objects...')
             for obj in context.scene.objects:
-                has_shadow, has_glass, is_other = _material_utils.get_material_info(obj)
+                has_shadow, has_glass, has_static_collision, is_other = _material_utils.get_material_info(obj)
                 if is_other:
                     obj.select = True
                 else:
@@ -780,7 +785,7 @@ class ModelObjects:
             actual_hide_state = self.get_hide_state()
 
             for obj in self.get_objects(context):
-                has_shadow, has_glass, is_other = _material_utils.get_material_info(obj)
+                has_shadow, has_glass, has_static_collision, is_other = _material_utils.get_material_info(obj)
                 if is_other:
 
                     # set actual hide state if it's not set yet
@@ -811,7 +816,7 @@ class ShadowCasters:
         def execute(self, context):
             lprint('D Select Shadow Casters...')
             for obj in context.scene.objects:
-                has_shadow, has_glass, is_other = _material_utils.get_material_info(obj)
+                has_shadow, has_glass, has_static_collision, is_other = _material_utils.get_material_info(obj)
                 if has_shadow:
                     obj.select = True
                 else:
@@ -830,13 +835,17 @@ class ShadowCasters:
             actual_hide_state = self.get_hide_state()
 
             for obj in self.get_objects(context):
-                has_shadow, has_glass, is_other = _material_utils.get_material_info(obj)
+                has_shadow, has_glass, has_static_collision, is_other = _material_utils.get_material_info(obj)
                 if has_shadow:
 
                     # set actual hide state if it's not set yet
                     if actual_hide_state is None:
 
                         actual_hide_state = not obj.hide
+
+                    # when hiding ignore flavored shadow casters
+                    if actual_hide_state is True and has_shadow and is_other:
+                        continue
 
                     obj.hide = actual_hide_state
 
@@ -855,7 +864,7 @@ class ShadowCasters:
         def execute(self, context):
             lprint('D Shadow Casters Objects In Wireframes...')
             for obj in context.scene.objects:
-                has_shadow, has_glass, is_other = _material_utils.get_material_info(obj)
+                has_shadow, has_glass, has_static_collision, is_other = _material_utils.get_material_info(obj)
                 if has_shadow:
                     obj.draw_type = 'WIRE'
                     obj.show_all_edges = True
@@ -870,7 +879,7 @@ class ShadowCasters:
         def execute(self, context):
             lprint('D Shadow Casters Objects Textured...')
             for obj in context.scene.objects:
-                has_shadow, has_glass, is_other = _material_utils.get_material_info(obj)
+                has_shadow, has_glass, has_static_collision, is_other = _material_utils.get_material_info(obj)
                 if has_shadow:
                     obj.draw_type = 'TEXTURED'
             return {'FINISHED'}
@@ -890,7 +899,7 @@ class Glass:
         def execute(self, context):
             lprint('D Select Glass Objects...')
             for obj in context.scene.objects:
-                has_shadow, has_glass, is_other = _material_utils.get_material_info(obj)
+                has_shadow, has_glass, has_static_collision, is_other = _material_utils.get_material_info(obj)
                 if has_glass:
                     obj.select = True
                 else:
@@ -909,7 +918,7 @@ class Glass:
             actual_hide_state = self.get_hide_state()
 
             for obj in self.get_objects(context):
-                has_shadow, has_glass, is_other = _material_utils.get_material_info(obj)
+                has_shadow, has_glass, has_static_collision, is_other = _material_utils.get_material_info(obj)
                 if has_glass:
 
                     # set actual hide state if it's not set yet
@@ -934,7 +943,7 @@ class Glass:
         def execute(self, context):
             lprint('D Glass Objects In Wireframes...')
             for obj in context.scene.objects:
-                has_shadow, has_glass, is_other = _material_utils.get_material_info(obj)
+                has_shadow, has_glass, has_static_collision, is_other = _material_utils.get_material_info(obj)
                 if has_glass:
                     obj.draw_type = 'WIRE'
                     obj.show_all_edges = True
@@ -949,9 +958,60 @@ class Glass:
         def execute(self, context):
             lprint('D Glass Objects Textured...')
             for obj in context.scene.objects:
-                has_shadow, has_glass, is_other = _material_utils.get_material_info(obj)
+                has_shadow, has_glass, has_static_collision, is_other = _material_utils.get_material_info(obj)
                 if has_glass:
                     obj.draw_type = 'TEXTURED'
+            return {'FINISHED'}
+
+
+class Collision:
+    """
+    Wrapper class for better navigation in file
+    """
+
+    class SelectCollisionObjects(bpy.types.Operator):
+        """Selects all glass objects."""
+        bl_label = "Select static collision objects"
+        bl_idname = "object.select_substance_objects"
+        bl_description = "Select objects with material using physics substance"
+
+        def execute(self, context):
+            lprint('D Select Glass Objects...')
+            for obj in context.scene.objects:
+                has_shadow, has_glass, has_static_collision, is_other = _material_utils.get_material_info(obj)
+                if has_static_collision:
+                    obj.select = True
+                else:
+                    obj.select = False
+            return {'FINISHED'}
+
+    class ViewCollisionObjects(bpy.types.Operator, _BaseViewOperator):
+        """Switch visibility of glass objects."""
+        bl_label = "Switch Visibility of static collision objects"
+        bl_idname = "object.switch_substance_objects_visibility"
+        bl_description = "View only objects which SCS Part is prefixed with 'coll', marking it as static collision object" + \
+                         _BaseViewOperator.bl_base_description
+
+        def execute(self, context):
+            lprint("D " + self.bl_label + "...")
+
+            actual_hide_state = self.get_hide_state()
+
+            for obj in self.get_objects(context):
+                has_shadow, has_glass, has_static_collision, is_other = _material_utils.get_material_info(obj)
+                if has_static_collision:
+
+                    # set actual hide state if it's not set yet
+                    if actual_hide_state is None:
+
+                        actual_hide_state = not obj.hide
+
+                    obj.hide = actual_hide_state
+
+                elif self.view_type == self.VIEWONLY:
+
+                    obj.hide = True
+
             return {'FINISHED'}
 
 
@@ -1041,10 +1101,288 @@ class Locators:
             class AssignTerrainPoints(bpy.types.Operator):
                 bl_label = "Assign Terrain Points"
                 bl_idname = "object.assign_terrain_points"
+                bl_description = str("Assigns terrain point to currently selected prefab Control Node "
+                                     "(confirm requested if some vertices from this mesh are already assigned).")
+
+                vg_name = StringProperty()
+                """Name of the vertex group for terrain points. It consists of vertex group prefix and node index."""
+
+                @classmethod
+                def poll(cls, context):
+                    return _object_utils.can_assign_terrain_points(context)
 
                 def execute(self, context):
-                    # TODO: finish actually assigning of terrain points
-                    lprint('D Assign Terrain Points...')
+                    lprint("D " + self.bl_label + "...")
+
+                    active_obj = context.active_object
+
+                    # ensure vertex group for current node
+                    if self.vg_name not in active_obj.vertex_groups:
+                        active_obj.vertex_groups.new(self.vg_name)
+
+                    vg_instance = active_obj.vertex_groups[self.vg_name]
+
+                    # collect vertices for terrain points
+                    vertices_to_assign = []
+                    for v in active_obj.data.vertices:
+                        if v.select:
+                            vertices_to_assign.append(v.index)
+
+                    # assign terrain points to vertex group
+                    bpy.ops.object.mode_set(mode='OBJECT')
+                    vg_instance.remove(list(range(len(active_obj.data.vertices))))  # first remove all indices
+                    vg_instance.add(vertices_to_assign, 1.0, 'REPLACE')  # finally add currently selected back to vertex group
+                    bpy.ops.object.mode_set(mode='EDIT')
+
+                    # remove vertex group if not needed anymore
+                    if len(vertices_to_assign) == 0:
+                        active_obj.vertex_groups.remove(vg_instance)
+
+                    return {'FINISHED'}
+
+                def invoke(self, context, event):
+
+                    active_obj = context.active_object
+                    other_obj = _object_utils.get_other_object(context.selected_objects, active_obj)
+                    wm = context.window_manager
+
+                    # set vertex group name regarding selected node index
+                    self.vg_name = _OP_consts.TerrainPoints.vg_name_prefix + str(other_obj.scs_props.locator_prefab_con_node_index)
+
+                    # switch between modes to ensure updated vertices data
+                    bpy.ops.object.mode_set(mode='OBJECT')
+                    bpy.ops.object.mode_set(mode='EDIT')
+
+                    if self.vg_name not in active_obj.vertex_groups:
+                        return self.execute(context)
+                    else:
+                        return wm.invoke_confirm(self, event)  # ask user for overwrite
+
+            class ClearTerrainPointsOperator(bpy.types.Operator):
+                bl_label = "Clear All Terrain Points"
+                bl_idname = "object.clear_all_terrain_points"
+                bl_description = "Clears all terrain points for currently selected prefab Control Node"
+
+                @classmethod
+                def poll(cls, context):
+                    active_obj = context.active_object
+                    scs_root = _object_utils.get_scs_root(active_obj)
+
+                    is_active_obj_node = active_obj and scs_root and (active_obj.type == "EMPTY" and
+                                                                      active_obj.scs_props.empty_object_type == "Locator" and
+                                                                      active_obj.scs_props.locator_type == "Prefab" and
+                                                                      active_obj.scs_props.locator_prefab_type == "Control Node")
+
+                    return is_active_obj_node or _object_utils.can_assign_terrain_points(context)
+
+                def execute(self, context):
+                    lprint("D " + self.bl_label + "...")
+
+                    # make sure to abort possible preview operator
+                    if bpy.ops.object.abort_preview_terrain_points.poll():
+                        bpy.ops.object.abort_preview_terrain_points()
+
+                    # if user is in assigning terrain points mode then node locator is other object
+                    if context.active_object.mode == "EDIT":
+                        node_loc_obj = _object_utils.get_other_object(context.selected_objects, context.active_object)
+                    else:
+                        node_loc_obj = context.active_object
+
+                    vg_to_delete_count = 0
+                    for sibling in _object_utils.get_siblings(node_loc_obj):
+
+                        if sibling.type != "MESH":
+                            continue
+
+                        vg_to_delete = []
+                        for vertex_group in sibling.vertex_groups:
+
+                            # if vertex group name doesn't match prescribed one ignore this vertex group
+                            if not re.match(_OP_consts.TerrainPoints.vg_name_regex, vertex_group.name):
+                                continue
+
+                            # if node index is not from current node ignore vertex group
+                            node_index = vertex_group.name[-1]
+                            if node_index != node_loc_obj.scs_props.locator_prefab_con_node_index:
+                                continue
+
+                            vg_to_delete.append(vertex_group)
+
+                        vg_to_delete_count += len(vg_to_delete)
+
+                        # remove all listed vertex groups
+                        while len(vg_to_delete) > 0:
+                            sibling.vertex_groups.remove(vg_to_delete.pop())
+
+                    if vg_to_delete_count == 0:
+                        self.report({'INFO'}, "No terrain points to clear!")
+
+                    return {'FINISHED'}
+
+            class PreviewTerrainPoints(bpy.types.Operator):
+                bl_label = "Preview Terrain Points"
+                bl_idname = "object.preview_terrain_points"
+                bl_description = "Preview terrain points for currently selected prefab Control Node "
+
+                preview_all = BoolProperty(
+                    name="PreviewAll",
+                    description="If False only terrain points from visible meshes are shown. Otherwise all terrain points are shown.",
+                    default=False
+                )
+
+                is_active = False  # tells if any preview is already in progress, this will prevent possible multiple previews
+                abort = False  # indicating if user manually aborted preview, via abort preview operator below
+
+                __timer = None  # saves timer instance so it can be deleted when aborting
+                __active_object = None  # caches active object for possible abort of operator when selection changes
+                __active_object_mode = None  # caches active object mode state for possible abort of operator
+                __active_object_matrix = None  # caches active object matrix for terrain point recalculation when object is transformed
+
+                def execute_internal(self, context):
+
+                    # clear any possible leftovers
+                    _terrain_points_storage.clear()
+
+                    # if user is in assigning terrain points mode then node locator is other object
+                    if context.active_object.mode == "EDIT":
+                        node_loc_obj = _object_utils.get_other_object(context.selected_objects, context.active_object)
+                    else:
+                        node_loc_obj = context.active_object
+
+                    for sibling in _object_utils.get_siblings(node_loc_obj):
+
+                        # ignore none mesh siblings or hidden siblings if previewing only visible
+                        if sibling.type != "MESH" or (not self.preview_all and sibling.hide):
+                            continue
+
+                        for vertex_group in sibling.vertex_groups:
+
+                            # if vertex group name doesn't match prescribed one ignore this vertex group
+                            if not re.match(_OP_consts.TerrainPoints.vg_name_regex, vertex_group.name):
+                                continue
+
+                            # if node index is not from current node ignore vertex group
+                            node_index = vertex_group.name[-1]
+                            if node_index != node_loc_obj.scs_props.locator_prefab_con_node_index:
+                                continue
+
+                            # if user is in assigning terrain points mode then
+                            # take data from bmesh for the object that is in edit mode
+                            if sibling.mode == "EDIT":
+                                bm = bmesh.from_edit_mesh(sibling.data)
+                                bm.verts.ensure_lookup_table()
+                            else:
+                                bm = None
+
+                            for v in sibling.data.vertices:
+                                for group in v.groups:
+                                    if vertex_group.index == group.group:
+
+                                        if sibling.mode == "EDIT":
+                                            co = bm.verts[v.index].co
+                                        else:
+                                            co = v.co
+
+                                        # finally add terrain point if it has correct vertex group
+                                        _terrain_points_storage.add(sibling.matrix_world * co, not sibling.hide)
+
+                    # force view refresh
+                    _view3d_utils.tag_redraw_all_view3d_and_props()
+
+                    # cache active object matrix for possible terrain points desync check
+                    self.__active_object_matrix = str(context.active_object.matrix_world)
+
+                @classmethod
+                def poll(cls, context):
+
+                    # mark preview operator as disabled if preview is in progress
+                    if cls.is_active:
+                        return False
+
+                    active_obj = context.active_object
+                    scs_root = _object_utils.get_scs_root(active_obj)
+
+                    is_active_obj_node = active_obj and scs_root and (active_obj.type == "EMPTY" and
+                                                                      active_obj.scs_props.empty_object_type == "Locator" and
+                                                                      active_obj.scs_props.locator_type == "Prefab" and
+                                                                      active_obj.scs_props.locator_prefab_type == "Control Node")
+
+                    return is_active_obj_node or _object_utils.can_assign_terrain_points(context)
+
+                def modal(self, context, event):
+
+                    is_aborted = Locators.Prefab.ControlNodes.PreviewTerrainPoints.abort
+                    active_object_changed = self.__active_object != context.active_object
+                    is_object_mode_changed = self.__active_object_mode != context.active_object.mode
+                    is_transformed = self.__active_object_matrix and self.__active_object_matrix != str(context.active_object.matrix_world)
+
+                    # abort if:
+                    # 1. user manually press abort
+                    # 2. active object mode has changed
+                    # 3. if user changed active object
+                    if is_aborted or is_object_mode_changed or active_object_changed:
+                        self.cancel(context)
+                        return {'CANCELLED'}
+
+                    # extra abort step if there is nothing more to draw
+                    if _terrain_points_storage.is_emtpy():
+                        visible_msg = "visible " if not self.preview_all else ""
+                        self.report({'INFO'}, "No " + visible_msg + "terrain points to preview for this node")
+                        self.cancel(context)
+                        return {'CANCELLED'}
+
+                    # if user is in assigning terrain points mode or user is all selected objects
+                    # make sure to update possible moved terrain points
+                    if event.type == "TIMER" and (context.active_object.mode == "EDIT" or is_transformed):
+                        self.execute_internal(context)
+
+                    return {'PASS_THROUGH'}
+
+                def execute(self, context):
+                    lprint("D " + self.bl_label + "...")
+
+                    self.execute_internal(context)
+
+                    # set event timer which will take care of aborting
+                    wm = context.window_manager
+                    self.__timer = wm.event_timer_add(0.25, context.window)
+                    self.__active_object = context.active_object
+                    self.__active_object_mode = context.active_object.mode
+                    self.__active_object_matrix = str(context.active_object.matrix_world)
+
+                    Locators.Prefab.ControlNodes.PreviewTerrainPoints.is_active = True
+                    Locators.Prefab.ControlNodes.PreviewTerrainPoints.abort = False
+
+                    # use modal execution to abort operator if it gets aborted somehow
+                    wm.modal_handler_add(self)
+                    return {'RUNNING_MODAL'}
+
+                def cancel(self, context):
+
+                    # clear terrain points storage and force redraw
+                    _terrain_points_storage.clear()
+                    _view3d_utils.tag_redraw_all_view3d_and_props()
+
+                    wm = context.window_manager
+                    wm.event_timer_remove(self.__timer)
+
+                    self.__timer = None
+                    self.__active_object = None
+                    self.__active_object_matrix = None
+
+                    Locators.Prefab.ControlNodes.PreviewTerrainPoints.is_active = False
+
+            class AbortPreviewTerrainPointsOperator(bpy.types.Operator):
+                bl_label = "Abort Preview Terrain Points"
+                bl_idname = "object.abort_preview_terrain_points"
+                bl_description = "Abort preview of terrain points for currently selected prefab Control Node "
+
+                @classmethod
+                def poll(cls, context):
+                    return Locators.Prefab.ControlNodes.PreviewTerrainPoints.is_active
+
+                def execute(self, context):
+                    Locators.Prefab.ControlNodes.PreviewTerrainPoints.abort = True
                     return {'FINISHED'}
 
         class Signs:
@@ -1290,18 +1628,18 @@ class Locators:
                         if selected != obj1:
                             obj0 = selected
 
-                    if not obj0.type == "EMPTY" or not obj0.scs_props.locator_prefab_type in ("Navigation Point", "Map Point", "Trigger Point"):
+                    if not obj0.type == "EMPTY" or obj0.scs_props.locator_prefab_type not in ("Navigation Point", "Map Point", "Trigger Point"):
                         self.report({'ERROR'}, "Selected objects are not correct prefab locators or they are not the same type.")
                         return {'FINISHED'}
 
                     if _connection_group_wrapper.create_connection(obj0, obj1):
                         _view3d_utils.tag_redraw_all_view3d()
                     else:
-                        self.report({'ERROR'},
-                                    """Failed.
-Connection already exists or
-current locators types can not be connected or
-one of locators doesn't have any empty slot!""")
+                        msg = str("Failed, because of one of following reasons:\n"
+                                  "-> connection already exists,\n"
+                                  "-> current locators types can not be connected,\n"
+                                  "-> one of locators doesn't have any empty slot.")
+                        self.report({'ERROR'}, msg)
 
                 else:
                     self.report({'ERROR'}, "In order to create connection, make sure you have selected two prefab locators of type Navigation "

@@ -76,8 +76,8 @@ def relative_path(base_path, path):
     repaired_path = repair_path(path)
     # print('repaired_path:\n\t"%s"' % repaired_path)
     if len(repaired_base_path) > 2:
-        # presuming that first equality of first two chars means we are on same mount point
-        if repaired_path[:2] == repaired_base_path[:2]:
+        # presuming that equality of first two chars means we are on same mount point
+        if startswith(repaired_path[:2], repaired_base_path[:2]):
             rel_path = os.path.relpath(repaired_path, repaired_base_path).replace("\\", "/")
             # print('rel_path:\n\t"%s"' % rel_path)
             if not rel_path.startswith("//"):
@@ -91,15 +91,22 @@ def relative_path(base_path, path):
         return repaired_path
 
 
-def get_abs_path(path_in, subdir_path=''):
-    """Takes a path, which can be either absolute or relative to the 'SCS Project Base Path'.
-    If the path is existing and valid, it returns the absolute path, otherwise None.
+def get_abs_path(path_in, subdir_path='', is_dir=False, skip_mod_check=False):
+    """Gets absolute path to the "SCS Project Base Path" if given path is relative (starts with: "//"),
+    otherwise original path is returned.
+    If relative path is existing and valid, it returns the absolute path, otherwise None.
     Optionally a subdir_path can be provided, which will be added to the 'SCS Project Base Path'.
+    If skipping of mod check is not specified then function will also try to look in two
+    parent base directories, in the case "SCS Project Base Path" is currently set to mod/dlc package.
 
     :param path_in: Absolute or relative path to current 'SCS Project Base path'
     :type path_in: str
     :param subdir_path: Additional subdirs can be provided, they will be added to the 'SCS Project Base Path'
     :type subdir_path: str
+    :param is_dir: flag specifying if given path should be directory
+    :type is_dir: bool
+    :param skip_mod_check: flag specifying if check for dlc/mod should be skipped
+    :type skip_mod_check: bool
     :return: Absolute path or None
     :rtype: str
     """
@@ -115,54 +122,44 @@ def get_abs_path(path_in, subdir_path=''):
     else:
         result = path_in
 
+    existance_check = os.path.isdir if is_dir else os.path.isfile
+
+    if result is not None and not existance_check(result) and not skip_mod_check:
+        result = get_abs_path(path_in, subdir_path="../base", is_dir=is_dir, skip_mod_check=True)
+
+    if result is not None and not existance_check(result) and not skip_mod_check:
+        result = get_abs_path(path_in, subdir_path="../../base", is_dir=is_dir, skip_mod_check=True)
+
+    # finally if file/dir not found return correct abs path, not the one from parent dirs
+    if result is not None and not existance_check(result) and not skip_mod_check:
+        result = get_abs_path(path_in, subdir_path=subdir_path, is_dir=is_dir, skip_mod_check=True)
+
     return result
 
 
-'''
-def is_valid_cgfx_template_library_path():
-    """It returns True if there is valid "*.txt" file in
-    the CgFX Template Library directory, otherwise False."""
-    cgfx_templates_filepath = _get_scs_globals().cgfx_templates_filepath
-    if cgfx_templates_filepath != "":
-        if cgfx_templates_filepath.startswith(str(os.sep + os.sep)):  # RELATIVE PATH
-            cgfx_templates_abs_path = get_abs_path(cgfx_templates_filepath)
-            if cgfx_templates_abs_path:
-                if os.path.isfile(cgfx_templates_abs_path):
-                    return True
-        else:  # ABSOLUTE PATH
-            if os.path.isfile(cgfx_templates_filepath):
+def is_valid_shader_texture_path(shader_texture):
+    """It returns True if there is valid Shader Texture file, otherwise False.
+
+    :param shader_texture: SCS texture path, can be absolute or relative
+    :type shader_texture: str
+    :return: True if there is valid Shader Texture file, otherwise False
+    :rtype: bool
+    """
+    if shader_texture != "":
+
+        if shader_texture.startswith("//"):  # RELATIVE PATH
+
+            shader_texture_abs_path = get_abs_path(shader_texture)
+
+            if os.path.isfile(shader_texture_abs_path):
                 return True
+
+        else:  # ABSOLUTE PATH
+
+            if os.path.isfile(shader_texture):
+                return True
+
     return False
-
-
-def is_valid_cgfx_library_rel_path():
-    """It returns True if there is at least one "*.cgfx" file in
-    the resulting CgFX Library directory, otherwise False."""
-    cgfx_library_abs_path = get_abs_path(_get_scs_globals().cgfx_library_rel_path)
-    if cgfx_library_abs_path:
-        for root, dirs, files in os.walk(cgfx_library_abs_path):
-            for file in files:
-                if file.endswith(".cgfx"):
-                    return True
-            return False
-    else:
-        return False
-
-
-def get_cgfx_templates_filepath():
-    """Returns a valid filepath to "cgfx_templates.txt" file. If the file doesn't exists,
-    the empty string is returned and CgFX templates won't be available."""
-    scs_installation_dirs = get_addon_installation_paths()
-
-    cgfx_templates_file = ''
-    for location in scs_installation_dirs:
-        test_path = os.path.join(location, 'cgfx_templates.txt')
-        if os.path.isfile(test_path):
-            cgfx_templates_file = test_path
-            break
-
-    return cgfx_templates_file
-'''
 
 
 def is_valid_shader_presets_library_path():
@@ -179,6 +176,19 @@ def is_valid_shader_presets_library_path():
             if os.path.isfile(shader_presets_filepath):
                 return True
     return False
+
+
+def is_valid_trigger_actions_rel_path():
+    """It returns True if there is valid "*.sii" file in
+    the Trigger Actions directory, otherwise False."""
+    trig_actions_abs_path = get_abs_path(_get_scs_globals().trigger_actions_rel_path)
+    if trig_actions_abs_path:
+        if os.path.isfile(trig_actions_abs_path):
+            return True
+        else:
+            return False
+    else:
+        return False
 
 
 def is_valid_sign_library_rel_path():
@@ -223,7 +233,7 @@ def is_valid_traffic_rules_library_rel_path():
 def is_valid_hookup_library_rel_path():
     """It returns True if there is at least one "*.sii" file in
     the resulting CgFX Library directory, otherwise False."""
-    hookup_library_abs_path = get_abs_path(_get_scs_globals().hookup_library_rel_path)
+    hookup_library_abs_path = get_abs_path(_get_scs_globals().hookup_library_rel_path, is_dir=True)
     if hookup_library_abs_path:
         for root, dirs, files in os.walk(hookup_library_abs_path):
             for file in files:
@@ -287,109 +297,148 @@ def get_shader_presets_filepath():
     return shader_presets_file
 
 
-def make_texture_filepath(tobj_filepath, bitmap_filename):
-    """Combine give two paths
+def get_texture_path_from_tobj(tobj_filepath, raw_value=False):
+    """Get absolute path of texture from given tobj filepath.
+    If raw value is requested returned path is direct value written in TOBJ.
+    NOTE: there is no safety check if file exists.
 
-    :param tobj_filepath:
-    :type tobj_filepath:
-    :param bitmap_filename:
-    :type bitmap_filename:
-    :return:
-    :rtype:
-    """
-    tobj_path, tobj_filename = os.path.split(tobj_filepath)
-    # print(' tobj_path: %s' % str(tobj_path))
-    bitmap_filepath = os.path.join(tobj_path, bitmap_filename)
-    # print(' bitmap_filepath: %s' % str(bitmap_filepath))
-    if os.path.isfile(bitmap_filepath):
-        # print(' bitmap_filepath: %s' % str(bitmap_filepath))
-        base_path = _get_scs_globals().scs_project_path
-        filepath = relative_path(base_path, bitmap_filepath)
-    else:
-        filepath = bitmap_filepath
-    return filepath
-
-
-def get_bitmap_filepath(texture_tobj_string):
-    """Returns bitmap file path from tobj file
-
-    :param texture_tobj_string:
-    :type texture_tobj_string:
-    :return:
-    :rtype:
+    :param tobj_filepath: absolute tobj file path
+    :type tobj_filepath: str
+    :param raw_value: flag for indicating if texture path shall be returned as it's written in TOBJ
+    :type raw_value: bool
+    :return: absolute texture file path if found or None
+    :rtype: str | None
     """
 
-    def get_tobj_filepath(texture_data_value):
-        # print(' texture_data_value: %r' % texture_data_value)
-        if texture_data_value != '':
+    from io_scs_tools.internals.containers.tobj import TobjContainer
 
-            # exception for Windows so os.path.join can correctly join paths
-            texture_data_value = texture_data_value.replace("/", os.sep)
+    container = TobjContainer.read_data_from_file(tobj_filepath, skip_validation=raw_value)
+    tobj_dir, tobj_filename = os.path.split(tobj_filepath)
 
-            base_path = _get_scs_globals().scs_project_path
-            if os.path.isdir(base_path):
-                # print(' base_path: %r' % base_path)
-                head, tail = os.path.split(texture_data_value)
-                if head.startswith(os.sep):
-                    head = head[1:]
-                    # print(' head: %r' % head)
-                tobj_path = os.path.join(base_path, head)
-                # print(' tobj_path: %r' % tobj_path)
-                tobj_name = str(tail + ".tobj")
-                # print(' tobj_name: %r' % tobj_name)
-                tobj_path = os.path.join(tobj_path, tobj_name)
-                # print(' tobj_filepath: %r' % tobj_filepath)
-                if os.path.isfile(tobj_path):
-                    return tobj_path
-                else:
-                    lprint("E Texture file %r not found!", (tobj_path,))
-            else:
-                lprint("E No 'base' directory!")
+    if container is None:
         return None
 
-    def get_tobj_data(tobj_path):
-        """Takes a filepath of TOBJ file and returns its data as a list of keywords."""
-        data = []
-        with open(tobj_path) as file_open:
-            for i, line in enumerate(file_open):
-                # print(' ** line: %r' % str(line))
-                line_split = line.strip().split()
-                if len(line_split) != 0:
-                    # print(' ** line_split: %s' % str(line_split))
-                    for word in line_split:
-                        data.append(word)
-        file_open.close()
-        return data
+    if raw_value:
+        return container.map_names[0]
 
-    filepath = ""
-    tobj_filepath = get_tobj_filepath(texture_tobj_string)
-    # print(' tobj_filepath: %s' % str(tobj_filepath))
+    if container.map_names[0][0] == "/":
+        return get_abs_path("//" + container.map_names[0][1:])
 
-    if tobj_filepath:
-        tobj_data = get_tobj_data(tobj_filepath)
-        # print(' tobj_data:\n%s' % str(tobj_data))
-        rec_i = 0
-        while rec_i < len(tobj_data):
-            rec = tobj_data[rec_i]
-            # print('  rec: %s' % str(rec))
-            if rec.startswith('#'):
-                rec_i += 1
-                continue
-            elif rec == 'map':
-                if tobj_data[rec_i + 1] == '2d':
-                    bitmap_filename = tobj_data[rec_i + 2]
-                    filepath = make_texture_filepath(tobj_filepath, bitmap_filename)
-                    rec_i += 3
-                elif tobj_data[rec_i + 1] == 'cube':
-                    bitmap_filename = tobj_data[rec_i + 2]  # NOTE: Only first bitmap from Cube Map is used here.
-                    # print('  bitmap_filename: %s' % str(bitmap_filename))
-                    filepath = make_texture_filepath(tobj_filepath, bitmap_filename)
-                    rec_i += 8
-                    break  # NOTE: Stop searching the file after first texture. (temporal)
-            elif rec == 'addr':
-                pass
-            rec_i += 1
-    return filepath
+    return os.path.join(tobj_dir, container.map_names[0])
+
+
+def get_texture_extens_and_strip_path(texture_path):
+    """Gets all supported texture extensions and strips given input path for any of it.
+
+    :param texture_path: shader texture raw path value
+    :type texture_path: str
+    :return: list of extensions and stripped path as tuple
+    :rtype: tuple[list[str], str]
+    """
+
+    extensions = [".tobj", ".tga", ".png"]
+
+    # strip of any extensions ( endswith is most secure, because of possible multiple extensions )
+    if texture_path.endswith(".tobj"):
+
+        extensions.insert(0, texture_path[-5:])
+        texture_path = texture_path[:-5]
+
+    elif texture_path.endswith(".tga") or texture_path.endswith(".png"):
+
+        extensions.insert(0, texture_path[-4:])
+        texture_path = texture_path[:-4]
+
+    return extensions, texture_path
+
+
+def get_scs_texture_str(texture_string):
+    """Get texture string as presented in SCS files: "/material/environment/vehicle_reflection"
+    without any file extensions. Input path can also have texture object extension or supported images extensions.
+    Path will be searched and returned in this order:
+    1. relative path on current SCS Project Base Path
+    2. relative path on parent base dirs of current SCS Project Base Path in the case of mod/dlc
+    3. find absolute file path
+    4. return unchanged texture string path
+
+    :param texture_string: texture string for which texture should be found e.g.: "/material/environment/vehicle_reflection"
+    :type texture_string: str
+    :return: relative path to texture object or absolute path to texture object or uncanged texture string
+    :rtype: str
+    """
+
+    scs_project_path = _get_scs_globals().scs_project_path
+    orig_texture_string = texture_string
+
+    # remove any directory separators left overs from different platform
+    texture_string = texture_string.replace("/", os.sep).replace("\\", os.sep)
+
+    extensions, texture_string = get_texture_extens_and_strip_path(texture_string)
+
+    # if texture string starts with scs project path we can directly strip of project path
+    if startswith(texture_string, scs_project_path):
+        texture_string = texture_string[len(scs_project_path):]
+    else:  # check if texture string came from base project while scs project path is in dlc/mod folder
+
+        # first find longest matching path
+        i = 1
+        while startswith(scs_project_path, texture_string[:i]) and i < len(texture_string):
+            i += 1
+
+        # now check if provided texture string is the same as:
+        # current scs project path + one or two directories up + non matched path of the part
+        for infix in ("..", ".." + os.sep + ".."):
+
+            nonmatched_path_part = texture_string[i - 2:]
+
+            modif_texture_string = os.path.join(scs_project_path, infix + nonmatched_path_part)
+            # if one or two directories up is the same path as texture string
+            # and non matched path part is starting with /base we got a hit:
+            # resulting relative path is non matched path part with stripped "/base" start
+            if is_samepath(modif_texture_string, texture_string) and startswith(nonmatched_path_part, os.sep + "base"):
+                texture_string = nonmatched_path_part[5:]
+                break
+
+    # check for relative TOBJ, TGA, PNG
+    for ext in extensions:
+        texture_path = get_abs_path("//" + texture_string.strip(os.sep) + ext)
+        if os.path.isfile(texture_path):
+            return "//" + texture_string.replace(os.sep, "/").strip("/") + ext
+
+    # check for absolute TOBJ, TGA, PNG
+    for ext in extensions:
+        texture_path = get_abs_path(texture_string + ext, skip_mod_check=True)
+        if os.path.isfile(texture_path):
+            return texture_string.replace(os.sep, "/") + ext
+
+    return orig_texture_string
+
+
+def get_tobj_path_from_shader_texture(shader_texture, check_existance=True):
+    """Gets TOBJ path from shader texture value if exists, otherwise returning None.
+
+    :param shader_texture: shader texture raw path value
+    :type shader_texture: str
+    :param check_existance: flag indicating if tobj path should be also checked for existance
+    :type check_existance: bool
+    :return: TOBJ absolute path or None if not found
+    :rtype: str | None
+    """
+
+    # strip of any extensions ( endswith is most secure, because of possible multiple extensions )
+    if shader_texture.endswith(".tobj"):
+        tobj_filpath = shader_texture
+    elif shader_texture.endswith(".tga") or shader_texture.endswith(".png"):
+        tobj_filpath = shader_texture[:-4] + ".tobj"
+    else:
+        tobj_filpath = shader_texture + ".tobj"
+
+    # NOTE: if there is no existence check then we also shouldn't check for mods file system structure
+    tobj_filpath = get_abs_path(tobj_filpath, skip_mod_check=not check_existance)
+    if os.path.isfile(tobj_filpath):
+        return tobj_filpath
+    else:
+        return None if check_existance else tobj_filpath
 
 
 def get_skeleton_relative_filepath(armature, directory, default_name):
@@ -458,7 +507,7 @@ def get_global_export_path():
     """
 
     scs_project_path = _get_scs_globals().scs_project_path
-    is_blend_file_within_base = bpy.data.filepath != "" and bpy.data.filepath.startswith(scs_project_path)
+    is_blend_file_within_base = bpy.data.filepath != "" and startswith(bpy.data.filepath, scs_project_path)
     default_export_path = bpy.context.scene.scs_props.default_export_filepath
 
     # if not set try to use Blender filepath
@@ -478,7 +527,7 @@ def get_custom_scs_root_export_path(root_object):
     :rtype: str | None
     """
     scs_project_path = _get_scs_globals().scs_project_path
-    is_blend_file_within_base = bpy.data.filepath != "" and bpy.data.filepath.startswith(scs_project_path)
+    is_blend_file_within_base = bpy.data.filepath != "" and startswith(bpy.data.filepath, scs_project_path)
 
     custom_filepath = None
     if root_object.scs_props.scs_root_object_allow_custom_path:
@@ -490,3 +539,92 @@ def get_custom_scs_root_export_path(root_object):
             custom_filepath = os.path.join(scs_project_path, scs_root_export_path.strip("//"))
 
     return custom_filepath
+
+
+def get_all_infixed_file_paths(filepath, include_given_path=True):
+    """Gets files from same directory using any infixed word without,
+    however dot can not appear in infix.
+
+    :param filepath: absolute filepath which shall be checked for any infixed files
+    :type filepath: str
+    :param include_given_path: if True given file path will be included in returning list otherwise no
+    :type include_given_path: bool
+    :return: list of all infixed files; optionally given filepath can be added to result list too
+    :rtype: list[str]
+    """
+
+    infixed_filepaths = [filepath] if include_given_path else []
+
+    orig_dir, orig_file = os.path.split(filepath)
+
+    # if original directory doesn't exists skip searching for any infix files
+    if not os.path.isdir(orig_dir):
+        return infixed_filepaths
+
+    last_ext_i = orig_file.rfind(".")
+
+    orig_file_prefix = orig_file[:last_ext_i]
+    orig_file_postfix = orig_file[last_ext_i:]
+
+    for file in os.listdir(orig_dir):
+
+        # if given file path is already prefixed make sure to ignore it
+        if file == orig_file:
+            continue
+
+        if file.startswith(orig_file_prefix) and file.endswith(orig_file_postfix) and file.count(".") == 2:
+            infixed_filepaths.append(os.path.join(orig_dir, file))
+
+    return infixed_filepaths
+
+
+def startswith(path1, path2):
+    """Checks if first given path starts with second given path.
+    It also takes into account windows drive letter which can be big or small.
+
+    :param path1: first path
+    :type path1: str
+    :param path2: second path
+    :type path2: str
+    :return: True if path1 starts with path2; False otherwise
+    :rtype: bool
+    """
+
+    norm_path1 = normalize(path1)
+    norm_path2 = normalize(path2)
+
+    return norm_path1.startswith(norm_path2)
+
+
+def is_samepath(path1, path2):
+    """Checks if paths are the same
+    It also takes into account windows drive letter which can be big or small.
+
+    :param path1: first path
+    :type path1: str
+    :param path2: second path
+    :type path2: str
+    :return: True if path1 starts with path2; False otherwise
+    :rtype: bool
+    """
+
+    norm_path1 = normalize(path1)
+    norm_path2 = normalize(path2)
+
+    return norm_path1 == norm_path2
+
+
+def normalize(path1):
+    """Normalize path.
+    It also takes into account windows drive letter which can be big or small.
+
+    :param path1: path
+    :type path1: str
+    :return: normalized path
+    :rtype: str
+    """
+
+    norm_path1 = os.path.normpath(path1)
+    norm_path1 = os.path.normcase(norm_path1)
+
+    return norm_path1

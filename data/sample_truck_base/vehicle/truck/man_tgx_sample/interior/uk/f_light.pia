@@ -1,6 +1,6 @@
 Header {
     FormatVersion: 3
-    Source: "Blender 2.74.0 (hash: 000dfc0), SCS Blender Tools: 0.5.bfcf60f"
+    Source: "Blender 2.76.0 (hash: 48f7dd6), SCS Blender Tools: 0.6.e9daf33"
     Type: "Animation"
     Name: "f_light"
 }
@@ -27,29 +27,30 @@ BoneChannel {
     Stream {
         Format: FLOAT4x4
         Tag: "_MATRIX"
-        0    (  &bf6e6d31  &3e8f3974  &3e6ead7e  &00000000
-                &3e994cdd  &3f73e0a6  &3d596a30  &00000000
-                &be542bb3  &3df42c0a  &bf7893e9  &00000000
+        0    (  &bf6e6d2c  &3e8f3971  &3e6ead79  &00000000 
+                &3e994ce0  &3f73e0aa  &3d596a34  &00000000
+                &be542bb6  &3df42c0d  &bf7893ed  &00000000
                 &bde35ad6  &bf115d1a  &bf2f28a9  &3f800000 )
-        1    (  &bf7723b1  &3e4b2585  &3e2d6171  &00000000
-                &3e5a6d9b  &3f795f7d  &3d9952df  &00000000
-                &be19af06  &3dddfbe8  &bf7b9328  &00000000
+        1    (  &bf7723ad  &3e4b257f  &3e2d616e  &00000000 
+                &3e5a6d9f  &3f795f80  &3d9952e2  &00000000
+                &be19af07  &3dddfbe9  &bf7b932a  &00000000
                 &bde35ad6  &bf115d1a  &bf2f28a9  &3f800000 )
-        2    (  &bf7ceaae  &3dec46c0  &3dd32d30  &00000000
-                &3e0070b4  &3f7cc27a  &3dc6d0b3  &00000000
-                &bdb990f3  &3ddee891  &bf7d6b74  &00000000
+        2    (  &bf7ceaaa  &3dec46b3  &3dd32d29  &00000000 
+                &3e0070b0  &3f7cc27b  &3dc6d0b7  &00000000
+                &bdb990f5  &3ddee895  &bf7d6b78  &00000000
                 &bde35ad6  &bf115d1a  &bf2f28a9  &3f800000 )
-        3    (  &bf7fb5cb  &3d0494c8  &3d0ec23b  &00000000
-                &3d14b0b5  &3f7e0404  &3df3693b  &00000000
-                &bcfbc9ef  &3df5ba03  &bf7e075c  &00000000
+        3    (  &bf7fb5c8  &3d0494c7  &3d0ec235  &00000000 
+                &3d14b0b6  &3f7e0408  &3df36941  &00000000
+                &bcfbc9e6  &3df5ba08  &bf7e075e  &00000000
                 &bde35ad6  &bf115d1a  &bf2f28a9  &3f800000 )
-        4    (  &bf7f892c  &bd4874ff  &bd0f7de0  &00000000
-                &bd5a9939  &3f7d22b5  &3e0ea69f  &00000000
-                &3ce3ebf2  &3e104e86  &bf7d5858  &00000000
+        4    (  &bf7f8929  &bd4874f3  &bd0f7ddb  &00000000 
+                &bd5a9936  &3f7d22b8  &3e0ea6a4  &00000000
+                &3ce3ec04  &3e104e8b  &bf7d585c  &00000000
                 &bde35ad6  &bf115d1a  &bf2f28a9  &3f800000 )
-        5    (  &bf7c7947  &be01f73c  &bdd93881  &00000000
-                &be121f30  &3f7a2616  &3e215b4c  &00000000
-                &3dab4c0d  &3e2ea1e6  &bf7b56df  &00000000
+        5    (  &bf7c7946  &be01f73c  &bdd93880  &00000000 
+                &be121f35  &3f7a2618  &3e215b54  &00000000
+                &3dab4c0b  &3e2ea1ed  &bf7b56df  &00000000
                 &bde35ad6  &bf115d1a  &bf2f28a9  &3f800000 )
     }
 }
+

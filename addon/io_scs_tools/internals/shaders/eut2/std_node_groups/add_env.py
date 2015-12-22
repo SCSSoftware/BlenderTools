@@ -19,15 +19,13 @@
 # Copyright (C) 2015: SCS Software
 
 import bpy
-
+from io_scs_tools.consts import Material as _MAT_consts
 from io_scs_tools.internals.shaders.eut2.std_node_groups import refl_normal
 from io_scs_tools.internals.shaders.eut2.std_node_groups import fresnel
 
-ADD_ENV_G = "AddEnvGroup"
+ADD_ENV_G = _MAT_consts.node_group_prefix + "AddEnvGroup"
 
-REFL_TEX_NODE = "ReflectionTex"
-REFL_TEX_ROT_NODE = "ReflectionTexRot"
-ENV_COLOR_NODE = "EnvColor"
+COMBINE_BASE_ALPHA_NODE = "CombineBaseAlpha"
 ENV_SPEC_MULT_NODE = "EnvSpecMultiplier"
 REFL_TEX_MULT_NODE = "ReflectionTexMultiplier"
 REFL_TEX_COL_MULT_NODE = "ReflTexColorMultiplier"
@@ -71,7 +69,7 @@ def __create_node_group__():
     add_env_g.inputs.new("NodeSocketVector", "View Vector")
     add_env_g.inputs.new("NodeSocketFloat", "Apply Fresnel")
     add_env_g.inputs.new("NodeSocketColor", "Reflection Texture Color")
-    add_env_g.inputs.new("NodeSocketColor", "Base Texture Alpha")
+    add_env_g.inputs.new("NodeSocketFloat", "Base Texture Alpha")
     add_env_g.inputs.new("NodeSocketColor", "Env Factor Color")
     add_env_g.inputs.new("NodeSocketColor", "Specular Color")
     input_n = add_env_g.nodes.new("NodeGroupInput")
@@ -88,6 +86,11 @@ def __create_node_group__():
     refl_normal_gn.label = REFL_NORMAL_GNODE
     refl_normal_gn.location = (start_pos_x + pos_x_shift, start_pos_y)
     refl_normal_gn.node_tree = refl_normal.get_node_group()
+
+    combine_base_alpha_n = add_env_g.nodes.new("ShaderNodeCombineRGB")
+    combine_base_alpha_n.name = COMBINE_BASE_ALPHA_NODE
+    combine_base_alpha_n.label = COMBINE_BASE_ALPHA_NODE
+    combine_base_alpha_n.location = (start_pos_x + pos_x_shift, start_pos_y - 150)
 
     env_spec_mult_n = add_env_g.nodes.new("ShaderNodeMixRGB")
     env_spec_mult_n.name = ENV_SPEC_MULT_NODE
@@ -129,12 +132,16 @@ def __create_node_group__():
     add_env_g.links.new(refl_normal_gn.inputs['View Vector'], input_n.outputs['View Vector'])
     add_env_g.links.new(refl_normal_gn.inputs['Normal Vector'], input_n.outputs['Normal Vector'])
 
+    add_env_g.links.new(combine_base_alpha_n.inputs['R'], input_n.outputs['Base Texture Alpha'])
+    add_env_g.links.new(combine_base_alpha_n.inputs['G'], input_n.outputs['Base Texture Alpha'])
+    add_env_g.links.new(combine_base_alpha_n.inputs['B'], input_n.outputs['Base Texture Alpha'])
+
     # pass 1
     add_env_g.links.new(env_spec_mult_n.inputs['Color1'], input_n.outputs['Env Factor Color'])
     add_env_g.links.new(env_spec_mult_n.inputs['Color2'], input_n.outputs['Specular Color'])
 
     add_env_g.links.new(refl_tex_mult_n.inputs['Color1'], input_n.outputs['Reflection Texture Color'])
-    add_env_g.links.new(refl_tex_mult_n.inputs['Color2'], input_n.outputs['Base Texture Alpha'])
+    add_env_g.links.new(refl_tex_mult_n.inputs['Color2'], combine_base_alpha_n.outputs['Image'])
 
     # pass 2
     add_env_g.links.new(fresnel_gn.inputs['Reflection Normal Vector'], refl_normal_gn.outputs['Reflection Normal'])

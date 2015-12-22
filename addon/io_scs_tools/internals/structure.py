@@ -73,6 +73,27 @@ class SectionData(object):
             return prop[1]
         return None
 
+    def set_prop_value(self, prop_key, value):
+        """Set property to given value if exists.
+
+        :param prop_key: string key for property
+        :type prop_key: str
+        :param value: object which shall be set to property
+        :type value: object
+        :return: True if property was found, value types matches; False otherwise
+        :rtype: bool
+        """
+        for prop_i, prop in enumerate(self.props):
+            if prop[0] == prop_key:
+
+                if isinstance(value, type(prop[1])):
+                    self.props[prop_i][1] = value
+                    return True
+                else:
+                    return False
+
+        return False
+
 
 class UnitData(object):
     """Unit data structure (SII files):

@@ -1,0 +1,12 @@
+SiiNunit
+{
+accessory_addon_int_data : sportbag.man.tgx.sample.toyseat
+{
+	name: "Weekend Bag Traveller 900"
+	price: 780
+	unlock: 0
+	icon: "sportsbag.dlc_toys"
+   
+	interior_model: "/vehicle/truck/upgrade/interior_decors/toybig/sportbag.dlc_toys.pmd"
+}
+}

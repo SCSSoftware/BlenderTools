@@ -25,9 +25,11 @@ from bpy.props import (StringProperty,
                        IntProperty,
                        EnumProperty,
                        FloatProperty)
+from collections import OrderedDict
 from io_scs_tools.consts import Icons as _ICONS_consts
 from io_scs_tools.consts import Look as _LOOK_consts
 from io_scs_tools.consts import Part as _PART_consts
+from io_scs_tools.consts import PrefabLocators as _PL_consts
 from io_scs_tools.consts import Variant as _VARIANT_consts
 from io_scs_tools.internals import inventory as _inventory
 from io_scs_tools.internals import looks as _looks
@@ -35,13 +37,13 @@ from io_scs_tools.internals import preview_models as _preview_models
 from io_scs_tools.utils import animation as _animation_utils
 from io_scs_tools.utils import object as _object_utils
 from io_scs_tools.utils import name as _name_utils
-from io_scs_tools.internals.icons.wrapper import get_icon
+from io_scs_tools.internals.icons import get_icon
 from io_scs_tools.utils.printout import lprint
 
 _ICON_TYPES = _ICONS_consts.Types
 
 
-class ObjectLooksInventory(bpy.types.PropertyGroup):
+class ObjectLooksInventoryItem(bpy.types.PropertyGroup):
     def name_update(self, context):
 
         lprint("D SCS Look inventory name update: %s", (self.name,))
@@ -70,7 +72,7 @@ class ObjectLooksInventory(bpy.types.PropertyGroup):
     id = IntProperty(name="Unique ID of this look")
 
 
-class ObjectPartInventory(bpy.types.PropertyGroup):
+class ObjectPartInventoryItem(bpy.types.PropertyGroup):
     """
     Part property inventory, which gets saved into *.blend file.
     """
@@ -134,7 +136,7 @@ class ObjectVariantPartInclusion(bpy.types.PropertyGroup):
     include = BoolProperty(name="Part is included in the Variant", default=False)
 
 
-class ObjectVariantInventory(bpy.types.PropertyGroup):
+class ObjectVariantInventoryItem(bpy.types.PropertyGroup):
     """
     Variant property inventory, which gets saved into *.blend file.
     """
@@ -167,7 +169,7 @@ class ObjectVariantInventory(bpy.types.PropertyGroup):
     parts = CollectionProperty(type=ObjectVariantPartInclusion)
 
 
-class ObjectAnimationInventory(bpy.types.PropertyGroup):
+class ObjectAnimationInventoryItem(bpy.types.PropertyGroup):
     """
     Animation property inventory, which gets saved into *.blend file.
     """
@@ -319,7 +321,7 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
     scs_root_object_export_enabled = BoolProperty(
         name="Export",
         description="Enable / disable export of all object's children as single 'SCS Game Object'",
-        default=False,
+        default=True,
     )
     scs_root_animated = EnumProperty(
         name="Animation Output",
@@ -781,9 +783,7 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
             ('Sign', "Sign", "Sign locator type", get_icon(_ICON_TYPES.loc_prefab_sign), 1),
             ('Spawn Point', "Spawn Point", "Spawn point locator type", get_icon(_ICON_TYPES.loc_prefab_spawn), 2),
             ('Traffic Semaphore', "Traffic Semaphore", "Traffic light locator type", get_icon(_ICON_TYPES.loc_prefab_semaphore), 3),
-            # ('cob', "Colbox", "Colbox locator type", 'X_VEC', 4),
             ('Navigation Point', "Navigation Point", "Navigation point locator type", get_icon(_ICON_TYPES.loc_prefab_navigation), 5),
-            # ('nac', "Navigation Curve", "Navigation curve locator type", 'X_VEC', 6),
             ('Map Point', "Map Point", "Map point locator type", get_icon(_ICON_TYPES.loc_prefab_map), 7),
             ('Trigger Point', "Trigger Point", "Trigger point locator type", get_icon(_ICON_TYPES.loc_prefab_trigger), 8),
         ]
@@ -798,19 +798,14 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
         items=locator_prefab_type_items,
         update=locator_prefab_type_update,
     )
-    # LOCATORS - PREFABS GLOBAL CONSTANTS
-    p_locator_nodes = 6
-    p_locator_lanes = 8
-    p_locator_tsems = 32
-    p_priority_modif = 15
     # LOCATORS - PREFAB - CONTROL NODES
-    it = []
-    for i in range(p_locator_nodes):
-        it.append((str(i), str(i), ""))
+    enum_con_node_index_items = OrderedDict()
+    for i in range(_PL_consts.PREFAB_NODE_COUNT_MAX):
+        enum_con_node_index_items[i] = (str(i), str(i), "")
     locator_prefab_con_node_index = EnumProperty(
         name="Node Index",
         description="Node index",
-        items=it,
+        items=enum_con_node_index_items.values(),
         default='0',
     )
     # LOCATORS - PREFAB - SIGNS
@@ -823,48 +818,46 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
         subtype='NONE',
         # update=locator_prefab_sign_model_update,
     )
-    locator_prefab_sign_pref_part = StringProperty(
-        name="Prefab Part",
-        description="Prefab part",
-        default="",
-        subtype='NONE',
-    )
+    enum_spawn_type_items = OrderedDict([
+        (_PL_consts.PSP.NONE, (str(_PL_consts.PSP.NONE), "None", "")),
+        (_PL_consts.PSP.BUY_POS, (str(_PL_consts.PSP.BUY_POS), "Buy Point", "")),
+        (_PL_consts.PSP.BUS_STATION, (str(_PL_consts.PSP.BUS_STATION), "Bus Station", "")),
+        (_PL_consts.PSP.CAMERA_POINT, (str(_PL_consts.PSP.CAMERA_POINT), "Camera Point", "")),
+        (_PL_consts.PSP.COMPANY_POS, (str(_PL_consts.PSP.COMPANY_POS), "Company Point", "")),
+        # (_PL_consts.PSP.CUSTOM, (str(_PL_consts.PSP.CUSTOM), "Custom", "")),
+        (_PL_consts.PSP.GARAGE_POS, (str(_PL_consts.PSP.GARAGE_POS), "Garage Point", "")),
+        (_PL_consts.PSP.GAS_POS, (str(_PL_consts.PSP.GAS_POS), "Gas Station", "")),
+        # (_PL_consts.PSP.HOTEL, (str(_PL_consts.PSP.HOTEL), "Hotel", "")),
+        # (_PL_consts.PSP.MEET_POS, (str(_PL_consts.PSP.MEET_POS), "Meet", "")),
+        (_PL_consts.PSP.PARKING, (str(_PL_consts.PSP.PARKING), "Parking", "")),
+        (_PL_consts.PSP.RECRUITMENT_POS, (str(_PL_consts.PSP.RECRUITMENT_POS), "Recruitment", "")),
+        (_PL_consts.PSP.SERVICE_POS, (str(_PL_consts.PSP.SERVICE_POS), "Service Station", "")),
+        # (_PL_consts.PSP.TASK, (str(_PL_consts.PSP.TASK), "Task", "")),
+        (_PL_consts.PSP.TRAILER_POS, (str(_PL_consts.PSP.TRAILER_POS), "Trailer", "")),
+        (_PL_consts.PSP.TRUCKDEALER_POS, (str(_PL_consts.PSP.TRUCKDEALER_POS), "Truck Dealer", "")),
+        # (_PL_consts.PSP.TRUCKSTOP_POS, (str(_PL_consts.PSP.TRUCKSTOP_POS), "Truck Stop", "")),
+        (_PL_consts.PSP.UNLOAD_EASY_POS, (str(_PL_consts.PSP.UNLOAD_EASY_POS), "Unload (Easy)", "")),
+        (_PL_consts.PSP.UNLOAD_MEDIUM_POS, (str(_PL_consts.PSP.UNLOAD_MEDIUM_POS), "Unload (Medium)", "")),
+        (_PL_consts.PSP.UNLOAD_HARD_POS, (str(_PL_consts.PSP.UNLOAD_HARD_POS), "Unload (Hard)", "")),
+        (_PL_consts.PSP.UNLOAD_RIGID_POS, (str(_PL_consts.PSP.UNLOAD_RIGID_POS), "Unload (Rigid)", "")),
+        (_PL_consts.PSP.WEIGHT_POS, (str(_PL_consts.PSP.WEIGHT_POS), "Weight Station", "")),
+    ])
     # LOCATORS - PREFAB - SPAWN POINTS
     locator_prefab_spawn_type = EnumProperty(
         name="Spawn Type",
         description="Spawn type",
-        items=(
-            ('0', "None", ""),
-            ('1', "Trailer", ""),
-            ('2', "Unload", ""),
-            ('3', "Gas Station", ""),
-            ('4', "Service Station", ""),
-            # ('5', "Truck Stop", ""),
-            ('6', "Weight Station", ""),
-            ('7', "Truck Dealer", ""),
-            # ('8', "Hotel", ""),
-            # ('9', "Custom", ""),
-            ('10', "Parking", ""),
-            # ('11', "Task", ""),
-            # ('12', "Meet", ""),
-            ('13', "Company Point", ""),
-            ('14', "Garage Point", ""),
-            ('15', "Buy Point", ""),
-            # ('16', "Recruitment", ""),
-            ('17', "Camera Point", ""),
-            ('18', "Bus Station", ""),
-        ),
-        default='0',
+        items=enum_spawn_type_items.values(),
+        default=str(_PL_consts.PSP.NONE),
     )
     # LOCATORS - PREFAB - TRAFFIC LIGHTS (SEMAPHORES)
-    it = [('none', "None", "")]
-    for i in range(p_locator_tsems):
-        it.append((str(i), str(i), ""))
+    enum_tsem_id_items = OrderedDict([(-1, ('-1', "None", ""))])
+    for i in range(_PL_consts.TSEM_COUNT_MAX):
+        enum_tsem_id_items[i] = (str(i), str(i), "")
     locator_prefab_tsem_id = EnumProperty(
         name="ID",
         description="ID",
-        items=it,
-        default='none',
+        items=enum_tsem_id_items.values(),
+        default='-1',
     )
     # Following String property is fed from TRAFFIC SEMAPHORE PROFILES data list, which is usually loaded from
     # "//base/def/world/semaphore_profile.sii" file and stored at "scs_globals.scs_tsem_profile_inventory".
@@ -874,134 +867,61 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
         default="",
         subtype='NONE',
     )
+    enum_tsem_type_items = OrderedDict([
+        (_PL_consts.TST.PROFILE, (str(_PL_consts.TST.PROFILE), "(use profile)", "")),
+        (_PL_consts.TST.MODEL_ONLY, (str(_PL_consts.TST.MODEL_ONLY), "Model Only", "")),
+        # (_PL_consts.TST.TRAFFIC_LIGHT, (str(_PL_consts.TST.TRAFFIC_LIGHT), "Traffic Light", "")),
+        (_PL_consts.TST.TRAFFIC_LIGHT_MINOR, (str(_PL_consts.TST.TRAFFIC_LIGHT_MINOR), "Traffic Light (minor road)", "")),
+        (_PL_consts.TST.TRAFFIC_LIGHT_MAJOR, (str(_PL_consts.TST.TRAFFIC_LIGHT_MAJOR), "Traffic Light (major road)", "")),
+        (_PL_consts.TST.TRAFFIC_LIGHT_BLOCKABLE, (str(_PL_consts.TST.TRAFFIC_LIGHT_BLOCKABLE), "Blockable Traffic Light", "")),
+        (_PL_consts.TST.BARRIER_MANUAL_TIMED, (str(_PL_consts.TST.BARRIER_MANUAL_TIMED), "Barrier - Manual Timed", "")),
+        (_PL_consts.TST.BARRIER_GAS, (str(_PL_consts.TST.BARRIER_GAS), "Barrier - Gas", "")),
+        (_PL_consts.TST.BARRIER_DISTANCE, (str(_PL_consts.TST.BARRIER_DISTANCE), "Barrier - Distance Activated", "")),
+    ])
     locator_prefab_tsem_type = EnumProperty(
         name="Type",
         description="Type",
-        items=(
-            ('0', "(use profile)", ""),
-            ('1', "Model Only", ""),
-            # ('2', "Traffic Light", ""),
-            ('3', "Traffic Light (minor road)", ""),
-            ('4', "Traffic Light (major road)", ""),
-            ('5', "Barrier - Manual Timed", ""),
-            ('6', "Barrier - Distance Activated", ""),
-            ('7', "Blockable Traffic Light", ""),
-        ),
-        default='0',
+        items=enum_tsem_type_items.values(),
+        default=str(_PL_consts.TST.PROFILE),
     )
     locator_prefab_tsem_gs = FloatProperty(
         name="G",
-        description="Time interval for Green light",
+        description="Time interval/Distance for Green light",
         default=15.0,
         min=-1.0,
         options={'HIDDEN'},
-        subtype='TIME',
-        unit='TIME',
     )
     locator_prefab_tsem_os1 = FloatProperty(
         name="O",
-        description="Time interval for after-green Orange light",
+        description="Time interval/Distance for after-green Orange light",
         default=2.0,
         min=-1.0,
         options={'HIDDEN'},
-        subtype='TIME',
-        unit='TIME',
     )
     locator_prefab_tsem_rs = FloatProperty(
         name="R",
-        description="Time interval for Red light",
+        description="Time interval/Distance for Red light",
         default=23.0,
         min=-1.0,
         options={'HIDDEN'},
-        subtype='TIME',
-        unit='TIME',
     )
     locator_prefab_tsem_os2 = FloatProperty(
         name="O",
-        description="Time interval for after-red Orange light",
+        description="Time interval/Distance for after-red Orange light",
         default=2.0,
         min=-1.0,
         options={'HIDDEN'},
-        subtype='TIME',
-        unit='TIME',
-    )
-    locator_prefab_tsem_gm = FloatProperty(
-        name="G",
-        description="Distance where the Green light turns on",
-        default=150.0,
-        min=-1.0,
-        options={'HIDDEN'},
-        subtype='DISTANCE',
-        unit='LENGTH',
-    )
-    locator_prefab_tsem_om1 = FloatProperty(
-        name="O",
-        description="Distance where the after-green Orange light turns on",
-        default=300.0,
-        min=-1.0,
-        options={'HIDDEN'},
-        subtype='DISTANCE',
-        unit='LENGTH',
-    )
-    locator_prefab_tsem_rm = FloatProperty(
-        name="R",
-        description="Distance where the Red light turns on",
-        default=200.0,
-        min=-1.0,
-        options={'HIDDEN'},
-        subtype='DISTANCE',
-        unit='LENGTH',
     )
     locator_prefab_tsem_cyc_delay = FloatProperty(
         name="Cycle Delay",
-        description="Cycle Delay",
+        description="Number of seconds by which the whole traffic semaphore cycle is shifted.",
         default=0.0,
         min=0.0,
         options={'HIDDEN'},
         subtype='NONE',
         unit='NONE',
     )
-    locator_prefab_tsem_activation = EnumProperty(
-        name="Activation",
-        description="Activation",
-        items=(
-            ('auto', "Automatic Timed", ""),
-            ('man', "Manual Timed", ""),
-            ('dis', "Mover Distance", ""),
-        ),
-        default='auto',
-    )
-    locator_prefab_tsem_ai_only = BoolProperty(
-        name="AI Only",
-        description="Artificial intelligence only",
-        default=False,
-    )
     # LOCATORS - PREFAB - NAVIGATION POINTS
-    locator_prefab_np_tl_activ = BoolProperty(
-        name="Traffic Semaphore Activator",
-        description="Traffic light activator",
-        default=False,
-    )
-    locator_prefab_np_low_prior = BoolProperty(
-        name="Low Priority",
-        description="Low priority",
-        default=False,
-    )
-    locator_prefab_np_ig_blink_prior = BoolProperty(
-        name="Ignore Blinker Priority",
-        description="Ignore blinker priority",
-        default=False,
-    )
-    locator_prefab_np_crossroad = BoolProperty(
-        name="Crossroad",
-        description="Crossroad",
-        default=False,
-    )
-    locator_prefab_np_stopper = BoolProperty(
-        name="Stopper",
-        description="Stopper",
-        default=False,
-    )
     locator_prefab_np_low_probab = BoolProperty(
         name="Low Probability",
         description="Low probability",
@@ -1012,64 +932,62 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
         description="Additive priority",
         default=False,
     )
+    locator_prefab_np_limit_displace = BoolProperty(
+        name="Limit Displacement",
+        description="Limit displacement",
+        default=False,
+    )
     locator_prefab_np_allowed_veh = EnumProperty(
         name="Allowed Vehicles",
         description="Allowed vehicles",
         items=(
-            ('all', "All Vehicles", "", 'ANIM', 0),
-            ('nt', "No Trucks", "", 'X', 1),
-            ('to', "Trucks Only", "", 'AUTO', 2),
-            ('po', "Player Only", "", 'POSE_DATA', 3),
+            (str(_PL_consts.PNCF.ALLOWED_VEHICLES_MASK), "All Vehicles", "", 'ANIM', 0),
+            (str(_PL_consts.PNCF.SMALL_VEHICLES), "Small Vehicles", "", 'X', 1),
+            (str(_PL_consts.PNCF.LARGE_VEHICLES), "Large Vehicles", "", 'AUTO', 2),
+            ('0', "Player Only", "", 'POSE_DATA', 3),
         ),
-        default='all',
-    )
-    locator_prefab_np_speed_limit = FloatProperty(
-        name="Speed Limit [km/h]",
-        description="Speed limit in kilometers per hour",
-        min=0, max=250,
-        default=0.0,
-        options={'HIDDEN'},
-        subtype="DISTANCE",
-        unit="VELOCITY",
+        default=str(_PL_consts.PNCF.ALLOWED_VEHICLES_MASK),
     )
     locator_prefab_np_blinker = EnumProperty(
         name="Blinker",
         description="Blinker",
         items=(
-            ('lb', "Left Blinker", "", 'BACK', 0),
-            ('no', "No Blinker", "", 'X', 1),
-            ('nf', "No Blinker (forced)", "", 'X_VEC', 2),
-            ('rb', "Right Blinker", "", 'FORWARD', 3),
+            (str(_PL_consts.PNCF.LEFT_BLINKER), "Left Blinker", "", 'BACK', 0),
+            ('0', "No Blinker", "", 'X', 1),
+            (str(_PL_consts.PNCF.FORCE_NO_BLINKER), "No Blinker (forced)", "", 'X_VEC', 2),
+            (str(_PL_consts.PNCF.RIGHT_BLINKER), "Right Blinker", "", 'FORWARD', 3),
         ),
-        default='no',
+        default='0',
     )
-    it = [('no', "No Boundary", "")]
-    for i in range(p_locator_lanes):
-        it.append(('in ' + str(i), "Input - Lane " + str(i), ""))
-    for i in range(p_locator_lanes):
-        it.append(('out ' + str(i), "Output - Lane " + str(i), ""))
+    enum_np_boundary_items = OrderedDict([(0, ('0', "No Boundary", ""))])
+    for i in range(_PL_consts.PREFAB_LANE_COUNT_MAX):
+        ii = 1 + i
+        enum_np_boundary_items[ii] = (str(ii), "Input - Lane " + str(i), "")
+    for i in range(_PL_consts.PREFAB_LANE_COUNT_MAX):
+        ii = _PL_consts.PREFAB_LANE_COUNT_MAX + 1 + i
+        enum_np_boundary_items[ii] = (str(ii), "Output - Lane " + str(i), "")
     locator_prefab_np_boundary = EnumProperty(
         name="Boundary",
         description="Boundary",
-        items=it,
-        default='no',
-    )
-    it = []
-    for i in range(p_locator_nodes):
-        it.append((str(i), str(i), ""))
-    locator_prefab_np_boundary_node = EnumProperty(
-        name="Boundary Node",
-        description="Boundary node",
-        items=it,
+        items=enum_np_boundary_items.values(),
         default='0',
     )
-    it = [('-1', "None", "")]
-    for i in range(p_locator_tsems):
-        it.append((str(i), str(i), ""))
-    locator_prefab_np_traffic_light = EnumProperty(
+    enum_np_boundary_node_items = OrderedDict()
+    for i in range(_PL_consts.PREFAB_NODE_COUNT_MAX):
+        enum_np_boundary_node_items[i] = (str(i), str(i), "")
+    locator_prefab_np_boundary_node = EnumProperty(
+        name="Boundary Node",
+        description="Boundary node index",
+        items=enum_np_boundary_node_items.values(),
+        default='0',
+    )
+    enum_np_traffic_semaphore_items = OrderedDict([(-1, ('-1', "None", ""))])
+    for i in range(_PL_consts.TSEM_COUNT_MAX):
+        enum_np_traffic_semaphore_items[i] = (str(i), str(i), "")
+    locator_prefab_np_traffic_semaphore = EnumProperty(
         name="Traffic Semaphore",
-        description="Traffic light",
-        items=it,
+        description="Traffic semaphore ID",
+        items=enum_np_traffic_semaphore_items.values(),
         default='-1',
     )
     # Following String property is fed from TRAFFIC SEMAPHORE PROFILES data list, which is usually loaded from
@@ -1080,107 +998,128 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
         default="",
         subtype='NONE',
     )
-    it = [('-1', "None", "")]
-    for i in range(p_priority_modif):
-        it.append((str(i + 1), str(i + 1), ""))
-    locator_prefab_np_priority_mask = EnumProperty(
+    enum_np_priority_modifier_items = OrderedDict([(0, ('0', "None", ""))])
+    for i in range(1, _PL_consts.PNCF.PRIORITY_MASK >> _PL_consts.PNCF.PRIORITY_SHIFT):
+
+        name = str(i)
+
+        # add additional name info for known priorities
+        if i == 12:
+            name += " - major road straight"
+        elif i == 11:
+            name += " - major road right"
+        elif i == 10:
+            name += " - major road left"
+        elif i == 6:
+            name += " - minor road straight"
+        elif i == 5:
+            name += " - minor road right"
+        elif i == 4:
+            name += " - minor road left"
+
+        enum_np_priority_modifier_items[i] = (str(i), name, "")
+
+    locator_prefab_np_priority_modifier = EnumProperty(
         name="Priority Modifier",
         description="Priority modifier",
-        items=it,
-        default='-1',
+        items=enum_np_priority_modifier_items.values(),
+        default='0',
     )
 
     # LOCATORS - PREFAB - MAP POINTS
     locator_prefab_mp_road_over = BoolProperty(
         name="Road Over",
-        description="Road over",
+        description="The game tries to draw map point with this flag on top of all other map points",
         default=False,
     )
     locator_prefab_mp_no_outline = BoolProperty(
         name="No Outline",
-        description="No outline",
+        description="Don't draw the black outline (useful for 'drawing' buildings etc.)",
         default=False,
     )
     locator_prefab_mp_no_arrow = BoolProperty(
         name="No Arrow",
-        description="No arrow",
+        description="Prevents drawing of a green navigation arrow "
+                    "(useful for prefabs with more than 2 nodes, where path is clear also without an arrow)",
         default=False,
     )
     locator_prefab_mp_prefab_exit = BoolProperty(
         name="Prefab Exit",
-        description="Prefab exit",
+        description="Mark the approximate location of the prefab exit "
+                    "(useful for company prefabs where navigation will navigate from/to this point",
         default=False,
     )
-    it = [('auto', "Auto", ""), ('ow', "One Way", "")]
-    for i in range(4):
-        it.append((str(i + 1) + ' lane', str(i + 1) + " - Lane", ""))
-    it.append(('poly', "Polygon", ""))
+    enum_mp_road_size_items = OrderedDict([
+        (_PL_consts.MPVF.ROAD_SIZE_AUTO, (str(_PL_consts.MPVF.ROAD_SIZE_AUTO),
+                                          "Auto", "The road size is automatically determmined based on connected roads")),
+        (_PL_consts.MPVF.ROAD_SIZE_ONE_WAY, (str(_PL_consts.MPVF.ROAD_SIZE_ONE_WAY),
+                                             "One Way", "Narrow road (one direction with one lane)")),
+        (_PL_consts.MPVF.ROAD_SIZE_1_LANE, (str(_PL_consts.MPVF.ROAD_SIZE_1_LANE),
+                                            "1 - Lane", "One lane in both directions")),
+        (_PL_consts.MPVF.ROAD_SIZE_2_LANE, (str(_PL_consts.MPVF.ROAD_SIZE_2_LANE),
+                                            "2 - Lane", "Two lanes in both directions")),
+        (_PL_consts.MPVF.ROAD_SIZE_3_LANE, (str(_PL_consts.MPVF.ROAD_SIZE_3_LANE),
+                                            "3 - Lane", "Three lanes in both directions")),
+        (_PL_consts.MPVF.ROAD_SIZE_4_LANE, (str(_PL_consts.MPVF.ROAD_SIZE_4_LANE),
+                                            "4 - Lane", "Four lanes in both directions")),
+        (_PL_consts.MPVF.ROAD_SIZE_MANUAL, (str(_PL_consts.MPVF.ROAD_SIZE_MANUAL),
+                                            "Polygon", "The map point is used to draw a polygon instead of a road")),
+    ])
     locator_prefab_mp_road_size = EnumProperty(
         name="Road Size",
-        description="Road size",
-        items=it,
-        default='1 lane',
+        description="Size and type of the road for this map point",
+        items=enum_mp_road_size_items.values(),
+        default=str(_PL_consts.MPVF.ROAD_SIZE_1_LANE),
     )
+    enum_mp_road_offset_items = OrderedDict([
+        (_PL_consts.MPVF.ROAD_OFFSET_0, (str(_PL_consts.MPVF.ROAD_OFFSET_0), "0 m", "")),
+        (_PL_consts.MPVF.ROAD_OFFSET_1, (str(_PL_consts.MPVF.ROAD_OFFSET_1), "1 m", "")),
+        (_PL_consts.MPVF.ROAD_OFFSET_2, (str(_PL_consts.MPVF.ROAD_OFFSET_2), "2 m", "")),
+        (_PL_consts.MPVF.ROAD_OFFSET_5, (str(_PL_consts.MPVF.ROAD_OFFSET_5), "5 m", "")),
+        (_PL_consts.MPVF.ROAD_OFFSET_10, (str(_PL_consts.MPVF.ROAD_OFFSET_10), "10 m", "")),
+        (_PL_consts.MPVF.ROAD_OFFSET_15, (str(_PL_consts.MPVF.ROAD_OFFSET_15), "15 m", "")),
+        (_PL_consts.MPVF.ROAD_OFFSET_20, (str(_PL_consts.MPVF.ROAD_OFFSET_20), "20 m", "")),
+        (_PL_consts.MPVF.ROAD_OFFSET_25, (str(_PL_consts.MPVF.ROAD_OFFSET_25), "25 m", "")),
+    ])
     locator_prefab_mp_road_offset = EnumProperty(
         name="Road Offset",
-        description="Road offset",
-        items=(
-            ('0m', "0m", ""),
-            ('1m', "1m", ""),
-            ('2m', "2m", ""),
-            ('5m', "5m", ""),
-            ('10m', "10m", ""),
-            ('15m', "15m", ""),
-            ('20m', "20m", ""),
-            ('25m', "25m", ""),
-        ),
-        default='0m',
+        description="The center offset between the road lanes",
+        items=enum_mp_road_offset_items.values(),
+        default=str(_PL_consts.MPVF.ROAD_OFFSET_0),
     )
+    enum_mp_custom_color_items = OrderedDict([
+        (0, ('0', "None", "Used for roads")),
+        (_PL_consts.MPVF.CUSTOM_COLOR1, (str(_PL_consts.MPVF.CUSTOM_COLOR1), "Light", "Used for accessible prefab areas")),
+        (_PL_consts.MPVF.CUSTOM_COLOR2, (str(_PL_consts.MPVF.CUSTOM_COLOR2), "Dark", "Used for buildings")),
+        (_PL_consts.MPVF.CUSTOM_COLOR3, (str(_PL_consts.MPVF.CUSTOM_COLOR3), "Green", "Used for grass and inaccessible areas")),
+    ])
     locator_prefab_mp_custom_color = EnumProperty(
         name="Custom Color",
-        description="Custom color",
-        items=(
-            ('none', "None", ""),
-            ('light', "Light", ""),
-            ('dark', "Dark", ""),
-            ('green', "Green", ""),
-        ),
-        default='none',
+        description="Colorizes map points when drawing them as polygons",
+        items=enum_mp_custom_color_items.values(),
+        default='0',
     )
-    it = [('none', "None", "")]
-    for i in range(p_locator_nodes):
-        it.append((str(i), str(i), ""))
-    it.append(('all', "All", ""))
+    enum_mp_assigned_node_items = OrderedDict([(0, ('0', "None", ""))])
+    for i in range(_PL_consts.PREFAB_NODE_COUNT_MAX):
+        enum_mp_assigned_node_items[1 << i] = (str(1 << i), str(i), "")
+    enum_mp_assigned_node_items[_PL_consts.MPNF.NAV_NODE_ALL] = (str(_PL_consts.MPNF.NAV_NODE_ALL), "All", "")
     locator_prefab_mp_assigned_node = EnumProperty(
         name="Assigned Node",
-        description="Assigned node",
-        items=it,
-        default='none',
+        description="Must be set to corresponding prefab Control Node for start/end map points "
+                    "(for no navigation at all use 'All' option on all map points)",
+        items=enum_mp_assigned_node_items.values(),
+        default='0',
     )
-    locator_prefab_mp_des_nodes_0 = BoolProperty(
-        name="0",
-        description="0",
-        default=False,
-    )
-    locator_prefab_mp_des_nodes_1 = BoolProperty(
-        name="1",
-        description="1",
-        default=False,
-    )
-    locator_prefab_mp_des_nodes_2 = BoolProperty(
-        name="2",
-        description="2",
-        default=False,
-    )
-    locator_prefab_mp_des_nodes_3 = BoolProperty(
-        name="3",
-        description="3",
-        default=False,
-    )
-    locator_prefab_mp_des_nodes_ct = BoolProperty(
-        name="Custom Target",
-        description="Custom target",
-        default=False,
+    enum_mp_dest_nodes_items = OrderedDict()
+    for i in range(_PL_consts.PREFAB_NODE_COUNT_MAX):
+        enum_mp_dest_nodes_items[i] = (str(i), str(i), "Leads to Control Node with index %s" % i)
+    locator_prefab_mp_dest_nodes = EnumProperty(
+        name="Destination Nodes",
+        description="Describes Control Nodes to which this map point can lead "
+                    "(only set if one of neighbour map points has more than 2 connected map points)",
+        items=enum_mp_dest_nodes_items.values(),
+        default=set(),
+        options={'ENUM_FLAG'},
     )
 
     # LOCATORS - PREFAB - TRIGGER POINTS
@@ -1192,7 +1131,8 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
     )
     locator_prefab_tp_range = FloatProperty(
         name="Range",
-        description="Range",
+        description="Range of the trigger point. In case trigger point is Sphere Trigger "
+                    "this is used as it's range otherwise it's used for up/down range.",
         default=3.0,
         min=0.1, max=50.0,
         options={'HIDDEN'},

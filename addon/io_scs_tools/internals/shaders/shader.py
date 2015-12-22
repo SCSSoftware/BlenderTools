@@ -18,6 +18,7 @@
 
 # Copyright (C) 2015: SCS Software
 
+import bpy
 from io_scs_tools.utils.printout import lprint
 
 
@@ -45,19 +46,27 @@ def setup_nodes(material, effect, attr_dict, tex_dict, tex_uvs, recreate):
     # gather possible flavors from effect name
     flavors = {}
     if effect.endswith(".a") or ".a." in effect:
-        material.use_transparency = True
-        material.transparency_method = "MASK"
-        flavors["alpha_test"] = True
+        flavors["alpha_test"] = material.use_transparency = True
+        material.transparency_method = "Z_TRANSPARENCY"
 
     if (effect.endswith(".over") or ".over." in effect) and ".over.dif" not in effect:
-        material.use_transparency = True
-        material.transparency_method = "MASK"
-        flavors["blend_over"] = True
+        flavors["blend_over"] = material.use_transparency = True
+        material.transparency_method = "Z_TRANSPARENCY"
 
-    if (effect.endswith(".add") or ".add." in effect) and ".add.env" not in effect:
-        material.use_transparency = True
+    if (effect.endswith(".mult") or ".mult." in effect) and ".mult.dif" not in effect and ".mult2" not in effect:
+
+        flavors["blend_mult"] = material.use_transparency = True
+        material.transparency_method = "Z_TRANSPARENCY"
+
+    if effect.endswith(".tg0") or ".tg0." in effect:
+        flavors["tg0"] = True
+
+    if effect.endswith(".tg1") or ".tg1." in effect:
+        flavors["tg1"] = True
+
+    if (effect.endswith(".add") or ".add." in effect) and effect.rfind(".add.env") != effect.rfind(".add"):
+        flavors["blend_add"] = material.use_transparency = True
         material.transparency_method = "MASK"
-        flavors["blend_add"] = True
 
     if effect.endswith(".tsnmapuv") or ".tsnmapuv." in effect:
         flavors["nmap"] = True
@@ -70,6 +79,21 @@ def setup_nodes(material, effect, attr_dict, tex_dict, tex_uvs, recreate):
 
     if effect.endswith(".tsnmap16") or ".tsnmap16." in effect:
         flavors["nmap"] = True
+
+    if effect.endswith(".indenv") or ".indenv." in effect:
+        flavors["indenv"] = True
+
+    if effect.endswith(".linv") or ".linv." in effect:
+        flavors["linv"] = True
+
+    if effect.endswith(".lvcol") or ".lvcol." in effect:
+        flavors["lvcol"] = True
+
+    if effect.endswith(".flat") or ".flat." in effect:
+        flavors["flat"] = True
+
+    if effect.endswith(".awhite") or ".awhite." in effect:
+        flavors["awhite"] = True
 
     __setup_nodes__(material, effect, attr_dict, tex_dict, tex_uvs, flavors, recreate)
 
@@ -109,6 +133,8 @@ def set_uv(material, tex_type, uv_layer, tex_coord):
     :type tex_type: str
     :param uv_layer: uv layer name which should be assigned to this texture
     :type uv_layer: str
+    :param tex_coord: index of tex_coord this texture uses
+    :type tex_coord: int
     """
 
     is_valid_input = True
@@ -159,8 +185,17 @@ def __setup_nodes__(material, effect, attr_dict, tex_dict, uvs_dict, flavors_dic
 
     # recreate if specified
     if recreate:
+        __clean_node_tree__(node_tree)
         shader_module.init(node_tree)
         shader_module.set_material(node_tree, material)
+
+    # set flavors first so any attributes changing flavor part of shader can take effect
+    for flavor_type in flavors_dict:
+        shader_set_flavor = getattr(shader_module, "set_" + flavor_type + "_flavor", None)
+        if shader_set_flavor:
+            shader_set_flavor(node_tree, flavors_dict[flavor_type])
+        else:
+            lprint("D Unsupported set_flavor with type %r called on shader %r", (flavor_type, shader_module.get_name()))
 
     # set attributes
     for attr_type in attr_dict:
@@ -185,12 +220,35 @@ def __setup_nodes__(material, effect, attr_dict, tex_dict, uvs_dict, flavors_dic
         else:
             lprint("D Unsupported set_uv with type %r called on shader %r", (tex_type, shader_module.get_name()))
 
-    for flavor_type in flavors_dict:
-        shader_set_flavor = getattr(shader_module, "set_" + flavor_type + "_flavor", None)
-        if shader_set_flavor:
-            shader_set_flavor(node_tree, flavors_dict[flavor_type])
-        else:
-            lprint("D Unsupported set_flavor with type %r called on shader %r", (flavor_type, shader_module.get_name()))
+
+def __clean_node_tree__(node_tree):
+    """Cleans material node tree of any nodes, custom properties and even cleanup any unused dummy normal map materials.
+
+    :param node_tree: node tree on which any shader nodes should be deleted
+    :type node_tree: bpy.types.NodeTree
+    """
+
+    mats_to_remove = []
+    for node in node_tree.nodes:
+        if node.type == "MATERIAL" and node.material and node.material.name.startswith(".scs_nmap_"):
+            mats_to_remove.append(node.material.name)
+
+    # clean nodes and custom props
+    node_tree.nodes.clear()
+    for key in node_tree.keys():
+        del node_tree[key]
+
+    # clean unused dummy normal map materials
+    mat_i = 0
+    while mat_i < len(mats_to_remove):
+
+        mat_name = mats_to_remove[mat_i]
+
+        if mat_name in bpy.data.materials and bpy.data.materials[mat_name].users == 0:
+            lprint("D Removing unused nmap material: %s", (mat_name,))
+            bpy.data.materials.remove(bpy.data.materials[mat_name])
+
+        mat_i += 1
 
 
 def __get_shader__(effect, report_not_found, mat_name):

@@ -23,10 +23,10 @@ from io_scs_tools.utils.info import get_combined_ver_str
 
 
 class Header:
-    _format_type = ""
-    _format_version = 0
-    _source = "Blender"
-    _name = ""
+    __format_type = ""
+    __format_version = 0
+    __source = "Blender"
+    __name = ""
 
     def __init__(self, format_type, format_version, name):
         """Constructs header of PIM model.
@@ -37,10 +37,10 @@ class Header:
         :param name: name of the model
         :type name: str
         """
-        self._format_type = format_type
-        self._format_version = format_version
-        self._source = get_combined_ver_str()
-        self._name = name
+        self.__format_type = format_type
+        self.__format_version = format_version
+        self.__source = get_combined_ver_str()
+        self.__name = name
 
     def get_as_section(self):
         """Gets header information represented with SectionData structure class.
@@ -49,11 +49,11 @@ class Header:
         """
 
         section = _SectionData("Header")
-        if self._format_type and self._format_type != "":
-            section.props.append(("FormatType", self._format_type))
-        section.props.append(("FormatVersion", self._format_version))
-        section.props.append(("Source", self._source))
+        if self.__format_type and self.__format_type != "":
+            section.props.append(("FormatType", self.__format_type))
+        section.props.append(("FormatVersion", self.__format_version))
+        section.props.append(("Source", self.__source))
         section.props.append(("Type", "Model"))
-        section.props.append(("Name", self._name))
+        section.props.append(("Name", self.__name))
 
         return section

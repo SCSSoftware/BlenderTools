@@ -1,9 +1,0 @@
-SiiNunit
-{
-
-showroom_vehicle: showroom.vehicle2
-{
-	pos_idx: 2
-}
-
-}

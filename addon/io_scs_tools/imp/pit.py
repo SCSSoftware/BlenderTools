@@ -124,7 +124,7 @@ def _get_look(section):
                             if sec_section_prop[0] in ("", "#"):
                                 pass
                             elif sec_section_prop[0] == "Tag":
-                                txr_tag = sec_section_prop[1]
+                                txr_tag = sec_section_prop[1].split(":")[1]
                             elif sec_section_prop[0] == "Value":
                                 txr_value = sec_section_prop[1]
                             else:

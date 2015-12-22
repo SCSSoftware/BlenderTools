@@ -1,0 +1,967 @@
+SiiNunit
+{
+# For modders: Please do not modify this file if you want to add a new entry. Create in
+# this directory a new file "<base_name>.<idofyourmod>.sii" where <base_name> is name of
+# base file without the extension (e.g. "city" for "/def/city.sii") and <idofyourmod> is
+# some string which is unlikely to conflict with other mod.
+
+tr_semaphore_model : tr_sem_mdl.single {
+
+	name: "single"
+
+	model_desc: "/model/traffic_light/single.pmd"
+	model_coll: "/model/traffic_light/single.pmc"
+
+	dynamic: false
+}
+
+tr_semaphore_model : tr_sem_mdl.single.a {
+
+	name: "single-a"
+
+	model_desc: "/model/traffic_light/single_au.pmd"
+	model_coll: "/model/traffic_light/single_au.pmc"
+
+	dynamic: false
+}
+tr_semaphore_model : tr_sem_mdl.single.cz {
+
+	name: "single-cz"
+
+	model_desc: "/model/traffic_light/single_cz.pmd"
+	model_coll: "/model/traffic_light/single_cz.pmc"
+
+	dynamic: false
+}
+tr_semaphore_model : tr_sem_mdl.single.d {
+
+	name: "single-d"
+
+	model_desc: "/model/traffic_light/single_de.pmd"
+	model_coll: "/model/traffic_light/single_de.pmc"
+
+	dynamic: false
+}
+tr_semaphore_model : tr_sem_mdl.single.i {
+
+	name: "single-i"
+
+	model_desc: "/model/traffic_light/single_it.pmd"
+	model_coll: "/model/traffic_light/single_it.pmc"
+
+	dynamic: false
+}
+tr_semaphore_model : tr_sem_mdl.single.f {
+
+	name: "single-f"
+
+	model_desc: "/model/traffic_light/single_fr.pmd"
+	model_coll: "/model/traffic_light/single_fr.pmc"
+
+	dynamic: false
+}
+tr_semaphore_model : tr_sem_mdl.single.ch {
+
+	name: "single-ch"
+
+	model_desc: "/model/traffic_light/single_ch.pmd"
+	model_coll: "/model/traffic_light/single_ch.pmc"
+
+	dynamic: false
+}
+tr_semaphore_model : tr_sem_mdl.single.nl {
+
+	name: "single-nl"
+
+	model_desc: "/model/traffic_light/single_nl.pmd"
+	model_coll: "/model/traffic_light/single_nl.pmc"
+
+	dynamic: false
+}
+
+tr_semaphore_model : tr_sem_mdl.single.l {
+
+	name: "single-l"
+
+	model_desc: "/model/traffic_light/single_be.pmd"
+	model_coll: "/model/traffic_light/single_be.pmc"
+
+	dynamic: false
+}
+
+tr_semaphore_model : tr_sem_mdl.single.b {
+
+	name: "single-b"
+
+	model_desc: "/model/traffic_light/single_be.pmd"
+	model_coll: "/model/traffic_light/single_be.pmc"
+
+	dynamic: false
+}
+
+tr_semaphore_model : tr_sem_mdl.single.pl {
+
+	name: "single-pl"
+
+	model_desc: "/model/traffic_light/single_pl.pmd"
+	model_coll: "/model/traffic_light/single_pl.pmc"
+
+	dynamic: false
+}
+
+
+tr_semaphore_model : tr_sem_mdl.single_l {
+
+	name: "single_l"
+
+	model_desc: "/model/traffic_light/single_left.pmd"
+	model_coll: "/model/traffic_light/single_left.pmc"
+
+	dynamic: false
+}
+
+tr_semaphore_model : tr_sem_mdl.single_l.a {
+
+	name: "single_l-a"
+
+	model_desc: "/model/traffic_light/single_left_au.pmd"
+	model_coll: "/model/traffic_light/single_left_au.pmc"
+
+	dynamic: false
+}
+tr_semaphore_model : tr_sem_mdl.single_l.cz {
+
+	name: "single_l-cz"
+
+	model_desc: "/model/traffic_light/single_left_cz.pmd"
+	model_coll: "/model/traffic_light/single_left_cz.pmc"
+
+	dynamic: false
+}
+tr_semaphore_model : tr_sem_mdl.single_l.d {
+
+	name: "single_l-d"
+
+	model_desc: "/model/traffic_light/single_left_de.pmd"
+	model_coll: "/model/traffic_light/single_left_de.pmc"
+
+	dynamic: false
+}
+tr_semaphore_model : tr_sem_mdl.single_l.i {
+
+	name: "single_l-i"
+
+	model_desc: "/model/traffic_light/single_left_it.pmd"
+	model_coll: "/model/traffic_light/single_left_it.pmc"
+
+	dynamic: false
+}
+tr_semaphore_model : tr_sem_mdl.single_l.f {
+
+	name: "single_l-f"
+
+	model_desc: "/model/traffic_light/single_left_fr.pmd"
+	model_coll: "/model/traffic_light/single_left_fr.pmc"
+
+	dynamic: false
+}
+tr_semaphore_model : tr_sem_mdl.single_l.ch {
+
+	name: "single_l-ch"
+
+	model_desc: "/model/traffic_light/single_left_ch.pmd"
+	model_coll: "/model/traffic_light/single_left_ch.pmc"
+
+	dynamic: false
+}
+tr_semaphore_model : tr_sem_mdl.single_l.nl {
+
+	name: "single_l-nl"
+
+	model_desc: "/model/traffic_light/single_left_nl.pmd"
+	model_coll: "/model/traffic_light/single_left_nl.pmc"
+
+	dynamic: false
+}
+
+tr_semaphore_model : tr_sem_mdl.single_l.l {
+
+	name: "single_l-l"
+
+	model_desc: "/model/traffic_light/single_left_be.pmd"
+	model_coll: "/model/traffic_light/single_left_be.pmc"
+
+	dynamic: false
+}
+
+tr_semaphore_model : tr_sem_mdl.single_l.b {
+
+	name: "single_l-b"
+
+	model_desc: "/model/traffic_light/single_left_be.pmd"
+	model_coll: "/model/traffic_light/single_left_be.pmc"
+
+	dynamic: false
+}
+
+tr_semaphore_model : tr_sem_mdl.single_l.pl {
+
+	name: "single_l-pl"
+
+	model_desc: "/model/traffic_light/single_left_pl.pmd"
+	model_coll: "/model/traffic_light/single_left_pl.pmc"
+
+	dynamic: false
+}
+
+
+tr_semaphore_model : tr_sem_mdl.city {
+
+	name: "city"
+	
+	model_desc: "/model/traffic_light/city.pmd"
+	model_coll: "/model/traffic_light/city.pmc"
+
+	dynamic: false
+}
+
+tr_semaphore_model : tr_sem_mdl.city.a {
+
+	name: "city-a"
+
+	model_desc: "/model/traffic_light/city_au.pmd"
+	model_coll: "/model/traffic_light/city_au.pmc"
+
+	dynamic: false
+}
+tr_semaphore_model : tr_sem_mdl.city.cz {
+
+	name: "city-cz"
+
+	model_desc: "/model/traffic_light/city_cz.pmd"
+	model_coll: "/model/traffic_light/city_cz.pmc"
+
+	dynamic: false
+}
+tr_semaphore_model : tr_sem_mdl.city.d {
+
+	name: "city-d"
+
+	model_desc: "/model/traffic_light/city_de.pmd"
+	model_coll: "/model/traffic_light/city_de.pmc"
+
+	dynamic: false
+}
+tr_semaphore_model : tr_sem_mdl.city.i {
+
+	name: "city-i"
+
+	model_desc: "/model/traffic_light/city_it.pmd"
+	model_coll: "/model/traffic_light/city_it.pmc"
+
+	dynamic: false
+}
+tr_semaphore_model : tr_sem_mdl.city.f {
+
+	name: "city-f"
+
+	model_desc: "/model/traffic_light/city_fr.pmd"
+	model_coll: "/model/traffic_light/city_fr.pmc"
+
+	dynamic: false
+}
+tr_semaphore_model : tr_sem_mdl.city.ch {
+
+	name: "city-ch"
+
+	model_desc: "/model/traffic_light/city_ch.pmd"
+	model_coll: "/model/traffic_light/city_ch.pmc"
+
+	dynamic: false
+}
+tr_semaphore_model : tr_sem_mdl.city.nl {
+
+	name: "city-nl"
+
+	model_desc: "/model/traffic_light/city_nl.pmd"
+	model_coll: "/model/traffic_light/city_nl.pmc"
+
+	dynamic: false
+}
+
+tr_semaphore_model : tr_sem_mdl.city.l {
+
+	name: "city-l"
+
+	model_desc: "/model/traffic_light/city_be.pmd"
+	model_coll: "/model/traffic_light/city_be.pmc"
+
+	dynamic: false
+}
+
+tr_semaphore_model : tr_sem_mdl.city.b {
+
+	name: "city-b"
+
+	model_desc: "/model/traffic_light/city_be.pmd"
+	model_coll: "/model/traffic_light/city_be.pmc"
+
+	dynamic: false
+}
+
+tr_semaphore_model : tr_sem_mdl.city.gb {
+
+	name: "city-gb"
+
+	model_desc: "/model/traffic_light/city_uk.pmd"
+	model_coll: "/model/traffic_light/city_uk.pmc"
+
+	dynamic: false
+}
+
+tr_semaphore_model : tr_sem_mdl.city.pl {
+
+	name: "city-pl"
+
+	model_desc: "/model/traffic_light/city_pl.pmd"
+	model_coll: "/model/traffic_light/city_pl.pmc"
+
+	dynamic: false
+}
+
+
+tr_semaphore_model : tr_sem_mdl.crossing_r {
+
+	name: "ab_right_cz"
+
+	model_desc: "/prefab/level_crossing/level_right_anim_cz.pmd"
+	model_coll: "/prefab/level_crossing/level_right_anim_cz.pmc"
+	
+	state_anim: 4
+	state_collision: 4
+
+	# orange_to_red
+	state_anim[0]: ""
+	state_collision[0]: false
+
+	# red
+	state_anim[1]: "/prefab/level_crossing/cz_right_dwn.pma"
+	state_collision[1]: true
+
+	# orange_to_green
+	state_anim[2]: "/prefab/level_crossing/cz_right_up.pma"
+	state_collision[2]: true
+
+	# green
+	state_anim[3]: ""
+	state_collision[3]: false
+
+	dynamic: false
+}
+
+tr_semaphore_model : tr_sem_mdl.crossing_l {
+
+	name: "ab_left_cz"
+
+	model_desc: "/prefab/level_crossing/level_left_anim_cz.pmd"
+	model_coll: "/prefab/level_crossing/level_left_anim_cz.pmc"
+	
+	state_anim: 4
+	state_collision: 4
+
+	# orange_to_red
+	state_anim[0]: ""
+	state_collision[0]: false
+
+	# red
+	state_anim[1]: "/prefab/level_crossing/cz_left_dwn.pma"
+	state_collision[1]: true
+
+	# orange_to_green
+	state_anim[2]: "/prefab/level_crossing/cz_left_up.pma"
+	state_collision[2]: true
+
+	# green
+	state_anim[3]: ""
+	state_collision[3]: false
+
+	dynamic: false
+}
+
+
+tr_semaphore_model : tr_sem_mdl.crossing_r.cz {
+
+	name: "ab_right_cz"
+
+	model_desc: "/prefab/level_crossing/level_right_anim_cz.pmd"
+	model_coll: "/prefab/level_crossing/level_right_anim_cz.pmc"
+
+	state_anim: 4
+	state_collision: 4
+
+	# orange_to_red
+	state_anim[0]: ""
+	state_collision[0]: false
+
+	# red
+	state_anim[1]: "/prefab/level_crossing/cz_right_dwn.pma"
+	state_collision[1]: true
+
+	# orange_to_green
+	state_anim[2]: "/prefab/level_crossing/cz_right_up.pma"
+	state_collision[2]: true
+
+	# green
+	state_anim[3]: ""
+	state_collision[3]: false
+
+	dynamic: false
+}
+
+tr_semaphore_model : tr_sem_mdl.crossing_l.cz {
+
+	name: "ab_left_cz"
+
+	model_desc: "/prefab/level_crossing/level_left_anim_cz.pmd"
+	model_coll: "/prefab/level_crossing/level_left_anim_cz.pmc"
+	
+	state_anim: 4
+	state_collision: 4
+
+	# orange_to_red
+	state_anim[0]: ""
+	state_collision[0]: false
+
+	# red
+	state_anim[1]: "/prefab/level_crossing/cz_left_dwn.pma"
+	state_collision[1]: true
+
+	# orange_to_green
+	state_anim[2]: "/prefab/level_crossing/cz_left_up.pma"
+	state_collision[2]: true
+
+	# green
+	state_anim[3]: ""
+	state_collision[3]: false
+
+	dynamic: false
+}
+
+tr_semaphore_model : tr_sem_mdl.crossing_r.b {
+
+	name: "ab_right_be"
+
+	model_desc: "/prefab/level_crossing/level_right_anim_be.pmd"
+	model_coll: "/prefab/level_crossing/level_right_anim_be.pmc"
+	
+	state_anim: 4
+	state_collision: 4
+
+	# orange_to_red
+	state_anim[0]: ""
+	state_collision[0]: false
+
+	# red
+	state_anim[1]: "/prefab/level_crossing/be_right_dwn.pma"
+	state_collision[1]: true
+
+	# orange_to_green
+	state_anim[2]: "/prefab/level_crossing/be_right_up.pma"
+	state_collision[2]: true
+
+	# green
+	state_anim[3]: ""
+	state_collision[3]: false
+
+	dynamic: false
+}
+
+tr_semaphore_model : tr_sem_mdl.crossing_l.b {
+
+	name: "ab_left_be"
+
+	model_desc: "/prefab/level_crossing/level_left_anim_be.pmd"
+	model_coll: "/prefab/level_crossing/level_left_anim_be.pmc"
+	
+	state_anim: 4
+	state_collision: 4
+
+	# orange_to_red
+	state_anim[0]: ""
+	state_collision[0]: false
+
+	# red
+	state_anim[1]: "/prefab/level_crossing/be_left_dwn.pma"
+	state_collision[1]: true
+
+	# orange_to_green
+	state_anim[2]: "/prefab/level_crossing/be_left_up.pma"
+	state_collision[2]: true
+
+	# green
+	state_anim[3]: ""
+	state_collision[3]: false
+
+	dynamic: false
+}
+
+tr_semaphore_model : tr_sem_mdl.crossing_r.d {
+
+	name: "ab_right_de"
+
+	model_desc: "/prefab/level_crossing/level_right_anim_de.pmd"
+	model_coll: "/prefab/level_crossing/level_right_anim_de.pmc"
+	
+	state_anim: 4
+	state_collision: 4
+
+	# orange_to_red
+	state_anim[0]: ""
+	state_collision[0]: false
+
+	# red
+	state_anim[1]: "/prefab/level_crossing/de_right_dwn.pma"
+	state_collision[1]: true
+
+	# orange_to_green
+	state_anim[2]: "/prefab/level_crossing/de_right_up.pma"
+	state_collision[2]: true
+
+	# green
+	state_anim[3]: ""
+	state_collision[3]: false
+
+	dynamic: false
+}
+
+tr_semaphore_model : tr_sem_mdl.crossing_l.d {
+
+	name: "ab_left_de"
+
+	model_desc: "/prefab/level_crossing/level_left_anim_de.pmd"
+	model_coll: "/prefab/level_crossing/level_left_anim_de.pmc"
+	
+	state_anim: 4
+	state_collision: 4
+
+	# orange_to_red
+	state_anim[0]: ""
+	state_collision[0]: false
+
+	# red
+	state_anim[1]: "/prefab/level_crossing/de_left_dwn.pma"
+	state_collision[1]: true
+
+	# orange_to_green
+	state_anim[2]: "/prefab/level_crossing/de_left_up.pma"
+	state_collision[2]: true
+
+	# green
+	state_anim[3]: ""
+	state_collision[3]: false
+
+	dynamic: false
+}
+
+tr_semaphore_model : tr_sem_mdl.crossing_r.f {
+
+	name: "ab_right_fr"
+
+	model_desc: "/prefab/level_crossing/level_right_anim_fr.pmd"
+	model_coll: "/prefab/level_crossing/level_right_anim_fr.pmc"
+	
+	state_anim: 4
+	state_collision: 4
+
+	# orange_to_red
+	state_anim[0]: ""
+	state_collision[0]: false
+
+	# red
+	state_anim[1]: "/prefab/level_crossing/fr_right_dwn.pma"
+	state_collision[1]: true
+
+	# orange_to_green
+	state_anim[2]: "/prefab/level_crossing/fr_right_up.pma"
+	state_collision[2]: true
+
+	# green
+	state_anim[3]: ""
+	state_collision[3]: false
+
+	dynamic: false
+}
+
+tr_semaphore_model : tr_sem_mdl.crossing_l.f {
+
+	name: "ab_left_fr"
+
+	model_desc: "/prefab/level_crossing/level_left_anim_fr.pmd"
+	model_coll: "/prefab/level_crossing/level_left_anim_fr.pmc"
+	
+	state_anim: 4
+	state_collision: 4
+
+	# orange_to_red
+	state_anim[0]: ""
+	state_collision[0]: false
+
+	# red
+	state_anim[1]: "/prefab/level_crossing/fr_left_dwn.pma"
+	state_collision[1]: true
+
+	# orange_to_green
+	state_anim[2]: "/prefab/level_crossing/fr_left_up.pma"
+	state_collision[2]: true
+
+	# green
+	state_anim[3]: ""
+	state_collision[3]: false
+
+	dynamic: false
+}
+
+tr_semaphore_model : tr_sem_mdl.crossing_r.pl {
+
+	name: "ab_right_pl"
+
+	model_desc: "/prefab/level_crossing/level_right_anim_pl.pmd"
+	model_coll: "/prefab/level_crossing/level_right_anim_pl.pmc"
+	
+	state_anim: 4
+	state_collision: 4
+
+	# orange_to_red
+	state_anim[0]: ""
+	state_collision[0]: false
+
+	# red
+	state_anim[1]: "/prefab/level_crossing/pl_right_dwn.pma"
+	state_collision[1]: true
+
+	# orange_to_green
+	state_anim[2]: "/prefab/level_crossing/pl_right_up.pma"
+	state_collision[2]: true
+
+	# green
+	state_anim[3]: ""
+	state_collision[3]: false
+
+	dynamic: false
+}
+
+tr_semaphore_model : tr_sem_mdl.crossing_l.pl {
+
+	name: "ab_left_pl"
+
+	model_desc: "/prefab/level_crossing/level_left_anim_pl.pmd"
+	model_coll: "/prefab/level_crossing/level_left_anim_pl.pmc"
+	
+	state_anim: 4
+	state_collision: 4
+
+	# orange_to_red
+	state_anim[0]: ""
+	state_collision[0]: false
+
+	# red
+	state_anim[1]: "/prefab/level_crossing/pl_left_dwn.pma"
+	state_collision[1]: true
+
+	# orange_to_green
+	state_anim[2]: "/prefab/level_crossing/pl_left_up.pma"
+	state_collision[2]: true
+
+	# green
+	state_anim[3]: ""
+	state_collision[3]: false
+
+	dynamic: false
+}
+
+tr_semaphore_model : tr_sem_mdl.crossing_r.gb {
+
+	name: "ab_right_uk"
+
+	model_desc: "/prefab/level_crossing/level_right_anim_uk.pmd"
+	model_coll: "/prefab/level_crossing/level_right_anim_uk.pmc"
+	
+	state_anim: 4
+	state_collision: 4
+
+	# orange_to_red
+	state_anim[0]: ""
+	state_collision[0]: false
+
+	# red
+	state_anim[1]: "/prefab/level_crossing/uk_right_dwn.pma"
+	state_collision[1]: true
+
+	# orange_to_green
+	state_anim[2]: "/prefab/level_crossing/uk_right_up.pma"
+	state_collision[2]: true
+
+	# green
+	state_anim[3]: ""
+	state_collision[3]: false
+
+	dynamic: false
+}
+
+tr_semaphore_model : tr_sem_mdl.crossing_l.gb {
+
+	name: "ab_left_uk"
+
+	model_desc: "/prefab/level_crossing/level_left_anim_uk.pmd"
+	model_coll: "/prefab/level_crossing/level_left_anim_uk.pmc"
+	
+	state_anim: 4
+	state_collision: 4
+	
+	# orange_to_red
+	state_anim[0]: ""
+	state_collision[0]: false
+
+	# red
+	state_anim[1]: "/prefab/level_crossing/uk_left_dwn.pma"
+	state_collision[1]: true
+
+	# orange_to_green
+	state_anim[2]: "/prefab/level_crossing/uk_left_up.pma"
+	state_collision[2]: true
+
+	# green
+	state_anim[3]: ""
+	state_collision[3]: false
+
+	dynamic: false
+}
+
+tr_semaphore_model : tr_sem_mdl.ab_toll {
+
+	name: "ab_toll"
+
+	model_desc: "/prefab/tollgate/large_it_fr_tollgate/tolgate_small_anim.pmd"
+	model_coll: "/prefab/tollgate/large_it_fr_tollgate/tolgate_small_anim.pmc"
+	
+	state_anim: 4
+	state_collision: 4
+
+	# orange_to_red
+	state_anim[0]: ""
+	state_collision[0]: false
+
+	# red
+	state_anim[1]: "/prefab/tollgate/large_it_fr_tollgate/t_small_dwn.pma"
+	state_collision[1]: true
+
+	# orange_to_green
+	state_anim[2]: "/prefab/tollgate/large_it_fr_tollgate/t_smal_up.pma"
+	state_collision[2]: true
+
+	# green
+	state_anim[3]: ""
+	state_collision[3]: false
+
+	dynamic: false
+}
+
+tr_semaphore_model : tr_sem_mdl.ab_toll.pl {
+
+	name: "ab_toll_pl"
+
+	model_desc: "/prefab/tollgate/tollgate_a2_poland/tollgate_anim.pmd"
+	model_coll: "/prefab/tollgate/tollgate_a2_poland/tollgate_anim.pmc"
+	
+	state_anim: 4
+	state_collision: 4
+
+	# orange_to_red
+	state_anim[0]: ""
+	state_collision[0]: false
+
+	# red
+	state_anim[1]: "/prefab/tollgate/tollgate_a2_poland/toll_down.pma"
+	state_collision[1]: true
+
+	# orange_to_green
+	state_anim[2]: "/prefab/tollgate/tollgate_a2_poland/toll_up.pma"
+	state_collision[2]: true
+
+	# green
+	state_anim[3]: ""
+	state_collision[3]: false
+
+	dynamic: false
+}
+
+tr_semaphore_model : tr_sem_mdl.temporary {
+
+	name: "temporary"
+
+	model_desc: "/model/traffic_light/temporary.pmd"
+	model_coll: "/model/traffic_light/temporary.pmc"
+
+	dynamic: false
+}
+tr_semaphore_model : tr_sem_mdl.city.dk {
+
+	name: "city-dk"
+
+	model_desc: "/model/traffic_light/city_dk.pmd"
+	model_coll: "/model/traffic_light/city_dk.pmc"
+
+	dynamic: false
+}
+tr_semaphore_model : tr_sem_mdl.single.dk {
+
+	name: "single-dk"
+
+	model_desc: "/model/traffic_light/single_dk.pmd"
+	model_coll: "/model/traffic_light/single_dk.pmc"
+
+	dynamic: false
+}
+tr_semaphore_model : tr_sem_mdl.single.n {
+
+	name: "single-n"
+
+	model_desc: "/model/traffic_light/single_no.pmd"
+	model_coll: "/model/traffic_light/single_no.pmc"
+
+	dynamic: false
+}
+tr_semaphore_model : tr_sem_mdl.single.s {
+
+	name: "single-s"
+
+	model_desc: "/model/traffic_light/single_se.pmd"
+	model_coll: "/model/traffic_light/single_se.pmc"
+
+	dynamic: false	
+}
+tr_semaphore_model : tr_sem_mdl.single2.dk {
+
+	name: "single2-dk"
+
+	model_desc: "/model/traffic_light/single2_dk.pmd"
+	model_coll: "/model/traffic_light/single2_dk.pmc"
+
+	dynamic: false
+}
+tr_semaphore_model : tr_sem_mdl.temporary.n {
+
+	name: "single_road_sc"
+
+	model_desc: "/model/traffic_light/single_road_sc.pmd"
+	model_coll: "/model/traffic_light/single_road_sc.pmc"
+
+	dynamic: false
+}
+tr_semaphore_model : tr_sem_mdl.temporary.s {
+
+	name: "single_road_sc"
+
+	model_desc: "/model/traffic_light/single_road_sc.pmd"
+	model_coll: "/model/traffic_light/single_road_sc.pmc"
+
+	dynamic: false
+}
+tr_semaphore_model : tr_sem_mdl.temporary.dk {
+
+	name: "single_road_sc"
+
+	model_desc: "/model/traffic_light/single_road_sc.pmd"
+	model_coll: "/model/traffic_light/single_road_sc.pmc"
+
+	dynamic: false
+}
+
+tr_semaphore_model : tr_sem_mdl.ab_toll.n {
+
+	name: "ab_toll_n"
+
+	model_desc: "/model2/barrier/animated/toll_gate_sc.pmd"
+	model_coll: "/model2/barrier/animated/toll_gate_sc.pmc"
+	
+	state_anim: 4
+	state_collision: 4
+
+	# orange_to_red
+	state_anim[0]: ""
+	state_collision[0]: false
+
+	# red
+	state_anim[1]: "/model2/barrier/animated/t_small_dwn_sc.pma"
+	state_collision[1]: true
+
+	# orange_to_green
+	state_anim[2]: "/model2/barrier/animated/t_smal_up_sc.pma"
+	state_collision[2]: true
+
+	# green
+	state_anim[3]: ""
+	state_collision[3]: false
+
+	dynamic: false
+}
+
+tr_semaphore_model : tr_sem_mdl.ab_toll.s {
+
+	name: "ab_toll_s"
+
+	model_desc: "/model2/barrier/animated/toll_gate_sc.pmd"
+	model_coll: "/model2/barrier/animated/toll_gate_sc.pmc"
+	
+	state_anim: 4
+	state_collision: 4
+
+	# orange_to_red
+	state_anim[0]: ""
+	state_collision[0]: false
+
+	# red
+	state_anim[1]: "/model2/barrier/animated/t_small_dwn_sc.pma"
+	state_collision[1]: true
+
+	# orange_to_green
+	state_anim[2]: "/model2/barrier/animated/t_smal_up_sc.pma"
+	state_collision[2]: true
+
+	# green
+	state_anim[3]: ""
+	state_collision[3]: false
+
+	dynamic: false
+}
+
+tr_semaphore_model : tr_sem_mdl.ab_toll.dk {
+
+	name: "ab_toll_dk"
+
+	model_desc: "/model2/barrier/animated/toll_gate_sc.pmd"
+	model_coll: "/model2/barrier/animated/toll_gate_sc.pmc"
+	
+	state_anim: 4
+	state_collision: 4
+
+	# orange_to_red
+	state_anim[0]: ""
+	state_collision[0]: false
+
+	# red
+	state_anim[1]: "/model2/barrier/animated/t_small_dwn_sc.pma"
+	state_collision[1]: true
+
+	# orange_to_green
+	state_anim[2]: "/model2/barrier/animated/t_smal_up_sc.pma"
+	state_collision[2]: true
+
+	# green
+	state_anim[3]: ""
+	state_collision[3]: false
+
+	dynamic: false
+}
+
+}

@@ -2,13 +2,13 @@
 # and expects 1 argument as path to installed Sikuli IDE.
 # Additionaly second argument "skip_reset" can be passed which will
 # cancel searching and executing *reset_blender.sikuli test
-#
+# 
 # Usage examples:
-#
-# -> Running directly in console:
+# 
+# -> Running directly in console: 
 #  ./run_tests.sh ~/Programs/Sikuli
-#
-# -> Running and writing to log file:
+# 
+# -> Running and writing to log file: 
 #  ./run_tests.sh ~/Programs/Sikuli > ~/Work/BlenderTools/Testing/BlenderTestsOutput/sikuli.log
 
 # try to find reset_blender.sikuli test and run it
@@ -58,3 +58,4 @@ for dir in * ; do
       fi
    fi
 done
+

@@ -230,23 +230,27 @@ def get_siblings(obj):
 
 
 def collect_parts_on_root(scs_root_object):
-    """Gathers used 'SCS Part' names.
+    """Gathers used 'SCS Part' names and objects belonging to them.
 
     :param scs_root_object: Blender SCS root object
     :type scs_root_object: bpy.types.Object
-    :return: list of USED parts within given root object
-    :rtype: list of str
+    :return: dictionary of USED parts within given root object and list of objects for each entry
+    :rtype: dict[str, list[bpy.types.Object]]
     """
     parts = {}
 
     children = get_children(scs_root_object)
     for child in children:
-        if has_part_property(child):
-            obj_part = child.scs_props.scs_part
-            if not obj_part in parts:
-                parts[obj_part] = 1
 
-    return parts.keys()
+        if has_part_property(child):
+
+            obj_part = child.scs_props.scs_part
+            if obj_part not in parts:
+                parts[obj_part] = []
+
+            parts[obj_part].append(child)
+
+    return parts
 
 
 def update_convex_hull_margins(obj):
@@ -331,7 +335,7 @@ def make_mesh_from_verts_and_faces(verts, faces, convex_props):
     _mesh.bm_make_vertices(new_bm, verts)
 
     # MAKE FACES
-    _mesh.bm_make_faces(new_bm, verts, faces, [], None)
+    _mesh.bm_make_faces(new_bm, faces, [])
 
     new_bm.to_mesh(new_mesh)
     new_mesh.update()
@@ -904,3 +908,47 @@ def has_part_property(obj):
                                       obj.scs_props.empty_object_type == "Locator" and
                                       obj.scs_props.locator_type == "Prefab" and
                                       obj.scs_props.locator_prefab_type != "Sign")
+
+
+def can_assign_terrain_points(context):
+    """Tells if user can assign terrain points with given context.
+
+    :param context: blender context
+    :type context: bpy.types.Context
+    :return: True if given object is Control Node locator; False otherwise
+    :rtype: bool
+    """
+    active_obj = context.active_object
+    other_obj = get_other_object(context.selected_objects, active_obj)
+
+    is_root_same_and_valid = get_scs_root(active_obj) is not None and get_scs_root(active_obj) == get_scs_root(other_obj)
+    is_other_node_locator = other_obj and (other_obj.type == "EMPTY" and
+                                           other_obj.scs_props.empty_object_type == "Locator" and
+                                           other_obj.scs_props.locator_type == "Prefab" and
+                                           other_obj.scs_props.locator_prefab_type == "Control Node")
+
+    return (active_obj and is_other_node_locator and is_root_same_and_valid and
+            active_obj.type == "MESH" and active_obj.mode == "EDIT")
+
+
+def get_other_object(obj_iterable, original_obj):
+    """Get first different object in the iterable from original object.
+
+    NOTE: method looks only first two object, because of avoiding iterations
+    in very long list which will slow down blender
+
+    :param obj_iterable: list of objects in which other object should be searched for
+    :type obj_iterable: collections.Iterable
+    :param original_obj: original object from which other should be different
+    :type original_obj: bpy.types.Object
+    :return: other object if found; otherwise None
+    :rtype: None | bpy.types.Object
+    """
+    for sel_obj_i, sel_obj in enumerate(obj_iterable):
+        if sel_obj_i >= 2:
+            return None
+
+        if sel_obj != original_obj:
+            return sel_obj
+
+    return None

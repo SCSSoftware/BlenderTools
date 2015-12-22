@@ -1,6 +1,6 @@
 import bpy
-
 from io_scs_tools.consts import LampTools as _LT_consts
+from io_scs_tools.consts import Material as _MAT_consts
 
 VEHICLE_SIDES = _LT_consts.VehicleSides
 VEHICLE_LAMP_TYPES = _LT_consts.VehicleLampTypes
@@ -10,7 +10,7 @@ TRAFFIC_LIGHT_TYPES = _LT_consts.TrafficLightTypes
 UV_X_TILES = ["UV_X_0_", "UV_X_1_", "UV_X_2_", "UV_X_3_", "UV_X_4_"]
 UV_Y_TILES = ["UV_Y_0_", "UV_Y_1_", "UV_Y_2_", "UV_Y_3_"]
 
-LAMPMASK_MIX_G = "LampmaskMixerGroup"
+LAMPMASK_MIX_G = _MAT_consts.node_group_prefix + "LampmaskMixerGroup"
 
 _UV_DOT_X_NODE = "UV_X_Separator"
 _UV_DOT_Y_NODE = "UV_Y_Separator"

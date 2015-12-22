@@ -19,8 +19,9 @@
 # Copyright (C) 2015: SCS Software
 
 import bpy
+from io_scs_tools.consts import Material as _MAT_consts
 
-REFL_NORMAL_G = "ReflectionNormalGroup"
+REFL_NORMAL_G = _MAT_consts.node_group_prefix + "ReflectionNormalGroup"
 
 
 def get_node_group():

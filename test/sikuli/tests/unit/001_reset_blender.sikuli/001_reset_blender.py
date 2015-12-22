@@ -19,7 +19,7 @@ try:
         find(Pattern("addons_scs_tools_entry.png").similar(0.90)).right().click(Pattern("addon_checkbox_1.png").similar(0.95).targetOffset(15,1))
         wait(1)
         find(Pattern("addons_scs_tools_entry.png").similar(0.90)).right().click(Pattern("addon_checkbox_0.png").similar(0.65).targetOffset(15,0))
-
+        
     find(Pattern("addons_scs_tools_enabled.png").exact())
     click(Pattern("save_user_settings.png").similar(0.95))
     find(Pattern("project_path.png").similar(0.95)).right().click("select_project_path_button.png")

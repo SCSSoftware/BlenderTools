@@ -1,0 +1,19 @@
+SiiNunit
+{
+light_source : koln.bridge.light
+{
+	ambient_color: (0.0000, 0.0000, 0.0000)
+	diffuse_color: (0.9047, 0.799, 0.568)
+	specular_color: (0.9911, 0.9911, 0.9387)
+
+	range: 15
+	cut_range: 15
+	inner_angle: 90.0
+	outer_angle: 140.0
+	attenuation_start_range: 10
+
+	dir_type: all
+	model: "/model/flare/lamp_flare.pmd"
+	scale_factor: 2
+}
+}

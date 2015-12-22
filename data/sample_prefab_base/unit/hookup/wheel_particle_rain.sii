@@ -1,0 +1,42 @@
+SiiNunit
+{
+vehicle_particle : wheel.particle.rain {
+ gen_array: 1
+ gen_array[0]: _nameless.0BBB.4018
+}
+
+particle_gen : _nameless.0BBB.4018 {
+ list_order_up: false
+ blend_alpha: true
+ gen_pos: (&3dcccccd, 0, &3dcccccd)
+ scale_acc: &3e851eb8
+ rotation_speed: 71
+ alpha_blend_coef: &3dcccccd
+ base_alpha: &3f19999a
+ alpha_attack_time: &3dcccccd
+ flow_speed: (0, 1, &3ca3d70a)
+ flow_speed_acc: (0, &c0b33333, &3ca3d70a)
+ particle_size: (&3e8a3d71, &3e6147ae)
+ particle_size_var: (&3d4ccccc, &3d4ccccc)
+ particle_displacement: (&be4ccccd, &3e4ccccd, &be4ccccd)
+ color_multiplier: 4294967295
+ key_pos: 5
+ key_pos[0]: 0
+ key_pos[1]: 126
+ key_pos[2]: 255
+ key_pos[3]: 255
+ key_pos[4]: 255
+ key_color: 5
+ key_color[0]: 16772332
+ key_color[1]: 14865357
+ key_color[2]: 4294954188
+ key_color[3]: 4294954188
+ key_color[4]: 4294954188
+ time_to_live: &3f000000
+ particles_max_count: 20
+ relative_space: false
+ model_path: "/model/particle/smoke.pmd"
+ model_look: rain
+}
+
+}

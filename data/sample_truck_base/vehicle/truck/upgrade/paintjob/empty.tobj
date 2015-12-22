@@ -1,3 +1,3 @@
-map	2d	empty.tga
-addr 	clamp_to_edge	clamp_to_edge
+map	2d	empty.tga 
+addr 	clamp_to_edge	clamp_to_edge 
 bias 2

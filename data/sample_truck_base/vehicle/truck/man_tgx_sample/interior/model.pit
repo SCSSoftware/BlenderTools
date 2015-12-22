@@ -8,7 +8,7 @@
 #
 Header {
     FormatVersion: 1
-    Source: "Blender 2.74.0 (hash: 000dfc0), SCS Blender Tools: 0.5.187c9dc"
+    Source: "Blender 2.76.0 (hash: 48f7dd6), SCS Blender Tools: 0.6.e9daf33"
     Type: "Trait"
     Name: "model"
 }
@@ -33,58 +33,15 @@ Look {
         }
     }
     Material {
-        Alias: "mlaa_remover"
-        Effect: "eut2.mlaaweight"
-        Flags: 0
-        AttributeCount: 0
-        TextureCount: 0
-    }
-    Material {
-        Alias: "plastic_gray"
-        Effect: "eut2.dif.spec"
+        Alias: "dashboard"
+        Effect: "eut2.dif.lum"
         Flags: 0
         AttributeCount: 5
         TextureCount: 1
         Attribute {
             Format: FLOAT3
             Tag: "diffuse"
-            Value: ( 0.6000000238418579 0.6000000238418579 0.6000000238418579 )
-        }
-        Attribute {
-            Format: FLOAT3
-            Tag: "specular"
-            Value: ( 0.20000000298023224 0.20000000298023224 0.20000000298023224 )
-        }
-        Attribute {
-            Format: FLOAT
-            Tag: "shininess"
-            Value: ( 50.0 )
-        }
-        Attribute {
-            Format: FLOAT
-            Tag: "add_ambient"
-            Value: ( 0.0 )
-        }
-        Attribute {
-            Format: FLOAT
-            Tag: "reflection"
-            Value: ( 0.0 )
-        }
-        Texture {
-            Tag: "texture[0]:texture_base"
-            Value: "/vehicle/truck/man_tgx_sample/interior/plastic_gray"
-        }
-    }
-    Material {
-        Alias: "fabric_beds"
-        Effect: "eut2.dif.spec"
-        Flags: 0
-        AttributeCount: 5
-        TextureCount: 1
-        Attribute {
-            Format: FLOAT3
-            Tag: "diffuse"
-            Value: ( 0.30000001192092896 0.30000001192092896 0.30000001192092896 )
+            Value: ( 0.8999999761581421 0.8999999761581421 0.8999999761581421 )
         }
         Attribute {
             Format: FLOAT3
@@ -94,7 +51,7 @@ Look {
         Attribute {
             Format: FLOAT
             Tag: "shininess"
-            Value: ( 5.0 )
+            Value: ( 64.0 )
         }
         Attribute {
             Format: FLOAT
@@ -108,7 +65,43 @@ Look {
         }
         Texture {
             Tag: "texture[0]:texture_base"
-            Value: "/vehicle/truck/man_tgx_sample/interior/fabric_brown"
+            Value: "/vehicle/truck/man_tgx_sample/interior/dashboard"
+        }
+    }
+    Material {
+        Alias: "gps"
+        Effect: "eut2.dif.lum"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.0 0.0 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 4.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/vehicle/truck/share/gps"
         }
     }
     Material {
@@ -148,7 +141,7 @@ Look {
         }
     }
     Material {
-        Alias: "plastic_dark_bolts"
+        Alias: "fabric_gray"
         Effect: "eut2.dif.spec"
         Flags: 0
         AttributeCount: 5
@@ -156,17 +149,17 @@ Look {
         Attribute {
             Format: FLOAT3
             Tag: "diffuse"
-            Value: ( 0.6000000238418579 0.6000000238418579 0.6000000238418579 )
+            Value: ( 0.30000001192092896 0.30000001192092896 0.30000001192092896 )
         }
         Attribute {
             Format: FLOAT3
             Tag: "specular"
-            Value: ( 0.15000000596046448 0.15000000596046448 0.15000000596046448 )
+            Value: ( 0.4000000059604645 0.4000000059604645 0.4000000059604645 )
         }
         Attribute {
             Format: FLOAT
             Tag: "shininess"
-            Value: ( 20.0 )
+            Value: ( 5.0 )
         }
         Attribute {
             Format: FLOAT
@@ -180,7 +173,280 @@ Look {
         }
         Texture {
             Tag: "texture[0]:texture_base"
-            Value: "/vehicle/truck/man_tgx_sample/interior/plastic_dark_bolts"
+            Value: "/vehicle/truck/man_tgx_sample/interior/fabric_gray"
+        }
+    }
+    Material {
+        Alias: "plastic_gray"
+        Effect: "eut2.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 0.6000000238418579 0.6000000238418579 0.6000000238418579 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.20000000298023224 0.20000000298023224 0.20000000298023224 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 50.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/vehicle/truck/man_tgx_sample/interior/plastic_gray"
+        }
+    }
+    Material {
+        Alias: "rubber"
+        Effect: "eut2.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 0.5 0.5 0.5 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.3499999940395355 0.3499999940395355 0.3499999940395355 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 10.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/vehicle/truck/man_tgx_sample/interior/rubber"
+        }
+    }
+    Material {
+        Alias: "plastic_gray1"
+        Effect: "eut2.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 0.6000000238418579 0.6000000238418579 0.6000000238418579 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.20000000298023224 0.20000000298023224 0.20000000298023224 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 50.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/vehicle/truck/man_tgx_sample/interior/plastic_gray"
+        }
+    }
+    Material {
+        Alias: "leather1"
+        Effect: "eut2.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.5 0.5 0.5 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 10.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/vehicle/truck/man_tgx_sample/interior/leather_gray"
+        }
+    }
+    Material {
+        Alias: "mlaa_remover"
+        Effect: "eut2.mlaaweight"
+        Flags: 0
+        AttributeCount: 0
+        TextureCount: 0
+    }
+    Material {
+        Alias: "fabric_beds"
+        Effect: "eut2.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 0.30000001192092896 0.30000001192092896 0.30000001192092896 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.10000000149011612 0.10000000149011612 0.10000000149011612 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 5.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/vehicle/truck/man_tgx_sample/interior/fabric_brown"
+        }
+    }
+    Material {
+        Alias: "brushed_metal"
+        Effect: "eut2.dif.spec.weight.add.env"
+        Flags: 0
+        AttributeCount: 7
+        TextureCount: 2
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 0.5 0.5 0.5 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.9900000095367432 0.9996083378791809 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 15.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "env_factor"
+            Value: ( 0.4000000059604645 0.4000000059604645 0.4000000059604645 )
+        }
+        Attribute {
+            Format: FLOAT2
+            Tag: "fresnel"
+            Value: ( 0.20000000298023224 0.8999999761581421 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/vehicle/truck/man_tgx_sample/interior/brushed_metal"
+        }
+        Texture {
+            Tag: "texture[1]:texture_reflection"
+            Value: "/material/environment/interior_reflection"
+        }
+    }
+    Material {
+        Alias: "carpet_dark"
+        Effect: "eut2.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 0.30000001192092896 0.30000001192092896 0.30000001192092896 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.10000000149011612 0.10000000149011612 0.10000000149011612 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 5.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/vehicle/truck/man_tgx_sample/interior/carpet_dark"
         }
     }
     Material {
@@ -220,11 +486,11 @@ Look {
         }
     }
     Material {
-        Alias: "dashboard"
-        Effect: "eut2.dif.lum"
+        Alias: "dashboard_relf"
+        Effect: "eut2.dif.spec.add.env.nofresnel"
         Flags: 0
-        AttributeCount: 5
-        TextureCount: 1
+        AttributeCount: 6
+        TextureCount: 2
         Attribute {
             Format: FLOAT3
             Tag: "diffuse"
@@ -233,7 +499,52 @@ Look {
         Attribute {
             Format: FLOAT3
             Tag: "specular"
-            Value: ( 0.10000000149011612 0.10000000149011612 0.10000000149011612 )
+            Value: ( 0.6000000238418579 0.6000000238418579 0.6000000238418579 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 75.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "env_factor"
+            Value: ( 0.800000011920929 0.800000011920929 0.800000011920929 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/vehicle/truck/man_tgx_sample/interior/dashboard"
+        }
+        Texture {
+            Tag: "texture[1]:texture_reflection"
+            Value: "/material/environment/interior_reflection"
+        }
+    }
+    Material {
+        Alias: "plastic_leather"
+        Effect: "eut2.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.3499999940395355 0.3499999940395355 0.3499999940395355 )
         }
         Attribute {
             Format: FLOAT
@@ -252,7 +563,7 @@ Look {
         }
         Texture {
             Tag: "texture[0]:texture_base"
-            Value: "/vehicle/truck/man_tgx_sample/interior/dashboard"
+            Value: "/vehicle/truck/man_tgx_sample/interior/plastic_leather"
         }
     }
     Material {
@@ -307,273 +618,7 @@ Look {
         }
         Texture {
             Tag: "texture[1]:texture_reflection"
-            Value: "/material/environment/generic_reflection"
-        }
-    }
-    Material {
-        Alias: "brushed_metal"
-        Effect: "eut2.dif.spec.weight.add.env"
-        Flags: 0
-        AttributeCount: 7
-        TextureCount: 2
-        Attribute {
-            Format: FLOAT3
-            Tag: "diffuse"
-            Value: ( 0.5 0.5 0.5 )
-        }
-        Attribute {
-            Format: FLOAT3
-            Tag: "specular"
-            Value: ( 0.9900000095367432 0.9996083378791809 1.0 )
-        }
-        Attribute {
-            Format: FLOAT
-            Tag: "shininess"
-            Value: ( 15.0 )
-        }
-        Attribute {
-            Format: FLOAT
-            Tag: "add_ambient"
-            Value: ( 0.0 )
-        }
-        Attribute {
-            Format: FLOAT
-            Tag: "reflection"
-            Value: ( 0.0 )
-        }
-        Attribute {
-            Format: FLOAT3
-            Tag: "env_factor"
-            Value: ( 0.4000000059604645 0.4000000059604645 0.4000000059604645 )
-        }
-        Attribute {
-            Format: FLOAT2
-            Tag: "fresnel"
-            Value: ( 0.20000000298023224 0.8999999761581421 )
-        }
-        Texture {
-            Tag: "texture[0]:texture_base"
-            Value: "/vehicle/truck/man_tgx_sample/interior/brushed_metal"
-        }
-        Texture {
-            Tag: "texture[1]:texture_reflection"
-            Value: "/material/environment/generic_reflection"
-        }
-    }
-    Material {
-        Alias: "dashboard_display"
-        Effect: "eut2.dif.lum"
-        Flags: 0
-        AttributeCount: 5
-        TextureCount: 1
-        Attribute {
-            Format: FLOAT3
-            Tag: "diffuse"
-            Value: ( 1.0 1.0 1.0 )
-        }
-        Attribute {
-            Format: FLOAT3
-            Tag: "specular"
-            Value: ( 0.3499999940395355 0.3499999940395355 0.3499999940395355 )
-        }
-        Attribute {
-            Format: FLOAT
-            Tag: "shininess"
-            Value: ( 64.0 )
-        }
-        Attribute {
-            Format: FLOAT
-            Tag: "add_ambient"
-            Value: ( 0.0 )
-        }
-        Attribute {
-            Format: FLOAT
-            Tag: "reflection"
-            Value: ( 0.0 )
-        }
-        Texture {
-            Tag: "texture[0]:texture_base"
-            Value: "/vehicle/truck/share/dashboard"
-        }
-    }
-    Material {
-        Alias: "rubber"
-        Effect: "eut2.dif.spec"
-        Flags: 0
-        AttributeCount: 5
-        TextureCount: 1
-        Attribute {
-            Format: FLOAT3
-            Tag: "diffuse"
-            Value: ( 0.5 0.5 0.5 )
-        }
-        Attribute {
-            Format: FLOAT3
-            Tag: "specular"
-            Value: ( 0.3499999940395355 0.3499999940395355 0.3499999940395355 )
-        }
-        Attribute {
-            Format: FLOAT
-            Tag: "shininess"
-            Value: ( 10.0 )
-        }
-        Attribute {
-            Format: FLOAT
-            Tag: "add_ambient"
-            Value: ( 0.0 )
-        }
-        Attribute {
-            Format: FLOAT
-            Tag: "reflection"
-            Value: ( 0.0 )
-        }
-        Texture {
-            Tag: "texture[0]:texture_base"
-            Value: "/vehicle/truck/man_tgx_sample/interior/rubber"
-        }
-    }
-    Material {
-        Alias: "carpet_dark"
-        Effect: "eut2.dif.spec"
-        Flags: 0
-        AttributeCount: 5
-        TextureCount: 1
-        Attribute {
-            Format: FLOAT3
-            Tag: "diffuse"
-            Value: ( 0.30000001192092896 0.30000001192092896 0.30000001192092896 )
-        }
-        Attribute {
-            Format: FLOAT3
-            Tag: "specular"
-            Value: ( 0.10000000149011612 0.10000000149011612 0.10000000149011612 )
-        }
-        Attribute {
-            Format: FLOAT
-            Tag: "shininess"
-            Value: ( 5.0 )
-        }
-        Attribute {
-            Format: FLOAT
-            Tag: "add_ambient"
-            Value: ( 0.0 )
-        }
-        Attribute {
-            Format: FLOAT
-            Tag: "reflection"
-            Value: ( 0.0 )
-        }
-        Texture {
-            Tag: "texture[0]:texture_base"
-            Value: "/vehicle/truck/man_tgx_sample/interior/carpet_dark"
-        }
-    }
-    Material {
-        Alias: "rubber_pattern"
-        Effect: "eut2.dif.spec"
-        Flags: 0
-        AttributeCount: 5
-        TextureCount: 1
-        Attribute {
-            Format: FLOAT3
-            Tag: "diffuse"
-            Value: ( 0.30000001192092896 0.30000001192092896 0.30000001192092896 )
-        }
-        Attribute {
-            Format: FLOAT3
-            Tag: "specular"
-            Value: ( 0.15000000596046448 0.15000000596046448 0.15000000596046448 )
-        }
-        Attribute {
-            Format: FLOAT
-            Tag: "shininess"
-            Value: ( 10.0 )
-        }
-        Attribute {
-            Format: FLOAT
-            Tag: "add_ambient"
-            Value: ( 0.0 )
-        }
-        Attribute {
-            Format: FLOAT
-            Tag: "reflection"
-            Value: ( 0.0 )
-        }
-        Texture {
-            Tag: "texture[0]:texture_base"
-            Value: "/vehicle/truck/man_tgx_sample/interior/rubber_pattern"
-        }
-    }
-    Material {
-        Alias: "plastic_leather"
-        Effect: "eut2.dif.spec"
-        Flags: 0
-        AttributeCount: 5
-        TextureCount: 1
-        Attribute {
-            Format: FLOAT3
-            Tag: "diffuse"
-            Value: ( 1.0 1.0 1.0 )
-        }
-        Attribute {
-            Format: FLOAT3
-            Tag: "specular"
-            Value: ( 0.3499999940395355 0.3499999940395355 0.3499999940395355 )
-        }
-        Attribute {
-            Format: FLOAT
-            Tag: "shininess"
-            Value: ( 64.0 )
-        }
-        Attribute {
-            Format: FLOAT
-            Tag: "add_ambient"
-            Value: ( 0.0 )
-        }
-        Attribute {
-            Format: FLOAT
-            Tag: "reflection"
-            Value: ( 0.0 )
-        }
-        Texture {
-            Tag: "texture[0]:texture_base"
-            Value: "/vehicle/truck/man_tgx_sample/interior/plastic_leather"
-        }
-    }
-    Material {
-        Alias: "fabric_001"
-        Effect: "eut2.dif.spec"
-        Flags: 0
-        AttributeCount: 5
-        TextureCount: 1
-        Attribute {
-            Format: FLOAT3
-            Tag: "diffuse"
-            Value: ( 0.5 0.5 0.5 )
-        }
-        Attribute {
-            Format: FLOAT3
-            Tag: "specular"
-            Value: ( 0.10000000149011612 0.10000000149011612 0.10000000149011612 )
-        }
-        Attribute {
-            Format: FLOAT
-            Tag: "shininess"
-            Value: ( 64.0 )
-        }
-        Attribute {
-            Format: FLOAT
-            Tag: "add_ambient"
-            Value: ( 0.0 )
-        }
-        Attribute {
-            Format: FLOAT
-            Tag: "reflection"
-            Value: ( 0.0 )
-        }
-        Texture {
-            Tag: "texture[0]:texture_base"
-            Value: "/vehicle/truck/man_tgx_sample/interior/fabric_001"
+            Value: "/material/environment/interior_reflection"
         }
     }
     Material {
@@ -613,7 +658,7 @@ Look {
         }
     }
     Material {
-        Alias: "leather1"
+        Alias: "rubber_pattern"
         Effect: "eut2.dif.spec"
         Flags: 0
         AttributeCount: 5
@@ -621,12 +666,12 @@ Look {
         Attribute {
             Format: FLOAT3
             Tag: "diffuse"
-            Value: ( 1.0 1.0 1.0 )
+            Value: ( 0.30000001192092896 0.30000001192092896 0.30000001192092896 )
         }
         Attribute {
             Format: FLOAT3
             Tag: "specular"
-            Value: ( 0.5 0.5 0.5 )
+            Value: ( 0.15000000596046448 0.15000000596046448 0.15000000596046448 )
         }
         Attribute {
             Format: FLOAT
@@ -645,29 +690,29 @@ Look {
         }
         Texture {
             Tag: "texture[0]:texture_base"
-            Value: "/vehicle/truck/man_tgx_sample/interior/leather_gray"
+            Value: "/vehicle/truck/man_tgx_sample/interior/rubber_pattern"
         }
     }
     Material {
-        Alias: "gps"
-        Effect: "eut2.dif.lum"
+        Alias: "plastic_dark_bolts"
+        Effect: "eut2.dif.spec"
         Flags: 0
         AttributeCount: 5
         TextureCount: 1
         Attribute {
             Format: FLOAT3
             Tag: "diffuse"
-            Value: ( 1.0 1.0 1.0 )
+            Value: ( 0.6000000238418579 0.6000000238418579 0.6000000238418579 )
         }
         Attribute {
             Format: FLOAT3
             Tag: "specular"
-            Value: ( 0.0 0.0 0.0 )
+            Value: ( 0.15000000596046448 0.15000000596046448 0.15000000596046448 )
         }
         Attribute {
             Format: FLOAT
             Tag: "shininess"
-            Value: ( 4.0 )
+            Value: ( 20.0 )
         }
         Attribute {
             Format: FLOAT
@@ -681,7 +726,7 @@ Look {
         }
         Texture {
             Tag: "texture[0]:texture_base"
-            Value: "/vehicle/truck/share/gps"
+            Value: "/vehicle/truck/man_tgx_sample/interior/plastic_dark_bolts"
         }
     }
     Material {
@@ -731,11 +776,47 @@ Look {
         }
         Texture {
             Tag: "texture[1]:texture_reflection"
-            Value: "/material/environment/vehicle_reflection"
+            Value: "/material/environment/interior_reflection"
         }
     }
     Material {
-        Alias: "fabric_gray"
+        Alias: "dashboard_display"
+        Effect: "eut2.dif.lum"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.3499999940395355 0.3499999940395355 0.3499999940395355 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 64.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/vehicle/truck/share/dashboard"
+        }
+    }
+    Material {
+        Alias: "fabric_001"
         Effect: "eut2.dif.spec"
         Flags: 0
         AttributeCount: 5
@@ -743,17 +824,17 @@ Look {
         Attribute {
             Format: FLOAT3
             Tag: "diffuse"
-            Value: ( 0.30000001192092896 0.30000001192092896 0.30000001192092896 )
+            Value: ( 0.5 0.5 0.5 )
         }
         Attribute {
             Format: FLOAT3
             Tag: "specular"
-            Value: ( 0.4000000059604645 0.4000000059604645 0.4000000059604645 )
+            Value: ( 0.10000000149011612 0.10000000149011612 0.10000000149011612 )
         }
         Attribute {
             Format: FLOAT
             Tag: "shininess"
-            Value: ( 5.0 )
+            Value: ( 64.0 )
         }
         Attribute {
             Format: FLOAT
@@ -767,88 +848,7 @@ Look {
         }
         Texture {
             Tag: "texture[0]:texture_base"
-            Value: "/vehicle/truck/man_tgx_sample/interior/fabric_gray"
-        }
-    }
-    Material {
-        Alias: "dashboard_relf"
-        Effect: "eut2.dif.spec.add.env.nofresnel"
-        Flags: 0
-        AttributeCount: 6
-        TextureCount: 2
-        Attribute {
-            Format: FLOAT3
-            Tag: "diffuse"
-            Value: ( 0.8999999761581421 0.8999999761581421 0.8999999761581421 )
-        }
-        Attribute {
-            Format: FLOAT3
-            Tag: "specular"
-            Value: ( 0.6000000238418579 0.6000000238418579 0.6000000238418579 )
-        }
-        Attribute {
-            Format: FLOAT
-            Tag: "shininess"
-            Value: ( 75.0 )
-        }
-        Attribute {
-            Format: FLOAT
-            Tag: "add_ambient"
-            Value: ( 0.0 )
-        }
-        Attribute {
-            Format: FLOAT
-            Tag: "reflection"
-            Value: ( 0.0 )
-        }
-        Attribute {
-            Format: FLOAT3
-            Tag: "env_factor"
-            Value: ( 0.800000011920929 0.800000011920929 0.800000011920929 )
-        }
-        Texture {
-            Tag: "texture[0]:texture_base"
-            Value: "/vehicle/truck/man_tgx_sample/interior/dashboard"
-        }
-        Texture {
-            Tag: "texture[1]:texture_reflection"
-            Value: "/material/environment/vehicle_reflection"
-        }
-    }
-    Material {
-        Alias: "plastic_gray1"
-        Effect: "eut2.dif.spec"
-        Flags: 0
-        AttributeCount: 5
-        TextureCount: 1
-        Attribute {
-            Format: FLOAT3
-            Tag: "diffuse"
-            Value: ( 0.6000000238418579 0.6000000238418579 0.6000000238418579 )
-        }
-        Attribute {
-            Format: FLOAT3
-            Tag: "specular"
-            Value: ( 0.20000000298023224 0.20000000298023224 0.20000000298023224 )
-        }
-        Attribute {
-            Format: FLOAT
-            Tag: "shininess"
-            Value: ( 50.0 )
-        }
-        Attribute {
-            Format: FLOAT
-            Tag: "add_ambient"
-            Value: ( 0.0 )
-        }
-        Attribute {
-            Format: FLOAT
-            Tag: "reflection"
-            Value: ( 0.0 )
-        }
-        Texture {
-            Tag: "texture[0]:texture_base"
-            Value: "/vehicle/truck/man_tgx_sample/interior/plastic_gray"
+            Value: "/vehicle/truck/man_tgx_sample/interior/fabric_001"
         }
     }
     Material {
@@ -903,22 +903,15 @@ Look {
         }
     }
     Material {
-        Alias: "mlaa_remover"
-        Effect: "eut2.mlaaweight"
-        Flags: 0
-        AttributeCount: 0
-        TextureCount: 0
-    }
-    Material {
-        Alias: "plastic_gray"
-        Effect: "eut2.dif.spec"
+        Alias: "dashboard"
+        Effect: "eut2.dif.lum"
         Flags: 0
         AttributeCount: 5
         TextureCount: 1
         Attribute {
             Format: FLOAT3
             Tag: "diffuse"
-            Value: ( 1.0 1.0 1.0 )
+            Value: ( 0.8999999761581421 0.8999999761581421 0.8999999761581421 )
         }
         Attribute {
             Format: FLOAT3
@@ -942,29 +935,29 @@ Look {
         }
         Texture {
             Tag: "texture[0]:texture_base"
-            Value: "/vehicle/truck/man_tgx_sample/interior/plastic_gray"
+            Value: "/vehicle/truck/man_tgx_sample/interior/dashboard"
         }
     }
     Material {
-        Alias: "fabric_beds"
-        Effect: "eut2.dif.spec"
+        Alias: "gps"
+        Effect: "eut2.dif.lum"
         Flags: 0
         AttributeCount: 5
         TextureCount: 1
         Attribute {
             Format: FLOAT3
             Tag: "diffuse"
-            Value: ( 0.30000001192092896 0.30000001192092896 0.30000001192092896 )
+            Value: ( 1.0 1.0 1.0 )
         }
         Attribute {
             Format: FLOAT3
             Tag: "specular"
-            Value: ( 0.10000000149011612 0.10000000149011612 0.10000000149011612 )
+            Value: ( 0.0 0.0 0.0 )
         }
         Attribute {
             Format: FLOAT
             Tag: "shininess"
-            Value: ( 5.0 )
+            Value: ( 4.0 )
         }
         Attribute {
             Format: FLOAT
@@ -978,7 +971,7 @@ Look {
         }
         Texture {
             Tag: "texture[0]:texture_base"
-            Value: "/vehicle/truck/man_tgx_sample/interior/fabric_002"
+            Value: "/vehicle/truck/share/gps"
         }
     }
     Material {
@@ -1018,7 +1011,7 @@ Look {
         }
     }
     Material {
-        Alias: "plastic_dark_bolts"
+        Alias: "fabric_gray"
         Effect: "eut2.dif.spec"
         Flags: 0
         AttributeCount: 5
@@ -1026,17 +1019,17 @@ Look {
         Attribute {
             Format: FLOAT3
             Tag: "diffuse"
-            Value: ( 0.6000000238418579 0.6000000238418579 0.6000000238418579 )
+            Value: ( 0.30000001192092896 0.30000001192092896 0.30000001192092896 )
         }
         Attribute {
             Format: FLOAT3
             Tag: "specular"
-            Value: ( 0.15000000596046448 0.15000000596046448 0.15000000596046448 )
+            Value: ( 0.4000000059604645 0.4000000059604645 0.4000000059604645 )
         }
         Attribute {
             Format: FLOAT
             Tag: "shininess"
-            Value: ( 20.0 )
+            Value: ( 5.0 )
         }
         Attribute {
             Format: FLOAT
@@ -1050,7 +1043,280 @@ Look {
         }
         Texture {
             Tag: "texture[0]:texture_base"
-            Value: "/vehicle/truck/man_tgx_sample/interior/plastic_dark_bolts2"
+            Value: "/vehicle/truck/man_tgx_sample/interior/plastic_pattern"
+        }
+    }
+    Material {
+        Alias: "plastic_gray"
+        Effect: "eut2.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.10000000149011612 0.10000000149011612 0.10000000149011612 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 64.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/vehicle/truck/man_tgx_sample/interior/plastic_gray"
+        }
+    }
+    Material {
+        Alias: "rubber"
+        Effect: "eut2.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 0.5 0.5 0.5 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.3499999940395355 0.3499999940395355 0.3499999940395355 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 10.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/vehicle/truck/man_tgx_sample/interior/rubber"
+        }
+    }
+    Material {
+        Alias: "plastic_gray1"
+        Effect: "eut2.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.10000000149011612 0.10000000149011612 0.10000000149011612 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 64.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/vehicle/truck/man_tgx_sample/interior/plastic_gray"
+        }
+    }
+    Material {
+        Alias: "leather1"
+        Effect: "eut2.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.5 0.5 0.5 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 10.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/vehicle/truck/man_tgx_sample/interior/leather_gray"
+        }
+    }
+    Material {
+        Alias: "mlaa_remover"
+        Effect: "eut2.mlaaweight"
+        Flags: 0
+        AttributeCount: 0
+        TextureCount: 0
+    }
+    Material {
+        Alias: "fabric_beds"
+        Effect: "eut2.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 0.30000001192092896 0.30000001192092896 0.30000001192092896 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.10000000149011612 0.10000000149011612 0.10000000149011612 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 5.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/vehicle/truck/man_tgx_sample/interior/fabric_002"
+        }
+    }
+    Material {
+        Alias: "brushed_metal"
+        Effect: "eut2.dif.spec.weight.add.env"
+        Flags: 0
+        AttributeCount: 7
+        TextureCount: 2
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 0.5 0.5 0.5 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.9900000095367432 0.9996083378791809 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 15.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "env_factor"
+            Value: ( 0.4000000059604645 0.4000000059604645 0.4000000059604645 )
+        }
+        Attribute {
+            Format: FLOAT2
+            Tag: "fresnel"
+            Value: ( 0.20000000298023224 0.8999999761581421 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/vehicle/truck/man_tgx_sample/interior/brushed_metal"
+        }
+        Texture {
+            Tag: "texture[1]:texture_reflection"
+            Value: "/material/environment/interior_reflection"
+        }
+    }
+    Material {
+        Alias: "carpet_dark"
+        Effect: "eut2.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 0.30000001192092896 0.30000001192092896 0.30000001192092896 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.10000000149011612 0.10000000149011612 0.10000000149011612 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 5.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/vehicle/truck/man_tgx_sample/interior/carpet_dark"
         }
     }
     Material {
@@ -1090,11 +1356,11 @@ Look {
         }
     }
     Material {
-        Alias: "dashboard"
-        Effect: "eut2.dif.lum"
+        Alias: "dashboard_relf"
+        Effect: "eut2.dif.spec.add.env.nofresnel"
         Flags: 0
-        AttributeCount: 5
-        TextureCount: 1
+        AttributeCount: 6
+        TextureCount: 2
         Attribute {
             Format: FLOAT3
             Tag: "diffuse"
@@ -1103,12 +1369,57 @@ Look {
         Attribute {
             Format: FLOAT3
             Tag: "specular"
-            Value: ( 0.10000000149011612 0.10000000149011612 0.10000000149011612 )
+            Value: ( 0.6000000238418579 0.6000000238418579 0.6000000238418579 )
         }
         Attribute {
             Format: FLOAT
             Tag: "shininess"
-            Value: ( 64.0 )
+            Value: ( 75.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "env_factor"
+            Value: ( 0.800000011920929 0.800000011920929 0.800000011920929 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/vehicle/truck/man_tgx_sample/interior/dashboard"
+        }
+        Texture {
+            Tag: "texture[1]:texture_reflection"
+            Value: "/material/environment/interior_reflection"
+        }
+    }
+    Material {
+        Alias: "plastic_leather"
+        Effect: "eut2.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.15000000596046448 0.15000000596046448 0.15000000596046448 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 40.0 )
         }
         Attribute {
             Format: FLOAT
@@ -1122,7 +1433,7 @@ Look {
         }
         Texture {
             Tag: "texture[0]:texture_base"
-            Value: "/vehicle/truck/man_tgx_sample/interior/dashboard"
+            Value: "/vehicle/truck/man_tgx_sample/interior/plastic_gray_pattern"
         }
     }
     Material {
@@ -1177,273 +1488,7 @@ Look {
         }
         Texture {
             Tag: "texture[1]:texture_reflection"
-            Value: "/material/environment/generic_reflection"
-        }
-    }
-    Material {
-        Alias: "brushed_metal"
-        Effect: "eut2.dif.spec.weight.add.env"
-        Flags: 0
-        AttributeCount: 7
-        TextureCount: 2
-        Attribute {
-            Format: FLOAT3
-            Tag: "diffuse"
-            Value: ( 0.5 0.5 0.5 )
-        }
-        Attribute {
-            Format: FLOAT3
-            Tag: "specular"
-            Value: ( 0.9900000095367432 0.9996083378791809 1.0 )
-        }
-        Attribute {
-            Format: FLOAT
-            Tag: "shininess"
-            Value: ( 15.0 )
-        }
-        Attribute {
-            Format: FLOAT
-            Tag: "add_ambient"
-            Value: ( 0.0 )
-        }
-        Attribute {
-            Format: FLOAT
-            Tag: "reflection"
-            Value: ( 0.0 )
-        }
-        Attribute {
-            Format: FLOAT3
-            Tag: "env_factor"
-            Value: ( 0.4000000059604645 0.4000000059604645 0.4000000059604645 )
-        }
-        Attribute {
-            Format: FLOAT2
-            Tag: "fresnel"
-            Value: ( 0.20000000298023224 0.8999999761581421 )
-        }
-        Texture {
-            Tag: "texture[0]:texture_base"
-            Value: "/vehicle/truck/man_tgx_sample/interior/brushed_metal"
-        }
-        Texture {
-            Tag: "texture[1]:texture_reflection"
-            Value: "/material/environment/generic_reflection"
-        }
-    }
-    Material {
-        Alias: "dashboard_display"
-        Effect: "eut2.dif.lum"
-        Flags: 0
-        AttributeCount: 5
-        TextureCount: 1
-        Attribute {
-            Format: FLOAT3
-            Tag: "diffuse"
-            Value: ( 1.0 1.0 1.0 )
-        }
-        Attribute {
-            Format: FLOAT3
-            Tag: "specular"
-            Value: ( 0.3499999940395355 0.3499999940395355 0.3499999940395355 )
-        }
-        Attribute {
-            Format: FLOAT
-            Tag: "shininess"
-            Value: ( 64.0 )
-        }
-        Attribute {
-            Format: FLOAT
-            Tag: "add_ambient"
-            Value: ( 0.0 )
-        }
-        Attribute {
-            Format: FLOAT
-            Tag: "reflection"
-            Value: ( 0.0 )
-        }
-        Texture {
-            Tag: "texture[0]:texture_base"
-            Value: "/vehicle/truck/share/dashboard"
-        }
-    }
-    Material {
-        Alias: "rubber"
-        Effect: "eut2.dif.spec"
-        Flags: 0
-        AttributeCount: 5
-        TextureCount: 1
-        Attribute {
-            Format: FLOAT3
-            Tag: "diffuse"
-            Value: ( 0.5 0.5 0.5 )
-        }
-        Attribute {
-            Format: FLOAT3
-            Tag: "specular"
-            Value: ( 0.3499999940395355 0.3499999940395355 0.3499999940395355 )
-        }
-        Attribute {
-            Format: FLOAT
-            Tag: "shininess"
-            Value: ( 10.0 )
-        }
-        Attribute {
-            Format: FLOAT
-            Tag: "add_ambient"
-            Value: ( 0.0 )
-        }
-        Attribute {
-            Format: FLOAT
-            Tag: "reflection"
-            Value: ( 0.0 )
-        }
-        Texture {
-            Tag: "texture[0]:texture_base"
-            Value: "/vehicle/truck/man_tgx_sample/interior/rubber"
-        }
-    }
-    Material {
-        Alias: "carpet_dark"
-        Effect: "eut2.dif.spec"
-        Flags: 0
-        AttributeCount: 5
-        TextureCount: 1
-        Attribute {
-            Format: FLOAT3
-            Tag: "diffuse"
-            Value: ( 0.30000001192092896 0.30000001192092896 0.30000001192092896 )
-        }
-        Attribute {
-            Format: FLOAT3
-            Tag: "specular"
-            Value: ( 0.10000000149011612 0.10000000149011612 0.10000000149011612 )
-        }
-        Attribute {
-            Format: FLOAT
-            Tag: "shininess"
-            Value: ( 5.0 )
-        }
-        Attribute {
-            Format: FLOAT
-            Tag: "add_ambient"
-            Value: ( 0.0 )
-        }
-        Attribute {
-            Format: FLOAT
-            Tag: "reflection"
-            Value: ( 0.0 )
-        }
-        Texture {
-            Tag: "texture[0]:texture_base"
-            Value: "/vehicle/truck/man_tgx_sample/interior/carpet_dark"
-        }
-    }
-    Material {
-        Alias: "rubber_pattern"
-        Effect: "eut2.dif.spec"
-        Flags: 0
-        AttributeCount: 5
-        TextureCount: 1
-        Attribute {
-            Format: FLOAT3
-            Tag: "diffuse"
-            Value: ( 0.30000001192092896 0.30000001192092896 0.30000001192092896 )
-        }
-        Attribute {
-            Format: FLOAT3
-            Tag: "specular"
-            Value: ( 0.15000000596046448 0.15000000596046448 0.15000000596046448 )
-        }
-        Attribute {
-            Format: FLOAT
-            Tag: "shininess"
-            Value: ( 10.0 )
-        }
-        Attribute {
-            Format: FLOAT
-            Tag: "add_ambient"
-            Value: ( 0.0 )
-        }
-        Attribute {
-            Format: FLOAT
-            Tag: "reflection"
-            Value: ( 0.0 )
-        }
-        Texture {
-            Tag: "texture[0]:texture_base"
-            Value: "/vehicle/truck/man_tgx_sample/interior/rubber_pattern"
-        }
-    }
-    Material {
-        Alias: "plastic_leather"
-        Effect: "eut2.dif.spec"
-        Flags: 0
-        AttributeCount: 5
-        TextureCount: 1
-        Attribute {
-            Format: FLOAT3
-            Tag: "diffuse"
-            Value: ( 1.0 1.0 1.0 )
-        }
-        Attribute {
-            Format: FLOAT3
-            Tag: "specular"
-            Value: ( 0.15000000596046448 0.15000000596046448 0.15000000596046448 )
-        }
-        Attribute {
-            Format: FLOAT
-            Tag: "shininess"
-            Value: ( 40.0 )
-        }
-        Attribute {
-            Format: FLOAT
-            Tag: "add_ambient"
-            Value: ( 0.0 )
-        }
-        Attribute {
-            Format: FLOAT
-            Tag: "reflection"
-            Value: ( 0.0 )
-        }
-        Texture {
-            Tag: "texture[0]:texture_base"
-            Value: "/vehicle/truck/man_tgx_sample/interior/plastic_gray_pattern"
-        }
-    }
-    Material {
-        Alias: "fabric_001"
-        Effect: "eut2.dif.spec"
-        Flags: 0
-        AttributeCount: 5
-        TextureCount: 1
-        Attribute {
-            Format: FLOAT3
-            Tag: "diffuse"
-            Value: ( 0.5 0.5 0.5 )
-        }
-        Attribute {
-            Format: FLOAT3
-            Tag: "specular"
-            Value: ( 0.10000000149011612 0.10000000149011612 0.10000000149011612 )
-        }
-        Attribute {
-            Format: FLOAT
-            Tag: "shininess"
-            Value: ( 64.0 )
-        }
-        Attribute {
-            Format: FLOAT
-            Tag: "add_ambient"
-            Value: ( 0.0 )
-        }
-        Attribute {
-            Format: FLOAT
-            Tag: "reflection"
-            Value: ( 0.0 )
-        }
-        Texture {
-            Tag: "texture[0]:texture_base"
-            Value: "/vehicle/truck/man_tgx_sample/interior/fabric_001"
+            Value: "/material/environment/interior_reflection"
         }
     }
     Material {
@@ -1483,7 +1528,7 @@ Look {
         }
     }
     Material {
-        Alias: "leather1"
+        Alias: "rubber_pattern"
         Effect: "eut2.dif.spec"
         Flags: 0
         AttributeCount: 5
@@ -1491,12 +1536,12 @@ Look {
         Attribute {
             Format: FLOAT3
             Tag: "diffuse"
-            Value: ( 1.0 1.0 1.0 )
+            Value: ( 0.30000001192092896 0.30000001192092896 0.30000001192092896 )
         }
         Attribute {
             Format: FLOAT3
             Tag: "specular"
-            Value: ( 0.5 0.5 0.5 )
+            Value: ( 0.15000000596046448 0.15000000596046448 0.15000000596046448 )
         }
         Attribute {
             Format: FLOAT
@@ -1515,29 +1560,29 @@ Look {
         }
         Texture {
             Tag: "texture[0]:texture_base"
-            Value: "/vehicle/truck/man_tgx_sample/interior/leather_gray"
+            Value: "/vehicle/truck/man_tgx_sample/interior/rubber_pattern"
         }
     }
     Material {
-        Alias: "gps"
-        Effect: "eut2.dif.lum"
+        Alias: "plastic_dark_bolts"
+        Effect: "eut2.dif.spec"
         Flags: 0
         AttributeCount: 5
         TextureCount: 1
         Attribute {
             Format: FLOAT3
             Tag: "diffuse"
-            Value: ( 1.0 1.0 1.0 )
+            Value: ( 0.6000000238418579 0.6000000238418579 0.6000000238418579 )
         }
         Attribute {
             Format: FLOAT3
             Tag: "specular"
-            Value: ( 0.0 0.0 0.0 )
+            Value: ( 0.15000000596046448 0.15000000596046448 0.15000000596046448 )
         }
         Attribute {
             Format: FLOAT
             Tag: "shininess"
-            Value: ( 4.0 )
+            Value: ( 20.0 )
         }
         Attribute {
             Format: FLOAT
@@ -1551,7 +1596,7 @@ Look {
         }
         Texture {
             Tag: "texture[0]:texture_base"
-            Value: "/vehicle/truck/share/gps"
+            Value: "/vehicle/truck/man_tgx_sample/interior/plastic_dark_bolts2"
         }
     }
     Material {
@@ -1601,93 +1646,12 @@ Look {
         }
         Texture {
             Tag: "texture[1]:texture_reflection"
-            Value: "/material/environment/vehicle_reflection"
+            Value: "/material/environment/interior_reflection"
         }
     }
     Material {
-        Alias: "fabric_gray"
-        Effect: "eut2.dif.spec"
-        Flags: 0
-        AttributeCount: 5
-        TextureCount: 1
-        Attribute {
-            Format: FLOAT3
-            Tag: "diffuse"
-            Value: ( 0.30000001192092896 0.30000001192092896 0.30000001192092896 )
-        }
-        Attribute {
-            Format: FLOAT3
-            Tag: "specular"
-            Value: ( 0.4000000059604645 0.4000000059604645 0.4000000059604645 )
-        }
-        Attribute {
-            Format: FLOAT
-            Tag: "shininess"
-            Value: ( 5.0 )
-        }
-        Attribute {
-            Format: FLOAT
-            Tag: "add_ambient"
-            Value: ( 0.0 )
-        }
-        Attribute {
-            Format: FLOAT
-            Tag: "reflection"
-            Value: ( 0.0 )
-        }
-        Texture {
-            Tag: "texture[0]:texture_base"
-            Value: "/vehicle/truck/man_tgx_sample/interior/plastic_pattern"
-        }
-    }
-    Material {
-        Alias: "dashboard_relf"
-        Effect: "eut2.dif.spec.add.env.nofresnel"
-        Flags: 0
-        AttributeCount: 6
-        TextureCount: 2
-        Attribute {
-            Format: FLOAT3
-            Tag: "diffuse"
-            Value: ( 0.8999999761581421 0.8999999761581421 0.8999999761581421 )
-        }
-        Attribute {
-            Format: FLOAT3
-            Tag: "specular"
-            Value: ( 0.6000000238418579 0.6000000238418579 0.6000000238418579 )
-        }
-        Attribute {
-            Format: FLOAT
-            Tag: "shininess"
-            Value: ( 75.0 )
-        }
-        Attribute {
-            Format: FLOAT
-            Tag: "add_ambient"
-            Value: ( 0.0 )
-        }
-        Attribute {
-            Format: FLOAT
-            Tag: "reflection"
-            Value: ( 0.0 )
-        }
-        Attribute {
-            Format: FLOAT3
-            Tag: "env_factor"
-            Value: ( 0.800000011920929 0.800000011920929 0.800000011920929 )
-        }
-        Texture {
-            Tag: "texture[0]:texture_base"
-            Value: "/vehicle/truck/man_tgx_sample/interior/dashboard"
-        }
-        Texture {
-            Tag: "texture[1]:texture_reflection"
-            Value: "/material/environment/vehicle_reflection"
-        }
-    }
-    Material {
-        Alias: "plastic_gray1"
-        Effect: "eut2.dif.spec"
+        Alias: "dashboard_display"
+        Effect: "eut2.dif.lum"
         Flags: 0
         AttributeCount: 5
         TextureCount: 1
@@ -1695,6 +1659,42 @@ Look {
             Format: FLOAT3
             Tag: "diffuse"
             Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.3499999940395355 0.3499999940395355 0.3499999940395355 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 64.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/vehicle/truck/share/dashboard"
+        }
+    }
+    Material {
+        Alias: "fabric_001"
+        Effect: "eut2.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 0.5 0.5 0.5 )
         }
         Attribute {
             Format: FLOAT3
@@ -1718,7 +1718,7 @@ Look {
         }
         Texture {
             Tag: "texture[0]:texture_base"
-            Value: "/vehicle/truck/man_tgx_sample/interior/plastic_gray"
+            Value: "/vehicle/truck/man_tgx_sample/interior/fabric_001"
         }
     }
     Material {
@@ -1761,25 +1761,16 @@ Look {
 Variant {
     Name: "low_roof"
     Part {
+        Name: "low_roof1"
+        AttributeCount: 1
+        Attribute {
+            Format: INT
+            Tag: "visible"
+            Value: ( 1 )
+        }
+    }
+    Part {
         Name: "defaultpart"
-        AttributeCount: 1
-        Attribute {
-            Format: INT
-            Tag: "visible"
-            Value: ( 1 )
-        }
-    }
-    Part {
-        Name: "std_low"
-        AttributeCount: 1
-        Attribute {
-            Format: INT
-            Tag: "visible"
-            Value: ( 1 )
-        }
-    }
-    Part {
-        Name: "std"
         AttributeCount: 1
         Attribute {
             Format: INT
@@ -1797,7 +1788,16 @@ Variant {
         }
     }
     Part {
-        Name: "low_roof1"
+        Name: "std_low"
+        AttributeCount: 1
+        Attribute {
+            Format: INT
+            Tag: "visible"
+            Value: ( 1 )
+        }
+    }
+    Part {
+        Name: "std"
         AttributeCount: 1
         Attribute {
             Format: INT
@@ -1809,7 +1809,25 @@ Variant {
 Variant {
     Name: "low_roof_ex"
     Part {
+        Name: "low_roof1"
+        AttributeCount: 1
+        Attribute {
+            Format: INT
+            Tag: "visible"
+            Value: ( 1 )
+        }
+    }
+    Part {
         Name: "defaultpart"
+        AttributeCount: 1
+        Attribute {
+            Format: INT
+            Tag: "visible"
+            Value: ( 1 )
+        }
+    }
+    Part {
+        Name: "excl"
         AttributeCount: 1
         Attribute {
             Format: INT
@@ -1835,22 +1853,5 @@ Variant {
             Value: ( 0 )
         }
     }
-    Part {
-        Name: "excl"
-        AttributeCount: 1
-        Attribute {
-            Format: INT
-            Tag: "visible"
-            Value: ( 1 )
-        }
-    }
-    Part {
-        Name: "low_roof1"
-        AttributeCount: 1
-        Attribute {
-            Format: INT
-            Tag: "visible"
-            Value: ( 1 )
-        }
-    }
 }
+

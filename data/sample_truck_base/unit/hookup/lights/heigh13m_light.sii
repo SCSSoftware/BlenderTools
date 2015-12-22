@@ -3,8 +3,8 @@ SiiNunit
 light_source : heigh13m.lamp.light
 {
 	ambient_color: (0.0000, 0.0000, 0.0000)
-	diffuse_color: (0.15, 0.15, 0.15)
-	specular_color: (0.15, 0.15, 0.15)
+	diffuse_color: (0.9047, 0.8632, 0.6038)
+	specular_color: (0.9911, 0.9911, 0.9387)
 
 	range: 13.0
 	cut_range: 13.0

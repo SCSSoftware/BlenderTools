@@ -27,7 +27,7 @@ from io_scs_tools.internals.structure import SectionData as _SectionData
 
 
 class Globall:
-    _skeleton = ""
+    __skeleton = ""
 
     def __init__(self, skeleton):
         """Constructs global for PIM
@@ -41,7 +41,7 @@ class Globall:
         Locator.reset_counter()
         Bones.reset_counter()
 
-        self._skeleton = skeleton.replace("\\", "/")  # make sure to replace backslashes for windows paths
+        self.__skeleton = skeleton.replace("\\", "/")  # make sure to replace backslashes for windows paths
 
     def get_as_section(self):
         """Gets global model information represented with SectionData structure class.
@@ -57,6 +57,6 @@ class Globall:
         section.props.append(("PartCount", Part.get_global_material_count()))
         section.props.append(("BoneCount", Bones.get_global_bones_count()))
         section.props.append(("LocatorCount", Locator.get_global_locator_count()))
-        section.props.append(("Skeleton", self._skeleton))
+        section.props.append(("Skeleton", self.__skeleton))
 
         return section

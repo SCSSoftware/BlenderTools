@@ -3,11 +3,11 @@ SiiNunit
 model_particle : model.particle.fog1 {
  active_distance: &4b189680
  gen_array: 1
- gen_array[0]: _nameless.23B3.EEF8
+ gen_array[0]: _nameless.017C.04D0
  auto_disable_delay: 0
 }
 
-particle_gen : _nameless.23B3.EEF8 {
+particle_gen : _nameless.017C.04D0 {
  list_order_up: false
  blend_alpha: true
  gen_pos: (0, 0, 0)
@@ -18,7 +18,7 @@ particle_gen : _nameless.23B3.EEF8 {
  alpha_attack_time: 15
  flow_speed: (0, &3dcccccd, 0)
  flow_speed_acc: (0, 0, 0)
- particle_size: (20, 20)
+ particle_size: (&3fe66666, &3fe66666)
  particle_size_var: (&3c23d70a, &3c23d70a)
  particle_displacement: (-40, 40, 40)
  color_multiplier: nil
@@ -37,10 +37,10 @@ particle_gen : _nameless.23B3.EEF8 {
  time_to_live: 60
  time_to_live_rand: &3e800000
  particles_max_count: 8
- relative_space: false
- use_sprites: true
  model_path: "/model/particle/fog1.pmd"
  model_look: fog1
+ relative_space: false
+ use_sprites: true
 }
 
 }

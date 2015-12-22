@@ -19,44 +19,44 @@
 # Copyright (C) 2013-2014: SCS Software
 
 from collections import OrderedDict
-from io_scs_tools.exp.pim.stream import Stream
+from io_scs_tools.exp.pim.piece_stream import Stream
 from io_scs_tools.internals.structure import SectionData as _SectionData
 from io_scs_tools.utils.printout import lprint
 
 
 class Piece:
-    _index = 0
-    _vertex_count = 0
-    _triangle_count = 0
-    _stream_count = 0
+    __index = 0
+    __vertex_count = 0
+    __triangle_count = 0
+    __stream_count = 0
 
-    _material = None  # save whole material reference to get index out of it when packing
-    _streams = OrderedDict()  # dict of Stream class
-    _triangles = []  # list of Triangle class
+    __material = None  # save whole material reference to get index out of it when packing
+    __streams = OrderedDict()  # dict of Stream class
+    __triangles = []  # list of Triangle class
 
-    _vertices_hash = {}
+    __vertices_hash = {}
 
-    _global_piece_count = 0
-    _global_vertex_count = 0
-    _global_triangle_count = 0
+    __global_piece_count = 0
+    __global_vertex_count = 0
+    __global_triangle_count = 0
 
     @staticmethod
     def reset_counters():
-        Piece._global_piece_count = 0
-        Piece._global_triangle_count = 0
-        Piece._global_vertex_count = 0
+        Piece.__global_piece_count = 0
+        Piece.__global_triangle_count = 0
+        Piece.__global_vertex_count = 0
 
     @staticmethod
     def get_global_piece_count():
-        return Piece._global_piece_count
+        return Piece.__global_piece_count
 
     @staticmethod
     def get_global_vertex_count():
-        return Piece._global_vertex_count
+        return Piece.__global_vertex_count
 
     @staticmethod
     def get_global_triangle_count():
-        return Piece._global_triangle_count
+        return Piece.__global_triangle_count
 
     @staticmethod
     def __calc_vertex_hash(index, uvs, rgba):
@@ -89,24 +89,24 @@ class Piece:
         :param material: material that should be used on for this piece
         :type material: io_scs_tools.exp.pim.material.Material
         """
-        self._vertex_count = 0
-        self._triangle_count = 0
-        self._stream_count = 0
-        self._streams = OrderedDict()
-        self._triangles = []
-        self._vertices_hash = {}
+        self.__vertex_count = 0
+        self.__triangle_count = 0
+        self.__stream_count = 0
+        self.__streams = OrderedDict()
+        self.__triangles = []
+        self.__vertices_hash = {}
 
-        self._index = index
-        self._material = material
+        self.__index = index
+        self.__material = material
 
         # CONSTRUCT ALL MANDATORY STREAMS
         stream = Stream(Stream.Types.POSITION, -1)
-        self._streams[Stream.Types.POSITION] = stream
+        self.__streams[Stream.Types.POSITION] = stream
 
         stream = Stream(Stream.Types.NORMAL, -1)
-        self._streams[Stream.Types.NORMAL] = stream
+        self.__streams[Stream.Types.NORMAL] = stream
 
-        Piece._global_piece_count += 1
+        Piece.__global_piece_count += 1
 
     def add_triangle(self, triangle):
         """Adds new triangle to piece
@@ -122,11 +122,11 @@ class Piece:
         else:
             # check indecies integrity
             for vertex in triangle:
-                if vertex < 0 or vertex >= self._vertex_count:
+                if vertex < 0 or vertex >= self.__vertex_count:
                     return False
 
-            self._triangles.append(tuple(triangle))
-            Piece._global_triangle_count += 1
+            self.__triangles.append(tuple(triangle))
+            Piece.__global_triangle_count += 1
 
         return True
 
@@ -149,21 +149,21 @@ class Piece:
         vertex_hash = self.__calc_vertex_hash(vert_index, uvs, rgba)
 
         # save vertex if the vertex with the same properties doesn't exists yet in streams
-        if not vertex_hash in self._vertices_hash:
+        if not vertex_hash in self.__vertices_hash:
 
-            stream = self._streams[Stream.Types.POSITION]
+            stream = self.__streams[Stream.Types.POSITION]
             stream.add_entry(position)
 
-            stream = self._streams[Stream.Types.NORMAL]
+            stream = self.__streams[Stream.Types.NORMAL]
             stream.add_entry(normal)
 
             for i, uv in enumerate(uvs):
                 uv_type = Stream.Types.UV + str(i)
                 # create more uv streams on demand
-                if uv_type not in self._streams:
-                    self._streams[uv_type] = Stream(Stream.Types.UV, i)
+                if uv_type not in self.__streams:
+                    self.__streams[uv_type] = Stream(Stream.Types.UV, i)
 
-                stream = self._streams[uv_type]
+                stream = self.__streams[uv_type]
                 """:type: Stream"""
                 stream.add_entry(uv)
 
@@ -172,28 +172,28 @@ class Piece:
 
             if tangent:
                 # create tangent stream on demand
-                if Stream.Types.TANGENT not in self._streams:
-                    self._streams[Stream.Types.TANGENT] = Stream(Stream.Types.TANGENT, -1)
+                if Stream.Types.TANGENT not in self.__streams:
+                    self.__streams[Stream.Types.TANGENT] = Stream(Stream.Types.TANGENT, -1)
 
-                stream = self._streams[Stream.Types.TANGENT]
+                stream = self.__streams[Stream.Types.TANGENT]
                 stream.add_entry(tangent)
 
-            if Stream.Types.RGBA not in self._streams:
-                self._streams[Stream.Types.RGBA] = Stream(Stream.Types.RGBA, -1)
+            if Stream.Types.RGBA not in self.__streams:
+                self.__streams[Stream.Types.RGBA] = Stream(Stream.Types.RGBA, -1)
 
-            stream = self._streams[Stream.Types.RGBA]
+            stream = self.__streams[Stream.Types.RGBA]
             stream.add_entry(rgba)
 
             vert_index_internal = stream.get_size() - 1  # streams has to be alligned so I can take last one for the index
-            self._vertices_hash[vertex_hash] = (vert_index, vert_index_internal)
+            self.__vertices_hash[vertex_hash] = (vert_index, vert_index_internal)
 
-            self._vertex_count = vert_index_internal + 1
-            Piece._global_vertex_count += 1
+            self.__vertex_count = vert_index_internal + 1
+            Piece.__global_vertex_count += 1
 
-        return self._vertices_hash[vertex_hash][1]
+        return self.__vertices_hash[vertex_hash][1]
 
     def get_index(self):
-        return self._index
+        return self.__index
 
     def get_as_section(self):
         """Gets piece represented with SectionData structure class.
@@ -202,30 +202,30 @@ class Piece:
         """
 
         # UPDATE COUNTERS
-        self._vertex_count = self._streams[Stream.Types.POSITION].get_size()
-        self._triangle_count = len(self._triangles)
-        self._stream_count = len(self._streams)
+        self.__vertex_count = self.__streams[Stream.Types.POSITION].get_size()
+        self.__triangle_count = len(self.__triangles)
+        self.__stream_count = len(self.__streams)
 
         section = _SectionData("Piece")
-        section.props.append(("Index", self._index))
-        if not self._material or self._material.get_index() == -1:
-            lprint("W Piece with index %s doesn't have data about material, expect errors in game!", (self._index,))
+        section.props.append(("Index", self.__index))
+        if not self.__material or self.__material.get_index() == -1:
+            lprint("W Piece with index %s doesn't have data about material, expect errors in game!", (self.__index,))
             section.props.append(("Material", -1))
         else:
-            section.props.append(("Material", self._material.get_index()))
-        section.props.append(("VertexCount", self._vertex_count))
-        section.props.append(("TriangleCount", self._triangle_count))
-        section.props.append(("StreamCount", self._stream_count))
+            section.props.append(("Material", self.__material.get_index()))
+        section.props.append(("VertexCount", self.__vertex_count))
+        section.props.append(("TriangleCount", self.__triangle_count))
+        section.props.append(("StreamCount", self.__stream_count))
 
         stream_size = None
-        for stream_tag in self._streams:
-            stream = self._streams[stream_tag]
+        for stream_tag in self.__streams:
+            stream = self.__streams[stream_tag]
 
             # CHECK SYNC OF STREAMS
             if not stream_size:
                 stream_size = stream.get_size()
             elif stream_size != stream.get_size():
-                lprint("W Piece with index %s has desynced stream sizes, expect errors in game!", (self._index,))
+                lprint("W Piece with index %s has desynced stream sizes, expect errors in game!", (self.__index,))
                 break
 
             # APPEND STREAMS
@@ -233,7 +233,7 @@ class Piece:
 
         # APPEND TRIANGLES
         triangle_section = _SectionData("Triangles")
-        for triangle in self._triangles:
+        for triangle in self.__triangles:
             triangle_section.data.append(triangle)
 
         section.sections.append(triangle_section)

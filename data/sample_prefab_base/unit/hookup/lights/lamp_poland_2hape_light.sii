@@ -1,0 +1,17 @@
+SiiNunit
+{
+light_source : lamp.poland.2hape.light
+{
+	ambient_color: (0.0000, 0.0000, 0.0000)
+	diffuse_color: (0.9047, 0.8632, 0.6038)
+	specular_color: (0.9911, 0.9911, 0.9387)
+
+	range: 40
+	cut_range: 15.5
+	inner_angle: 90.0
+	outer_angle: 130.0
+
+
+}
+
+}

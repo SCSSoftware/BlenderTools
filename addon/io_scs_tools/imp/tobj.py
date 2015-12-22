@@ -18,96 +18,58 @@
 
 # Copyright (C) 2015: SCS Software
 
-import re
-from io_scs_tools.utils.printout import lprint
+from io_scs_tools.internals.containers.tobj import TobjContainer as _TobjContainer
 
 
-def get_settings(filepath, as_set=False):
-    """Loads TOBJ and gets setting out of it. Which should be used in "scs_props.shader_texture_XXX_settings"
-    on material.
+def get_settings_and_type(filepath, as_set=False):
+    """Loads TOBJ and gets setting and map type out of it.
+    Settings should be used in "scs_props.shader_texture_XXX_settings" on material.
+    Map type can be used to for identifying of visiblity of settings in UI
+
+    NOTE: settings are read only if map type is "2d" for any other map types defaults are returened
 
     :param filepath: tobj filepath
     :type filepath: str
     :param as_set: optional flag indicating type of result
     :type as_set: bool
-    :return: if as_set param is set it returns set; otherwise binary representation is returned
-    :rtype: string | set
+    :return: if as_set returns set and map type; otherwise binary representation of settings and map type is returned
+    :rtype: tuple[string, str] | tuple[set, str]
     """
     addr = "00"
     tsnormal = "0"
-    nomips = "0"
-    nocompress = "0"
 
-    for i, line in enumerate(__get_lines__(filepath)):
-        i += 1  # increase line for 1 to get actual line number
-        (prop, data) = __parse_line__(line)
+    container = _TobjContainer.read_data_from_file(filepath)
 
-        if prop == "map":
+    if container and container.map_type == "2d":
 
-            continue
-
-        elif prop == "bias":  # IGNORE: not implemented in SCS Blender Tools yet
-
-            continue
-
-        elif prop == "addr":
-
-            if len(data) != 2:
-                lprint("W Malformed \"addr\" in line:%s. TOBJ file:\n\t   %r!", (i, filepath))
-                continue
-
-            addr = ""
-            for val_i, value in enumerate(data):
-                if value == "clamp_to_edge":
-                    addr += "0"
-                elif value == "repeat":
-                    addr += "1"
-                else:
-                    addr += "0"
-                    lprint("W Malformed \"addr\" data in line:%s. Expected \"repeat\" or \"clamp_to_edge\""
-                           "got %r instead. TOBJ file:\n\t   %r!", (i, value, filepath))
-
-            addr = addr[::-1]
-
-        elif prop == "usage":
-
-            if len(data) != 1:
-                lprint("W Malformed \"usage\" in line:%s. TOBJ file:\n\t   %r!", (i, filepath))
-                continue
-
-            if data[0] == "tsnormal":
-                tsnormal = "1"
+        addr = ""
+        for addr_value in container.addr:
+            if addr_value == "clamp_to_edge":
+                addr += "0"
+            elif addr_value == "repeat":
+                addr += "1"
             else:
-                lprint("W Unknown \"usage\" data in line:%s. TOBJ file:\n\t   %r", (i, filepath))
+                # NOTE: there are also other options for addr like: mirror etc.
+                # But artists are not encouraged to really used them, so use default: "clamp_to_edge".
+                addr += "0"
 
-        elif prop == "nomips":
+        addr = addr[::-1]
 
-            if len(data) != 0:
-                lprint("W Malformed \"nomips\" in line:%s. TOBJ file:\n\t   %r!", (i, filepath))
-                continue
+        if container.usage == "tsnormal":
+            tsnormal = "1"
 
-            nomips = "1"
-
-        elif prop == "nocompress":
-
-            if len(data) != 0:
-                lprint("W Malformed \"nocompress\" in line:%s. TOBJ file:\n\t   %r!", (i, filepath))
-                continue
-
-            nocompress = "1"
-
-        else:
-
-            lprint("W Unknown property %r in line:%s. TOBJ file:\n\t   %r", (prop, i, filepath))
+    # if container is still empty create default one so map type can be returned
+    if not container:
+        container = _TobjContainer()
 
     # return result as set
     if as_set:
-        return __get_as_set(addr, tsnormal, nomips, nocompress)
+        return __get_as_set(addr, tsnormal), container.map_type
 
-    return nocompress + nomips + tsnormal + addr
+    return tsnormal + addr, container.map_type
 
 
-def __get_as_set(addr, tsnormal, nomips, nocompress):
+def __get_as_set(addr, tsnormal):
     set_list = []
 
     if addr[0] == "1":
@@ -118,24 +80,4 @@ def __get_as_set(addr, tsnormal, nomips, nocompress):
     if tsnormal == "1":
         set_list.append("tsnormal")
 
-    if nomips == "1":
-        set_list.append("nomips")
-
-    if nocompress == "1":
-        set_list.append("nocompress")
-
     return set(set_list)
-
-
-def __parse_line__(line):
-    vals = re.sub(r"\s+", "\t", line.strip()).split("\t")
-    return vals[0], vals[1:]
-
-
-def __get_lines__(filepath):
-    with open(filepath) as f:
-        lines = f.readlines()
-
-        f.close()
-
-    return lines

@@ -1,0 +1,15 @@
+SiiNunit
+{
+light_source : small.bl.of.flats.light
+{
+	ambient_color: (0.0, 0.0000, 0.0000)
+	diffuse_color: (0.821, 0.736, 0.488)
+	specular_color: (0.268, 0.251, 0.148)
+
+	type: point
+	range: 17
+
+
+}
+
+}

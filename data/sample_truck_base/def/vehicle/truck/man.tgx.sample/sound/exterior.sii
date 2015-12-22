@@ -23,11 +23,11 @@ accessory_sound_data: ext.man.tgx.sample.sound
 	engine_load[]: .el5
 
 	turbo: .t
-
+	
 	air_gear[0]: .airgear0
 	air_gear[1]: .airgear1
 	air_gear[2]: .airgear2
-
+	
 	air_brake[0]: .airbrake0
 	air_brake[1]: .airbrake1
 

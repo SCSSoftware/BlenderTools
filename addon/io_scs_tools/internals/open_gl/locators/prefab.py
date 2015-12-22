@@ -152,19 +152,22 @@ def draw_shape_map_point(mat, scene_scs_props):
     glLineWidth(1.0)
 
 
-def draw_shape_trigger_point(mat, mat_orig, radius, scene_scs_props):
+def draw_shape_trigger_point(mat, mat_orig, radius, scene_scs_props, draw_range):
     """
     Draws shape for "Locator" of "Trigger Point" type.
     :param mat:
     :param mat_orig:
     :param radius:
+    :param scene_scs_props:
+    :param draw_range:
     :return:
     """
     glLineWidth(2.0)
     _primitive.draw_circle(0.25, 8, mat, scene_scs_props)
     _primitive.draw_circle(0.4, 8, mat, scene_scs_props)
     glEnable(GL_LINE_STIPPLE)
-    _primitive.draw_circle(radius, 32, mat_orig, scene_scs_props)
+    if draw_range:
+        _primitive.draw_circle(radius, 32, mat_orig, scene_scs_props)
     glDisable(GL_LINE_STIPPLE)
     glLineWidth(1.0)
 
@@ -234,4 +237,5 @@ def draw_prefab_locator(obj, scene_scs_props):
         _primitive.draw_shape_x_axis(mat, empty_size)
         _primitive.draw_shape_y_axis(mat, empty_size)
         _primitive.draw_shape_z_axis(mat, empty_size)
-        draw_shape_trigger_point(mat, mat_orig, obj.scs_props.locator_prefab_tp_range, scene_scs_props)
+        is_sphere = obj.scs_props.locator_prefab_tp_sphere_trigger
+        draw_shape_trigger_point(mat, mat_orig, obj.scs_props.locator_prefab_tp_range, scene_scs_props, is_sphere)

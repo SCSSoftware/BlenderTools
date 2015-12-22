@@ -1,0 +1,10 @@
+SiiNunit
+{
+sign_overlay : sign.city2_1s
+{
+	model_type: city2
+	board_index: 1
+	scale: 0.85
+}
+
+}

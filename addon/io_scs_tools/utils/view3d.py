@@ -121,3 +121,13 @@ def tag_redraw_all_view3d():
                 for region in area.regions:
                     if region.type == 'WINDOW':
                         region.tag_redraw()
+
+
+def tag_redraw_all_view3d_and_props():
+    # NOTE: Py can't access notifiers!
+    for window in bpy.context.window_manager.windows:
+        for area in window.screen.areas:
+            if area.type in {'VIEW_3D', 'PROPERTIES'}:
+                for region in area.regions:
+                    if region.type == 'WINDOW':
+                        region.tag_redraw()

@@ -24,6 +24,11 @@ from io_scs_tools.internals.shaders.eut2.dif_spec_add_env import DifSpecAddEnv
 
 class BuildingAddEnvDay(DifSpecAddEnv):
     @staticmethod
+    def get_name():
+        """Get name of this shader file with full modules path."""
+        return __name__
+
+    @staticmethod
     def init(node_tree):
         """Initialize node tree with links for this shader.
 
@@ -39,3 +44,14 @@ class BuildingAddEnvDay(DifSpecAddEnv):
 
         # change mapping of reflection texture to View coordinates, it gives better effect for plain surfaces
         node_tree.links.new(refl_tex_n.inputs['Vector'], geometry_n.outputs['View'])
+
+    @staticmethod
+    def set_aux5(node_tree, aux_property):
+        """Set luminance boost factor for the shader.
+
+        :param node_tree: node tree of current shader
+        :type node_tree: bpy.types.NodeTree
+        :param aux_property: luminosity factor represented with property group
+        :type aux_property: bpy.types.IDPropertyGroup
+        """
+        pass  # NOTE: as day variant doesn't use luminance effect we just ignore this factor

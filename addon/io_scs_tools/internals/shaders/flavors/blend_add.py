@@ -50,7 +50,7 @@ def delete(node_tree):
     :type node_tree: bpy.types.NodeTree
     """
 
-    if node_tree[FLAVOR_ID] in node_tree:
+    if FLAVOR_ID in node_tree:
         del node_tree[FLAVOR_ID]
 
 

@@ -1,0 +1,14 @@
+SiiNunit
+{
+light_source : exp.garage.interior.omni.light
+{
+	ambient_color: (0.0000, 0.0000, 0.0000)
+	diffuse_color: (0.9047, 0.8632, 0.6038)
+	specular_color: (0.9911, 0.9911, 0.9387)
+
+	type: point
+	range: 25
+
+}
+
+}

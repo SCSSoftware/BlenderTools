@@ -21,6 +21,7 @@
 import bpy
 import hashlib
 from io_scs_tools.consts import ConnectionsStorage as _CS_consts
+from io_scs_tools.consts import PrefabLocators as _PL_consts
 from io_scs_tools.internals.connections import collector as _collector
 from io_scs_tools.utils import object as _object_utils
 from io_scs_tools.utils.printout import lprint
@@ -108,7 +109,7 @@ def exists(data_block):
 
                                 return True
 
-                    # try to recunstruct cache and entries
+                    # try to reconstruct cache and entries
                     data[CACHE] = {
                         LOCATORS: {},
                         OBJS_COUNT: len(bpy.data.objects)
@@ -140,9 +141,9 @@ def update_for_redraw(data_block, selection):
     # first make cleanup and validation for all connections
     cleanup_check(data_block)
 
-    # create a compleate list of objects to recalculate connections
+    # create a complete list of objects to recalculate connections
     if selection is None:
-        objects_to_check = bpy.context.selected_objects  # this is entry point for selection because only selected objects can be tranzsformed
+        objects_to_check = bpy.context.selected_objects  # this is entry point for selection because only selected objects can be transformed
     else:
         objects_to_check = selection
 
@@ -363,7 +364,7 @@ def create_connection(data_block, loc0_obj, loc1_obj):
 
             if loc0_type == "Navigation Point":
 
-                # check if both are avaliable (they have at least one more space in proper slot)
+                # check if both are available (they have at least one more space in proper slot)
                 loc0_avaliable = __np_locator_avaliable__(data_block, loc0_obj.name, True)
                 loc1_avaliable = __np_locator_avaliable__(data_block, loc1_obj.name, False)
                 if loc0_avaliable and loc1_avaliable:
@@ -386,7 +387,7 @@ def create_connection(data_block, loc0_obj, loc1_obj):
 
             elif loc0_type == "Map Point":
 
-                # check if both are avaliable (they have at least one more space in proper slot)
+                # check if both are available (they have at least one more space in proper slot)
                 loc0_avaliable = __mp_locator_avaliable__(data_block, loc0_obj.name)
                 loc1_avaliable = __mp_locator_avaliable__(data_block, loc1_obj.name)
                 if loc0_avaliable and loc1_avaliable:
@@ -409,7 +410,7 @@ def create_connection(data_block, loc0_obj, loc1_obj):
 
             elif loc0_type == "Trigger Point":
 
-                # check if both are avaliable (they have at least one more space in proper slot)
+                # check if both are available (they have at least one more space in proper slot)
                 (loc0_avaliable, loc0_conns_count) = __tp_locator_avaliable__(data_block, loc0_obj.name)
                 (loc1_avaliable, loc1_conns_count) = __tp_locator_avaliable__(data_block, loc1_obj.name)
                 if loc0_avaliable and loc1_avaliable:
@@ -423,7 +424,7 @@ def create_connection(data_block, loc0_obj, loc1_obj):
                         locators_refs[loc0_obj.name][CONNS] = __extend_array__(locators_refs[loc0_obj.name][CONNS], conn_key)
                         locators_refs[loc1_obj.name][CONNS] = __extend_array__(locators_refs[loc1_obj.name][CONNS], conn_key)
 
-                        # recalculate all lines because of colloring in case of trigger points
+                        # recalculate all lines because of coloring in case of trigger points
                         all_conn_keys = list(locators_refs[loc0_obj.name][CONNS])
                         all_conn_keys.extend(locators_refs[loc1_obj.name][CONNS])
 
@@ -531,7 +532,7 @@ def rename_locator(data_block, old_name, new_name):
         # make sure that old name is in cache
         if old_name in locators_cache:
 
-            if not new_name in locators_cache:  # do the normal rename
+            if new_name not in locators_cache:  # do the normal rename
 
                 __rename_conns_of_locator__(data_block, old_name, new_name)
 
@@ -582,7 +583,7 @@ def delete_locator(data_block, loc_name):
 
     if loc_name in data[CACHE][LOCATORS]:
 
-        # clear reerences in oposite side of connection and delete locators if possible
+        # clear references in opposite side of connection and delete locators if possible
         loc_refs = locators_refs[loc_name]
         if loc_refs[TYPE] == "Navigation Point":
 
@@ -611,7 +612,7 @@ def delete_locator(data_block, loc_name):
             for conn_key in loc_refs[CONNS]:
 
                 oposite_loc_name = conn_entries[conn_key][IN]
-                if loc_name == oposite_loc_name:  # because of underected connections we need to check if IN is really oposite
+                if loc_name == oposite_loc_name:  # because of undirected connections we need to check if IN is really opposite
                     oposite_loc_name = conn_entries[conn_key][OUT]
 
                 locators_refs[oposite_loc_name][CONNS] = __shrink_array__(locators_refs[oposite_loc_name][CONNS], conn_key)
@@ -621,7 +622,7 @@ def delete_locator(data_block, loc_name):
                 loc_refs[CONNS] = __shrink_array__(loc_refs[CONNS], conn_key)
                 del conn_entries[conn_key]
 
-        # delete the given locator object in paramater as last which MUST BE empty.
+        # delete the given locator object in parameter as last which MUST BE empty.
         # If something went wrong that will reflect in return value
         return __delete_locator_if_empty__(data_block, loc_name)
 
@@ -686,11 +687,11 @@ def copy_connections(data_block, old_objs, new_objs):
         new_loc0_name = locator_objs[old_loc0_name]
         new_loc1_name = locator_objs[old_loc1_name]
 
-        # prepare new entries of locators if neccesary
+        # prepare new entries of locators if necessary
         for new_loc, old_loc in ((new_loc0_name, old_loc0_name), (new_loc1_name, old_loc1_name)):
 
             # create new entries in references and cache
-            if not new_loc in locators_refs:
+            if new_loc not in locators_refs:
                 __create_locator_entries__(data_block, bpy.data.objects[new_loc])
 
         # create new connection entry and recalculate it
@@ -738,7 +739,7 @@ def cleanup_check(data_block):
             loc1_name = conn_entry[IN]
 
             # if removal of locator is detected then make a cleanup for it
-            if not loc0_name in bpy.data.objects or not loc1_name in bpy.data.objects:
+            if loc0_name not in bpy.data.objects or loc1_name not in bpy.data.objects:
 
                 if objects_were_deleted:
 
@@ -804,7 +805,7 @@ def __rename_conns_of_locator__(data_block, old_name, new_name):
 
         for conn_key in loc_refs[CONNS]:
 
-            # because of underected connection it has to check
+            # because of undirected connection it has to check
             # on which side of connection current locator is
             if conn_entries[conn_key][IN] == old_name:
                 conn_entries[conn_key][IN] = new_name
@@ -828,6 +829,12 @@ def __locator_changed__(data_block, loc_obj):
 
     changed = False
 
+    # in case we will extend caching properties we have to make sure
+    # that existing models saved in blend file won't fail because of
+    # index out of bounds during access.
+    while len(loc_cached) <= 7:
+        loc_cached.append("")
+
     matrix_hash = hashlib.md5(str(loc_obj.matrix_world).encode("utf-8")).hexdigest()
     if matrix_hash != loc_cached[0]:
         loc_cached[0] = matrix_hash
@@ -841,18 +848,27 @@ def __locator_changed__(data_block, loc_obj):
         loc_cached[2] = loc_obj.scs_props.locator_prefab_np_allowed_veh
         changed = True
 
-    if loc_obj.scs_props.locator_prefab_mp_custom_color != loc_cached[3]:
-        loc_cached[3] = loc_obj.scs_props.locator_prefab_mp_custom_color
+    if loc_obj.scs_props.locator_prefab_np_priority_modifier != loc_cached[3]:
+        loc_cached[3] = loc_obj.scs_props.locator_prefab_np_priority_modifier
+        changed = True
+
+    if loc_obj.scs_props.locator_prefab_mp_custom_color != loc_cached[4]:
+        loc_cached[4] = loc_obj.scs_props.locator_prefab_mp_custom_color
         changed = True
 
     prefab_exit = str(loc_obj.scs_props.locator_prefab_mp_prefab_exit)
-    if prefab_exit != loc_cached[4]:
-        loc_cached[4] = prefab_exit
+    if prefab_exit != loc_cached[5]:
+        loc_cached[5] = prefab_exit
+        changed = True
+
+    road_size = str(loc_obj.scs_props.locator_prefab_mp_road_size)
+    if road_size != loc_cached[6]:
+        loc_cached[6] = road_size
         changed = True
 
     root_hash = hashlib.md5(str(_object_utils.get_scs_root(loc_obj)).encode("utf-8")).hexdigest()
-    if root_hash != loc_cached[5]:
-        loc_cached[5] = root_hash
+    if root_hash != loc_cached[7]:
+        loc_cached[7] = root_hash
         changed = True
 
     data[CACHE][LOCATORS][loc_obj.name] = loc_cached
@@ -878,10 +894,10 @@ def __np_locator_avaliable__(data_block, loc_name, out_direction):
     if loc_name in data[REFS][LOCATORS]:
         loc_ref = data[REFS][LOCATORS][loc_name]
         if out_direction:
-            if len(loc_ref[OUT_CONNS]) < 4:
+            if len(loc_ref[OUT_CONNS]) < _PL_consts.NAVIGATION_NEXT_PREV_MAX:
                 return True
         else:
-            if len(loc_ref[IN_CONNS]) < 4:
+            if len(loc_ref[IN_CONNS]) < _PL_consts.NAVIGATION_NEXT_PREV_MAX:
                 return True
     else:
         return True
@@ -904,7 +920,7 @@ def __mp_locator_avaliable__(data_block, loc_name):
 
     if loc_name in data[REFS][LOCATORS]:
         loc_ref = data[REFS][LOCATORS][loc_name]
-        if len(loc_ref[CONNS]) < 6:
+        if len(loc_ref[CONNS]) < _PL_consts.PREFAB_NODE_COUNT_MAX:
             return True
     else:
         return True
@@ -927,10 +943,10 @@ def __tp_locator_avaliable__(data_block, loc_name):
 
     if loc_name in data[REFS][LOCATORS]:
         loc_ref = data[REFS][LOCATORS][loc_name]
-        if len(loc_ref[CONNS]) < 2:
+        if len(loc_ref[CONNS]) < _PL_consts.TP_NEIGHBOURS_COUNT_MAX:
             return True, len(loc_ref[CONNS])
         else:
-            return False, 2
+            return False, _PL_consts.TP_NEIGHBOURS_COUNT_MAX
     else:
         return True, 0
 
@@ -1017,8 +1033,8 @@ def __create_locator_entries__(data_block, loc_obj):
     loc_type = loc_obj.scs_props.locator_prefab_type
     if loc_type in ("Navigation Point", "Map Point", "Trigger Point"):
 
-        # create LOCATORS and CACHE entry if neccessary
-        if not loc_obj.name in locators_refs:
+        # create LOCATORS and CACHE entry if necessary
+        if loc_obj.name not in locators_refs:
             if loc_type == "Navigation Point":
                 locators_refs[loc_obj.name] = {
                     TYPE: loc_type,
@@ -1036,8 +1052,10 @@ def __create_locator_entries__(data_block, loc_obj):
             hashlib.md5(str(loc_obj.matrix_world).encode('utf-8')).hexdigest(),
             loc_obj.scs_props.locator_prefab_np_blinker,
             loc_obj.scs_props.locator_prefab_np_allowed_veh,
+            loc_obj.scs_props.locator_prefab_np_priority_modifier,
             loc_obj.scs_props.locator_prefab_mp_custom_color,
             str(loc_obj.scs_props.locator_prefab_mp_prefab_exit),
+            str(loc_obj.scs_props.locator_prefab_mp_road_size),
             hashlib.md5(str(_object_utils.get_scs_root(loc_obj)).encode('utf-8')).hexdigest()
         ]
 

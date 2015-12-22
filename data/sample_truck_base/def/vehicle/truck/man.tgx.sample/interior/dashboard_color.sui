@@ -1,11 +1,11 @@
 
 	dashboard_color: 16
-	dashboard_color[]: (1.00, 1.00, 1.00)		# uv(0, 0) # Default white color / Standart behavior
+	dashboard_color[]: (1.00, 1.00, 1.00)		# uv(0, 0) # Default white color / Standart behavior	
 	dashboard_color[]: (1.00, 0.00, 1.00)		# uv(1, 0) # UNUSED, set to debugging MAGENTA to spot errors
 	dashboard_color[]: (1.00, 0.00, 1.00)		# uv(2, 0) # UNUSED, set to debugging MAGENTA to spot errors
 	dashboard_color[]: (1.00, 0.00, 1.00)		# uv(3, 0) # UNUSED, set to debugging MAGENTA to spot errors
 
-	dashboard_color[]: (1.00, 0.00, 1.00)		# uv(0,-1) # UNUSED, set to debugging MAGENTA to spot errors
+	dashboard_color[]: (1.00, 0.00, 1.00)		# uv(0,-1) # UNUSED, set to debugging MAGENTA to spot errors 
 	dashboard_color[]: (1.00, 0.00, 1.00)		# uv(1,-1) # UNUSED, set to debugging MAGENTA to spot errors
 	dashboard_color[]: (1.00, 0.00, 1.00)		# uv(2,-1) # UNUSED, set to debugging MAGENTA to spot errors
 	dashboard_color[]: (1.00, 0.00, 1.00)		# uv(3,-1) # UNUSED, set to debugging MAGENTA to spot errors

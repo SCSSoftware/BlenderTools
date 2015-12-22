@@ -1,0 +1,105 @@
+SiiNunit
+{
+accessory_addon_int_data : curtain_f.man.tgx.sample.curtain_f
+{
+	name: "Gold Style"
+	price: 360
+	unlock: 0
+	icon: "curtain_1.dlc_toys"
+   
+  interior_model:  "/vehicle/truck/upgrade/interior_decors/curtains/man_tgx/curtain_1_int.dlc_toys.pmd"
+	data[]: .curtain_f.phys_data1
+	data[]: .curtain_f.phys_data2
+	data[]: .curtain_f.phys_data3
+}
+physics_toy_data : .curtain_f.phys_data1
+{
+	phys_model_coll: "/vehicle/truck/upgrade/interior_decors/curtains/tassel.dlc_toys.pmc"
+	phys_model:      "/vehicle/truck/upgrade/interior_decors/curtains/tassel.dlc_toys.pmd"
+  
+	toy_type:		"TT_joint_free"			# TT_rope, TT_double_rope, TT_joint, TT_joint_free
+	toy_mass:		0.1				# toy mass
+	linear_damping:		0.95				# damping of swinging of toy
+
+	
+	angular_amplitude:	(25.0, 0.0, 14.0)		# joint - maximal deflection agains equilibrium position  
+
+	locator_hook_offset:	( 0.0000, -0.1053, -0.0092)
+	instance_offset[]:	( 0.4325, 0.0337, 0.0040)
+	instance_offset[]:	( -0.4325, 0.0337, 0.0040)
+	instance_offset[]:	( -0.3774, 0.0407, 0.0007)
+	instance_offset[]:	( -0.9053, 0.0695, 0.0094)
+	instance_offset[]:	( 0.2528, 0.0413, 0.0030)
+	instance_offset[]:	( -0.7675, 0.0519, 0.0116)
+	instance_offset[]:	( 0.7195, 0.0477, 0.0107)
+	instance_offset[]:	( 0.6689, 0.0527, 0.0111)
+	instance_offset[]:	( -0.5807, 0.0883, 0.0077)
+	instance_offset[]:	( 0.1639, 0.0032, 0.0086)
+	instance_offset[]:	( 1.0689, 0.0530, 0.0116)
+	instance_offset[]:	( 0.3376, 0.0556, 0.0003)
+	instance_offset[]:	( -0.7195, 0.0477, 0.0107)
+	instance_offset[]:	( -0.4864, 0.0389, 0.0073)
+	instance_offset[]:	( -1.0134, 0.0488, 0.0107)
+	
+  
+}
+physics_toy_data : .curtain_f.phys_data2
+{
+	phys_model_coll: "/vehicle/truck/upgrade/interior_decors/curtains/tassel_02.dlc_toys.pmc"
+	phys_model:      "/vehicle/truck/upgrade/interior_decors/curtains/tassel_02.dlc_toys.pmd"
+  
+	toy_type:		"TT_joint_free"			# TT_rope, TT_double_rope, TT_joint, TT_joint_free
+	toy_mass:		0.1				# toy mass
+	linear_damping:		0.96				# damping of swinging of toy
+
+	
+	angular_amplitude:	(20.0, 0.0, 10.0)		# joint - maximal deflection agains equilibrium position  
+
+	locator_hook_offset:	( -1.1207, -0.0373, 0.0033)
+	instance_offset[]:	( 1.0627, -0.0672, -0.0108)
+	instance_offset[]:	( 0.3091, -0.0012, 0.0000)
+	instance_offset[]:	( 0.9064, -0.0517, -0.0065)
+	instance_offset[]:	( 1.8881, -0.0162, -0.0009)
+	instance_offset[]:	( 1.2336, -0.0672, -0.0060)
+	instance_offset[]:	( 1.6071, -0.0291, -0.0052)
+	instance_offset[]:	( 0.4518, -0.0153, -0.0013)
+	instance_offset[]:	( 2.1340, -0.0192, -0.0018)
+	instance_offset[]:	( 0.1635, -0.0131, -0.0013)
+	instance_offset[]:	( 1.0077, -0.0672, -0.0060)
+	instance_offset[]:	( 0.0517, -0.0151, -0.0009)
+	instance_offset[]:	( 0.7830, -0.0125, -0.0122)
+	instance_offset[]:	( 1.1786, -0.0672, -0.0108)
+	instance_offset[]:	( 0.2635, 0.0209, -0.0042)
+	instance_offset[]:	( 2.0778, -0.0131, -0.0013)
+  
+}
+physics_toy_data : .curtain_f.phys_data3
+{
+	phys_model_coll: "/vehicle/truck/upgrade/interior_decors/curtains/tassel_03.dlc_toys.pmc"
+	phys_model:      "/vehicle/truck/upgrade/interior_decors/curtains/tassel_03.dlc_toys.pmd"
+  
+	toy_type:		"TT_joint_free"			# TT_rope, TT_double_rope, TT_joint, TT_joint_free
+	toy_mass:		0.2				# toy mass
+	linear_damping:		0.97				# damping of swinging of toy
+
+
+	angular_amplitude:	(15.0, 0.0, 08.0)		# joint - maximal deflection agains equilibrium position  
+
+	locator_hook_offset:	( 1.1207, -0.0373, 0.0033)
+	instance_offset[]:	( -1.7453, -0.0014, -0.0031)
+	instance_offset[]:	( -1.6531, -0.0135, -0.0032)
+	instance_offset[]:	( -0.5400, 0.0203, -0.0048)
+	instance_offset[]:	( -0.8256, 0.0080, -0.0128)
+	instance_offset[]:	( -1.2846, -0.0648, -0.0039)
+	instance_offset[]:	( -0.2635, 0.0209, -0.0042)
+	instance_offset[]:	( -1.4157, 0.0080, -0.0128)
+	instance_offset[]:	( -0.9064, -0.0517, -0.0065)
+	instance_offset[]:	( -1.3734, -0.0267, -0.0095)
+	instance_offset[]:	( -0.4960, -0.0014, -0.0031)
+	instance_offset[]:	( -0.3091, -0.0012, 0.0000)
+	instance_offset[]:	( -0.5882, -0.0135, -0.0032)
+	instance_offset[]:	( -0.7432, -0.0273, -0.0118)
+	instance_offset[]:	( -0.2154, 0.0015, -0.0031) 
+  
+}
+}

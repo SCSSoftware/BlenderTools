@@ -22,6 +22,19 @@ import math
 from mathutils import Vector
 
 
+def get_distance(loc1, loc2):
+    """Get distance between two points
+
+    :param loc1: first location
+    :type loc1: mathutils.Vector | tuple
+    :param loc2: second location
+    :type loc2: mathutils.Vector | tuple
+    :return: distance between points
+    :rtype: float
+    """
+    return math.sqrt(((loc1[0] - loc2[0]) ** 2) + ((loc1[1] - loc2[1]) ** 2) + ((loc1[2] - loc2[2]) ** 2))
+
+
 def middle_point(loc1, loc2):
     """Takes two locations (list or tuple of three floats) and returns their midpoint."""
     return ((loc1[0] + loc2[0]) / 2), ((loc1[1] + loc2[1]) / 2), ((loc1[2] + loc2[2]) / 2)

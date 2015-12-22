@@ -40,13 +40,15 @@ from io_scs_tools.utils.printout import lprint
 
 
 def __get_texture_settings__():
+    """Returns texture settings relavant for artist.
+
+    :return: items for texture settings enum property
+    :rtype: list[tuple]
+    """
     return [
         ('u_repeat', "U Repeat", "Repeat texture in U direction"),
         ('v_repeat', "V Repeat", "Repeat texture in V direction"),
         ('tsnormal', "TS Normal", "Tangent Space Normal for the texture"),
-        # ('bias', "Bias", "MIP Maps Bias..."),
-        ('nomips', "No MIP Maps", "Don't use MIP Maps for the texture"),
-        ('nocompress', "No Compress", "Don't use compression on texture"),
     ]
 
 
@@ -93,14 +95,29 @@ def __update_shader_texture_tobj_file__(self, context, tex_type):
         pass
 
     shader_texture_str = "shader_texture_" + tex_type
-    if _material_utils.is_valid_shader_texture_path(getattr(self, shader_texture_str)):
-        tex_filepath = _path_utils.get_abs_path(getattr(self, shader_texture_str))
 
-        if tex_filepath and (tex_filepath.endswith(".tga") or tex_filepath.endswith(".png")):
-            tobj_file = tex_filepath[:-4] + ".tobj"
+    texture_raw_path = getattr(self, shader_texture_str)
+    texture_settings = getattr(self, shader_texture_str + "_settings")
 
-            if _tobj_exp.export(tobj_file, os.path.basename(tex_filepath), getattr(self, shader_texture_str + "_settings")):
-                self[shader_texture_str + "_tobj_load_time"] = str(os.path.getmtime(tobj_file))
+    tobj_file = _path_utils.get_tobj_path_from_shader_texture(texture_raw_path)
+    if tobj_file:
+
+        # if raw path endswith tobj get raw texture path from existing tobj
+        # otherwise we assume that tobj is referencing texture file directly by name
+        if texture_raw_path.endswith(".tobj"):
+            texture_name = _path_utils.get_texture_path_from_tobj(tobj_file, raw_value=True)
+        else:
+            texture_name = os.path.basename(texture_raw_path)
+
+        # update last tobj load time if export was successful otherwise report saving problems
+        if _tobj_exp.export(tobj_file, texture_name, texture_settings):
+            self[shader_texture_str + "_tobj_load_time"] = str(os.path.getmtime(tobj_file))
+        else:
+            lprint("", report_warnings=-1, report_errors=-1)
+            lprint("E Settings in TOBJ file not saved; content is malformed or referencing none existing textures!\n\t   "
+                   "Please check TOBJ's content in your favorite text editor; file path:\n\t   %r",
+                   (os.path.normpath(tobj_file),))
+            lprint("", report_warnings=1, report_errors=1)
 
 
 def __update_shader_texture__(self, context, tex_type):
@@ -120,8 +137,15 @@ def __update_shader_texture__(self, context, tex_type):
         shader_texture_str = "shader_texture_" + tex_type
         shader_texture_filepath = getattr(self, shader_texture_str)
 
+        # always correct scs texture path string
+        # NOTE: this is unified way to acquire proper texture string for
+        # selected image entity with operator or direct user value input
+        # Similar thing is done on import through set_shader_data_to_material.
+        shader_texture_filepath = self[shader_texture_str] = _path_utils.get_scs_texture_str(shader_texture_filepath)
+
         # create texture and use it on shader
-        texture = _material_utils.get_texture(shader_texture_filepath, tex_type)
+        texture = _material_utils.get_texture(shader_texture_filepath, tex_type, report_invalid=True)
+
         _shader.set_texture(material, tex_type, texture)
 
         # reload TOBJ settings
@@ -227,7 +251,9 @@ class MaterialSCSTools(bpy.types.PropertyGroup):
         """
         return {'base': 5, 'reflection': 6, 'over': 7, 'oclu': 8,
                 'mask': 9, 'mult': 10, 'iamod': 11, 'lightmap': 12,
-                'paintjob': 13, 'flakenoise': 14, 'nmap': 15}
+                'paintjob': 13, 'flakenoise': 14, 'nmap': 15,
+                'base_1': 16, 'mult_1': 17, 'detail': 18, 'nmap_detail': 19,
+                'layer0': 20, 'layer1': 21}
 
     def get_id(self):
         """Gets unique ID for material within current Blend file. If ID does not exists yet it's calculated.
@@ -302,6 +328,18 @@ class MaterialSCSTools(bpy.types.PropertyGroup):
     def update_shader_texture_base_settings(self, context):
         __update_shader_texture_tobj_file__(self, context, "base")
 
+    def update_shader_texture_base_1(self, context):
+        __update_shader_texture__(self, context, "base_1")
+
+    def update_shader_texture_base_1_settings(self, context):
+        __update_shader_texture_tobj_file__(self, context, "base_1")
+
+    def update_shader_texture_detail(self, context):
+        __update_shader_texture__(self, context, "detail")
+
+    def update_shader_texture_detail_settings(self, context):
+        __update_shader_texture_tobj_file__(self, context, "detail")
+
     def update_shader_texture_flakenoise(self, context):
         __update_shader_texture__(self, context, "flakenoise")
 
@@ -313,6 +351,18 @@ class MaterialSCSTools(bpy.types.PropertyGroup):
 
     def update_shader_texture_iamod_settings(self, context):
         __update_shader_texture_tobj_file__(self, context, "iamod")
+
+    def update_shader_texture_layer0(self, context):
+        __update_shader_texture__(self, context, "layer0")
+
+    def update_shader_texture_layer0_settings(self, context):
+        __update_shader_texture_tobj_file__(self, context, "layer0")
+
+    def update_shader_texture_layer1(self, context):
+        __update_shader_texture__(self, context, "layer1")
+
+    def update_shader_texture_layer1_settings(self, context):
+        __update_shader_texture_tobj_file__(self, context, "layer1")
 
     def update_shader_texture_lightmap(self, context):
         __update_shader_texture__(self, context, "lightmap")
@@ -332,11 +382,23 @@ class MaterialSCSTools(bpy.types.PropertyGroup):
     def update_shader_texture_mult_settings(self, context):
         __update_shader_texture_tobj_file__(self, context, "mult")
 
+    def update_shader_texture_mult_1(self, context):
+        __update_shader_texture__(self, context, "mult_1")
+
+    def update_shader_texture_mult_1_settings(self, context):
+        __update_shader_texture_tobj_file__(self, context, "mult_1")
+
     def update_shader_texture_nmap(self, context):
         __update_shader_texture__(self, context, "nmap")
 
     def update_shader_texture_nmap_settings(self, context):
         __update_shader_texture_tobj_file__(self, context, "nmap")
+
+    def update_shader_texture_nmap_detail(self, context):
+        __update_shader_texture__(self, context, "nmap_detail")
+
+    def update_shader_texture_nmap_detail_settings(self, context):
+        __update_shader_texture_tobj_file__(self, context, "nmap_detail")
 
     def update_shader_texture_oclu(self, context):
         __update_shader_texture__(self, context, "oclu")
@@ -385,6 +447,12 @@ class MaterialSCSTools(bpy.types.PropertyGroup):
         type=TexCoordItem,
     )
 
+    enable_aliasing = BoolProperty(
+        name="Aliasing",
+        description="Enabling material aliasing on this material.",
+        default=True
+    )
+
     id = IntProperty(
         name="Material ID",
         description="Material unique ID inside blend file, this way materials can be easily identified for looks",
@@ -394,7 +462,7 @@ class MaterialSCSTools(bpy.types.PropertyGroup):
     mat_effect_name = StringProperty(
         name="Shader Effect Name",
         description="SCS shader effect name",
-        default="eut2.dif",
+        default="",
         subtype='NONE',
         update=__update_look__
     )
@@ -613,6 +681,11 @@ class MaterialSCSTools(bpy.types.PropertyGroup):
         description="Tells if texture is locked and should not be changed by user(intended for internal usage only)",
         default=False
     )
+    shader_texture_base_map_type = StringProperty(
+        name="Texture Map Type",
+        description="Stores texture mapping type and should not be changed by user(intended for internal usage only)",
+        default="2d"
+    )
     shader_texture_base_settings = EnumProperty(
         name="Settings",
         description="TOBJ settings for this texture",
@@ -639,6 +712,108 @@ class MaterialSCSTools(bpy.types.PropertyGroup):
         options={'HIDDEN'},
     )
 
+    # TEXTURE: BASE_1
+    shader_texture_base_1 = StringProperty(
+        name="Texture Base 1",
+        description="Texture Base for active Material",
+        default=_MAT_consts.unset_bitmap_filepath,
+        options={'HIDDEN'},
+        subtype='NONE',
+        update=update_shader_texture_base_1,
+    )
+    shader_texture_base_1_imported_tobj = StringProperty(
+        name="Imported TOBJ Path",
+        description="Use imported TOBJ path reference which will be exported into material (NOTE: export will not take care of any TOBJ files!)",
+        default="",
+        update=__update_look__
+    )
+    shader_texture_base_1_locked = BoolProperty(
+        name="Texture Locked",
+        description="Tells if texture is locked and should not be changed by user(intended for internal usage only)",
+        default=False
+    )
+    shader_texture_base_1_map_type = StringProperty(
+        name="Texture Map Type",
+        description="Stores texture mapping type and should not be changed by user(intended for internal usage only)",
+        default="2d"
+    )
+    shader_texture_base_1_settings = EnumProperty(
+        name="Settings",
+        description="TOBJ settings for this texture",
+        items=__get_texture_settings__(),
+        default=set(),
+        options={'ENUM_FLAG'},
+        update=update_shader_texture_base_1_settings
+    )
+    shader_texture_base_1_tobj_load_time = StringProperty(
+        name="Last TOBJ load time",
+        description="Time string of last loading",
+        default="",
+    )
+    shader_texture_base_1_use_imported = BoolProperty(
+        name="Use Imported",
+        description="Use custom provided path for TOBJ reference",
+        default=False,
+        update=__update_look__
+    )
+    shader_texture_base_1_uv = CollectionProperty(
+        name="Texture Base UV Sets",
+        description="Texture base UV sets for active Material",
+        type=UVMappingItem,
+        options={'HIDDEN'},
+    )
+
+    # TEXTURE: DETAIL
+    shader_texture_detail = StringProperty(
+        name="Texture Detail",
+        description="Texture Flakenoise for active Material",
+        default=_MAT_consts.unset_bitmap_filepath,
+        options={'HIDDEN'},
+        subtype='NONE',
+        update=update_shader_texture_detail,
+    )
+    shader_texture_detail_imported_tobj = StringProperty(
+        name="Imported TOBJ Path",
+        description="Use imported TOBJ path reference which will be exported into material (NOTE: export will not take care of any TOBJ files!)",
+        default="",
+        update=__update_look__
+    )
+    shader_texture_detail_locked = BoolProperty(
+        name="Texture Locked",
+        description="Tells if texture is locked and should not be changed by user(intended for internal usage only)",
+        default=False
+    )
+    shader_texture_detail_map_type = StringProperty(
+        name="Texture Map Type",
+        description="Stores texture mapping type and should not be changed by user(intended for internal usage only)",
+        default="2d"
+    )
+    shader_texture_detail_settings = EnumProperty(
+        name="Settings",
+        description="TOBJ settings for this texture",
+        items=__get_texture_settings__(),
+        default=set(),
+        options={'ENUM_FLAG'},
+        update=update_shader_texture_detail_settings
+    )
+    shader_texture_detail_tobj_load_time = StringProperty(
+        name="Last TOBJ load time",
+        description="Time string of last loading",
+        default="",
+    )
+    shader_texture_detail_use_imported = BoolProperty(
+        name="Use Imported",
+        description="Use custom provided path for TOBJ reference",
+        default=False,
+        update=__update_look__
+    )
+    shader_texture_detail_uv = CollectionProperty(
+        name="Texture Detail UV Sets",
+        description="Texture Detail UV sets for active Material",
+        type=UVMappingItem,
+        options={'HIDDEN'},
+    )
+
     # TEXTURE: FLAKENOISE
     shader_texture_flakenoise = StringProperty(
         name="Texture Flakenoise",
@@ -658,6 +833,11 @@ class MaterialSCSTools(bpy.types.PropertyGroup):
         name="Texture Locked",
         description="Tells if texture is locked and should not be changed by user(intended for internal usage only)",
         default=False
+    )
+    shader_texture_flakenoise_map_type = StringProperty(
+        name="Texture Map Type",
+        description="Stores texture mapping type and should not be changed by user(intended for internal usage only)",
+        default="2d"
     )
     shader_texture_flakenoise_settings = EnumProperty(
         name="Settings",
@@ -705,6 +885,11 @@ class MaterialSCSTools(bpy.types.PropertyGroup):
         description="Tells if texture is locked and should not be changed by user(intended for internal usage only)",
         default=False
     )
+    shader_texture_iamod_map_type = StringProperty(
+        name="Texture Map Type",
+        description="Stores texture mapping type and should not be changed by user(intended for internal usage only)",
+        default="2d"
+    )
     shader_texture_iamod_settings = EnumProperty(
         name="Settings",
         description="TOBJ settings for this texture",
@@ -731,6 +916,108 @@ class MaterialSCSTools(bpy.types.PropertyGroup):
         options={'HIDDEN'},
     )
 
+    # TEXTURE: LAYER0
+    shader_texture_layer0 = StringProperty(
+        name="Texture Layer0",
+        description="Texture Layer0 for active Material",
+        default=_MAT_consts.unset_bitmap_filepath,
+        options={'HIDDEN'},
+        subtype='NONE',
+        update=update_shader_texture_layer0,
+    )
+    shader_texture_layer0_imported_tobj = StringProperty(
+        name="Imported TOBJ Path",
+        description="Use imported TOBJ path reference which will be exported into material (NOTE: export will not take care of any TOBJ files!)",
+        default="",
+        update=__update_look__
+    )
+    shader_texture_layer0_locked = BoolProperty(
+        name="Texture Locked",
+        description="Tells if texture is locked and should not be changed by user(intended for internal usage only)",
+        default=False
+    )
+    shader_texture_layer0_map_type = StringProperty(
+        name="Texture Map Type",
+        description="Stores texture mapping type and should not be changed by user(intended for internal usage only)",
+        default="2d"
+    )
+    shader_texture_layer0_settings = EnumProperty(
+        name="Settings",
+        description="TOBJ settings for this texture",
+        items=__get_texture_settings__(),
+        default=set(),
+        options={'ENUM_FLAG'},
+        update=update_shader_texture_layer0_settings
+    )
+    shader_texture_layer0_tobj_load_time = StringProperty(
+        name="Last TOBJ load time",
+        description="Time string of last loading",
+        default="",
+    )
+    shader_texture_layer0_use_imported = BoolProperty(
+        name="Use Imported",
+        description="Use custom provided path for TOBJ reference",
+        default=False,
+        update=__update_look__
+    )
+    shader_texture_layer0_uv = CollectionProperty(
+        name="Texture Layer0 UV Sets",
+        description="Texture Layer0 UV sets for active Material",
+        type=UVMappingItem,
+        options={'HIDDEN'},
+    )
+
+    # TEXTURE: LAYER1
+    shader_texture_layer1 = StringProperty(
+        name="Texture Layer1",
+        description="Texture Layer1 for active Material",
+        default=_MAT_consts.unset_bitmap_filepath,
+        options={'HIDDEN'},
+        subtype='NONE',
+        update=update_shader_texture_layer1,
+    )
+    shader_texture_layer1_imported_tobj = StringProperty(
+        name="Imported TOBJ Path",
+        description="Use imported TOBJ path reference which will be exported into material (NOTE: export will not take care of any TOBJ files!)",
+        default="",
+        update=__update_look__
+    )
+    shader_texture_layer1_locked = BoolProperty(
+        name="Texture Locked",
+        description="Tells if texture is locked and should not be changed by user(intended for internal usage only)",
+        default=False
+    )
+    shader_texture_layer1_map_type = StringProperty(
+        name="Texture Map Type",
+        description="Stores texture mapping type and should not be changed by user(intended for internal usage only)",
+        default="2d"
+    )
+    shader_texture_layer1_settings = EnumProperty(
+        name="Settings",
+        description="TOBJ settings for this texture",
+        items=__get_texture_settings__(),
+        default=set(),
+        options={'ENUM_FLAG'},
+        update=update_shader_texture_layer1_settings
+    )
+    shader_texture_layer1_tobj_load_time = StringProperty(
+        name="Last TOBJ load time",
+        description="Time string of last loading",
+        default="",
+    )
+    shader_texture_layer1_use_imported = BoolProperty(
+        name="Use Imported",
+        description="Use custom provided path for TOBJ reference",
+        default=False,
+        update=__update_look__
+    )
+    shader_texture_layer1_uv = CollectionProperty(
+        name="Texture Layer1 UV Sets",
+        description="Texture Layer1 UV sets for active Material",
+        type=UVMappingItem,
+        options={'HIDDEN'},
+    )
+
     # TEXTURE: LIGHTMAP
     shader_texture_lightmap = StringProperty(
         name="Texture Lightmap",
@@ -750,6 +1037,11 @@ class MaterialSCSTools(bpy.types.PropertyGroup):
         name="Texture Locked",
         description="Tells if texture is locked and should not be changed by user(intended for internal usage only)",
         default=False
+    )
+    shader_texture_lightmap_map_type = StringProperty(
+        name="Texture Map Type",
+        description="Stores texture mapping type and should not be changed by user(intended for internal usage only)",
+        default="2d"
     )
     shader_texture_lightmap_settings = EnumProperty(
         name="Settings",
@@ -796,6 +1088,11 @@ class MaterialSCSTools(bpy.types.PropertyGroup):
         name="Texture Locked",
         description="Tells if texture is locked and should not be changed by user(intended for internal usage only)",
         default=False
+    )
+    shader_texture_mask_map_type = StringProperty(
+        name="Texture Map Type",
+        description="Stores texture mapping type and should not be changed by user(intended for internal usage only)",
+        default="2d"
     )
     shader_texture_mask_settings = EnumProperty(
         name="Settings",
@@ -849,6 +1146,11 @@ class MaterialSCSTools(bpy.types.PropertyGroup):
         description="Tells if texture is locked and should not be changed by user(intended for internal usage only)",
         default=False
     )
+    shader_texture_mult_map_type = StringProperty(
+        name="Texture Map Type",
+        description="Stores texture mapping type and should not be changed by user(intended for internal usage only)",
+        default="2d"
+    )
     shader_texture_mult_settings = EnumProperty(
         name="Settings",
         description="TOBJ settings for this texture",
@@ -863,6 +1165,57 @@ class MaterialSCSTools(bpy.types.PropertyGroup):
         default="",
     )
     shader_texture_mult_uv = CollectionProperty(
+        name="Texture Mult UV Sets",
+        description="Texture Mult UV sets for active Material",
+        type=UVMappingItem,
+        options={'HIDDEN'},
+    )
+
+    # TEXTURE: MULT_1
+    shader_texture_mult_1 = StringProperty(
+        name="Texture Mult 1",
+        description="Texture Mult for active Material",
+        default=_MAT_consts.unset_bitmap_filepath,
+        options={'HIDDEN'},
+        subtype='NONE',
+        update=update_shader_texture_mult_1,
+    )
+    shader_texture_mult_1_imported_tobj = StringProperty(
+        name="Imported TOBJ Path",
+        description="Use imported TOBJ path reference which will be exported into material (NOTE: export will not take care of any TOBJ files!)",
+        default="",
+        update=__update_look__
+    )
+    shader_texture_mult_1_use_imported = BoolProperty(
+        name="Use Imported",
+        description="Use custom provided path for TOBJ reference",
+        default=False,
+        update=__update_look__
+    )
+    shader_texture_mult_1_locked = BoolProperty(
+        name="Texture Locked",
+        description="Tells if texture is locked and should not be changed by user(intended for internal usage only)",
+        default=False
+    )
+    shader_texture_mult_1_map_type = StringProperty(
+        name="Texture Map Type",
+        description="Stores texture mapping type and should not be changed by user(intended for internal usage only)",
+        default="2d"
+    )
+    shader_texture_mult_1_settings = EnumProperty(
+        name="Settings",
+        description="TOBJ settings for this texture",
+        items=__get_texture_settings__(),
+        default=set(),
+        options={'ENUM_FLAG'},
+        update=update_shader_texture_mult_1_settings
+    )
+    shader_texture_mult_1_tobj_load_time = StringProperty(
+        name="Last TOBJ load time",
+        description="Time string of last loading",
+        default="",
+    )
+    shader_texture_mult_1_uv = CollectionProperty(
         name="Texture Mult UV Sets",
         description="Texture Mult UV sets for active Material",
         type=UVMappingItem,
@@ -888,6 +1241,11 @@ class MaterialSCSTools(bpy.types.PropertyGroup):
         name="Texture Locked",
         description="Tells if texture is locked and should not be changed by user(intended for internal usage only)",
         default=False
+    )
+    shader_texture_nmap_map_type = StringProperty(
+        name="Texture Map Type",
+        description="Stores texture mapping type and should not be changed by user(intended for internal usage only)",
+        default="2d"
     )
     shader_texture_nmap_settings = EnumProperty(
         name="Settings",
@@ -915,6 +1273,57 @@ class MaterialSCSTools(bpy.types.PropertyGroup):
         options={'HIDDEN'},
     )
 
+    # TEXTURE: NMAP_DETAIL
+    shader_texture_nmap_detail = StringProperty(
+        name="Texture NMap Detail",
+        description="Texture NMap Detail for active Material",
+        default=_MAT_consts.unset_bitmap_filepath,
+        options={'HIDDEN'},
+        subtype='NONE',
+        update=update_shader_texture_nmap_detail,
+    )
+    shader_texture_nmap_detail_imported_tobj = StringProperty(
+        name="Imported TOBJ Path",
+        description="Use imported TOBJ path reference which will be exported into material (NOTE: export will not take care of any TOBJ files!)",
+        default="",
+        update=__update_look__
+    )
+    shader_texture_nmap_detail_locked = BoolProperty(
+        name="Texture Locked",
+        description="Tells if texture is locked and should not be changed by user(intended for internal usage only)",
+        default=False
+    )
+    shader_texture_nmap_detail_map_type = StringProperty(
+        name="Texture Map Type",
+        description="Stores texture mapping type and should not be changed by user(intended for internal usage only)",
+        default="2d"
+    )
+    shader_texture_nmap_detail_settings = EnumProperty(
+        name="Settings",
+        description="TOBJ settings for this texture",
+        items=__get_texture_settings__(),
+        default=set(),
+        options={'ENUM_FLAG'},
+        update=update_shader_texture_nmap_detail_settings
+    )
+    shader_texture_nmap_detail_tobj_load_time = StringProperty(
+        name="Last TOBJ load time",
+        description="Time string of last loading",
+        default="",
+    )
+    shader_texture_nmap_detail_use_imported = BoolProperty(
+        name="Use Imported",
+        description="Use custom provided path for TOBJ reference",
+        default=False,
+        update=__update_look__
+    )
+    shader_texture_nmap_detail_uv = CollectionProperty(
+        name="Texture Base UV Sets",
+        description="Texture base UV sets for active Material",
+        type=UVMappingItem,
+        options={'HIDDEN'},
+    )
+
     # TEXTURE: OCCLUSION
     shader_texture_oclu = StringProperty(
         name="Texture Oclu",
@@ -934,6 +1343,11 @@ class MaterialSCSTools(bpy.types.PropertyGroup):
         name="Texture Locked",
         description="Tells if texture is locked and should not be changed by user(intended for internal usage only)",
         default=False
+    )
+    shader_texture_oclu_map_type = StringProperty(
+        name="Texture Map Type",
+        description="Stores texture mapping type and should not be changed by user(intended for internal usage only)",
+        default="2d"
     )
     shader_texture_oclu_settings = EnumProperty(
         name="Settings",
@@ -981,6 +1395,11 @@ class MaterialSCSTools(bpy.types.PropertyGroup):
         description="Tells if texture is locked and should not be changed by user(intended for internal usage only)",
         default=False
     )
+    shader_texture_over_map_type = StringProperty(
+        name="Texture Map Type",
+        description="Stores texture mapping type and should not be changed by user(intended for internal usage only)",
+        default="2d"
+    )
     shader_texture_over_settings = EnumProperty(
         name="Settings",
         description="TOBJ settings for this texture",
@@ -1027,6 +1446,11 @@ class MaterialSCSTools(bpy.types.PropertyGroup):
         description="Tells if texture is locked and should not be changed by user(intended for internal usage only)",
         default=False
     )
+    shader_texture_paintjob_map_type = StringProperty(
+        name="Texture Map Type",
+        description="Stores texture mapping type and should not be changed by user(intended for internal usage only)",
+        default="2d"
+    )
     shader_texture_paintjob_settings = EnumProperty(
         name="Settings",
         description="TOBJ settings for this texture",
@@ -1072,6 +1496,11 @@ class MaterialSCSTools(bpy.types.PropertyGroup):
         name="Texture Locked",
         description="Tells if texture is locked and should not be changed by user(intended for internal usage only)",
         default=False
+    )
+    shader_texture_reflection_map_type = StringProperty(
+        name="Texture Map Type",
+        description="Stores texture mapping type and should not be changed by user(intended for internal usage only)",
+        default="2d"
     )
     shader_texture_reflection_settings = EnumProperty(
         name="Settings",

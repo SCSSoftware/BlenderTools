@@ -19,7 +19,9 @@
 # Copyright (C) 2015: SCS Software
 
 
+from io_scs_tools.consts import Mesh as _MESH_consts
 from io_scs_tools.internals.shaders.eut2.dif_spec_add_env import DifSpecAddEnv
+from io_scs_tools.utils import convert as _convert_utils
 
 
 class Truckpaint(DifSpecAddEnv):
@@ -33,6 +35,9 @@ class Truckpaint(DifSpecAddEnv):
 
     PAINT_TEX_SEP_NODE = "PaintTexSeparate"
 
+    ENV_VCOL_MULT_NODE = "EnvFactorVColorMultiplier"
+    SPEC_VCOL_MULT_NODE = "SpecVColorMultiplier"
+    OPACITY_VCOL_MULT_NODE = "OpacityVColorMultplier"
     AIRBRUSH_MIX_NODE = "AirbrushMixer"
     COL_MASK_B_MIX_NODE = "ColormaskBCol"
     COL_MASK_G_MIX_NODE = "ColormaskGCol"
@@ -41,19 +46,6 @@ class Truckpaint(DifSpecAddEnv):
     BLEND_MIX_NODE = "BlendMode"
 
     PAINT_MULT_NODE = "PaintMultiplier"
-
-    @staticmethod
-    def __get_aux_as_color__(aux_property):
-        # convert IDPropertyGroup to tuple
-        final_col = tuple()
-        for aux_item in aux_property:
-            value = min(1, max(0, aux_item['value']))
-            final_col = tuple(final_col) + (value,)
-
-        if len(final_col) == 3:
-            final_col = tuple(final_col) + (1,)
-
-        return final_col
 
     @staticmethod
     def get_name():
@@ -76,12 +68,21 @@ class Truckpaint(DifSpecAddEnv):
         # init parent
         DifSpecAddEnv.init(node_tree)
 
+        base_tex_n = node_tree.nodes[DifSpecAddEnv.BASE_TEX_NODE]
+        env_color_n = node_tree.nodes[DifSpecAddEnv.ENV_COLOR_NODE]
+        spec_color_n = node_tree.nodes[DifSpecAddEnv.SPEC_COL_NODE]
         diff_mult_n = node_tree.nodes[DifSpecAddEnv.DIFF_MULT_NODE]
+        add_refl_gn = node_tree.nodes[DifSpecAddEnv.ADD_ENV_GROUP_NODE]
+        spec_mult_n = node_tree.nodes[DifSpecAddEnv.SPEC_MULT_NODE]
+        vcol_scale_n = node_tree.nodes[DifSpecAddEnv.VCOLOR_SCALE_NODE]
+        opacity_n = node_tree.nodes[DifSpecAddEnv.OPACITY_NODE]
         out_mat_n = node_tree.nodes[DifSpecAddEnv.OUT_MAT_NODE]
         out_add_refl_n = node_tree.nodes[DifSpecAddEnv.OUT_ADD_REFL_NODE]
         output_n = node_tree.nodes[DifSpecAddEnv.OUTPUT_NODE]
 
         # move existing
+        add_refl_gn.location.x += pos_x_shift * 2
+        spec_mult_n.location.x += pos_x_shift * 2
         out_mat_n.location.x += pos_x_shift
         out_add_refl_n.location.x += pos_x_shift
         output_n.location.x += pos_x_shift
@@ -94,69 +95,90 @@ class Truckpaint(DifSpecAddEnv):
         paint_geom_n.name = Truckpaint.PAINT_GEOM_NODE
         paint_geom_n.label = Truckpaint.PAINT_GEOM_NODE
         paint_geom_n.location = (start_pos_x - pos_x_shift, start_pos_y + 950)
+        paint_geom_n.uv_layer = _MESH_consts.none_uv
 
         # node creation - level 1
         paint_base_col_n = node_tree.nodes.new("ShaderNodeRGB")
         paint_base_col_n.name = Truckpaint.PAINT_BASE_COL_NODE
         paint_base_col_n.label = Truckpaint.PAINT_BASE_COL_NODE
-        paint_base_col_n.location = (start_pos_x + pos_x_shift, start_pos_y + 1150)
+        paint_base_col_n.location = (start_pos_x + pos_x_shift, start_pos_y + 950)
 
         paint_tex_n = node_tree.nodes.new("ShaderNodeTexture")
         paint_tex_n.name = Truckpaint.PAINT_TEX_NODE
         paint_tex_n.label = Truckpaint.PAINT_TEX_NODE
-        paint_tex_n.location = (start_pos_x + pos_x_shift, start_pos_y + 950)
+        paint_tex_n.location = (start_pos_x + pos_x_shift, start_pos_y + 750)
 
         paint_b_col_n = node_tree.nodes.new("ShaderNodeRGB")
         paint_b_col_n.name = Truckpaint.PAINT_B_COL_NODE
         paint_b_col_n.label = Truckpaint.PAINT_B_COL_NODE
-        paint_b_col_n.location = (start_pos_x + pos_x_shift, start_pos_y + 650)
+        paint_b_col_n.location = (start_pos_x + pos_x_shift, start_pos_y + 450)
 
         paint_g_col_n = node_tree.nodes.new("ShaderNodeRGB")
         paint_g_col_n.name = Truckpaint.PAINT_G_COL_NODE
         paint_g_col_n.label = Truckpaint.PAINT_G_COL_NODE
-        paint_g_col_n.location = (start_pos_x + pos_x_shift, start_pos_y + 450)
+        paint_g_col_n.location = (start_pos_x + pos_x_shift, start_pos_y + 250)
 
         paint_r_col_n = node_tree.nodes.new("ShaderNodeRGB")
         paint_r_col_n.name = Truckpaint.PAINT_R_COL_NODE
         paint_r_col_n.label = Truckpaint.PAINT_R_COL_NODE
-        paint_r_col_n.location = (start_pos_x + pos_x_shift, start_pos_y + 250)
+        paint_r_col_n.location = (start_pos_x + pos_x_shift, start_pos_y + 50)
 
         # node creation - level 2
         paint_tex_sep = node_tree.nodes.new("ShaderNodeSeparateRGB")
         paint_tex_sep.name = Truckpaint.PAINT_TEX_SEP_NODE
         paint_tex_sep.label = Truckpaint.PAINT_TEX_SEP_NODE
-        paint_tex_sep.location = (start_pos_x + pos_x_shift * 3, start_pos_y + 850)
+        paint_tex_sep.location = (start_pos_x + pos_x_shift * 3, start_pos_y + 650)
 
         # node creation - level 3
+        env_vcol_mix_n = node_tree.nodes.new("ShaderNodeMixRGB")
+        env_vcol_mix_n.name = Truckpaint.ENV_VCOL_MULT_NODE
+        env_vcol_mix_n.label = Truckpaint.ENV_VCOL_MULT_NODE
+        env_vcol_mix_n.location = (start_pos_x + pos_x_shift * 4, start_pos_y + 2000)
+        env_vcol_mix_n.blend_type = "MULTIPLY"
+        env_vcol_mix_n.inputs['Fac'].default_value = 1
+
+        spec_vcol_mix_n = node_tree.nodes.new("ShaderNodeMixRGB")
+        spec_vcol_mix_n.name = Truckpaint.SPEC_VCOL_MULT_NODE
+        spec_vcol_mix_n.label = Truckpaint.SPEC_VCOL_MULT_NODE
+        spec_vcol_mix_n.location = (start_pos_x + pos_x_shift * 4, start_pos_y + 1750)
+        spec_vcol_mix_n.blend_type = "MULTIPLY"
+        spec_vcol_mix_n.inputs['Fac'].default_value = 1
+
+        opacity_vcol_n = node_tree.nodes.new("ShaderNodeMath")
+        opacity_vcol_n.name = Truckpaint.OPACITY_VCOL_MULT_NODE
+        opacity_vcol_n.label = Truckpaint.OPACITY_VCOL_MULT_NODE
+        opacity_vcol_n.location = (start_pos_x + pos_x_shift * 4, start_pos_y + 1300)
+        opacity_vcol_n.operation = "MULTIPLY"
+
         airbrush_mix_n = node_tree.nodes.new("ShaderNodeMixRGB")
         airbrush_mix_n.name = Truckpaint.AIRBRUSH_MIX_NODE
         airbrush_mix_n.label = Truckpaint.AIRBRUSH_MIX_NODE
-        airbrush_mix_n.location = (start_pos_x + pos_x_shift * 4, start_pos_y + 1200)
+        airbrush_mix_n.location = (start_pos_x + pos_x_shift * 4, start_pos_y + 1000)
         airbrush_mix_n.blend_type = "MIX"
 
         col_mask_b_mix_n = node_tree.nodes.new("ShaderNodeMixRGB")
         col_mask_b_mix_n.name = Truckpaint.COL_MASK_B_MIX_NODE
         col_mask_b_mix_n.label = Truckpaint.COL_MASK_B_MIX_NODE
-        col_mask_b_mix_n.location = (start_pos_x + pos_x_shift * 4, start_pos_y + 800)
+        col_mask_b_mix_n.location = (start_pos_x + pos_x_shift * 4, start_pos_y + 600)
         col_mask_b_mix_n.blend_type = "MIX"
 
         col_mask_g_mix_n = node_tree.nodes.new("ShaderNodeMixRGB")
         col_mask_g_mix_n.name = Truckpaint.COL_MASK_G_MIX_NODE
         col_mask_g_mix_n.label = Truckpaint.COL_MASK_G_MIX_NODE
-        col_mask_g_mix_n.location = (start_pos_x + pos_x_shift * 4, start_pos_y + 600)
+        col_mask_g_mix_n.location = (start_pos_x + pos_x_shift * 4, start_pos_y + 400)
         col_mask_g_mix_n.blend_type = "MIX"
 
         col_mask_r_mix_n = node_tree.nodes.new("ShaderNodeMixRGB")
         col_mask_r_mix_n.name = Truckpaint.COL_MASK_R_MIX_NODE
         col_mask_r_mix_n.label = Truckpaint.COL_MASK_R_MIX_NODE
-        col_mask_r_mix_n.location = (start_pos_x + pos_x_shift * 4, start_pos_y + 400)
+        col_mask_r_mix_n.location = (start_pos_x + pos_x_shift * 4, start_pos_y + 200)
         col_mask_r_mix_n.blend_type = "MIX"
 
         # node creation - level 4
         blend_mix_n = node_tree.nodes.new("ShaderNodeMixRGB")
         blend_mix_n.name = Truckpaint.BLEND_MIX_NODE
         blend_mix_n.label = Truckpaint.BLEND_MIX_NODE
-        blend_mix_n.location = (start_pos_x + pos_x_shift * 5, start_pos_y + 1000)
+        blend_mix_n.location = (start_pos_x + pos_x_shift * 5, start_pos_y + 800)
         blend_mix_n.inputs['Fac'].default_value = 1.0
         blend_mix_n.blend_type = "MIX"
 
@@ -166,7 +188,7 @@ class Truckpaint(DifSpecAddEnv):
         paint_mult_n.label = Truckpaint.PAINT_MULT_NODE
         paint_mult_n.location = (start_pos_x + pos_x_shift * 6, start_pos_y + 1400)
         paint_mult_n.blend_type = "MULTIPLY"
-        paint_mult_n.inputs['Fac'].default_value = 1
+        paint_mult_n.inputs['Fac'].default_value = 0
 
         # make links - level 0
         node_tree.links.new(paint_tex_n.inputs['Vector'], paint_geom_n.outputs['UV'])
@@ -175,6 +197,12 @@ class Truckpaint(DifSpecAddEnv):
         node_tree.links.new(paint_tex_sep.inputs['Image'], paint_tex_n.outputs['Color'])
 
         # make links - level 2
+        node_tree.links.new(env_vcol_mix_n.inputs['Color1'], env_color_n.outputs['Color'])
+        node_tree.links.new(env_vcol_mix_n.inputs['Color2'], vcol_scale_n.outputs['Color'])
+
+        node_tree.links.new(spec_vcol_mix_n.inputs['Color1'], base_tex_n.outputs['Value'])
+        node_tree.links.new(spec_vcol_mix_n.inputs['Color2'], vcol_scale_n.outputs['Color'])
+
         node_tree.links.new(airbrush_mix_n.inputs['Fac'], paint_tex_n.outputs['Value'])
         node_tree.links.new(airbrush_mix_n.inputs['Color1'], paint_base_col_n.outputs['Color'])
         node_tree.links.new(airbrush_mix_n.inputs['Color2'], paint_tex_n.outputs['Color'])
@@ -192,6 +220,14 @@ class Truckpaint(DifSpecAddEnv):
         node_tree.links.new(col_mask_r_mix_n.inputs['Color2'], paint_r_col_n.outputs['Color'])
 
         # make links - level 3
+        node_tree.links.new(add_refl_gn.inputs['Env Factor Color'], env_vcol_mix_n.outputs['Color'])
+
+        node_tree.links.new(spec_mult_n.inputs['Color1'], spec_color_n.outputs['Color'])
+        node_tree.links.new(spec_mult_n.inputs['Color2'], spec_vcol_mix_n.outputs['Color'])
+
+        node_tree.links.new(opacity_vcol_n.inputs[0], vcol_scale_n.outputs['Color'])
+        node_tree.links.new(opacity_vcol_n.inputs[1], opacity_n.outputs[0])
+
         node_tree.links.new(blend_mix_n.inputs['Color1'], airbrush_mix_n.outputs['Color'])
         node_tree.links.new(blend_mix_n.inputs['Color2'], col_mask_r_mix_n.outputs['Color'])
 
@@ -224,6 +260,9 @@ class Truckpaint(DifSpecAddEnv):
         :type uv_layer: str
         """
 
+        if uv_layer is None or uv_layer == "":
+            uv_layer = _MESH_consts.none_uv
+
         node_tree.nodes[Truckpaint.PAINT_GEOM_NODE].uv_layer = uv_layer
 
     @staticmethod
@@ -236,7 +275,7 @@ class Truckpaint(DifSpecAddEnv):
         :type color: bpy.types.IDPropertyGroup
         """
 
-        node_tree.nodes[Truckpaint.PAINT_BASE_COL_NODE].outputs['Color'].default_value = Truckpaint.__get_aux_as_color__(color)
+        node_tree.nodes[Truckpaint.PAINT_BASE_COL_NODE].outputs['Color'].default_value = _convert_utils.aux_to_node_color(color)
 
     @staticmethod
     def set_aux7(node_tree, color):
@@ -248,7 +287,7 @@ class Truckpaint(DifSpecAddEnv):
         :type color: bpy.types.IDPropertyGroup
         """
 
-        node_tree.nodes[Truckpaint.PAINT_B_COL_NODE].outputs['Color'].default_value = Truckpaint.__get_aux_as_color__(color)
+        node_tree.nodes[Truckpaint.PAINT_B_COL_NODE].outputs['Color'].default_value = _convert_utils.aux_to_node_color(color)
 
     @staticmethod
     def set_aux6(node_tree, color):
@@ -260,7 +299,7 @@ class Truckpaint(DifSpecAddEnv):
         :type color: bpy.types.IDPropertyGroup
         """
 
-        node_tree.nodes[Truckpaint.PAINT_G_COL_NODE].outputs['Color'].default_value = Truckpaint.__get_aux_as_color__(color)
+        node_tree.nodes[Truckpaint.PAINT_G_COL_NODE].outputs['Color'].default_value = _convert_utils.aux_to_node_color(color)
 
     @staticmethod
     def set_aux5(node_tree, color):
@@ -272,4 +311,4 @@ class Truckpaint(DifSpecAddEnv):
         :type color: bpy.types.IDPropertyGroup
         """
 
-        node_tree.nodes[Truckpaint.PAINT_R_COL_NODE].outputs['Color'].default_value = Truckpaint.__get_aux_as_color__(color)
+        node_tree.nodes[Truckpaint.PAINT_R_COL_NODE].outputs['Color'].default_value = _convert_utils.aux_to_node_color(color)

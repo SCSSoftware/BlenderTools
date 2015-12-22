@@ -18,6 +18,7 @@
 
 # Copyright (C) 2015: SCS Software
 
+from io_scs_tools.consts import Mesh as _MESH_consts
 from io_scs_tools.internals.shaders.eut2.dif_spec import DifSpec
 from io_scs_tools.internals.shaders.eut2.std_node_groups import lampmask_mixer
 
@@ -27,6 +28,11 @@ class Lamp(DifSpec):
     MASK_TEX_NODE = "MaskTex"
     LAMPMASK_MIX_GROUP_NODE = "LampmaskMix"
     OUT_ADD_LAMPMASK_NODE = "LampmaskAdd"
+
+    @staticmethod
+    def get_name():
+        """Get name of this shader file with full modules path."""
+        return __name__
 
     @staticmethod
     def init(node_tree):
@@ -66,6 +72,7 @@ class Lamp(DifSpec):
         sec_geom_n.name = Lamp.SEC_GEOM_NODE
         sec_geom_n.label = Lamp.SEC_GEOM_NODE
         sec_geom_n.location = (start_pos_x - pos_x_shift, start_pos_y + 2300)
+        sec_geom_n.uv_layer = _MESH_consts.none_uv
 
         mask_tex_n = node_tree.nodes.new("ShaderNodeTexture")
         mask_tex_n.name = Lamp.MASK_TEX_NODE
@@ -118,5 +125,8 @@ class Lamp(DifSpec):
         :param uv_layer: uv layer string used for mask texture
         :type uv_layer: str
         """
+
+        if uv_layer is None or uv_layer == "":
+            uv_layer = _MESH_consts.none_uv
 
         node_tree.nodes[Lamp.SEC_GEOM_NODE].uv_layer = uv_layer

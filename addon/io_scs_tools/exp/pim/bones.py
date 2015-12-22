@@ -23,22 +23,22 @@ from io_scs_tools.internals.structure import SectionData as _SectionData
 
 
 class Bones:
-    _bones = OrderedDict()  # list of all bone names used in game object ( order should be the same as in PIS file )
+    __bones = OrderedDict()  # list of all bone names used in game object ( order should be the same as in PIS file )
 
-    _global_bones_counter = 0
+    __global_bones_counter = 0
 
     @staticmethod
     def reset_counter():
-        Bones._global_bones_counter = 0
+        Bones.__global_bones_counter = 0
 
     @staticmethod
     def get_global_bones_count():
-        return Bones._global_bones_counter
+        return Bones.__global_bones_counter
 
     def __init__(self):
         """Initalize new bones instance for PIM file.
         """
-        self._bones = OrderedDict()
+        self.__bones = OrderedDict()
 
     def add_bone(self, bone_name):
         """Adds bone name to bone list.
@@ -49,9 +49,9 @@ class Bones:
         :rtype: bool
         """
 
-        if bone_name not in self._bones:
-            self._bones[bone_name] = len(self._bones)
-            Bones._global_bones_counter += 1
+        if bone_name not in self.__bones:
+            self.__bones[bone_name] = len(self.__bones)
+            Bones.__global_bones_counter += 1
             return True
 
         return False
@@ -66,10 +66,10 @@ class Bones:
         :rtype: int
         """
 
-        if bone_name not in self._bones:
+        if bone_name not in self.__bones:
             return -1
 
-        return self._bones[bone_name]
+        return self.__bones[bone_name]
 
     def get_as_section(self):
         """Gets bones information represented with SectionData structure class.
@@ -79,7 +79,7 @@ class Bones:
 
         section = _SectionData("Bones")
 
-        for bone_name in self._bones.keys():
+        for bone_name in self.__bones.keys():
             section.data.append(("__string__", bone_name))
 
         return section

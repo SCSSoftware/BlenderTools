@@ -1,0 +1,21 @@
+SiiNunit
+{
+# For modders: Please do not modify this file if you want to add a new entry. Create in
+# this directory a new file "<base_name>.<idofyourmod>.sii" where <base_name> is name of
+# base file without the extension (e.g. "city" for "/def/city.sii") and <idofyourmod> is
+# some string which is unlikely to conflict with other mod.
+
+tr_semaphore_profile : tr_sem_prof.toll_sample {
+
+	name: "tollgate - sample"
+
+	model[]: "toll_sample"
+
+	type[]: barrier_manual
+
+	interval[]: (1.0, 1.0, 3.0, 1.0)
+	cycle[]: 0.0
+}
+
+}
+

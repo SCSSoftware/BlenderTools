@@ -1,6 +1,6 @@
 # ##### BEGIN GPL LICENSE BLOCK #####
 #
-# This program is free software; you can redistribute it and/or
+# This program is free software you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
 # as published by the Free Software Foundation; either version 2
 # of the License, or (at your option) any later version.
@@ -53,6 +53,14 @@ class Operators:
         viewonly = 1
         shift_view = 2
         ctrl_view = 3
+
+    class TerrainPoints:
+        """Constants related to terrain points operators.
+        """
+        vg_name_prefix = ".scs_terrain_points_node:"
+        """Name prefix of terrain points vertex group."""
+        vg_name_regex = "^" + vg_name_prefix.replace(".", "\\.") + "\d$"
+        """Regex for matching terrain points vertex groups names on export."""
 
 
 class Icons:
@@ -129,6 +137,17 @@ class Material:
     """Unset value of each texture filepath (used for identifying if this value in material was set)"""
     unset_substance = "None"
     """Unset value of material substance (used for identifying if this value in material was set)"""
+    node_group_prefix = ".SCS_NG_"
+    """Prefix for naming node groups used by SCS materials"""
+
+
+class Colors:
+    """Constants related to colors in Blender
+    """
+    gamma = 2.2
+    """Gamma value used by Blender for correcting display colors."""
+    saturation = 1.15
+    """Amount of saturation for vertex colors in nodes."""
 
 
 class LampTools:
@@ -183,3 +202,180 @@ class VertexColorTools:
     class WrapType:
         All = "all"
         Selected = "selected"
+
+
+class Mesh:
+    """Constants for mesh data used either on import or in general.
+    """
+    none_uv = "~"
+    vcol_a_suffix = "_alpha"
+
+    default_uv = "UV"
+    default_vcol = "Col"
+
+
+class PrefabLocators:
+    """Constants for prefab locator properties, flags and exporter.
+    """
+
+    NAVIGATION_NEXT_PREV_MAX = 4
+    """Maximun navigation next/previus curve count constant."""
+    PREFAB_LANE_COUNT_MAX = 8
+    """Maximum lane count constant."""
+    PREFAB_NODE_COUNT_MAX = 6
+    """Maximum node count constant."""
+
+    # START: not in original constants
+
+    TSEM_COUNT_MAX = 32
+    """Maximum traffic semaphore count. NOTE: it can be bigger, but no need"""
+    TP_NEIGHBOURS_COUNT_MAX = 2
+    """Maximum neighbours count for trigger points."""
+    CURVE_MEASURE_STEPS = 300
+    """Number of segments that curves use for measuing it's length."""
+    CURVE_STEPS_COUNT = 10
+    """Number of segments that curves are using during export calculations"""
+    CURVE_CLOSEST_POINT_ITER = 30
+    """Number of iterations for closest point calculations."""
+    SAFE_DISTANCE = 4.0
+    """Minimal distance between two intersecting curves to be meet until we reach safe point."""
+    TERRAIN_POINTS_MIN_DISTANCE = 0.01
+    """Minimal distance between two terrain points to be recognized as different."""
+
+    # END: not in original constants
+
+    class PNCF:
+        """Constants used for calculation of navigation curve flag variable.
+        """
+        FORCE_NO_BLINKER = 0x00000004
+        RIGHT_BLINKER = 0x00000008
+        LEFT_BLINKER = 0x00000010
+        SMALL_VEHICLES = 0x00000020
+        LARGE_VEHICLES = 0x00000040
+        ALLOWED_VEHICLES_MASK = (SMALL_VEHICLES | LARGE_VEHICLES)
+        PRIORITY_MASK = 0x000F0000
+        PRIORITY_SHIFT = 16
+        LOW_PROBABILITY = 0x00002000
+        LIMIT_DISPLACEMENT = 0x00004000
+        ADDITIVE_PRIORITY = 0x00008000
+
+        START_NAV_POINT_FLAGS = (FORCE_NO_BLINKER | RIGHT_BLINKER | LEFT_BLINKER |
+                                 PRIORITY_MASK | ADDITIVE_PRIORITY | LIMIT_DISPLACEMENT)
+        END_NAV_POINT_FLAGS = (ALLOWED_VEHICLES_MASK | LOW_PROBABILITY)
+
+    class PNLF:
+        """Constants used for calculation of navigation point leads to nodes variable.
+        """
+        END_NODE_MASK = 0x000000FF
+        END_NODE_SHIFT = 0
+        END_LANE_MASK = 0x0000FF00
+        END_LANE_SHIFT = 8
+        START_NODE_MASK = 0x00FF0000
+        START_NODE_SHIFT = 16
+        START_LANE_MASK = 0xFF000000
+        START_LANE_SHIFT = 24
+
+    class PSP:
+        """Constants used for calculateion of spawn point flag variable.
+        """
+        NONE = 0
+        TRAILER_POS = 1
+        UNLOAD_EASY_POS = 2
+        GAS_POS = 3
+        SERVICE_POS = 4
+        TRUCKSTOP_POS = 5
+        WEIGHT_POS = 6
+        TRUCKDEALER_POS = 7
+        HOTEL = 8
+        CUSTOM = 9
+        PARKING = 10
+        TASK = 11
+        MEET_POS = 12
+        COMPANY_POS = 13
+        GARAGE_POS = 14
+        BUY_POS = 15
+        RECRUITMENT_POS = 16
+        CAMERA_POINT = 17
+        BUS_STATION = 18
+        UNLOAD_MEDIUM_POS = 19
+        UNLOAD_HARD_POS = 20
+        UNLOAD_RIGID_POS = 21
+
+    class TST:
+        """Constants representing type of traffic semaphores.        
+        """
+        PROFILE = 0
+        MODEL_ONLY = 1
+        TRAFFIC_LIGHT = 2
+        TRAFFIC_LIGHT_MINOR = 3
+        TRAFFIC_LIGHT_MAJOR = 4
+        BARRIER_MANUAL_TIMED = 5
+        BARRIER_DISTANCE = 6
+        TRAFFIC_LIGHT_BLOCKABLE = 7
+        BARRIER_GAS = 8
+
+    class MPVF:
+        """Constants represeting map point visual flags.
+        """
+        ROAD_SIZE_ONE_WAY = 0x00000000
+        ROAD_SIZE_1_LANE = 0x00000100
+        ROAD_SIZE_2_LANE = 0x00000200
+        ROAD_SIZE_3_LANE = 0x00000300
+        ROAD_SIZE_4_LANE = 0x00000400
+        ROAD_SIZE_MANUAL = 0x00000D00
+        ROAD_SIZE_AUTO = 0x00000E00
+        ROAD_SIZE_MASK = 0x00000F00
+        ROAD_OFFSET_0 = 0x00000000
+        ROAD_OFFSET_1 = 0x00001000
+        ROAD_OFFSET_2 = 0x00002000
+        ROAD_OFFSET_5 = 0x00003000
+        ROAD_OFFSET_10 = 0x00004000
+        ROAD_OFFSET_15 = 0x00005000
+        ROAD_OFFSET_20 = 0x00006000
+        ROAD_OFFSET_25 = 0x00007000
+        ROAD_OFFSET_MASK = 0x0000F000
+        ROAD_EXT_VALUE_MASK = 0x000000FF
+        ROAD_OVER = 0x00010000
+        CUSTOM_COLOR1 = 0x00020000
+        CUSTOM_COLOR2 = 0x00040000
+        CUSTOM_COLOR3 = 0x00080000
+        NO_OUTLINE = 0x00100000
+        NO_ARROW = 0x00200000
+
+    class MPNF:
+        """Constants representing map point navigation flags.
+        """
+        NAV_NODE_0 = 0x00000001
+        NAV_NODE_1 = 0x00000002
+        NAV_NODE_2 = 0x00000004
+        NAV_NODE_3 = 0x00000008
+        NAV_NODE_4 = 0x00000010
+        NAV_NODE_5 = 0x00000020
+        NAV_NODE_6 = 0x00000040
+        NAV_NODE_CUSTOM_TARGET = 0x00000080
+        NAV_NODE_ALL = 0x000000FF
+        NAV_NODE_MASK = 0x000000FF
+        NAV_NODE_START = 0x00000100
+        NAV_BASE = 0x00000200
+        PREFAB_EXIT = 0x00000400
+
+    class TPF:
+        """Constants represetning trigger point navigation flags.
+        """
+        MANUAL = 0x0001
+        SPHERE = 0x0002
+        PARTIAL = 0x0004
+        ONETIME = 0x0008
+
+    class PIF:
+        """Constants for intersections flag.
+        """
+        SIBLING_COUNT_MASK = 0x000000F0
+        SIBLING_COUNT_SHIFT = 4
+        TYPE_START = 0x00010000
+        TYPE_END = 0x00020000
+
+
+class Bones:
+    init_scale_key = "scs_init_scale"
+    """Pose bone custom property dictionary key for saving initial bone scale on PIS import."""

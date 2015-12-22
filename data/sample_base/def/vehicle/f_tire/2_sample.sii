@@ -9,5 +9,9 @@ accessory_wheel_data : 2_sample.ftire
 	icon: "f_tire_02"
 	front_wheel:true
 	look: continent
+
+	roll_resistance: 5.5
+	wet_grip: 1.15
+	noise_volume: 74
 }
 }

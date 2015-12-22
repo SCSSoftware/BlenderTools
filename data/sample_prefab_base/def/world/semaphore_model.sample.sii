@@ -1,0 +1,37 @@
+SiiNunit
+{
+# For modders: Please do not modify this file if you want to add a new entry. Create in
+# this directory a new file "<base_name>.<idofyourmod>.sii" where <base_name> is name of
+# base file without the extension (e.g. "city" for "/def/city.sii") and <idofyourmod> is
+# some string which is unlikely to conflict with other mod.
+
+tr_semaphore_model : tr_sem_mdl.toll_sample {
+
+	name: "toll_sample"
+
+	model_desc: "/prefab/tollgate/tollgate_sample/tollgate_small_anim.pmd"
+	model_coll: "/prefab/tollgate/tollgate_sample/tollgate_small_anim.pmc"
+	
+	state_anim: 4
+	state_collision: 4
+
+	# orange_to_red
+	state_anim[0]: ""
+	state_collision[0]: false
+
+	# red
+	state_anim[1]: "/prefab/tollgate/tollgate_sample/t_small_dwn.pma"
+	state_collision[1]: true
+
+	# orange_to_green
+	state_anim[2]: "/prefab/tollgate/tollgate_sample/t_small_up.pma"
+	state_collision[2]: true
+
+	# green
+	state_anim[3]: ""
+	state_collision[3]: false
+
+	dynamic: false
+}
+
+}

@@ -31,7 +31,7 @@ tollgate: tollgate.end
 	trigger_distance: 3.0
 	reset_distance: 5.0
 	# price in euro per km
-	toll: 0.255
+	toll: 0.255 
 }
 
 tollgate: tollgate.onetime.it
@@ -53,7 +53,7 @@ tollgate: tollgate.end.it
 	trigger_distance: 3.0
 	reset_distance: 5.0
 	# price in euro per km
-	toll: 0.18
+	toll: 0.18 
 }
 tollgate: tollgate.end.it_fr
 {
@@ -63,7 +63,7 @@ tollgate: tollgate.end.it_fr
 	trigger_distance: 3.0
 	reset_distance: 5.0
 	# price in euro per km
-	toll: 0.5
+	toll: 0.5 
 }
 tollgate: tollgate.end.fr_alps
 {
@@ -73,7 +73,7 @@ tollgate: tollgate.end.fr_alps
 	trigger_distance: 3.0
 	reset_distance: 5.0
 	# price in euro per km
-	toll: 0.58
+	toll: 0.58 
 }
 tollgate: tollgate.end.fr
 {
@@ -83,7 +83,7 @@ tollgate: tollgate.end.fr
 	trigger_distance: 3.0
 	reset_distance: 5.0
 	# price in euro per km
-	toll: 0.45
+	toll: 0.45 
 }
 tollgate: tollgate.end.fr.metz_reims
 {
@@ -93,7 +93,7 @@ tollgate: tollgate.end.fr.metz_reims
 	trigger_distance: 3.0
 	reset_distance: 5.0
 	# price in euro per km
-	toll: 0.51
+	toll: 0.51 
 }
 tollgate: tollgate.end.fr.reims_paris
 {
@@ -103,7 +103,7 @@ tollgate: tollgate.end.fr.reims_paris
 	trigger_distance: 3.0
 	reset_distance: 5.0
 	# price in euro per km
-	toll: 0.6
+	toll: 0.6 
 }
 tollgate: tollgate.onetime.pl
 {
@@ -298,7 +298,7 @@ tollgate: tollgate.onetime_246
 	type: one_time
 	trigger_distance: 3.0
 	reset_distance: 5.0
-	toll: 246
+	toll: 172
 }
 
 tollgate: tollgate.onetime_234

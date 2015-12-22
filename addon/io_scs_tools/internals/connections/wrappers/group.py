@@ -29,6 +29,33 @@ _DATA_UP_TO_DATE = "up_to_date"
 _CACHE = {_DATA_UP_TO_DATE: False}  # saving if connections data are up to date
 
 
+class ConnEntry:
+    def __init__(self, index, start, end, next_curves, prev_curves):
+        """Constructs data storage class for representing connection data.
+
+        :param index: curve index
+        :type index: int
+        :param start: start locator name
+        :type start: str
+        :param end: end locator name
+        :type end: str
+        :param next_curves: next connections indices
+        :type next_curves: list[int]
+        :param prev_curves: previous connections indices
+        :type prev_curves: list[int]
+        """
+        self.index = index
+        """Index of connection/curve"""
+        self.start = start
+        """Name of connection start locator"""
+        self.end = end
+        """Name of connection end locator"""
+        self.next_curves = next_curves
+        """List of next connections/curves keys in dictionary"""
+        self.prev_curves = prev_curves
+        """List of previous connections/curves keys in dictionary"""
+
+
 def init():
     """Initialize storage for saving connections.
     Called if starting Blender or if all connections should be deleted
@@ -161,24 +188,14 @@ def get_neighbours(loc_obj):
     return neighbours
 
 
-def get_curves(np_locators, index_key, start_key, end_key, next_curves_key, prev_curves_key):
+def get_curves(np_locators):
     """Gets all the connections within given Navigation Point locators list.
     If some of locators are not Navigation Point locators they are automaticly ignored
 
     :param np_locators: list of SCS Navigation Point locator objects
     :type np_locators: list of bpy.types.Object
-    :param index_key: curve index key for dictionary entries
-    :type index_key: str
-    :param start_key: start node key for dictionary entries
-    :type start_key: str
-    :param end_key: end node key for dictionary entries
-    :type end_key: str
-    :param next_curves_key: next curves key for dictionary entries
-    :type next_curves_key: str
-    :param prev_curves_key: previous curves key for dictionary entries
-    :type prev_curves_key: str
     :return: dictionary of curves within given locators with given keys structure;
-    :rtype: dict
+    :rtype: dict[int, ConnEntry]
     """
 
     connections = bpy.data.groups[_GROUP_NAME][_core.MAIN_DICT][_core.REFS][_core.CONNECTIONS][_core.ENTRIES]
@@ -221,13 +238,7 @@ def get_curves(np_locators, index_key, start_key, end_key, next_curves_key, prev
                 if prev_conn_entry[_core.VALID]:
                     prev_curves.append(prev_conn_key)
 
-            curves[conn_key] = {
-                index_key: i,
-                start_key: start_node,
-                end_key: end_node,
-                next_curves_key: next_curves,
-                prev_curves_key: prev_curves
-            }
+            curves[conn_key] = ConnEntry(i, start_node, end_node, next_curves, prev_curves)
 
             i += 1  # increment index of curve only if it was added
 

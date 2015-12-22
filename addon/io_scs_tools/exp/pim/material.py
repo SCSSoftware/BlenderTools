@@ -24,19 +24,19 @@ from io_scs_tools.utils.printout import lprint
 
 
 class Material:
-    _index = -1
-    _alias = ""
-    _effect = ""
+    __index = -1
+    __alias = ""
+    __effect = ""
 
-    _global_material_counter = 0
+    __global_material_counter = 0
 
     @staticmethod
     def reset_counter():
-        Material._global_material_counter = 0
+        Material.__global_material_counter = 0
 
     @staticmethod
     def get_global_part_count():
-        return Material._global_material_counter
+        return Material.__global_material_counter
 
     def __init__(self, index, alias, effect, blend_mat):
         """Constructs material for PIM.
@@ -47,18 +47,19 @@ class Material:
         :param effect: effect name of current material
         :type effect: str
         """
-        self._index = index
-        self._alias = alias
-        self._effect = effect
+        self.__index = index
+        self.__alias = alias
+        self.__effect = effect
 
         self.__nmap_uv_layer_name = None  # saving uv layer name on which normal maps are used
-        self.__uses_textures = False  # flag for indicating if material uses textures or not
+        self.__used_textures_count = 0  # counter indicating number of used textures
+        self.__used_textures_without_uv_count = 0  # counter indicating number of used textures which don't require uv layer
 
         # map uv layer names to corresponding "tex_coord_x" field
         tex_coord_map = {}
         if blend_mat and "scs_shader_attributes" in blend_mat and "textures" in blend_mat["scs_shader_attributes"]:
             for tex_entry in blend_mat["scs_shader_attributes"]["textures"].values():
-                self.__uses_textures = True
+                self.__used_textures_count += 1
                 if "Tag" in tex_entry:
                     tex_type = tex_entry["Tag"].split(":")[1][8:].strip()
                     mappings = getattr(blend_mat.scs_props, "shader_texture_" + tex_type + "_uv")
@@ -96,6 +97,10 @@ class Material:
                                 lprint("W Texture type '%s' on material '%s' is missing UV mapping value, expect problems in game!",
                                        (tex_type, blend_mat.name))
 
+                        else:   # if texture doesn't have mappings it means uv is not required for it
+
+                            self.__used_textures_without_uv_count += 1
+
         # create uv layer map with used tex_coord on it (this tex_coords now represents aliases for given uv layers)
         # It also uses ordered dictionary because order of keys now defines actually physical order for uvs in PIM file
         self.__uvs_map_by_name = OrderedDict()
@@ -107,14 +112,14 @@ class Material:
 
             self.__uvs_map_by_name[uv_lay_name].append(tex_coord)
 
-        Material._global_material_counter += 1
+        Material.__global_material_counter += 1
 
-    def uses_textures(self):
-        """Tells if material is using any textures or not.
+    def uses_textures_with_uv(self):
+        """Tells if material is using any textures with required uv layers or not.
         :return: True if material has textures; False otherwise
         :rtype: bool
         """
-        return self.__uses_textures
+        return (self.__used_textures_count - self.__used_textures_without_uv_count) > 0
 
     def get_nmap_uv_name(self):
         """Returns name of the uv layer on which normal maps are used.
@@ -138,7 +143,7 @@ class Material:
         :return: index of material within PIM file
         :rtype: int
         """
-        return self._index
+        return self.__index
 
     def get_as_section(self):
         """Gets material represented with SectionData structure class.
@@ -147,7 +152,7 @@ class Material:
         """
 
         section = _SectionData("Material")
-        section.props.append(("Alias", self._alias))
-        section.props.append(("Effect", self._effect))
+        section.props.append(("Alias", self.__alias))
+        section.props.append(("Effect", self.__effect))
 
         return section

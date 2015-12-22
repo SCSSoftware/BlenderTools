@@ -1,0 +1,7233 @@
+# Look Names:
+#	sc
+#	sc_ligt_gr
+#	sc_def_dk
+#	sc_gray_dk
+#	sc_new_sc
+#	sc_def_swe
+#
+# Variant Names:
+#	default
+#	dk
+#	swe
+#	nor
+#
+Header {
+    FormatVersion: 1
+    Source: "Blender 2.76.0 (hash: 48f7dd6), SCS Blender Tools: 1.0.27abe27"
+    Type: "Trait"
+    Name: "gas_small_road_sample"
+}
+Global {
+    LookCount: 6
+    VariantCount: 4
+    PartCount: 9
+    MaterialCount: 30
+}
+Look {
+    Name: "sc"
+    Material {
+        Alias: "plaster_01"
+        Effect: "eut2.dif.spec.mult.dif.spec.iamod.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 3
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/plaster_gs_01"
+        }
+        Texture {
+            Tag: "texture[1]:texture_mult"
+            Value: "/material/tiled/plaster_over_01"
+        }
+        Texture {
+            Tag: "texture[2]:texture_iamod"
+            Value: "/material/tiled/iamod_building_01"
+        }
+    }
+    Material {
+        Alias: "shadow_caster_offset"
+        Effect: "eut2.shadowonly"
+        Flags: 0
+        AttributeCount: 1
+        TextureCount: 0
+        Attribute {
+            Format: FLOAT
+            Tag: "shadow_bias"
+            Value: ( 0.0 )
+        }
+    }
+    Material {
+        Alias: "decal_ground_01"
+        Effect: "eut2.dif.spec.decal.over"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.0 0.0 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 4.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/special/decal_ground_01"
+        }
+    }
+    Material {
+        Alias: "electro_00"
+        Effect: "eut2.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/special/electro_00"
+        }
+    }
+    Material {
+        Alias: "metal_fences_01"
+        Effect: "eut2.dif.spec.shadow.a"
+        Flags: 0
+        AttributeCount: 6
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.4000000059604645 0.4000000059604645 0.4000000059604645 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shadow_bias"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/metal_fences_01"
+        }
+    }
+    Material {
+        Alias: "lines_eu_01"
+        Effect: "eut2.dif.spec.decal.over"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.0 0.0 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/special/lines_eu_01"
+        }
+    }
+    Material {
+        Alias: "lights_01"
+        Effect: "eut2.building.lvcol.day"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "aux[5]"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/special/lights_01"
+        }
+    }
+    Material {
+        Alias: "window_interior_01"
+        Effect: "eut2.window.day"
+        Flags: 0
+        AttributeCount: 6
+        TextureCount: 3
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.5454490184783936 0.5454490184783936 0.5454490184783936 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "env_factor"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT2
+            Tag: "fresnel"
+            Value: ( 0.20000000298023224 0.8999999761581421 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/special/window_interior_01"
+        }
+        Texture {
+            Tag: "texture[1]:texture_reflection"
+            Value: "/material/environment/building_reflection/building_ref"
+        }
+        Texture {
+            Tag: "texture[2]:texture_lightmap"
+            Value: "/material/special/window_interior_01"
+        }
+    }
+    Material {
+        Alias: "asphalt_tiles_eu_01"
+        Effect: "eut2.dif.spec"
+        Flags: 1
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/asphalt_tiles_eu_01"
+        }
+    }
+    Material {
+        Alias: "stripes_01"
+        Effect: "eut2.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/stripes_01"
+        }
+    }
+    Material {
+        Alias: "bricks_01"
+        Effect: "eut2.dif.spec.mult.dif.spec.iamod.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 3
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/bricks_gs_01"
+        }
+        Texture {
+            Tag: "texture[1]:texture_mult"
+            Value: "/material/tiled/bricks_over_01"
+        }
+        Texture {
+            Tag: "texture[2]:texture_iamod"
+            Value: "/material/tiled/iamod_building_01"
+        }
+    }
+    Material {
+        Alias: "metal_plates_01"
+        Effect: "eut2.dif.spec.mult.dif.spec.iamod.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 3
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 85.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.10000000149011612 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/metal_plates_gs_01"
+        }
+        Texture {
+            Tag: "texture[1]:texture_mult"
+            Value: "/material/tiled/metal_over_01"
+        }
+        Texture {
+            Tag: "texture[2]:texture_iamod"
+            Value: "/material/tiled/iamod_building_01"
+        }
+    }
+    Material {
+        Alias: "cargo_01"
+        Effect: "eut2.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/special/cargo_01"
+        }
+    }
+    Material {
+        Alias: "sidewalk_scan_01"
+        Effect: "eut2.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/sidewalk_scan_01"
+        }
+    }
+    Material {
+        Alias: "vegetation_city_01"
+        Effect: "eut2.dif.spec.shadow.a"
+        Flags: 0
+        AttributeCount: 6
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.0 0.0 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 4.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shadow_bias"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/special/vegetation_city_01"
+        }
+    }
+    Material {
+        Alias: "metal_alpha_01"
+        Effect: "eut2.dif.spec.shadow.a"
+        Flags: 0
+        AttributeCount: 6
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.10000000149011612 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shadow_bias"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/metal_alpha_01"
+        }
+    }
+    Material {
+        Alias: "road_scan_01"
+        Effect: "eut2.dif.spec.weight.mult2"
+        Flags: 0
+        AttributeCount: 7
+        TextureCount: 2
+        Attribute {
+            Format: STRING
+            Tag: "substance"
+            Value: ( "road" )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 7.0 )
+        }
+        Attribute {
+            Format: FLOAT2
+            Tag: "aux[5]"
+            Value: ( 4.400000095367432 12.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/road/road_template/sc/dirt_light_gray"
+        }
+        Texture {
+            Tag: "texture[1]:texture_mult"
+            Value: "/material/road/road_template/sc/asphalt_light_gray"
+        }
+    }
+    Material {
+        Alias: "metal_plates_x2_02"
+        Effect: "eut2.dif.spec.mult.dif.spec.iamod.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 3
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 85.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.10000000149011612 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/metal_plates_gs_02"
+        }
+        Texture {
+            Tag: "texture[1]:texture_mult"
+            Value: "/material/tiled/metal_plates_over_02"
+        }
+        Texture {
+            Tag: "texture[2]:texture_iamod"
+            Value: "/material/tiled/iamod_building_01"
+        }
+    }
+    Material {
+        Alias: "curb_01_scan_trans"
+        Effect: "eut2.dif.spec.weight.weight.dif.spec.weight"
+        Flags: 0
+        AttributeCount: 8
+        TextureCount: 2
+        Attribute {
+            Format: STRING
+            Tag: "substance"
+            Value: ( "road" )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.20000000298023224 0.20000000298023224 0.20000000298023224 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 12.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT4
+            Tag: "aux[3]"
+            Value: ( 0.20000000298023224 0.20000000298023224 0.20000000298023224 12.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection2"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/road/road_template/sc/ter_trans_placeholder"
+        }
+        Texture {
+            Tag: "texture[1]:texture_over"
+            Value: "/material/road/road_template/sc/shoulder_01"
+        }
+    }
+    Material {
+        Alias: "prefab_terrain"
+        Effect: "eut2.dif.spec.weight.tg0"
+        Flags: 0
+        AttributeCount: 7
+        TextureCount: 1
+        Attribute {
+            Format: STRING
+            Tag: "substance"
+            Value: ( "grass" )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.10000000149011612 0.10000000149011612 0.10000000149011612 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 12.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT2
+            Tag: "aux[0]"
+            Value: ( 5.0 5.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/terrain/grass_city_main_sc"
+        }
+    }
+    Material {
+        Alias: "metal_01"
+        Effect: "eut2.dif.spec.mult.dif.spec.iamod.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 3
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.10000000149011612 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/metal_gs_01"
+        }
+        Texture {
+            Tag: "texture[1]:texture_mult"
+            Value: "/material/tiled/metal_over_01"
+        }
+        Texture {
+            Tag: "texture[2]:texture_iamod"
+            Value: "/material/tiled/iamod_building_01"
+        }
+    }
+    Material {
+        Alias: "shadow_caster"
+        Effect: "eut2.shadowonly"
+        Flags: 0
+        AttributeCount: 1
+        TextureCount: 0
+        Attribute {
+            Format: FLOAT
+            Tag: "shadow_bias"
+            Value: ( 0.0 )
+        }
+    }
+    Material {
+        Alias: "window_frames_01_decal"
+        Effect: "eut2.dif.spec.decal.over"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.0 0.0 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 4.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/special/window_frames_01"
+        }
+    }
+    Material {
+        Alias: "wood_01"
+        Effect: "eut2.dif.spec.mult.dif.spec.iamod.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 3
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/wood_gs_01"
+        }
+        Texture {
+            Tag: "texture[1]:texture_mult"
+            Value: "/material/tiled/wood_over_01"
+        }
+        Texture {
+            Tag: "texture[2]:texture_iamod"
+            Value: "/material/tiled/iamod_building_01"
+        }
+    }
+    Material {
+        Alias: "concrete_01"
+        Effect: "eut2.dif.spec.mult.dif.spec.iamod.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 3
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 60.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/concrete_gs_01"
+        }
+        Texture {
+            Tag: "texture[1]:texture_mult"
+            Value: "/material/tiled/concrete_over_01"
+        }
+        Texture {
+            Tag: "texture[2]:texture_iamod"
+            Value: "/material/tiled/iamod_building_01"
+        }
+    }
+    Material {
+        Alias: "transition"
+        Effect: "eut2.dif.spec.weight.weight.dif.spec.weight.tg0"
+        Flags: 0
+        AttributeCount: 9
+        TextureCount: 2
+        Attribute {
+            Format: STRING
+            Tag: "substance"
+            Value: ( "dirt" )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.10000000149011612 0.10000000149011612 0.10000000149011612 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 12.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT4
+            Tag: "aux[3]"
+            Value: ( 0.20000000298023224 0.20000000298023224 0.20000000298023224 12.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection2"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT2
+            Tag: "aux[0]"
+            Value: ( 5.0 5.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/terrain/grass_city_main_sc"
+        }
+        Texture {
+            Tag: "texture[1]:texture_over"
+            Value: "/material/terrain/dirt_3_512"
+        }
+    }
+    Material {
+        Alias: "containers_01"
+        Effect: "eut2.dif.spec.mult.dif.spec.iamod.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 3
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/special/containers_gs_01"
+        }
+        Texture {
+            Tag: "texture[1]:texture_mult"
+            Value: "/material/special/containers_over_01"
+        }
+        Texture {
+            Tag: "texture[2]:texture_iamod"
+            Value: "/material/tiled/iamod_building_01"
+        }
+    }
+    Material {
+        Alias: "shoulder_decal"
+        Effect: "eut2.dif.spec.decal.over"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.0 0.0 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 4.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/road/road_template/sc/decal_def_dk"
+        }
+    }
+    Material {
+        Alias: "decal_building_01"
+        Effect: "eut2.unlit.vcol.tex.awhite.decal.mult"
+        Flags: 0
+        AttributeCount: 1
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/decal_building_01"
+        }
+    }
+    Material {
+        Alias: "cgfxShader1"
+        Effect: "eut2.none"
+        Flags: 0
+        AttributeCount: 0
+        TextureCount: 0
+    }
+}
+Look {
+    Name: "sc_ligt_gr"
+    Material {
+        Alias: "plaster_01"
+        Effect: "eut2.dif.spec.mult.dif.spec.iamod.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 3
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/plaster_gs_01"
+        }
+        Texture {
+            Tag: "texture[1]:texture_mult"
+            Value: "/material/tiled/plaster_over_01"
+        }
+        Texture {
+            Tag: "texture[2]:texture_iamod"
+            Value: "/material/tiled/iamod_building_01"
+        }
+    }
+    Material {
+        Alias: "shadow_caster_offset"
+        Effect: "eut2.shadowonly"
+        Flags: 0
+        AttributeCount: 1
+        TextureCount: 0
+        Attribute {
+            Format: FLOAT
+            Tag: "shadow_bias"
+            Value: ( 0.0 )
+        }
+    }
+    Material {
+        Alias: "decal_ground_01"
+        Effect: "eut2.dif.spec.decal.over"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.0 0.0 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 4.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/special/decal_ground_01"
+        }
+    }
+    Material {
+        Alias: "electro_00"
+        Effect: "eut2.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/special/electro_00"
+        }
+    }
+    Material {
+        Alias: "metal_fences_01"
+        Effect: "eut2.dif.spec.shadow.a"
+        Flags: 0
+        AttributeCount: 6
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.4000000059604645 0.4000000059604645 0.4000000059604645 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shadow_bias"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/metal_fences_01"
+        }
+    }
+    Material {
+        Alias: "lines_eu_01"
+        Effect: "eut2.dif.spec.decal.over"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.0 0.0 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/special/lines_eu_01"
+        }
+    }
+    Material {
+        Alias: "lights_01"
+        Effect: "eut2.building.lvcol.day"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "aux[5]"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/special/lights_01"
+        }
+    }
+    Material {
+        Alias: "window_interior_01"
+        Effect: "eut2.window.day"
+        Flags: 0
+        AttributeCount: 6
+        TextureCount: 3
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.5454490184783936 0.5454490184783936 0.5454490184783936 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "env_factor"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT2
+            Tag: "fresnel"
+            Value: ( 0.20000000298023224 0.8999999761581421 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/special/window_interior_01"
+        }
+        Texture {
+            Tag: "texture[1]:texture_reflection"
+            Value: "/material/environment/building_reflection/building_ref"
+        }
+        Texture {
+            Tag: "texture[2]:texture_lightmap"
+            Value: "/material/special/window_interior_01"
+        }
+    }
+    Material {
+        Alias: "asphalt_tiles_eu_01"
+        Effect: "eut2.dif.spec"
+        Flags: 1
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/asphalt_tiles_eu_01"
+        }
+    }
+    Material {
+        Alias: "stripes_01"
+        Effect: "eut2.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/stripes_01"
+        }
+    }
+    Material {
+        Alias: "bricks_01"
+        Effect: "eut2.dif.spec.mult.dif.spec.iamod.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 3
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/bricks_gs_01"
+        }
+        Texture {
+            Tag: "texture[1]:texture_mult"
+            Value: "/material/tiled/bricks_over_01"
+        }
+        Texture {
+            Tag: "texture[2]:texture_iamod"
+            Value: "/material/tiled/iamod_building_01"
+        }
+    }
+    Material {
+        Alias: "metal_plates_01"
+        Effect: "eut2.dif.spec.mult.dif.spec.iamod.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 3
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 85.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.10000000149011612 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/metal_plates_gs_01"
+        }
+        Texture {
+            Tag: "texture[1]:texture_mult"
+            Value: "/material/tiled/metal_over_01"
+        }
+        Texture {
+            Tag: "texture[2]:texture_iamod"
+            Value: "/material/tiled/iamod_building_01"
+        }
+    }
+    Material {
+        Alias: "cargo_01"
+        Effect: "eut2.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/special/cargo_01"
+        }
+    }
+    Material {
+        Alias: "sidewalk_scan_01"
+        Effect: "eut2.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/sidewalk_scan_01"
+        }
+    }
+    Material {
+        Alias: "vegetation_city_01"
+        Effect: "eut2.dif.spec.shadow.a"
+        Flags: 0
+        AttributeCount: 6
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.0 0.0 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 4.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shadow_bias"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/special/vegetation_city_01"
+        }
+    }
+    Material {
+        Alias: "metal_alpha_01"
+        Effect: "eut2.dif.spec.shadow.a"
+        Flags: 0
+        AttributeCount: 6
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.10000000149011612 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shadow_bias"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/metal_alpha_01"
+        }
+    }
+    Material {
+        Alias: "road_scan_01"
+        Effect: "eut2.dif.spec.weight.mult2"
+        Flags: 0
+        AttributeCount: 7
+        TextureCount: 2
+        Attribute {
+            Format: STRING
+            Tag: "substance"
+            Value: ( "road" )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 7.0 )
+        }
+        Attribute {
+            Format: FLOAT2
+            Tag: "aux[5]"
+            Value: ( 4.400000095367432 12.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/road/road_template/sc/dirt_light_gray"
+        }
+        Texture {
+            Tag: "texture[1]:texture_mult"
+            Value: "/material/road/road_template/sc/asphalt_light_gray"
+        }
+    }
+    Material {
+        Alias: "metal_plates_x2_02"
+        Effect: "eut2.dif.spec.mult.dif.spec.iamod.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 3
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 85.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.10000000149011612 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/metal_plates_gs_02"
+        }
+        Texture {
+            Tag: "texture[1]:texture_mult"
+            Value: "/material/tiled/metal_plates_over_02"
+        }
+        Texture {
+            Tag: "texture[2]:texture_iamod"
+            Value: "/material/tiled/iamod_building_01"
+        }
+    }
+    Material {
+        Alias: "curb_01_scan_trans"
+        Effect: "eut2.dif.spec.weight.weight.dif.spec.weight"
+        Flags: 0
+        AttributeCount: 8
+        TextureCount: 2
+        Attribute {
+            Format: STRING
+            Tag: "substance"
+            Value: ( "road" )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.20000000298023224 0.20000000298023224 0.20000000298023224 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 12.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT4
+            Tag: "aux[3]"
+            Value: ( 0.20000000298023224 0.20000000298023224 0.20000000298023224 12.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection2"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/road/road_template/sc/ter_trans_placeholder"
+        }
+        Texture {
+            Tag: "texture[1]:texture_over"
+            Value: "/material/road/road_template/sc/shoulder_01"
+        }
+    }
+    Material {
+        Alias: "prefab_terrain"
+        Effect: "eut2.dif.spec.weight.tg0"
+        Flags: 0
+        AttributeCount: 7
+        TextureCount: 1
+        Attribute {
+            Format: STRING
+            Tag: "substance"
+            Value: ( "grass" )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.10000000149011612 0.10000000149011612 0.10000000149011612 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 12.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT2
+            Tag: "aux[0]"
+            Value: ( 5.0 5.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/terrain/grass_city_main_sc"
+        }
+    }
+    Material {
+        Alias: "metal_01"
+        Effect: "eut2.dif.spec.mult.dif.spec.iamod.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 3
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.10000000149011612 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/metal_gs_01"
+        }
+        Texture {
+            Tag: "texture[1]:texture_mult"
+            Value: "/material/tiled/metal_over_01"
+        }
+        Texture {
+            Tag: "texture[2]:texture_iamod"
+            Value: "/material/tiled/iamod_building_01"
+        }
+    }
+    Material {
+        Alias: "shadow_caster"
+        Effect: "eut2.shadowonly"
+        Flags: 0
+        AttributeCount: 1
+        TextureCount: 0
+        Attribute {
+            Format: FLOAT
+            Tag: "shadow_bias"
+            Value: ( 0.0 )
+        }
+    }
+    Material {
+        Alias: "window_frames_01_decal"
+        Effect: "eut2.dif.spec.decal.over"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.0 0.0 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 4.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/special/window_frames_01"
+        }
+    }
+    Material {
+        Alias: "wood_01"
+        Effect: "eut2.dif.spec.mult.dif.spec.iamod.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 3
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/wood_gs_01"
+        }
+        Texture {
+            Tag: "texture[1]:texture_mult"
+            Value: "/material/tiled/wood_over_01"
+        }
+        Texture {
+            Tag: "texture[2]:texture_iamod"
+            Value: "/material/tiled/iamod_building_01"
+        }
+    }
+    Material {
+        Alias: "concrete_01"
+        Effect: "eut2.dif.spec.mult.dif.spec.iamod.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 3
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 60.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/concrete_gs_01"
+        }
+        Texture {
+            Tag: "texture[1]:texture_mult"
+            Value: "/material/tiled/concrete_over_01"
+        }
+        Texture {
+            Tag: "texture[2]:texture_iamod"
+            Value: "/material/tiled/iamod_building_01"
+        }
+    }
+    Material {
+        Alias: "transition"
+        Effect: "eut2.dif.spec.weight.weight.dif.spec.weight.tg0"
+        Flags: 0
+        AttributeCount: 9
+        TextureCount: 2
+        Attribute {
+            Format: STRING
+            Tag: "substance"
+            Value: ( "dirt" )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.10000000149011612 0.10000000149011612 0.10000000149011612 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 12.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT4
+            Tag: "aux[3]"
+            Value: ( 0.20000000298023224 0.20000000298023224 0.20000000298023224 12.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection2"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT2
+            Tag: "aux[0]"
+            Value: ( 5.0 5.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/terrain/grass_city_main_sc"
+        }
+        Texture {
+            Tag: "texture[1]:texture_over"
+            Value: "/material/terrain/dirt_3_512"
+        }
+    }
+    Material {
+        Alias: "containers_01"
+        Effect: "eut2.dif.spec.mult.dif.spec.iamod.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 3
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/special/containers_gs_01"
+        }
+        Texture {
+            Tag: "texture[1]:texture_mult"
+            Value: "/material/special/containers_over_01"
+        }
+        Texture {
+            Tag: "texture[2]:texture_iamod"
+            Value: "/material/tiled/iamod_building_01"
+        }
+    }
+    Material {
+        Alias: "shoulder_decal"
+        Effect: "eut2.dif.spec.decal.over"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.0 0.0 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 4.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/road/road_template/sc/decal_def_dk"
+        }
+    }
+    Material {
+        Alias: "decal_building_01"
+        Effect: "eut2.unlit.vcol.tex.awhite.decal.mult"
+        Flags: 0
+        AttributeCount: 1
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/decal_building_01"
+        }
+    }
+    Material {
+        Alias: "cgfxShader1"
+        Effect: "eut2.none"
+        Flags: 0
+        AttributeCount: 0
+        TextureCount: 0
+    }
+}
+Look {
+    Name: "sc_def_dk"
+    Material {
+        Alias: "plaster_01"
+        Effect: "eut2.dif.spec.mult.dif.spec.iamod.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 3
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/plaster_gs_01"
+        }
+        Texture {
+            Tag: "texture[1]:texture_mult"
+            Value: "/material/tiled/plaster_over_01"
+        }
+        Texture {
+            Tag: "texture[2]:texture_iamod"
+            Value: "/material/tiled/iamod_building_01"
+        }
+    }
+    Material {
+        Alias: "shadow_caster_offset"
+        Effect: "eut2.shadowonly"
+        Flags: 0
+        AttributeCount: 1
+        TextureCount: 0
+        Attribute {
+            Format: FLOAT
+            Tag: "shadow_bias"
+            Value: ( 0.0 )
+        }
+    }
+    Material {
+        Alias: "decal_ground_01"
+        Effect: "eut2.dif.spec.decal.over"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.0 0.0 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 4.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/special/decal_ground_01"
+        }
+    }
+    Material {
+        Alias: "electro_00"
+        Effect: "eut2.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/special/electro_00"
+        }
+    }
+    Material {
+        Alias: "metal_fences_01"
+        Effect: "eut2.dif.spec.shadow.a"
+        Flags: 0
+        AttributeCount: 6
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.4000000059604645 0.4000000059604645 0.4000000059604645 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shadow_bias"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/metal_fences_01"
+        }
+    }
+    Material {
+        Alias: "lines_eu_01"
+        Effect: "eut2.dif.spec.decal.over"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.0 0.0 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/special/lines_eu_01"
+        }
+    }
+    Material {
+        Alias: "lights_01"
+        Effect: "eut2.building.lvcol.day"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "aux[5]"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/special/lights_01"
+        }
+    }
+    Material {
+        Alias: "window_interior_01"
+        Effect: "eut2.window.day"
+        Flags: 0
+        AttributeCount: 6
+        TextureCount: 3
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.5454490184783936 0.5454490184783936 0.5454490184783936 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "env_factor"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT2
+            Tag: "fresnel"
+            Value: ( 0.20000000298023224 0.8999999761581421 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/special/window_interior_01"
+        }
+        Texture {
+            Tag: "texture[1]:texture_reflection"
+            Value: "/material/environment/building_reflection/building_ref"
+        }
+        Texture {
+            Tag: "texture[2]:texture_lightmap"
+            Value: "/material/special/window_interior_01"
+        }
+    }
+    Material {
+        Alias: "asphalt_tiles_eu_01"
+        Effect: "eut2.dif.spec"
+        Flags: 1
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/asphalt_tiles_eu_01"
+        }
+    }
+    Material {
+        Alias: "stripes_01"
+        Effect: "eut2.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/stripes_01"
+        }
+    }
+    Material {
+        Alias: "bricks_01"
+        Effect: "eut2.dif.spec.mult.dif.spec.iamod.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 3
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/bricks_gs_01"
+        }
+        Texture {
+            Tag: "texture[1]:texture_mult"
+            Value: "/material/tiled/bricks_over_01"
+        }
+        Texture {
+            Tag: "texture[2]:texture_iamod"
+            Value: "/material/tiled/iamod_building_01"
+        }
+    }
+    Material {
+        Alias: "metal_plates_01"
+        Effect: "eut2.dif.spec.mult.dif.spec.iamod.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 3
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 85.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.10000000149011612 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/metal_plates_gs_01"
+        }
+        Texture {
+            Tag: "texture[1]:texture_mult"
+            Value: "/material/tiled/metal_over_01"
+        }
+        Texture {
+            Tag: "texture[2]:texture_iamod"
+            Value: "/material/tiled/iamod_building_01"
+        }
+    }
+    Material {
+        Alias: "cargo_01"
+        Effect: "eut2.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/special/cargo_01"
+        }
+    }
+    Material {
+        Alias: "sidewalk_scan_01"
+        Effect: "eut2.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/sidewalk_scan_01"
+        }
+    }
+    Material {
+        Alias: "vegetation_city_01"
+        Effect: "eut2.dif.spec.shadow.a"
+        Flags: 0
+        AttributeCount: 6
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.0 0.0 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 4.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shadow_bias"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/special/vegetation_city_01"
+        }
+    }
+    Material {
+        Alias: "metal_alpha_01"
+        Effect: "eut2.dif.spec.shadow.a"
+        Flags: 0
+        AttributeCount: 6
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.10000000149011612 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shadow_bias"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/metal_alpha_01"
+        }
+    }
+    Material {
+        Alias: "road_scan_01"
+        Effect: "eut2.dif.spec.weight.mult2"
+        Flags: 0
+        AttributeCount: 7
+        TextureCount: 2
+        Attribute {
+            Format: STRING
+            Tag: "substance"
+            Value: ( "road" )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 7.0 )
+        }
+        Attribute {
+            Format: FLOAT2
+            Tag: "aux[5]"
+            Value: ( 4.400000095367432 12.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/road/road_template/sc/dirt_def_dk"
+        }
+        Texture {
+            Tag: "texture[1]:texture_mult"
+            Value: "/material/road/road_template/sc/asphalt_gray_dk"
+        }
+    }
+    Material {
+        Alias: "metal_plates_x2_02"
+        Effect: "eut2.dif.spec.mult.dif.spec.iamod.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 3
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 85.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.10000000149011612 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/metal_plates_gs_02"
+        }
+        Texture {
+            Tag: "texture[1]:texture_mult"
+            Value: "/material/tiled/metal_plates_over_02"
+        }
+        Texture {
+            Tag: "texture[2]:texture_iamod"
+            Value: "/material/tiled/iamod_building_01"
+        }
+    }
+    Material {
+        Alias: "curb_01_scan_trans"
+        Effect: "eut2.dif.spec.weight.weight.dif.spec.weight"
+        Flags: 0
+        AttributeCount: 8
+        TextureCount: 2
+        Attribute {
+            Format: STRING
+            Tag: "substance"
+            Value: ( "road" )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.20000000298023224 0.20000000298023224 0.20000000298023224 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 12.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT4
+            Tag: "aux[3]"
+            Value: ( 0.20000000298023224 0.20000000298023224 0.20000000298023224 12.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection2"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/road/road_template/sc/ter_trans_placeholder"
+        }
+        Texture {
+            Tag: "texture[1]:texture_over"
+            Value: "/material/road/road_template/sc/shoulder_01"
+        }
+    }
+    Material {
+        Alias: "prefab_terrain"
+        Effect: "eut2.dif.spec.weight.tg0"
+        Flags: 0
+        AttributeCount: 7
+        TextureCount: 1
+        Attribute {
+            Format: STRING
+            Tag: "substance"
+            Value: ( "grass" )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.10000000149011612 0.10000000149011612 0.10000000149011612 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 12.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT2
+            Tag: "aux[0]"
+            Value: ( 5.0 5.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/terrain/grass_city_main_sc"
+        }
+    }
+    Material {
+        Alias: "metal_01"
+        Effect: "eut2.dif.spec.mult.dif.spec.iamod.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 3
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.10000000149011612 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/metal_gs_01"
+        }
+        Texture {
+            Tag: "texture[1]:texture_mult"
+            Value: "/material/tiled/metal_over_01"
+        }
+        Texture {
+            Tag: "texture[2]:texture_iamod"
+            Value: "/material/tiled/iamod_building_01"
+        }
+    }
+    Material {
+        Alias: "shadow_caster"
+        Effect: "eut2.shadowonly"
+        Flags: 0
+        AttributeCount: 1
+        TextureCount: 0
+        Attribute {
+            Format: FLOAT
+            Tag: "shadow_bias"
+            Value: ( 0.0 )
+        }
+    }
+    Material {
+        Alias: "window_frames_01_decal"
+        Effect: "eut2.dif.spec.decal.over"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.0 0.0 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 4.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/special/window_frames_01"
+        }
+    }
+    Material {
+        Alias: "wood_01"
+        Effect: "eut2.dif.spec.mult.dif.spec.iamod.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 3
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/wood_gs_01"
+        }
+        Texture {
+            Tag: "texture[1]:texture_mult"
+            Value: "/material/tiled/wood_over_01"
+        }
+        Texture {
+            Tag: "texture[2]:texture_iamod"
+            Value: "/material/tiled/iamod_building_01"
+        }
+    }
+    Material {
+        Alias: "concrete_01"
+        Effect: "eut2.dif.spec.mult.dif.spec.iamod.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 3
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 60.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/concrete_gs_01"
+        }
+        Texture {
+            Tag: "texture[1]:texture_mult"
+            Value: "/material/tiled/concrete_over_01"
+        }
+        Texture {
+            Tag: "texture[2]:texture_iamod"
+            Value: "/material/tiled/iamod_building_01"
+        }
+    }
+    Material {
+        Alias: "transition"
+        Effect: "eut2.dif.spec.weight.weight.dif.spec.weight.tg0"
+        Flags: 0
+        AttributeCount: 9
+        TextureCount: 2
+        Attribute {
+            Format: STRING
+            Tag: "substance"
+            Value: ( "dirt" )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.10000000149011612 0.10000000149011612 0.10000000149011612 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 12.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT4
+            Tag: "aux[3]"
+            Value: ( 0.20000000298023224 0.20000000298023224 0.20000000298023224 12.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection2"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT2
+            Tag: "aux[0]"
+            Value: ( 5.0 5.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/terrain/grass_city_main_sc"
+        }
+        Texture {
+            Tag: "texture[1]:texture_over"
+            Value: "/material/terrain/dirt_3_512"
+        }
+    }
+    Material {
+        Alias: "containers_01"
+        Effect: "eut2.dif.spec.mult.dif.spec.iamod.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 3
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/special/containers_gs_01"
+        }
+        Texture {
+            Tag: "texture[1]:texture_mult"
+            Value: "/material/special/containers_over_01"
+        }
+        Texture {
+            Tag: "texture[2]:texture_iamod"
+            Value: "/material/tiled/iamod_building_01"
+        }
+    }
+    Material {
+        Alias: "shoulder_decal"
+        Effect: "eut2.dif.spec.decal.over"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.0 0.0 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 4.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/road/road_template/sc/decal_def_dk"
+        }
+    }
+    Material {
+        Alias: "decal_building_01"
+        Effect: "eut2.unlit.vcol.tex.awhite.decal.mult"
+        Flags: 0
+        AttributeCount: 1
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/decal_building_01"
+        }
+    }
+    Material {
+        Alias: "cgfxShader1"
+        Effect: "eut2.none"
+        Flags: 0
+        AttributeCount: 0
+        TextureCount: 0
+    }
+}
+Look {
+    Name: "sc_gray_dk"
+    Material {
+        Alias: "plaster_01"
+        Effect: "eut2.dif.spec.mult.dif.spec.iamod.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 3
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/plaster_gs_01"
+        }
+        Texture {
+            Tag: "texture[1]:texture_mult"
+            Value: "/material/tiled/plaster_over_01"
+        }
+        Texture {
+            Tag: "texture[2]:texture_iamod"
+            Value: "/material/tiled/iamod_building_01"
+        }
+    }
+    Material {
+        Alias: "shadow_caster_offset"
+        Effect: "eut2.shadowonly"
+        Flags: 0
+        AttributeCount: 1
+        TextureCount: 0
+        Attribute {
+            Format: FLOAT
+            Tag: "shadow_bias"
+            Value: ( 0.0 )
+        }
+    }
+    Material {
+        Alias: "decal_ground_01"
+        Effect: "eut2.dif.spec.decal.over"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.0 0.0 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 4.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/special/decal_ground_01"
+        }
+    }
+    Material {
+        Alias: "electro_00"
+        Effect: "eut2.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/special/electro_00"
+        }
+    }
+    Material {
+        Alias: "metal_fences_01"
+        Effect: "eut2.dif.spec.shadow.a"
+        Flags: 0
+        AttributeCount: 6
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.4000000059604645 0.4000000059604645 0.4000000059604645 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shadow_bias"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/metal_fences_01"
+        }
+    }
+    Material {
+        Alias: "lines_eu_01"
+        Effect: "eut2.dif.spec.decal.over"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.0 0.0 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/special/lines_eu_01"
+        }
+    }
+    Material {
+        Alias: "lights_01"
+        Effect: "eut2.building.lvcol.day"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "aux[5]"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/special/lights_01"
+        }
+    }
+    Material {
+        Alias: "window_interior_01"
+        Effect: "eut2.window.day"
+        Flags: 0
+        AttributeCount: 6
+        TextureCount: 3
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.5454490184783936 0.5454490184783936 0.5454490184783936 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "env_factor"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT2
+            Tag: "fresnel"
+            Value: ( 0.20000000298023224 0.8999999761581421 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/special/window_interior_01"
+        }
+        Texture {
+            Tag: "texture[1]:texture_reflection"
+            Value: "/material/environment/building_reflection/building_ref"
+        }
+        Texture {
+            Tag: "texture[2]:texture_lightmap"
+            Value: "/material/special/window_interior_01"
+        }
+    }
+    Material {
+        Alias: "asphalt_tiles_eu_01"
+        Effect: "eut2.dif.spec"
+        Flags: 1
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/asphalt_tiles_eu_01"
+        }
+    }
+    Material {
+        Alias: "stripes_01"
+        Effect: "eut2.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/stripes_01"
+        }
+    }
+    Material {
+        Alias: "bricks_01"
+        Effect: "eut2.dif.spec.mult.dif.spec.iamod.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 3
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/bricks_gs_01"
+        }
+        Texture {
+            Tag: "texture[1]:texture_mult"
+            Value: "/material/tiled/bricks_over_01"
+        }
+        Texture {
+            Tag: "texture[2]:texture_iamod"
+            Value: "/material/tiled/iamod_building_01"
+        }
+    }
+    Material {
+        Alias: "metal_plates_01"
+        Effect: "eut2.dif.spec.mult.dif.spec.iamod.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 3
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 85.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.10000000149011612 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/metal_plates_gs_01"
+        }
+        Texture {
+            Tag: "texture[1]:texture_mult"
+            Value: "/material/tiled/metal_over_01"
+        }
+        Texture {
+            Tag: "texture[2]:texture_iamod"
+            Value: "/material/tiled/iamod_building_01"
+        }
+    }
+    Material {
+        Alias: "cargo_01"
+        Effect: "eut2.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/special/cargo_01"
+        }
+    }
+    Material {
+        Alias: "sidewalk_scan_01"
+        Effect: "eut2.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/sidewalk_scan_01"
+        }
+    }
+    Material {
+        Alias: "vegetation_city_01"
+        Effect: "eut2.dif.spec.shadow.a"
+        Flags: 0
+        AttributeCount: 6
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.0 0.0 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 4.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shadow_bias"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/special/vegetation_city_01"
+        }
+    }
+    Material {
+        Alias: "metal_alpha_01"
+        Effect: "eut2.dif.spec.shadow.a"
+        Flags: 0
+        AttributeCount: 6
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.10000000149011612 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shadow_bias"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/metal_alpha_01"
+        }
+    }
+    Material {
+        Alias: "road_scan_01"
+        Effect: "eut2.dif.spec.weight.mult2"
+        Flags: 0
+        AttributeCount: 7
+        TextureCount: 2
+        Attribute {
+            Format: STRING
+            Tag: "substance"
+            Value: ( "road" )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 7.0 )
+        }
+        Attribute {
+            Format: FLOAT2
+            Tag: "aux[5]"
+            Value: ( 4.400000095367432 12.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/road/road_template/sc/dirt_gray_dk"
+        }
+        Texture {
+            Tag: "texture[1]:texture_mult"
+            Value: "/material/road/road_template/sc/asphalt_gray_dk"
+        }
+    }
+    Material {
+        Alias: "metal_plates_x2_02"
+        Effect: "eut2.dif.spec.mult.dif.spec.iamod.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 3
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 85.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.10000000149011612 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/metal_plates_gs_02"
+        }
+        Texture {
+            Tag: "texture[1]:texture_mult"
+            Value: "/material/tiled/metal_plates_over_02"
+        }
+        Texture {
+            Tag: "texture[2]:texture_iamod"
+            Value: "/material/tiled/iamod_building_01"
+        }
+    }
+    Material {
+        Alias: "curb_01_scan_trans"
+        Effect: "eut2.dif.spec.weight.weight.dif.spec.weight"
+        Flags: 0
+        AttributeCount: 8
+        TextureCount: 2
+        Attribute {
+            Format: STRING
+            Tag: "substance"
+            Value: ( "road" )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.20000000298023224 0.20000000298023224 0.20000000298023224 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 12.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT4
+            Tag: "aux[3]"
+            Value: ( 0.20000000298023224 0.20000000298023224 0.20000000298023224 12.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection2"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/road/road_template/sc/ter_trans_placeholder"
+        }
+        Texture {
+            Tag: "texture[1]:texture_over"
+            Value: "/material/road/road_template/sc/shoulder_01"
+        }
+    }
+    Material {
+        Alias: "prefab_terrain"
+        Effect: "eut2.dif.spec.weight.tg0"
+        Flags: 0
+        AttributeCount: 7
+        TextureCount: 1
+        Attribute {
+            Format: STRING
+            Tag: "substance"
+            Value: ( "grass" )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.10000000149011612 0.10000000149011612 0.10000000149011612 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 12.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT2
+            Tag: "aux[0]"
+            Value: ( 5.0 5.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/terrain/grass_city_main_sc"
+        }
+    }
+    Material {
+        Alias: "metal_01"
+        Effect: "eut2.dif.spec.mult.dif.spec.iamod.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 3
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.10000000149011612 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/metal_gs_01"
+        }
+        Texture {
+            Tag: "texture[1]:texture_mult"
+            Value: "/material/tiled/metal_over_01"
+        }
+        Texture {
+            Tag: "texture[2]:texture_iamod"
+            Value: "/material/tiled/iamod_building_01"
+        }
+    }
+    Material {
+        Alias: "shadow_caster"
+        Effect: "eut2.shadowonly"
+        Flags: 0
+        AttributeCount: 1
+        TextureCount: 0
+        Attribute {
+            Format: FLOAT
+            Tag: "shadow_bias"
+            Value: ( 0.0 )
+        }
+    }
+    Material {
+        Alias: "window_frames_01_decal"
+        Effect: "eut2.dif.spec.decal.over"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.0 0.0 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 4.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/special/window_frames_01"
+        }
+    }
+    Material {
+        Alias: "wood_01"
+        Effect: "eut2.dif.spec.mult.dif.spec.iamod.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 3
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/wood_gs_01"
+        }
+        Texture {
+            Tag: "texture[1]:texture_mult"
+            Value: "/material/tiled/wood_over_01"
+        }
+        Texture {
+            Tag: "texture[2]:texture_iamod"
+            Value: "/material/tiled/iamod_building_01"
+        }
+    }
+    Material {
+        Alias: "concrete_01"
+        Effect: "eut2.dif.spec.mult.dif.spec.iamod.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 3
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 60.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/concrete_gs_01"
+        }
+        Texture {
+            Tag: "texture[1]:texture_mult"
+            Value: "/material/tiled/concrete_over_01"
+        }
+        Texture {
+            Tag: "texture[2]:texture_iamod"
+            Value: "/material/tiled/iamod_building_01"
+        }
+    }
+    Material {
+        Alias: "transition"
+        Effect: "eut2.dif.spec.weight.weight.dif.spec.weight.tg0"
+        Flags: 0
+        AttributeCount: 9
+        TextureCount: 2
+        Attribute {
+            Format: STRING
+            Tag: "substance"
+            Value: ( "dirt" )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.10000000149011612 0.10000000149011612 0.10000000149011612 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 12.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT4
+            Tag: "aux[3]"
+            Value: ( 0.20000000298023224 0.20000000298023224 0.20000000298023224 12.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection2"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT2
+            Tag: "aux[0]"
+            Value: ( 5.0 5.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/terrain/grass_city_main_sc"
+        }
+        Texture {
+            Tag: "texture[1]:texture_over"
+            Value: "/material/terrain/dirt_3_512"
+        }
+    }
+    Material {
+        Alias: "containers_01"
+        Effect: "eut2.dif.spec.mult.dif.spec.iamod.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 3
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/special/containers_gs_01"
+        }
+        Texture {
+            Tag: "texture[1]:texture_mult"
+            Value: "/material/special/containers_over_01"
+        }
+        Texture {
+            Tag: "texture[2]:texture_iamod"
+            Value: "/material/tiled/iamod_building_01"
+        }
+    }
+    Material {
+        Alias: "shoulder_decal"
+        Effect: "eut2.dif.spec.decal.over"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.0 0.0 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 4.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/road/road_template/sc/decal_def_dk"
+        }
+    }
+    Material {
+        Alias: "decal_building_01"
+        Effect: "eut2.unlit.vcol.tex.awhite.decal.mult"
+        Flags: 0
+        AttributeCount: 1
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/decal_building_01"
+        }
+    }
+    Material {
+        Alias: "cgfxShader1"
+        Effect: "eut2.none"
+        Flags: 0
+        AttributeCount: 0
+        TextureCount: 0
+    }
+}
+Look {
+    Name: "sc_new_sc"
+    Material {
+        Alias: "plaster_01"
+        Effect: "eut2.dif.spec.mult.dif.spec.iamod.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 3
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/plaster_gs_01"
+        }
+        Texture {
+            Tag: "texture[1]:texture_mult"
+            Value: "/material/tiled/plaster_over_01"
+        }
+        Texture {
+            Tag: "texture[2]:texture_iamod"
+            Value: "/material/tiled/iamod_building_01"
+        }
+    }
+    Material {
+        Alias: "shadow_caster_offset"
+        Effect: "eut2.shadowonly"
+        Flags: 0
+        AttributeCount: 1
+        TextureCount: 0
+        Attribute {
+            Format: FLOAT
+            Tag: "shadow_bias"
+            Value: ( 0.0 )
+        }
+    }
+    Material {
+        Alias: "decal_ground_01"
+        Effect: "eut2.dif.spec.decal.over"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.0 0.0 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 4.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/special/decal_ground_01"
+        }
+    }
+    Material {
+        Alias: "electro_00"
+        Effect: "eut2.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/special/electro_00"
+        }
+    }
+    Material {
+        Alias: "metal_fences_01"
+        Effect: "eut2.dif.spec.shadow.a"
+        Flags: 0
+        AttributeCount: 6
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.4000000059604645 0.4000000059604645 0.4000000059604645 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shadow_bias"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/metal_fences_01"
+        }
+    }
+    Material {
+        Alias: "lines_eu_01"
+        Effect: "eut2.dif.spec.decal.over"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.0 0.0 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/special/lines_eu_01"
+        }
+    }
+    Material {
+        Alias: "lights_01"
+        Effect: "eut2.building.lvcol.day"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "aux[5]"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/special/lights_01"
+        }
+    }
+    Material {
+        Alias: "window_interior_01"
+        Effect: "eut2.window.day"
+        Flags: 0
+        AttributeCount: 6
+        TextureCount: 3
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.5454490184783936 0.5454490184783936 0.5454490184783936 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "env_factor"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT2
+            Tag: "fresnel"
+            Value: ( 0.20000000298023224 0.8999999761581421 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/special/window_interior_01"
+        }
+        Texture {
+            Tag: "texture[1]:texture_reflection"
+            Value: "/material/environment/building_reflection/building_ref"
+        }
+        Texture {
+            Tag: "texture[2]:texture_lightmap"
+            Value: "/material/special/window_interior_01"
+        }
+    }
+    Material {
+        Alias: "asphalt_tiles_eu_01"
+        Effect: "eut2.dif.spec"
+        Flags: 1
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/asphalt_tiles_eu_01"
+        }
+    }
+    Material {
+        Alias: "stripes_01"
+        Effect: "eut2.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/stripes_01"
+        }
+    }
+    Material {
+        Alias: "bricks_01"
+        Effect: "eut2.dif.spec.mult.dif.spec.iamod.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 3
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/bricks_gs_01"
+        }
+        Texture {
+            Tag: "texture[1]:texture_mult"
+            Value: "/material/tiled/bricks_over_01"
+        }
+        Texture {
+            Tag: "texture[2]:texture_iamod"
+            Value: "/material/tiled/iamod_building_01"
+        }
+    }
+    Material {
+        Alias: "metal_plates_01"
+        Effect: "eut2.dif.spec.mult.dif.spec.iamod.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 3
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 85.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.10000000149011612 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/metal_plates_gs_01"
+        }
+        Texture {
+            Tag: "texture[1]:texture_mult"
+            Value: "/material/tiled/metal_over_01"
+        }
+        Texture {
+            Tag: "texture[2]:texture_iamod"
+            Value: "/material/tiled/iamod_building_01"
+        }
+    }
+    Material {
+        Alias: "cargo_01"
+        Effect: "eut2.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/special/cargo_01"
+        }
+    }
+    Material {
+        Alias: "sidewalk_scan_01"
+        Effect: "eut2.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/sidewalk_scan_01"
+        }
+    }
+    Material {
+        Alias: "vegetation_city_01"
+        Effect: "eut2.dif.spec.shadow.a"
+        Flags: 0
+        AttributeCount: 6
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.0 0.0 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 4.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shadow_bias"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/special/vegetation_city_01"
+        }
+    }
+    Material {
+        Alias: "metal_alpha_01"
+        Effect: "eut2.dif.spec.shadow.a"
+        Flags: 0
+        AttributeCount: 6
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.10000000149011612 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shadow_bias"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/metal_alpha_01"
+        }
+    }
+    Material {
+        Alias: "road_scan_01"
+        Effect: "eut2.dif.spec.weight.mult2"
+        Flags: 0
+        AttributeCount: 7
+        TextureCount: 2
+        Attribute {
+            Format: STRING
+            Tag: "substance"
+            Value: ( "road" )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 7.0 )
+        }
+        Attribute {
+            Format: FLOAT2
+            Tag: "aux[5]"
+            Value: ( 4.400000095367432 12.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/road/road_template/sc/dirt_new_sc"
+        }
+        Texture {
+            Tag: "texture[1]:texture_mult"
+            Value: "/material/road/road_template/sc/asphalt_new_sc"
+        }
+    }
+    Material {
+        Alias: "metal_plates_x2_02"
+        Effect: "eut2.dif.spec.mult.dif.spec.iamod.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 3
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 85.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.10000000149011612 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/metal_plates_gs_02"
+        }
+        Texture {
+            Tag: "texture[1]:texture_mult"
+            Value: "/material/tiled/metal_plates_over_02"
+        }
+        Texture {
+            Tag: "texture[2]:texture_iamod"
+            Value: "/material/tiled/iamod_building_01"
+        }
+    }
+    Material {
+        Alias: "curb_01_scan_trans"
+        Effect: "eut2.dif.spec.weight.weight.dif.spec.weight"
+        Flags: 0
+        AttributeCount: 8
+        TextureCount: 2
+        Attribute {
+            Format: STRING
+            Tag: "substance"
+            Value: ( "road" )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.20000000298023224 0.20000000298023224 0.20000000298023224 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 12.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT4
+            Tag: "aux[3]"
+            Value: ( 0.20000000298023224 0.20000000298023224 0.20000000298023224 12.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection2"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/road/road_template/sc/ter_trans_placeholder"
+        }
+        Texture {
+            Tag: "texture[1]:texture_over"
+            Value: "/material/road/road_template/sc/shoulder_01"
+        }
+    }
+    Material {
+        Alias: "prefab_terrain"
+        Effect: "eut2.dif.spec.weight.tg0"
+        Flags: 0
+        AttributeCount: 7
+        TextureCount: 1
+        Attribute {
+            Format: STRING
+            Tag: "substance"
+            Value: ( "grass" )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.10000000149011612 0.10000000149011612 0.10000000149011612 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 12.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT2
+            Tag: "aux[0]"
+            Value: ( 5.0 5.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/terrain/grass_city_main_sc"
+        }
+    }
+    Material {
+        Alias: "metal_01"
+        Effect: "eut2.dif.spec.mult.dif.spec.iamod.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 3
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.10000000149011612 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/metal_gs_01"
+        }
+        Texture {
+            Tag: "texture[1]:texture_mult"
+            Value: "/material/tiled/metal_over_01"
+        }
+        Texture {
+            Tag: "texture[2]:texture_iamod"
+            Value: "/material/tiled/iamod_building_01"
+        }
+    }
+    Material {
+        Alias: "shadow_caster"
+        Effect: "eut2.shadowonly"
+        Flags: 0
+        AttributeCount: 1
+        TextureCount: 0
+        Attribute {
+            Format: FLOAT
+            Tag: "shadow_bias"
+            Value: ( 0.0 )
+        }
+    }
+    Material {
+        Alias: "window_frames_01_decal"
+        Effect: "eut2.dif.spec.decal.over"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.0 0.0 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 4.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/special/window_frames_01"
+        }
+    }
+    Material {
+        Alias: "wood_01"
+        Effect: "eut2.dif.spec.mult.dif.spec.iamod.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 3
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/wood_gs_01"
+        }
+        Texture {
+            Tag: "texture[1]:texture_mult"
+            Value: "/material/tiled/wood_over_01"
+        }
+        Texture {
+            Tag: "texture[2]:texture_iamod"
+            Value: "/material/tiled/iamod_building_01"
+        }
+    }
+    Material {
+        Alias: "concrete_01"
+        Effect: "eut2.dif.spec.mult.dif.spec.iamod.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 3
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 60.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/concrete_gs_01"
+        }
+        Texture {
+            Tag: "texture[1]:texture_mult"
+            Value: "/material/tiled/concrete_over_01"
+        }
+        Texture {
+            Tag: "texture[2]:texture_iamod"
+            Value: "/material/tiled/iamod_building_01"
+        }
+    }
+    Material {
+        Alias: "transition"
+        Effect: "eut2.dif.spec.weight.weight.dif.spec.weight.tg0"
+        Flags: 0
+        AttributeCount: 9
+        TextureCount: 2
+        Attribute {
+            Format: STRING
+            Tag: "substance"
+            Value: ( "dirt" )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.10000000149011612 0.10000000149011612 0.10000000149011612 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 12.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT4
+            Tag: "aux[3]"
+            Value: ( 0.20000000298023224 0.20000000298023224 0.20000000298023224 12.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection2"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT2
+            Tag: "aux[0]"
+            Value: ( 5.0 5.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/terrain/grass_city_main_sc"
+        }
+        Texture {
+            Tag: "texture[1]:texture_over"
+            Value: "/material/terrain/dirt_3_512"
+        }
+    }
+    Material {
+        Alias: "containers_01"
+        Effect: "eut2.dif.spec.mult.dif.spec.iamod.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 3
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/special/containers_gs_01"
+        }
+        Texture {
+            Tag: "texture[1]:texture_mult"
+            Value: "/material/special/containers_over_01"
+        }
+        Texture {
+            Tag: "texture[2]:texture_iamod"
+            Value: "/material/tiled/iamod_building_01"
+        }
+    }
+    Material {
+        Alias: "shoulder_decal"
+        Effect: "eut2.dif.spec.decal.over"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.0 0.0 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 4.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/road/road_template/sc/decal_def_dk"
+        }
+    }
+    Material {
+        Alias: "decal_building_01"
+        Effect: "eut2.unlit.vcol.tex.awhite.decal.mult"
+        Flags: 0
+        AttributeCount: 1
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/decal_building_01"
+        }
+    }
+    Material {
+        Alias: "cgfxShader1"
+        Effect: "eut2.none"
+        Flags: 0
+        AttributeCount: 0
+        TextureCount: 0
+    }
+}
+Look {
+    Name: "sc_def_swe"
+    Material {
+        Alias: "plaster_01"
+        Effect: "eut2.dif.spec.mult.dif.spec.iamod.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 3
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/plaster_gs_01"
+        }
+        Texture {
+            Tag: "texture[1]:texture_mult"
+            Value: "/material/tiled/plaster_over_01"
+        }
+        Texture {
+            Tag: "texture[2]:texture_iamod"
+            Value: "/material/tiled/iamod_building_01"
+        }
+    }
+    Material {
+        Alias: "shadow_caster_offset"
+        Effect: "eut2.shadowonly"
+        Flags: 0
+        AttributeCount: 1
+        TextureCount: 0
+        Attribute {
+            Format: FLOAT
+            Tag: "shadow_bias"
+            Value: ( 0.0 )
+        }
+    }
+    Material {
+        Alias: "decal_ground_01"
+        Effect: "eut2.dif.spec.decal.over"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.0 0.0 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 4.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/special/decal_ground_01"
+        }
+    }
+    Material {
+        Alias: "electro_00"
+        Effect: "eut2.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/special/electro_00"
+        }
+    }
+    Material {
+        Alias: "metal_fences_01"
+        Effect: "eut2.dif.spec.shadow.a"
+        Flags: 0
+        AttributeCount: 6
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.4000000059604645 0.4000000059604645 0.4000000059604645 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shadow_bias"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/metal_fences_01"
+        }
+    }
+    Material {
+        Alias: "lines_eu_01"
+        Effect: "eut2.dif.spec.decal.over"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.0 0.0 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/special/lines_eu_01"
+        }
+    }
+    Material {
+        Alias: "lights_01"
+        Effect: "eut2.building.lvcol.day"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "aux[5]"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/special/lights_01"
+        }
+    }
+    Material {
+        Alias: "window_interior_01"
+        Effect: "eut2.window.day"
+        Flags: 0
+        AttributeCount: 6
+        TextureCount: 3
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.5454490184783936 0.5454490184783936 0.5454490184783936 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "env_factor"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT2
+            Tag: "fresnel"
+            Value: ( 0.20000000298023224 0.8999999761581421 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/special/window_interior_01"
+        }
+        Texture {
+            Tag: "texture[1]:texture_reflection"
+            Value: "/material/environment/building_reflection/building_ref"
+        }
+        Texture {
+            Tag: "texture[2]:texture_lightmap"
+            Value: "/material/special/window_interior_01"
+        }
+    }
+    Material {
+        Alias: "asphalt_tiles_eu_01"
+        Effect: "eut2.dif.spec"
+        Flags: 1
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/asphalt_tiles_eu_01"
+        }
+    }
+    Material {
+        Alias: "stripes_01"
+        Effect: "eut2.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/stripes_01"
+        }
+    }
+    Material {
+        Alias: "bricks_01"
+        Effect: "eut2.dif.spec.mult.dif.spec.iamod.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 3
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/bricks_gs_01"
+        }
+        Texture {
+            Tag: "texture[1]:texture_mult"
+            Value: "/material/tiled/bricks_over_01"
+        }
+        Texture {
+            Tag: "texture[2]:texture_iamod"
+            Value: "/material/tiled/iamod_building_01"
+        }
+    }
+    Material {
+        Alias: "metal_plates_01"
+        Effect: "eut2.dif.spec.mult.dif.spec.iamod.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 3
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 85.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.10000000149011612 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/metal_plates_gs_01"
+        }
+        Texture {
+            Tag: "texture[1]:texture_mult"
+            Value: "/material/tiled/metal_over_01"
+        }
+        Texture {
+            Tag: "texture[2]:texture_iamod"
+            Value: "/material/tiled/iamod_building_01"
+        }
+    }
+    Material {
+        Alias: "cargo_01"
+        Effect: "eut2.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/special/cargo_01"
+        }
+    }
+    Material {
+        Alias: "sidewalk_scan_01"
+        Effect: "eut2.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/sidewalk_scan_01"
+        }
+    }
+    Material {
+        Alias: "vegetation_city_01"
+        Effect: "eut2.dif.spec.shadow.a"
+        Flags: 0
+        AttributeCount: 6
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.0 0.0 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 4.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shadow_bias"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/special/vegetation_city_01"
+        }
+    }
+    Material {
+        Alias: "metal_alpha_01"
+        Effect: "eut2.dif.spec.shadow.a"
+        Flags: 0
+        AttributeCount: 6
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.10000000149011612 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shadow_bias"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/metal_alpha_01"
+        }
+    }
+    Material {
+        Alias: "road_scan_01"
+        Effect: "eut2.dif.spec.weight.mult2"
+        Flags: 0
+        AttributeCount: 7
+        TextureCount: 2
+        Attribute {
+            Format: STRING
+            Tag: "substance"
+            Value: ( "road" )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 7.0 )
+        }
+        Attribute {
+            Format: FLOAT2
+            Tag: "aux[5]"
+            Value: ( 4.400000095367432 12.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/road/road_template/sc/dirt_def_swe"
+        }
+        Texture {
+            Tag: "texture[1]:texture_mult"
+            Value: "/material/road/road_template/sc/asphalt_def_swe"
+        }
+    }
+    Material {
+        Alias: "metal_plates_x2_02"
+        Effect: "eut2.dif.spec.mult.dif.spec.iamod.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 3
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 85.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.10000000149011612 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/metal_plates_gs_02"
+        }
+        Texture {
+            Tag: "texture[1]:texture_mult"
+            Value: "/material/tiled/metal_plates_over_02"
+        }
+        Texture {
+            Tag: "texture[2]:texture_iamod"
+            Value: "/material/tiled/iamod_building_01"
+        }
+    }
+    Material {
+        Alias: "curb_01_scan_trans"
+        Effect: "eut2.dif.spec.weight.weight.dif.spec.weight"
+        Flags: 0
+        AttributeCount: 8
+        TextureCount: 2
+        Attribute {
+            Format: STRING
+            Tag: "substance"
+            Value: ( "road" )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.20000000298023224 0.20000000298023224 0.20000000298023224 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 12.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT4
+            Tag: "aux[3]"
+            Value: ( 0.20000000298023224 0.20000000298023224 0.20000000298023224 12.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection2"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/road/road_template/sc/ter_trans_placeholder"
+        }
+        Texture {
+            Tag: "texture[1]:texture_over"
+            Value: "/material/road/road_template/sc/shoulder_01"
+        }
+    }
+    Material {
+        Alias: "prefab_terrain"
+        Effect: "eut2.dif.spec.weight.tg0"
+        Flags: 0
+        AttributeCount: 7
+        TextureCount: 1
+        Attribute {
+            Format: STRING
+            Tag: "substance"
+            Value: ( "grass" )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.10000000149011612 0.10000000149011612 0.10000000149011612 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 12.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT2
+            Tag: "aux[0]"
+            Value: ( 5.0 5.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/terrain/grass_city_main_sc"
+        }
+    }
+    Material {
+        Alias: "metal_01"
+        Effect: "eut2.dif.spec.mult.dif.spec.iamod.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 3
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.10000000149011612 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/metal_gs_01"
+        }
+        Texture {
+            Tag: "texture[1]:texture_mult"
+            Value: "/material/tiled/metal_over_01"
+        }
+        Texture {
+            Tag: "texture[2]:texture_iamod"
+            Value: "/material/tiled/iamod_building_01"
+        }
+    }
+    Material {
+        Alias: "shadow_caster"
+        Effect: "eut2.shadowonly"
+        Flags: 0
+        AttributeCount: 1
+        TextureCount: 0
+        Attribute {
+            Format: FLOAT
+            Tag: "shadow_bias"
+            Value: ( 0.0 )
+        }
+    }
+    Material {
+        Alias: "window_frames_01_decal"
+        Effect: "eut2.dif.spec.decal.over"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.0 0.0 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 4.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/special/window_frames_01"
+        }
+    }
+    Material {
+        Alias: "wood_01"
+        Effect: "eut2.dif.spec.mult.dif.spec.iamod.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 3
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/wood_gs_01"
+        }
+        Texture {
+            Tag: "texture[1]:texture_mult"
+            Value: "/material/tiled/wood_over_01"
+        }
+        Texture {
+            Tag: "texture[2]:texture_iamod"
+            Value: "/material/tiled/iamod_building_01"
+        }
+    }
+    Material {
+        Alias: "concrete_01"
+        Effect: "eut2.dif.spec.mult.dif.spec.iamod.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 3
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 60.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/concrete_gs_01"
+        }
+        Texture {
+            Tag: "texture[1]:texture_mult"
+            Value: "/material/tiled/concrete_over_01"
+        }
+        Texture {
+            Tag: "texture[2]:texture_iamod"
+            Value: "/material/tiled/iamod_building_01"
+        }
+    }
+    Material {
+        Alias: "transition"
+        Effect: "eut2.dif.spec.weight.weight.dif.spec.weight.tg0"
+        Flags: 0
+        AttributeCount: 9
+        TextureCount: 2
+        Attribute {
+            Format: STRING
+            Tag: "substance"
+            Value: ( "dirt" )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.10000000149011612 0.10000000149011612 0.10000000149011612 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 12.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT4
+            Tag: "aux[3]"
+            Value: ( 0.20000000298023224 0.20000000298023224 0.20000000298023224 12.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection2"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT2
+            Tag: "aux[0]"
+            Value: ( 5.0 5.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/terrain/grass_city_main_sc"
+        }
+        Texture {
+            Tag: "texture[1]:texture_over"
+            Value: "/material/terrain/dirt_3_512"
+        }
+    }
+    Material {
+        Alias: "containers_01"
+        Effect: "eut2.dif.spec.mult.dif.spec.iamod.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 3
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/special/containers_gs_01"
+        }
+        Texture {
+            Tag: "texture[1]:texture_mult"
+            Value: "/material/special/containers_over_01"
+        }
+        Texture {
+            Tag: "texture[2]:texture_iamod"
+            Value: "/material/tiled/iamod_building_01"
+        }
+    }
+    Material {
+        Alias: "shoulder_decal"
+        Effect: "eut2.dif.spec.decal.over"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.0 0.0 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 4.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/road/road_template/sc/decal_def_dk"
+        }
+    }
+    Material {
+        Alias: "decal_building_01"
+        Effect: "eut2.unlit.vcol.tex.awhite.decal.mult"
+        Flags: 0
+        AttributeCount: 1
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/decal_building_01"
+        }
+    }
+    Material {
+        Alias: "cgfxShader1"
+        Effect: "eut2.none"
+        Flags: 0
+        AttributeCount: 0
+        TextureCount: 0
+    }
+}
+Variant {
+    Name: "default"
+    Part {
+        Name: "vis"
+        AttributeCount: 1
+        Attribute {
+            Format: INT
+            Tag: "visible"
+            Value: ( 1 )
+        }
+    }
+    Part {
+        Name: "nor"
+        AttributeCount: 1
+        Attribute {
+            Format: INT
+            Tag: "visible"
+            Value: ( 0 )
+        }
+    }
+    Part {
+        Name: "coll"
+        AttributeCount: 1
+        Attribute {
+            Format: INT
+            Tag: "visible"
+            Value: ( 1 )
+        }
+    }
+    Part {
+        Name: "tran_0_sh"
+        AttributeCount: 1
+        Attribute {
+            Format: INT
+            Tag: "visible"
+            Value: ( 1 )
+        }
+    }
+    Part {
+        Name: "tran_1_sh"
+        AttributeCount: 1
+        Attribute {
+            Format: INT
+            Tag: "visible"
+            Value: ( 1 )
+        }
+    }
+    Part {
+        Name: "swe"
+        AttributeCount: 1
+        Attribute {
+            Format: INT
+            Tag: "visible"
+            Value: ( 0 )
+        }
+    }
+    Part {
+        Name: "decal_sh"
+        AttributeCount: 1
+        Attribute {
+            Format: INT
+            Tag: "visible"
+            Value: ( 1 )
+        }
+    }
+    Part {
+        Name: "dk"
+        AttributeCount: 1
+        Attribute {
+            Format: INT
+            Tag: "visible"
+            Value: ( 0 )
+        }
+    }
+    Part {
+        Name: "sc"
+        AttributeCount: 1
+        Attribute {
+            Format: INT
+            Tag: "visible"
+            Value: ( 0 )
+        }
+    }
+}
+Variant {
+    Name: "dk"
+    Part {
+        Name: "vis"
+        AttributeCount: 1
+        Attribute {
+            Format: INT
+            Tag: "visible"
+            Value: ( 1 )
+        }
+    }
+    Part {
+        Name: "nor"
+        AttributeCount: 1
+        Attribute {
+            Format: INT
+            Tag: "visible"
+            Value: ( 0 )
+        }
+    }
+    Part {
+        Name: "coll"
+        AttributeCount: 1
+        Attribute {
+            Format: INT
+            Tag: "visible"
+            Value: ( 1 )
+        }
+    }
+    Part {
+        Name: "tran_0_sh"
+        AttributeCount: 1
+        Attribute {
+            Format: INT
+            Tag: "visible"
+            Value: ( 1 )
+        }
+    }
+    Part {
+        Name: "tran_1_sh"
+        AttributeCount: 1
+        Attribute {
+            Format: INT
+            Tag: "visible"
+            Value: ( 1 )
+        }
+    }
+    Part {
+        Name: "swe"
+        AttributeCount: 1
+        Attribute {
+            Format: INT
+            Tag: "visible"
+            Value: ( 0 )
+        }
+    }
+    Part {
+        Name: "decal_sh"
+        AttributeCount: 1
+        Attribute {
+            Format: INT
+            Tag: "visible"
+            Value: ( 1 )
+        }
+    }
+    Part {
+        Name: "dk"
+        AttributeCount: 1
+        Attribute {
+            Format: INT
+            Tag: "visible"
+            Value: ( 1 )
+        }
+    }
+    Part {
+        Name: "sc"
+        AttributeCount: 1
+        Attribute {
+            Format: INT
+            Tag: "visible"
+            Value: ( 1 )
+        }
+    }
+}
+Variant {
+    Name: "swe"
+    Part {
+        Name: "vis"
+        AttributeCount: 1
+        Attribute {
+            Format: INT
+            Tag: "visible"
+            Value: ( 1 )
+        }
+    }
+    Part {
+        Name: "nor"
+        AttributeCount: 1
+        Attribute {
+            Format: INT
+            Tag: "visible"
+            Value: ( 0 )
+        }
+    }
+    Part {
+        Name: "coll"
+        AttributeCount: 1
+        Attribute {
+            Format: INT
+            Tag: "visible"
+            Value: ( 1 )
+        }
+    }
+    Part {
+        Name: "tran_0_sh"
+        AttributeCount: 1
+        Attribute {
+            Format: INT
+            Tag: "visible"
+            Value: ( 1 )
+        }
+    }
+    Part {
+        Name: "tran_1_sh"
+        AttributeCount: 1
+        Attribute {
+            Format: INT
+            Tag: "visible"
+            Value: ( 1 )
+        }
+    }
+    Part {
+        Name: "swe"
+        AttributeCount: 1
+        Attribute {
+            Format: INT
+            Tag: "visible"
+            Value: ( 1 )
+        }
+    }
+    Part {
+        Name: "decal_sh"
+        AttributeCount: 1
+        Attribute {
+            Format: INT
+            Tag: "visible"
+            Value: ( 1 )
+        }
+    }
+    Part {
+        Name: "dk"
+        AttributeCount: 1
+        Attribute {
+            Format: INT
+            Tag: "visible"
+            Value: ( 0 )
+        }
+    }
+    Part {
+        Name: "sc"
+        AttributeCount: 1
+        Attribute {
+            Format: INT
+            Tag: "visible"
+            Value: ( 1 )
+        }
+    }
+}
+Variant {
+    Name: "nor"
+    Part {
+        Name: "vis"
+        AttributeCount: 1
+        Attribute {
+            Format: INT
+            Tag: "visible"
+            Value: ( 1 )
+        }
+    }
+    Part {
+        Name: "nor"
+        AttributeCount: 1
+        Attribute {
+            Format: INT
+            Tag: "visible"
+            Value: ( 1 )
+        }
+    }
+    Part {
+        Name: "coll"
+        AttributeCount: 1
+        Attribute {
+            Format: INT
+            Tag: "visible"
+            Value: ( 1 )
+        }
+    }
+    Part {
+        Name: "tran_0_sh"
+        AttributeCount: 1
+        Attribute {
+            Format: INT
+            Tag: "visible"
+            Value: ( 1 )
+        }
+    }
+    Part {
+        Name: "tran_1_sh"
+        AttributeCount: 1
+        Attribute {
+            Format: INT
+            Tag: "visible"
+            Value: ( 1 )
+        }
+    }
+    Part {
+        Name: "swe"
+        AttributeCount: 1
+        Attribute {
+            Format: INT
+            Tag: "visible"
+            Value: ( 0 )
+        }
+    }
+    Part {
+        Name: "decal_sh"
+        AttributeCount: 1
+        Attribute {
+            Format: INT
+            Tag: "visible"
+            Value: ( 1 )
+        }
+    }
+    Part {
+        Name: "dk"
+        AttributeCount: 1
+        Attribute {
+            Format: INT
+            Tag: "visible"
+            Value: ( 0 )
+        }
+    }
+    Part {
+        Name: "sc"
+        AttributeCount: 1
+        Attribute {
+            Format: INT
+            Tag: "visible"
+            Value: ( 1 )
+        }
+    }
+}
+

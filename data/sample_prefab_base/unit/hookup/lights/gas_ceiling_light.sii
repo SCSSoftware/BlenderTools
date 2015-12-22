@@ -1,0 +1,17 @@
+SiiNunit
+{
+light_source : lamp.gas.ceiling.light
+{
+	ambient_color: (0.8, 0.8, 0.8)
+	diffuse_color: (0.9047, 0.8632, 0.6038)
+	specular_color: (0.0, 0.0, 0.0)
+
+	range: 40.0
+	cut_range: 20.0
+	inner_angle: 80.0
+	outer_angle: 140.0
+
+}
+
+
+}

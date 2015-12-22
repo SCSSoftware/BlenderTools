@@ -24,8 +24,8 @@ from io_scs_tools.utils.printout import lprint
 
 _MAIN_DICT = _LOOK_consts.custom_prop_name
 
-_IGNORED_TEXTURE_PROPS = ("_settings", "_locked")
-_IGNORED_PROPS = ("mat_id",)
+_IGNORED_TEXTURE_PROPS = ("_settings", "_locked", "_map_type")
+_IGNORED_PROPS = ("mat_id", "enable_aliasing")
 
 
 def add_look(root_obj, look_id):
@@ -119,11 +119,20 @@ def apply_active_look(root_obj, force_apply=False):
                 coll_property = getattr(material.scs_props, prop, None)
                 if coll_property:
                     different = True
+                    last_entry = None
                     coll_property.clear()
                     for entry in mat_data[prop]["entries"]:
                         new_entry = coll_property.add()
                         for key in entry:
                             new_entry[key] = entry[key]
+
+                        last_entry = new_entry
+
+                    # apply update_value function if exists only on last collection property item
+                    # this will update: aux and uv layer items
+                    update_func = getattr(last_entry, "update_value", None)
+                    if update_func and different:
+                        update_func(material)
             else:
                 different = (prop not in material.scs_props or material.scs_props[prop] != mat_data[prop])
                 if different:
@@ -229,11 +238,32 @@ def write_through(root_obj, material, prop):
     for look_id in root_obj[_MAIN_DICT]:
         curr_look = root_obj[_MAIN_DICT][look_id]
 
-        if not mat_id_str in curr_look or not prop in curr_look[mat_id_str]:
+        if mat_id_str not in curr_look:
+            lprint("D Look with ID: %s doesn't have entry for material %r in SCS Root %r,\n\t   " +
+                   "property %r won't be updated!",
+                   (look_id, material.name, root_obj.name, prop))
+            continue
+        elif prop not in curr_look[mat_id_str]:
             lprint("D Look with ID: %s is not synced, property %r won't be updated!", (look_id, prop))
             continue
 
-        curr_look[mat_id_str][prop] = getattr(material.scs_props, prop)
+        curr_prop = getattr(material.scs_props, prop)
+        curr_prop_type = material.scs_props.bl_rna.properties[prop].bl_rna.identifier
+        if "CollectionProperty" in curr_prop_type:
+
+            coll_prop_entry = {"CollectionProperty": 1, "entries": []}
+
+            for coll_entry in curr_prop:
+                entry = {}
+                for coll_key in coll_entry.keys():
+                    entry[coll_key] = getattr(coll_entry, coll_key)
+
+                coll_prop_entry["entries"].append(entry)
+
+            curr_look[mat_id_str][prop] = coll_prop_entry
+        else:
+            curr_look[mat_id_str][prop] = curr_prop
+
         written_looks_count += 1
 
     return written_looks_count

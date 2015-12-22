@@ -287,7 +287,7 @@ def export(scs_root_obj, armature, scs_animation, dirpath, skeleton_filepath):
     :param armature: armature object of current animation
     :type armature: bpy.types.Object
     :param scs_animation: animation which should get exported
-    :type scs_animation: io_scs_tools.properties.object.ObjectAnimationInventory
+    :type scs_animation: io_scs_tools.properties.object.ObjectAnimationInventoryItem
     :param dirpath: path to export
     :type dirpath: str
     :param skeleton_filepath: name of skeleton file that this animation works on

@@ -1,6 +1,6 @@
 Header {
     FormatVersion: 3
-    Source: "Blender 2.74.0 (hash: 000dfc0), SCS Blender Tools: 0.5.bfcf60f"
+    Source: "Blender 2.76.0 (hash: 48f7dd6), SCS Blender Tools: 0.6.e9daf33"
     Type: "Animation"
     Name: "turn_st"
 }
@@ -26,25 +26,26 @@ BoneChannel {
     Stream {
         Format: FLOAT4x4
         Tag: "_MATRIX"
-        0    (  &3f74fd81  &be948937  &349ef5b9  &00000000
-                &3e94893b  &3f74fd8a  &3406a9fd  &00000000
-                &b4aaa46f  &b3692c46  &3f7ffffc  &00000000
-                &3baf644b  &339b98bf  &b0ffffd4  &3f800000 )
-        1    (  &3f7b9e92  &be3c9ef7  &34a5566d  &00000000
-                &3e3c9f00  &3f7b9e9d  &33c54f2a  &00000000
-                &b4aa9466  &b366d538  &3f7ffffa  &00000000
-                &3baf644b  &339b98bf  &b0ffffd4  &3f800000 )
-        2    (  &3f7f41ee  &bd9bdb07  &34a9af43  &00000000
-                &3d9bdb0c  &3f7f41f7  &3375e39a  &00000000
-                &b4aa8449  &b3647a98  &3f7ffffc  &00000000
-                &3baf644b  &339b98bf  &b0ffffd4  &3f800000 )
-        3    (  &3f7fdc7e  &3d06c44f  &34abf2de  &00000000
-                &bd06c453  &3f7fdc89  &32bc8ed8  &00000000
-                &b4aa73f8  &b36218b6  &3f7ffffc  &00000000
-                &3baf644b  &339b98bf  &b0ffffd4  &3f800000 )
-        4    (  &3f7d6c6d  &3e10e927  &34ac1a3f  &00000000
-                &be10e92b  &3f7d6c79  &b2697633  &00000000
-                &b4aa6359  &b35fabba  &3f7ffff9  &00000000
-                &3baf644b  &339b98bf  &b0ffffd4  &3f800000 )
+        0    (  &3f74fd7e  &be948935  &349cf49c  &00000000 
+                &3e94893e  &3f74fd90  &33a7787f  &00000000
+                &b49fe521  &b14b8b60  &3f800001  &00000000
+                &3baf640f  &33e6bcfa  &b3af7363  &3f800000 )
+        1    (  &3f7b9e8f  &be3c9ef6  &34a0372a  &00000000 
+                &3e3c9f03  &3f7b9ea2  &33421d9e  &00000000
+                &b49f7ca8  &b1328ccd  &3f800000  &00000000
+                &3baf640f  &33e6bcfa  &b3af7363  &3f800000 )
+        2    (  &3f7f41eb  &bd9bdb09  &34a182b1  &00000000 
+                &3d9bdb16  &3f7f41fd  &324e6e49  &00000000
+                &b49f1395  &b1196821  &3f800000  &00000000
+                &3baf640f  &33e6bcfa  &b3af7363  &3f800000 )
+        3    (  &3f7fdc7c  &3d06c447  &34a0d4c3  &00000000 
+                &bd06c453  &3f7fdc8f  &b2b5b057  &00000000
+                &b49ea93d  &b0ffec16  &3f800001  &00000000
+                &3baf640f  &33e6bcfa  &b3af7363  &3f800000 )
+        4    (  &3f7d6c6c  &3e10e92f  &349e310b  &00000000 
+                &be10e935  &3f7d6c7b  &b367809d  &00000000
+                &b49e3cf2  &b0cc1a9a  &3f7ffffc  &00000000
+                &3baf640f  &33e6bcfa  &b3af7363  &3f800000 )
     }
 }
+

@@ -1,6 +1,6 @@
 Header {
     FormatVersion: 3
-    Source: "Blender 2.74.0 (hash: 000dfc0), SCS Blender Tools: 0.5.bfcf60f"
+    Source: "Blender 2.76.0 (hash: 48f7dd6), SCS Blender Tools: 0.6.e9daf33"
     Type: "Animation"
     Name: "fuel_s"
 }
@@ -23,13 +23,14 @@ BoneChannel {
     Stream {
         Format: FLOAT4x4
         Tag: "_MATRIX"
-        0    (  &3f800000  &00000000  &00000000  &00000000
+        0    (  &3f800000  &00000000  &00000000  &00000000 
                 &00000000  &3f800000  &00000000  &00000000
                 &00000000  &00000000  &3f800000  &00000000
                 &be226f2c  &bf0766db  &3fabddc7  &3f800000 )
-        1    (  &3f83b8dc  &00000000  &00000000  &00000000
+        1    (  &3f83b8dc  &00000000  &00000000  &00000000 
                 &00000000  &3f83b8dc  &00000000  &00000000
                 &00000000  &00000000  &3f83b8dc  &00000000
                 &be210096  &bf074a84  &bf539372  &3f800000 )
     }
 }
+

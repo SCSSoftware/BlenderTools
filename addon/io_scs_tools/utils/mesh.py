@@ -20,6 +20,8 @@
 
 import bpy
 import bmesh
+from collections import deque
+from io_scs_tools.consts import Mesh as _MESH_consts
 from io_scs_tools.utils.printout import lprint
 from io_scs_tools.utils import convert as _convert
 
@@ -109,8 +111,17 @@ def make_per_face_rgb_layer(mesh, rgb_layer, layer_name):
     return {'FINISHED'}
 
 
-def make_points_to_weld_list(mesh_vertices, mesh_normals, equal_decimals_count):
+def make_points_to_weld_list(mesh_vertices, mesh_normals, mesh_rgb, mesh_rgba, equal_decimals_count):
     """Makes a list of duplicated vertices indices. Each item in lists represents indices of vertices with same position and normal."""
+
+    # take first present vertex color data
+    if mesh_rgb:
+        mesh_final_rgba = mesh_rgb
+    elif mesh_rgba:
+        mesh_final_rgba = mesh_rgba
+    else:
+        mesh_final_rgba = {}
+
     posnorm_dict_tmp = {}
     posnorm_dict = {}
     perc = 10 ** equal_decimals_count  # represent precision for duplicates
@@ -118,6 +129,11 @@ def make_points_to_weld_list(mesh_vertices, mesh_normals, equal_decimals_count):
 
         key = (str(int(val[0] * perc)) + str(int(val[1] * perc)) + str(int(val[2] * perc)) +
                str(int(mesh_normals[val_i][0] * perc)) + str(int(mesh_normals[val_i][1] * perc)) + str(int(mesh_normals[val_i][2] * perc)))
+
+        # also include vertex colors in key if present
+        for vc_layer_name in mesh_final_rgba:
+            for col_channel in mesh_final_rgba[vc_layer_name][val_i]:
+                key += str(int(col_channel * perc))
 
         if key not in posnorm_dict_tmp:
             posnorm_dict_tmp[key] = [val_i]
@@ -268,27 +284,30 @@ def bm_make_vertices(bm, vertices):
             vert.index = v_co_i
 
 
-def bm_make_faces(bm, vertices, faces, points_to_weld_list, mesh_uv):
+def bm_make_faces(bm, faces, points_to_weld_list):
     """
-    Takes BMesh object, list of vertices as vectors,
-    list of faces as vertex indices, list of vertices
-    for elimination (smoothing) and "mesh_uv".
+    Takes BMesh object, list of faces as vertex indices, list of vertices for elimination (smoothing).
     Makes faces in provided BMesh object while separating
-    duplicate data to "duplicate_geometry".
-    :param bm:
-    :param vertices:
-    :param faces:
+    back faces data and creating new faces list with fixed vertices indicies.
+
+    :param bm: Bmesh to make faces in
+    :type bm: bmesh.types.BMesh
+    :param faces: faces which should be created, tuples of vertex indices
+    :type faces: list[tuple[float]]
     :param points_to_weld_list:
-    :param mesh_uv:
-    :return:
+    :return: new faces with correct indices without back faces and back faces
+    :rtype: tuple[list[tuple[int]], list[tuple[int]]]
     """
-    duplicate_vertices = {}
-    duplicate_faces = {}
-    duplicate_uv_layers = {}
-    duplicate_vg_layers = {}
+    back_faces = []
+    new_faces = []  # store faces in new array so indices to vertices will be fixed in the case of duplicate geometry
+
+    # dictionaries only for quick search access
+    new_faces_dict = {}
+    back_faces_dict = {}
+
     if faces:
         for f_idx_i, f_idx in enumerate(faces):
-            # print(' f_idx:     %s' % str(f_idx))
+
             new_f_idx = []
             for v_idx in f_idx:
                 new_v_idx = v_idx
@@ -297,33 +316,32 @@ def bm_make_faces(bm, vertices, faces, points_to_weld_list, mesh_uv):
                         new_v_idx = rec[0]
                         break
                 new_f_idx.append(new_v_idx)
-            # print_values(" new_f_idx", new_f_idx, 10)
+
             try:
+
                 bm.verts.ensure_lookup_table()
                 bm.faces.new([bm.verts[i] for i in new_f_idx])
+                new_faces.append(f_idx)
+                new_faces_dict[str(f_idx)] = True
+
             except ValueError:
-                lprint('I Face #%i already exists! %s', (f_idx_i, str(new_f_idx)))
+                lprint('D Face #%i vertex indices already used: %s', (f_idx_i, str(new_f_idx)))
 
-                duplicate_faces[f_idx_i] = new_f_idx
-                for v in new_f_idx:
-                    if v not in duplicate_vertices:
-                        duplicate_vertices[v] = vertices[v]
-                    if mesh_uv:
-                        for uv_layer_name in mesh_uv:
-                            if uv_layer_name not in duplicate_uv_layers:
-                                duplicate_uv_layers[uv_layer_name] = {}
-                            # for face_i, face in enumerate(mesh_uv[uv_layer_name]):
-                            # if face_i == v:
-                            # uv_layer_values.append(face)
-                            # print(' * face: %s' % str(face))
-                            if v not in duplicate_uv_layers[uv_layer_name]:
-                                if "data" in mesh_uv[uv_layer_name]:
-                                    duplicate_uv_layers[uv_layer_name][v] = mesh_uv[uv_layer_name]["data"][v]
-                                else:
-                                    duplicate_uv_layers[uv_layer_name][v] = mesh_uv[uv_layer_name][v]
+                # with deque rotation we can determinate if current face
+                # is really reverse face of already existing,
+                # then we can add it as back face; otherwise we have to ignore it
+                f_idx_deque = deque(reversed(f_idx))
+                f_idx_deque.rotate(-1)
 
-    duplicate_geometry = (duplicate_vertices, duplicate_faces, duplicate_uv_layers, duplicate_vg_layers)
-    return duplicate_geometry
+                for _ in range(len(f_idx)):
+                    f_idx_deque.rotate()
+                    f_idx_str = str(list(f_idx_deque))
+                    if f_idx_str in new_faces_dict and f_idx_str not in back_faces_dict:
+                        back_faces.append(f_idx)
+                        back_faces_dict[f_idx_str] = True
+                        lprint('D Face #%i is a reverse face, it will be added to extra back object.', (f_idx_i,))
+
+    return new_faces, back_faces
 
 
 def flip_faceverts(faces):
@@ -383,22 +401,54 @@ def bm_make_vc_layer(pim_version, bm, vc_layer_name, vc_layer_data, multiplier=1
     :type vc_layer_data: list
     """
     color_lay = bm.loops.layers.color.new(vc_layer_name)
+    color_a_lay = bm.loops.layers.color.new(vc_layer_name + _MESH_consts.vcol_a_suffix)
     for face_i, face in enumerate(bm.faces):
         f_v = [x.index for x in face.verts]
         for loop_i, loop in enumerate(face.loops):
+            alpha = 1.0
             if pim_version < 6:
                 if len(vc_layer_data[0]) == 3:
                     vcol = vc_layer_data[f_v[loop_i]]
                 else:
-                    vcol = vc_layer_data[f_v[loop_i]][:3]  # TODO: Use Alpha value!
+                    vcol = vc_layer_data[f_v[loop_i]][:3]
+                    alpha = vc_layer_data[f_v[loop_i]][3]
             else:
                 if len(vc_layer_data[face_i][0]) == 3:
                     vcol = vc_layer_data[face_i][loop_i]
                 else:
-                    vcol = vc_layer_data[face_i][loop_i][:3]  # TODO: Use Alpha value!
+                    vcol = vc_layer_data[face_i][loop_i][:3]
+                    alpha = vc_layer_data[face_i][loop_i][3]
 
             vcol = (vcol[0] / 2 / multiplier, vcol[1] / 2 / multiplier, vcol[2] / 2 / multiplier)
+            vcol_a = (alpha / 2 / multiplier,) * 3
             loop[color_lay] = vcol
+            loop[color_a_lay] = vcol_a
+
+
+def bm_delete_loose(mesh):
+    """Deletes loose vertices in the mesh.
+
+    :param mesh: mesh on which loose vertices should be removed
+    :type mesh: bpy.types.Mesh
+    :return: cleanuped mesh
+    :rtype: bpy.types.Mesh
+    """
+
+    bm = bmesh.new()
+    bm.from_mesh(mesh)
+
+    used_vertices = {}
+    for f in bm.faces:
+        for v in f.verts:
+            if v.index not in used_vertices:
+                used_vertices[v.index] = True
+
+    for v in bm.verts:
+        if v.index not in used_vertices:
+            bm.verts.remove(v)
+
+    bm.to_mesh(mesh)
+    bm.free()
 
 
 def bm_prepare_mesh_for_export(mesh, transformation_matrix, flip=False):

@@ -1,0 +1,12 @@
+SiiNunit
+{
+accessory_addon_int_data : cap.man.tgx.sample.toystand
+{
+	name: "Rugged Style Cap"
+	price: 195
+	unlock: 0
+	icon: "cap.dlc_toys"
+   
+  interior_model: "/vehicle/truck/upgrade/interior_decors/toystand/cap.dlc_toys.pmd"
+}
+}

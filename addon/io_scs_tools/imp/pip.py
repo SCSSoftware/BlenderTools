@@ -18,17 +18,15 @@
 
 # Copyright (C) 2013-2014: SCS Software
 
-import bpy
 import math
+from io_scs_tools.consts import PrefabLocators as _PL_consts
 from io_scs_tools.internals import inventory as _inventory
 from io_scs_tools.internals.containers import pix as _pix_container
 from io_scs_tools.internals.connections.wrappers import group as _group_connections_wrapper
 from io_scs_tools.utils import curve as _curve_utils
-from io_scs_tools.utils import name as _name_utils
 from io_scs_tools.utils import object as _object_utils
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
 from io_scs_tools.utils.printout import lprint
-from io_scs_tools.utils.printout import handle_unused_arg
 
 
 def _print_locator_result(loc, loc_type, name):
@@ -109,7 +107,11 @@ def _get_node_properties(section):
     """Receives a Node section and returns its properties in its own variables.
     For any item that fails to be found, it returns None."""
     node_name = node_index = node_position = node_direction = node_input_lanes = \
-        node_output_lanes = node_terpoint_count = node_stream_count = None
+        node_output_lanes = node_terpoint_count = node_terpoint_variant_count = node_stream_count = None
+    tp_positions = []
+    tp_normals = []
+    tp_variants = []
+
     for prop in section.props:
         if prop[0] in ("", "#"):
             pass
@@ -127,18 +129,56 @@ def _get_node_properties(section):
             node_output_lanes = prop[1]
         elif prop[0] in ("TerPointCount", "TerrainPointCount"):
             node_terpoint_count = prop[1]
+        elif prop[0] in "TerrainPointVariantCount":
+            node_terpoint_variant_count = prop[1]
         elif prop[0] == "StreamCount":
             node_stream_count = prop[1]
         else:
             lprint('\nW Unknown property in "Node" data: "%s"!', prop[0])
+
+    for sec in section.sections:
+        if sec.type == "Stream":
+            stream_format = stream_tag = None
+            for prop in sec.props:
+                if prop[0] in ("", "#"):
+                    pass
+                elif prop[0] == "Format":
+                    stream_format = prop[1]
+                elif prop[0] == "Tag":
+                    stream_tag = prop[1]
+                else:
+                    lprint('\nW Unknown property in "Stream" data: "%s"!', prop[0])
+
+            data_block = []
+            for data_line in sec.data:
+                data_block.append(data_line)
+
+            if stream_tag == '_POSITION' and stream_format == 'FLOAT3':
+                tp_positions = data_block
+            elif stream_tag == '_NORMAL' and stream_format == 'FLOAT3':
+                tp_normals = data_block
+            elif stream_tag == '_VARIANT_BLOCK' and stream_format == 'INT2':
+                tp_variants = data_block
+
+    # even check stream count validity
+    assert node_terpoint_count == len(tp_positions)
+    assert node_terpoint_count == len(tp_normals)
+
+    if node_terpoint_variant_count:  # variant block exists
+        assert node_terpoint_variant_count == len(tp_variants)
+        assert node_stream_count == 3
+    else:
+        assert node_terpoint_count == 0 or node_stream_count == 2
+
     return (node_name,
             node_index,
             node_position,
             node_direction,
             node_input_lanes,
             node_output_lanes,
-            node_terpoint_count,
-            node_stream_count)
+            tp_positions,
+            tp_normals,
+            tp_variants)
 
 
 def _get_sign_properties(section):
@@ -187,7 +227,7 @@ def _get_t_light_properties(section):
     """Receives a Traffic Semaphore section and returns its properties in its own variables.
     For any item that fails to be found, it returns None."""
     tsem_name = tsem_position = tsem_rotation = tsem_type = tsem_id = \
-        tsem_intervals = tsem_cycle = tsem_model = tsem_profile = None
+        tsem_intervals = tsem_cycle = tsem_profile = None
     for prop in section.props:
         if prop[0] in ("", "#"):
             pass
@@ -205,8 +245,6 @@ def _get_t_light_properties(section):
             tsem_intervals = prop[1]
         elif prop[0] == "Cycle":
             tsem_cycle = prop[1]
-        elif prop[0] == "Model":
-            tsem_model = prop[1]
         elif prop[0] == "Profile":
             tsem_profile = prop[1]
         else:
@@ -218,14 +256,13 @@ def _get_t_light_properties(section):
             tsem_id,
             tsem_intervals,
             tsem_cycle,
-            tsem_model,
             tsem_profile)
 
 
 def _get_curve_properties(section):
     """Receives a Curve section and returns its properties in its own variables.
     For any item that fails to be found, it returns None."""
-    cur_name = cur_index = cur_flags = cur_leads_to_nodes = cur_speed_limit = cur_traffic_light_id = \
+    cur_name = cur_index = cur_flags = cur_leads_to_nodes = cur_traffic_rule = cur_traffic_light_id = \
         cur_next_curves = cur_prev_curves = cur_length = bezier_start_pos = bezier_start_dir = \
         bezier_start_qua = bezier_end_pos = bezier_end_dir = bezier_end_qua = None
     for prop in section.props:
@@ -239,8 +276,8 @@ def _get_curve_properties(section):
             cur_flags = prop[1]
         elif prop[0] == "LeadsToNodes":
             cur_leads_to_nodes = prop[1]
-        elif prop[0] == "SpeedLimit":
-            cur_speed_limit = prop[1]
+        elif prop[0] == "TrafficRule":
+            cur_traffic_rule = prop[1]
         elif prop[0] in ("TrafficLightID", "SemaphoreID"):
             cur_traffic_light_id = prop[1]  # former "TrafficLightID"
         elif prop[0] == "NextCurves":
@@ -289,7 +326,7 @@ def _get_curve_properties(section):
             cur_index,
             cur_flags,
             cur_leads_to_nodes,
-            cur_speed_limit,
+            cur_traffic_rule,
             cur_traffic_light_id,
             cur_next_curves,
             cur_prev_curves,
@@ -305,10 +342,12 @@ def _get_curve_properties(section):
 def _get_map_point_properties(section):
     """Receives a Map Point section and returns its properties in its own variables.
     For any item that fails to be found, it returns None."""
-    map_name = map_visual_flags = map_nav_flags = map_position = map_neighbours = None
+    map_index = map_name = map_visual_flags = map_nav_flags = map_position = map_neighbours = None
     for prop in section.props:
         if prop[0] in ("", "#"):
             pass
+        elif prop[0] == "Index":
+            map_index = prop[1]
         elif prop[0] == "Name":
             map_name = prop[1]
         elif prop[0] == "MapVisualFlags":
@@ -321,17 +360,19 @@ def _get_map_point_properties(section):
             map_neighbours = prop[1]
         else:
             lprint('\nW Unknown property in "Map Point" data: "%s"!', prop[0])
-    return map_name, map_visual_flags, map_nav_flags, map_position, map_neighbours
+    return map_index, map_name, map_visual_flags, map_nav_flags, map_position, map_neighbours
 
 
 def _get_trigger_point_properties(section):
     """Receives a Trigger Point section and returns its properties in its own variables.
     For any item that fails to be found, it returns None."""
-    trp_name = trp_trigger_id = trp_action = trp_range = trp_reset_delay = \
-        trp_reset_dist = trp_flags = trp_position = trp_neighbours = None
+    trp_index = trp_name = trp_trigger_id = trp_action = trp_range = trp_reset_delay = \
+        trp_flags = trp_position = trp_neighbours = None
     for prop in section.props:
         if prop[0] in ("", "#"):
             pass
+        elif prop[0] == "Index":
+            trp_index = prop[1]
         elif prop[0] == "Name":
             trp_name = prop[1]
         elif prop[0] == "TriggerID":
@@ -343,7 +384,7 @@ def _get_trigger_point_properties(section):
         elif prop[0] == "TriggerResetDelay":
             trp_reset_delay = prop[1]
         elif prop[0] == "TriggerResetDist":
-            trp_reset_dist = prop[1]
+            pass  # not used anymore
         elif prop[0] == "Flags":
             trp_flags = prop[1]
         elif prop[0] == "Position":
@@ -352,12 +393,12 @@ def _get_trigger_point_properties(section):
             trp_neighbours = prop[1]
         else:
             lprint('\nW Unknown property in "Trigger Point" data: "%s"!', prop[0])
-    return (trp_name,
+    return (trp_index,
+            trp_name,
             trp_trigger_id,
             trp_action,
             trp_range,
             trp_reset_delay,
-            trp_reset_dist,
             trp_flags,
             trp_position,
             trp_neighbours)
@@ -367,17 +408,8 @@ def _create_node_locator(
         node_name,
         node_index,
         node_position,
-        node_direction,
-        node_input_lanes,
-        node_output_lanes,
-        node_terpoint_count,
-        node_stream_count
+        node_direction
 ):
-    handle_unused_arg(__file__, _create_node_locator.__name__, "node_input_lanes", node_input_lanes)
-    handle_unused_arg(__file__, _create_node_locator.__name__, "node_output_lanes", node_output_lanes)
-    handle_unused_arg(__file__, _create_node_locator.__name__, "node_terpoint_count", node_terpoint_count)
-    handle_unused_arg(__file__, _create_node_locator.__name__, "node_stream_count", node_stream_count)
-
     locator = _object_utils.create_locator_empty(node_name,
                                                  node_position,
                                                  (
@@ -397,19 +429,17 @@ def _create_node_locator(
 
 def _create_sign_locator(
         sign_name,
-        sign_index,
         sign_position,
         sign_rotation,
         sign_model_id,
         sign_part,
         scs_sign_model_inventory
 ):
-    handle_unused_arg(__file__, _create_sign_locator.__name__, "sign_index", sign_index)
-
     locator = _object_utils.create_locator_empty(sign_name, sign_position, sign_rotation, (1, 1, 1), 0.1, 'Prefab')
     if locator:
         locator.scs_props.locator_prefab_type = 'Sign'
-        locator.scs_props.locator_prefab_sign_model = _inventory.get_inventory_name(scs_sign_model_inventory, sign_model_id)
+        sign_model_value = _inventory.get_item_name(scs_sign_model_inventory, sign_model_id, report_errors=True)
+        locator.scs_props.locator_prefab_sign_model = sign_model_value
         locator.scs_props.scs_part = sign_part
 
     return locator
@@ -417,13 +447,10 @@ def _create_sign_locator(
 
 def _create_spawn_locator(
         spawn_name,
-        spawn_index,
         spawn_position,
         spawn_rotation,
         spawn_type
 ):
-    handle_unused_arg(__file__, _create_spawn_locator.__name__, "spawn_index", spawn_index)
-
     locator = _object_utils.create_locator_empty(spawn_name, spawn_position, spawn_rotation, (1, 1, 1), 0.1, 'Prefab')
     if locator:
         locator.scs_props.locator_prefab_type = 'Spawn Point'
@@ -439,12 +466,9 @@ def _create_traffic_light_locator(
         tsem_id,
         tsem_intervals,
         tsem_cycle,
-        tsem_model,
         tsem_profile,
         scs_tsem_profile_inventory
 ):
-    handle_unused_arg(__file__, _create_traffic_light_locator.__name__, "tsem_model", tsem_model)
-
     locator = _object_utils.create_locator_empty(tsem_name, tsem_position, tsem_rotation, (1, 1, 1), 0.1, 'Prefab')
     if locator:
         locator.scs_props.locator_prefab_type = 'Traffic Semaphore'
@@ -453,21 +477,16 @@ def _create_traffic_light_locator(
         else:
             tsem_id = str(tsem_id)
         locator.scs_props.locator_prefab_tsem_id = tsem_id
-        # locator.scs_props.locator_prefab_tsem_model = tsem_model
-        locator.scs_props.locator_prefab_tsem_profile = _inventory.get_inventory_name(scs_tsem_profile_inventory, tsem_profile)
+
+        tsem_profile_value = _inventory.get_item_name(scs_tsem_profile_inventory, tsem_profile, report_errors=True)
+        locator.scs_props.locator_prefab_tsem_profile = tsem_profile_value
+
         locator.scs_props.locator_prefab_tsem_type = str(tsem_type)
-        if tsem_type == 6:
-            locator.scs_props.locator_prefab_tsem_gm = tsem_intervals[0]
-            locator.scs_props.locator_prefab_tsem_om1 = tsem_intervals[1]
-            locator.scs_props.locator_prefab_tsem_rm = tsem_intervals[2]
-        else:
-            locator.scs_props.locator_prefab_tsem_gs = tsem_intervals[0]
-            locator.scs_props.locator_prefab_tsem_os1 = tsem_intervals[1]
-            locator.scs_props.locator_prefab_tsem_rs = tsem_intervals[2]
-            locator.scs_props.locator_prefab_tsem_os2 = tsem_intervals[3]
+        locator.scs_props.locator_prefab_tsem_gs = tsem_intervals[0]
+        locator.scs_props.locator_prefab_tsem_os1 = tsem_intervals[1]
+        locator.scs_props.locator_prefab_tsem_rs = tsem_intervals[2]
+        locator.scs_props.locator_prefab_tsem_os2 = tsem_intervals[3]
         locator.scs_props.locator_prefab_tsem_cyc_delay = tsem_cycle
-        # locator.scs_props.locator_prefab_tsem_activation =
-        # locator.scs_props.locator_prefab_tsem_ai_only =
     return locator
 
 
@@ -485,196 +504,130 @@ def _create_nav_locator(nav_locator_data):
             math.radians(direction[2])
         )
     locator = _object_utils.create_locator_empty(name, position, direction, (1, 1, 1), 0.1, 'Prefab')
+
     if locator:
         locator.scs_props.locator_prefab_type = 'Navigation Point'
-        # locator.scs_props.locator_prefab_con_node_index = str(node_index)
-        locator.scs_props.locator_prefab_np_speed_limit = nav_locator_data['np_speed_limit']
-
-        # print(' %r' % str(nav_locator_data['locator_prefab_np_name']))
-        # print(' --> locator_prefab_np_stopper: %s' % str(nav_locator_data['locator_prefab_np_stopper']))
-        # print(' --> locator_prefab_np_allowed_veh: %s' % str(nav_locator_data['locator_prefab_np_allowed_veh']))
-        # print(' --> locator_prefab_np_blinker: %s' % str(nav_locator_data['locator_prefab_np_blinker']))
-        # print(' --> locator_prefab_np_tl_activ: %s' % str(nav_locator_data['locator_prefab_np_tl_activ']))
-        # print(' --> locator_prefab_np_low_probab: %s' % str(nav_locator_data['locator_prefab_np_low_probab']))
-        # print(' --> locator_prefab_np_ig_blink_prior: %s' % str(nav_locator_data['locator_prefab_np_ig_blink_prior']))
-        # print(' --> locator_prefab_np_low_prior: %s' % str(nav_locator_data['locator_prefab_np_low_prior']))
-        # print(' --> locator_prefab_np_crossroad: %s' % str(nav_locator_data['locator_prefab_np_crossroad']))
-        # print(' --> locator_prefab_np_add_priority: %s' % str(nav_locator_data['locator_prefab_np_add_priority']))
-        # print(' --> locator_prefab_np_priority_mask: %s' % str(nav_locator_data['locator_prefab_np_priority_mask']))
-
-        locator.scs_props.locator_prefab_np_stopper = nav_locator_data['np_stopper']
-        locator.scs_props.locator_prefab_np_allowed_veh = nav_locator_data['np_allowed_veh']
-        locator.scs_props.locator_prefab_np_blinker = nav_locator_data['np_blinker']
-        locator.scs_props.locator_prefab_np_tl_activ = nav_locator_data['np_tl_activ']
-        locator.scs_props.locator_prefab_np_low_probab = nav_locator_data['np_low_probab']
-        locator.scs_props.locator_prefab_np_ig_blink_prior = nav_locator_data['np_ig_blink_prior']
-        locator.scs_props.locator_prefab_np_low_prior = nav_locator_data['np_low_prior']
-        locator.scs_props.locator_prefab_np_crossroad = nav_locator_data['np_crossroad']
-        locator.scs_props.locator_prefab_np_add_priority = nav_locator_data['np_add_priority']
-        locator.scs_props.locator_prefab_np_priority_mask = nav_locator_data['np_priority_mask']
-
-        # nav_locator_data['locator_prefab_np_name']
-        # nav_locator_data['locator_prefab_np_pos']
-        # nav_locator_data['locator_prefab_np_dir']
-
-        # nav_locator_data['locator_prefab_np_tl_activ'],         ## BoolProperty - "Traffic Semaphore Activator"
-        # nav_locator_data['locator_prefab_np_low_prior'],        ## BoolProperty - "Low Priority"
-        # nav_locator_data['locator_prefab_np_ig_blink_prior'],   ## BoolProperty - "Ignore Blinker Priority"
-        # nav_locator_data['locator_prefab_np_crossroad'],        ## BoolProperty - "Crossroad"
-        # nav_locator_data['locator_prefab_np_stopper'],          ## BoolProperty - "Stopper"
-        # nav_locator_data['locator_prefab_np_low_probab'],       ## BoolProperty - "Low Probability"
-
-        # nav_locator_data['locator_prefab_np_allowed_veh'],      ## EnumProperty - "Allowed Vehicles"
-
-        # nav_locator_data['locator_prefab_np_speed_limit'],      ## FloatProperty - "Speed Limit [km/h]"
-
-        # nav_locator_data['locator_prefab_np_blinker'],          ## EnumProperty - "Blinker"
-        # nav_locator_data['locator_prefab_np_boundary'],         ## EnumProperty - "Boundary"
-        # nav_locator_data['locator_prefab_np_boundary_node'],    ## EnumProperty - "Boundary Node"
-        # nav_locator_data['locator_prefab_np_traffic_light'],    ## EnumProperty - "Traffic Semaphore"
-        # nav_locator_data['locator_prefab_np_priority_mask'],    ## EnumProperty - "Priority Modifier"
 
     return locator
 
 
+def _set_nav_locator_props(loc, nav_locator_data, is_start):
+    scs_props = loc.scs_props
+    """:type: io_scs_tools.properties.object.ObjectSCSTools"""
+
+    if is_start:
+
+        scs_props.locator_prefab_np_blinker = str(nav_locator_data['np_blinker'])
+        scs_props.locator_prefab_np_priority_modifier = str(nav_locator_data['np_prior_modif'])
+        scs_props.locator_prefab_np_add_priority = bool(nav_locator_data['np_add_priority'])
+        scs_props.locator_prefab_np_limit_displace = bool(nav_locator_data['np_limit_displace'])
+
+        if nav_locator_data['np_semaphore_id'] is not None:
+            scs_props.locator_prefab_np_traffic_semaphore = str(nav_locator_data['np_semaphore_id'])
+
+        if nav_locator_data['np_traffic_rule'] is not None:
+            scs_props.locator_prefab_np_traffic_rule = str(nav_locator_data['np_traffic_rule'])
+
+    else:
+
+        scs_props.locator_prefab_np_low_probab = bool(nav_locator_data['np_low_probab'])
+        scs_props.locator_prefab_np_allowed_veh = str(nav_locator_data['np_allowed_veh'])
+
+    if 'np_boundary' in nav_locator_data:
+        scs_props.locator_prefab_np_boundary = str(nav_locator_data['np_boundary'])
+        scs_props.locator_prefab_np_boundary_node = str(nav_locator_data['np_boundary_node'])
+
+
 def _create_map_locator(
         map_name,
-        map_index,
         map_visual_flags,
         map_nav_flags,
         map_position,
-        map_neighbours
 ):
-    handle_unused_arg(__file__, _create_map_locator.__name__, "map_index", map_index)
-    handle_unused_arg(__file__, _create_map_locator.__name__, "map_neighbours", map_neighbours)
-
     locator = _object_utils.create_locator_empty(map_name, map_position, (0, 0, 0), (1, 1, 1), 0.1, 'Prefab')
     if locator:
         locator.scs_props.locator_prefab_type = 'Map Point'
 
-        locator.scs_props.locator_prefab_mp_road_over = (map_visual_flags & 0x00010000) != 0
-        locator.scs_props.locator_prefab_mp_no_outline = (map_visual_flags & 0x00100000) != 0
-        locator.scs_props.locator_prefab_mp_no_arrow = (map_visual_flags & 0x00200000) != 0
-        locator.scs_props.locator_prefab_mp_prefab_exit = (map_nav_flags & 0x00000400) != 0
+        # visual flags
+        locator.scs_props.locator_prefab_mp_road_over = (map_visual_flags & _PL_consts.MPVF.ROAD_OVER) != 0
+        locator.scs_props.locator_prefab_mp_no_outline = (map_visual_flags & _PL_consts.MPVF.NO_OUTLINE) != 0
+        locator.scs_props.locator_prefab_mp_no_arrow = (map_visual_flags & _PL_consts.MPVF.NO_ARROW) != 0
+        locator.scs_props.locator_prefab_mp_road_size = str(map_visual_flags & _PL_consts.MPVF.ROAD_SIZE_MASK)
+        locator.scs_props.locator_prefab_mp_road_offset = str(map_visual_flags & _PL_consts.MPVF.ROAD_OFFSET_MASK)
 
-        flag = map_visual_flags & 0x00000F00
-        if flag == 0x000:
-            locator.scs_props.locator_prefab_mp_road_size = 'ow'
-        elif flag == 0x100:
-            locator.scs_props.locator_prefab_mp_road_size = '1 lane'
-        elif flag == 0x200:
-            locator.scs_props.locator_prefab_mp_road_size = '2 lane'
-        elif flag == 0x300:
-            locator.scs_props.locator_prefab_mp_road_size = '3 lane'
-        elif flag == 0x400:
-            locator.scs_props.locator_prefab_mp_road_size = '4 lane'
-        elif flag == 0xD00:
-            locator.scs_props.locator_prefab_mp_road_size = 'poly'
-        elif flag == 0xE00:
-            locator.scs_props.locator_prefab_mp_road_size = 'auto'
+        if map_visual_flags & _PL_consts.MPVF.CUSTOM_COLOR1 != 0:
+            locator.scs_props.locator_prefab_mp_custom_color = str(_PL_consts.MPVF.CUSTOM_COLOR1)
+        elif map_visual_flags & _PL_consts.MPVF.CUSTOM_COLOR2 != 0:
+            locator.scs_props.locator_prefab_mp_custom_color = str(_PL_consts.MPVF.CUSTOM_COLOR2)
+        elif map_visual_flags & _PL_consts.MPVF.CUSTOM_COLOR3 != 0:
+            locator.scs_props.locator_prefab_mp_custom_color = str(_PL_consts.MPVF.CUSTOM_COLOR3)
 
-        flag = map_visual_flags & 0x0000F000
-        if flag == 0x0000:
-            locator.scs_props.locator_prefab_mp_road_offset = '0m'
-        elif flag == 0x1000:
-            locator.scs_props.locator_prefab_mp_road_offset = '1m'
-        elif flag == 0x2000:
-            locator.scs_props.locator_prefab_mp_road_offset = '2m'
-        elif flag == 0x3000:
-            locator.scs_props.locator_prefab_mp_road_offset = '5m'
-        elif flag == 0x4000:
-            locator.scs_props.locator_prefab_mp_road_offset = '10m'
-        elif flag == 0x5000:
-            locator.scs_props.locator_prefab_mp_road_offset = '15m'
-        elif flag == 0x6000:
-            locator.scs_props.locator_prefab_mp_road_offset = '20m'
-        elif flag == 0x7000:
-            locator.scs_props.locator_prefab_mp_road_offset = '25m'
+        # navigation flags
+        locator.scs_props.locator_prefab_mp_prefab_exit = (map_nav_flags & _PL_consts.MPNF.PREFAB_EXIT) != 0
+        if map_nav_flags & _PL_consts.MPNF.NAV_NODE_START != 0:
 
-        flag = map_visual_flags & 0x000F0000
-        if flag == 0x20000:
-            locator.scs_props.locator_prefab_mp_custom_color = 'light'
-        elif flag == 0x40000:
-            locator.scs_props.locator_prefab_mp_custom_color = 'dark'
-        elif flag == 0x80000:
-            locator.scs_props.locator_prefab_mp_custom_color = 'green'
+            if map_nav_flags & _PL_consts.MPNF.NAV_NODE_0 != 0:
+                locator.scs_props.locator_prefab_mp_assigned_node = str(_PL_consts.MPNF.NAV_NODE_0)
+            elif map_nav_flags & _PL_consts.MPNF.NAV_NODE_1 != 0:
+                locator.scs_props.locator_prefab_mp_assigned_node = str(_PL_consts.MPNF.NAV_NODE_1)
+            elif map_nav_flags & _PL_consts.MPNF.NAV_NODE_2 != 0:
+                locator.scs_props.locator_prefab_mp_assigned_node = str(_PL_consts.MPNF.NAV_NODE_2)
+            elif map_nav_flags & _PL_consts.MPNF.NAV_NODE_3 != 0:
+                locator.scs_props.locator_prefab_mp_assigned_node = str(_PL_consts.MPNF.NAV_NODE_3)
+            elif map_nav_flags & _PL_consts.MPNF.NAV_NODE_4 != 0:
+                locator.scs_props.locator_prefab_mp_assigned_node = str(_PL_consts.MPNF.NAV_NODE_4)
+            elif map_nav_flags & _PL_consts.MPNF.NAV_NODE_5 != 0:
+                locator.scs_props.locator_prefab_mp_assigned_node = str(_PL_consts.MPNF.NAV_NODE_5)
+            elif map_nav_flags & _PL_consts.MPNF.NAV_NODE_6 != 0:
+                locator.scs_props.locator_prefab_mp_assigned_node = str(_PL_consts.MPNF.NAV_NODE_6)
 
-        flag = map_nav_flags & 0x00000F00
-        if flag == 0x100:
-            locator.scs_props.locator_prefab_mp_assigned_node = '1'
-        elif flag == 0x200:
-            locator.scs_props.locator_prefab_mp_assigned_node = '2'
-        elif flag == 0x300:
-            locator.scs_props.locator_prefab_mp_assigned_node = '3'
-        # TODO: Not even properly exported from Blender so import is incomplete!
+        dest_nodes = []
+        for index in range(_PL_consts.PREFAB_NODE_COUNT_MAX):
+            if map_nav_flags >> index & 1 != 0:
+                dest_nodes.append(str(index))
 
-        locator.scs_props.locator_prefab_mp_des_nodes_0 = (map_nav_flags & 0x00000001) != 0
-        locator.scs_props.locator_prefab_mp_des_nodes_1 = (map_nav_flags & 0x00000002) != 0
-        locator.scs_props.locator_prefab_mp_des_nodes_2 = (map_nav_flags & 0x00000004) != 0
-        locator.scs_props.locator_prefab_mp_des_nodes_3 = (map_nav_flags & 0x00000008) != 0
-        # locator.scs_props.locator_prefab_mp_des_nodes_4 = (map_nav_flags & 0x00000010) != 0
-        # locator.scs_props.locator_prefab_mp_des_nodes_5 = (map_nav_flags & 0x00000020) != 0
-        # locator.scs_props.locator_prefab_mp_des_nodes_6 = (map_nav_flags & 0x00000040) != 0
-        locator.scs_props.locator_prefab_mp_des_nodes_ct = (map_nav_flags & 0x00000080) != 0
+        locator.scs_props.locator_prefab_mp_dest_nodes = set(dest_nodes)
 
-        # print('  Map Locator Name: "%s" - neighbours: %s' % (map_name, str(map_neighbours)))
     return locator
 
 
 def _create_trigger_locator(
         trp_name,
-        trp_index,
-        trp_trigger_id,
         trp_action,
         trp_range,
         trp_reset_delay,
-        trp_reset_dist,
         trp_flags,
         trp_position,
-        trp_neighbours
+        scs_trigger_actions_inventory
 ):
-    handle_unused_arg(__file__, _create_trigger_locator.__name__, "trp_index", trp_index)
-    handle_unused_arg(__file__, _create_trigger_locator.__name__, "trp_trigger_id", trp_trigger_id)
-    handle_unused_arg(__file__, _create_trigger_locator.__name__, "trp_reset_dist", trp_reset_dist)
-    handle_unused_arg(__file__, _create_trigger_locator.__name__, "trp_flags", trp_flags)
-    handle_unused_arg(__file__, _create_trigger_locator.__name__, "trp_neighbours", trp_neighbours)
-
     locator = _object_utils.create_locator_empty(trp_name, trp_position, (0, 0, 0), (1, 1, 1), 0.1, 'Prefab')
     if locator:
         locator.scs_props.locator_prefab_type = 'Trigger Point'
-        locator.scs_props.locator_prefab_tp_action = trp_action
+
+        action_value = _inventory.get_item_name(scs_trigger_actions_inventory, trp_action, report_errors=True)
+        locator.scs_props.locator_prefab_tp_action = action_value
+
         locator.scs_props.locator_prefab_tp_range = trp_range
         locator.scs_props.locator_prefab_tp_reset_delay = trp_reset_delay
-        # trp_index, trp_trigger_id, trp_reset_dist, trp_flags, trp_neighbours
-        # locator.scs_props.locator_prefab_tp_sphere_trigger =
-        # locator.scs_props.locator_prefab_tp_partial_activ =
-        # locator.scs_props.locator_prefab_tp_onetime_activ =
-        # locator.scs_props.locator_prefab_tp_manual_activ =
+
+        locator.scs_props.locator_prefab_tp_manual_activ = (trp_flags & _PL_consts.TPF.MANUAL) != 0
+        locator.scs_props.locator_prefab_tp_sphere_trigger = (trp_flags & _PL_consts.TPF.SPHERE) != 0
+        locator.scs_props.locator_prefab_tp_partial_activ = (trp_flags & _PL_consts.TPF.PARTIAL) != 0
+        locator.scs_props.locator_prefab_tp_onetime_activ = (trp_flags & _PL_consts.TPF.ONETIME) != 0
+
     return locator
 
 
-def _nav_loc_duplicate_test(nav_locator_data, nav_locs):
-    """Takes a single Locator data and list of already processed Locators and returns
-    True if Locator of the same location and direction is already in processed data
-    together with index of Locator to omit (delete) and index of Locator to use instead or
-    False if the Locator is not duplicate of any processed Locator (plus None, None)."""
-    tested_np_pos_dir = (nav_locator_data['locator_prefab_np_pos'],
-                         nav_locator_data['locator_prefab_np_dir'],
-                         nav_locator_data['locator_prefab_np_qua'])
-    # print(' tested_np_pos_dir: %s' % str(tested_np_pos_dir))
-    for nav_loc in nav_locs:
-        # print('  (%s)' % str(nav_loc['locator_prefab_np_index']))
-        np_pos_dir = (nav_loc['locator_prefab_np_pos'], nav_loc['locator_prefab_np_dir'], nav_loc['locator_prefab_np_qua'])
-        # print('  np_pos_dir: %s' % str(np_pos_dir))
-        if tested_np_pos_dir == np_pos_dir:
-            deleted_loc_ind = nav_locator_data['locator_prefab_np_index']
-            replacement_loc_ind = nav_loc['locator_prefab_np_index']
-            # print('  DELETED Locator: %s ==> %s' % (str(deleted_loc_ind), str(replacement_loc_ind)))
-            return True, deleted_loc_ind, replacement_loc_ind
-    return False, None, None
+def load(filepath, terrain_points_trans):
+    """Loads given PIP file.
 
-
-def load(filepath):
+    :param filepath: complete filepath to PIP file
+    :type filepath: str
+    :param terrain_points_trans: terrain points transitional structure where terrain points shall be saved
+    :type terrain_points_trans: io_scs_tools.imp.transition_structs.terrain_points.TerrainPntsTrans
+    :return: set of operator result and list of created locators
+    :rtype: tuple[set, list[bpy.types.Objects]]
+    """
     scs_globals = _get_scs_globals()
 
     print("\n************************************")
@@ -688,29 +641,6 @@ def load(filepath):
     ind = '    '
     pip_container = _pix_container.get_data_from_file(filepath, ind)
 
-    '''
-    # TEST PRINTOUTS
-    ind = '  '
-    for section in pip_container:
-        print('SEC.: "%s"' % section.type)
-    for prop in section.props:
-        print('%sProp: %s' % (ind, prop))
-    for data in section.data:
-        print('%sdata: %s' % (ind, data))
-    for sec in section.sections:
-        print_section(sec, ind)
-    print('\nTEST - Source: "%s"' % pip_container[0].props[1][1])
-    print('')
-
-    # TEST EXPORT
-    path, file = os.path.splitext(filepath)
-    export_filepath = str(path + '_reex' + file)
-    result = pix_write.write_data(pip_container, export_filepath, ind)
-    if result == {'FINISHED'}:
-        Print(dump_level, '\nI Test export succesful! The new file:\n  "%s"', export_filepath)
-    else:
-        Print(dump_level, '\nE Test export failed! File:\n  "%s"', export_filepath)
-    '''
     # LOAD HEADER
     '''
     NOTE: skipped for now as no data needs to be readed
@@ -738,9 +668,7 @@ def load(filepath):
     spawn_points_data = {}
     traffic_lights_data = {}
     nav_curves_data = {}
-    # map_points_data = {}
     map_points_data = []
-    # trigger_points_data = {}
     trigger_points_data = []
 
     locators = []
@@ -760,30 +688,24 @@ def load(filepath):
              node_direction,
              node_input_lanes,
              node_output_lanes,
-             node_terpoint_count,
-             node_stream_count) = _get_node_properties(section)
+             tp_positions,
+             tp_normals,
+             tp_variants,) = _get_node_properties(section)
 
-            if not node_name:
+            if node_name is None:
                 node_name = str('Node_Locator_' + str(node_index))
-            # print('\nnode_name: %r' % node_name)
-            # print('  node_index: %i' % node_index)
-            # print('  node_position 1: %s' % node_position)
-            # print('  node_direction 1: %s' % node_direction)
-            # node_direction = [0.0, 0.0, 0.0]
+
             node_direction = _curve_utils.set_direction(node_direction)
-            # print('  node_direction 2: %s' % node_direction)
-            # print('  node_input_lanes: %s' % str(node_input_lanes))
-            # print('  node_output_lanes: %s' % str(node_output_lanes))
-            # print('  node_terpoint_count: %s' % str(node_terpoint_count))
-            # print('  node_stream_count: %s' % str(node_stream_count))
+
             nodes_data[node_name] = (
                 node_index,
                 node_position,
                 node_direction,
                 node_input_lanes,
                 node_output_lanes,
-                node_terpoint_count,
-                node_stream_count,
+                tp_positions,
+                tp_normals,
+                tp_variants
             )
         elif section.type == 'Sign':
             (sign_name,
@@ -792,12 +714,9 @@ def load(filepath):
              sign_model,
              sign_part) = _get_sign_properties(section)
 
-            if not sign_name:
+            if sign_name is None:
                 sign_name = str('Sign_Locator_' + str(sign_index))
-            # print('\nsign_name: %r' % sign_name)
-            # print('  sign_position: %s' % sign_position)
-            # print('  sign_rotation: %s' % sign_rotation)
-            # print('  sign_model: %s' % sign_model)
+
             signs_data[sign_name] = (
                 sign_index,
                 sign_position,
@@ -812,12 +731,9 @@ def load(filepath):
              spawn_rotation,
              spawn_type) = _get_spawn_properties(section)
 
-            if not spawn_name:
+            if spawn_name is None:
                 spawn_name = str('Sign_Locator_' + str(spawn_index))
-            # print('\nspawn_name: %r' % spawn_name)
-            # print('  spawn_position: %s' % spawn_position)
-            # print('  spawn_rotation: %s' % spawn_rotation)
-            # print('  spawn_type: %s' % spawn_type)
+
             spawn_points_data[spawn_name] = (
                 spawn_index,
                 spawn_position,
@@ -833,20 +749,11 @@ def load(filepath):
              tsem_id,
              tsem_intervals,
              tsem_cycle,
-             tsem_model,
              tsem_profile) = _get_t_light_properties(section)
 
-            if not tsem_name:
+            if tsem_name is None:
                 tsem_name = str('Semaphore_Locator_' + str(tsem_index))
-            # print('\ntsem_name: %r' % tsem_name)
-            # print('  tsem_position: %s' % tsem_position)
-            # print('  tsem_rotation: %s' % str(tsem_rotation))
-            # print('  tsem_type: %s' % tsem_type)
-            # print('  tsem_id: %s' % tsem_id)
-            # print('  tsem_intervals: %s' % tsem_intervals)
-            # print('  tsem_cycle: %s' % tsem_cycle)
-            # print('  tsem_model: %s' % tsem_model)
-            # print('  tsem_profile: %s' % tsem_profile)
+
             traffic_lights_data[tsem_name] = (
                 tsem_position,
                 tsem_rotation,
@@ -854,7 +761,6 @@ def load(filepath):
                 tsem_id,
                 tsem_intervals,
                 tsem_cycle,
-                tsem_model,
                 tsem_profile,
             )
             tsem_index += 1
@@ -863,8 +769,8 @@ def load(filepath):
              cur_index,
              cur_flags,
              cur_leads_to_nodes,
-             cur_speed_limit,
-             cur_traffic_light_id,
+             cur_traffic_rule,
+             cur_sempahore_id,
              cur_next_curves,
              cur_prev_curves,
              cur_length,
@@ -875,24 +781,15 @@ def load(filepath):
              bezier_end_dir,
              bezier_end_qua) = _get_curve_properties(section)
 
-            # print('\ncur_name: %r' % cur_name)
-            # print('  cur_index: %i' % cur_index)
-            # print('  cur_flags: %s' % cur_flags)
-            # print('  cur_leads_to_nodes: %s' % cur_leads_to_nodes)
-            # print('  cur_speed_limit: %s' % cur_speed_limit)
-            # print('  cur_traffic_light_id: %s' % cur_traffic_light_id)
-            # print('  cur_next_curves: %s' % cur_next_curves)
-            # print('  cur_prev_curves: %s' % cur_prev_curves)
-            # print('  cur_length: %s' % cur_length)
             nav_curves_data[cur_index] = (
                 cur_name,
                 cur_flags,
-                cur_leads_to_nodes,
-                cur_speed_limit,
-                cur_traffic_light_id,
+                cur_leads_to_nodes,  # not used
+                cur_traffic_rule,
+                cur_sempahore_id,
                 cur_next_curves,
                 cur_prev_curves,
-                cur_length,
+                cur_length,  # not used
                 bezier_start_pos,
                 bezier_start_dir,
                 bezier_start_qua,
@@ -901,22 +798,22 @@ def load(filepath):
                 bezier_end_qua,
             )
         elif section.type == 'MapPoint':
-            (map_name,
+            (map_indexx,
+             map_name,
              map_visual_flags,
              map_nav_flags,
              map_position,
              map_neighbours) = _get_map_point_properties(section)
 
-            if not map_name:
-                map_name = _name_utils.get_unique("Map_Point_Locator", bpy.data.objects)
-            # print('\nmap_name: %r' % map_name)
-            # print('  map_visual_flags: %s' % map_visual_flags)
-            # print('  map_nav_flags: %s' % map_nav_flags)
-            # print('  map_position: %s' % str(map_position))
-            # print('  map_neighbours: %s' % map_neighbours)
+            if map_indexx is None:
+                map_indexx = map_index
+
+            if map_name is None:
+                map_name = str("Map_Point_Locator_" + str(map_indexx))
+
             map_points_data.append((
                 map_name,
-                map_index,
+                map_indexx,
                 map_visual_flags,
                 map_nav_flags,
                 map_position,
@@ -924,37 +821,30 @@ def load(filepath):
             ))
             map_index += 1
         elif section.type == 'TriggerPoint':
-            (trp_name,
+            (trp_indexx,
+             trp_name,
              trp_trigger_id,
              trp_action,
              trp_range,
              trp_reset_delay,
-             trp_reset_dist,
              trp_flags,
              trp_position,
              trp_neighbours) = _get_trigger_point_properties(section)
 
-            if not trp_name:
-                trp_name = str('Trigger_Locator_' + str(trp_index))
-            # print('\ntrp_name: %r' % trp_name)
-            # print('  trp_trigger_id: %s' % trp_trigger_id)
-            # print('  trp_action: %s' % trp_action)
+            if trp_indexx is None:
+                trp_indexx = trp_index
+
+            if trp_name is None:
+                trp_name = str('Trigger_Locator_' + str(trp_indexx))
+
             trp_range = float(trp_range)
-            # print('  trp_range: %s' % trp_range)
-            trp_reset_delay = float(trp_reset_delay)
-            # print('  trp_reset_delay: %s' % trp_reset_delay)
-            # print('  trp_reset_dist: %s' % trp_reset_dist)
-            # print('  trp_flags: %s' % trp_flags)
-            # print('  trp_position: %s' % str(trp_position))
-            # print('  trp_neighbours: %s' % str(trp_neighbours))
+
             trigger_points_data.append((
                 trp_name,
-                trp_index,
-                trp_trigger_id,
+                trp_indexx,
                 trp_action,
                 trp_range,
                 trp_reset_delay,
-                trp_reset_dist,
                 trp_flags,
                 trp_position,
                 trp_neighbours,
@@ -965,17 +855,29 @@ def load(filepath):
 
     # CREATE NODES
     for name in nodes_data:
-        # print('nodes_data[name]: %s' % str(nodes_data[name]))
         loc = _create_node_locator(
             name,
             nodes_data[name][0],  # node_index
             nodes_data[name][1],  # node_position
             nodes_data[name][2],  # node_direction
-            nodes_data[name][3],  # node_input_lanes
-            nodes_data[name][4],  # node_output_lanes
-            nodes_data[name][5],  # node_terpoint_count
-            nodes_data[name][6],  # node_stream_count
         )
+
+        tp_pos_l = nodes_data[name][5]
+        tp_nor_l = nodes_data[name][6]
+        tp_var_l = nodes_data[name][7]
+
+        # save terrain points into transitional structure
+        if len(tp_var_l) > 0:  # save per variant block
+
+            for var_i, var in enumerate(tp_var_l):
+                for i in range(var[0], var[0] + var[1]):
+                    terrain_points_trans.add(var_i, nodes_data[name][0], tp_pos_l[i], tp_nor_l[i])
+
+        else:
+
+            for i in range(len(tp_pos_l)):
+                terrain_points_trans.add(-1, nodes_data[name][0], tp_pos_l[i], tp_nor_l[i])
+
         if loc:
             _print_locator_result(loc, "Node", name)
             locators.append(loc)
@@ -985,7 +887,6 @@ def load(filepath):
         # print('signs_data[name]: %s' % str(signs_data[name]))
         loc = _create_sign_locator(
             name,
-            signs_data[name][0],
             signs_data[name][1],
             signs_data[name][2],
             signs_data[name][3],
@@ -1001,7 +902,6 @@ def load(filepath):
         # print('spawn_points_data[name]: %s' % str(spawn_points_data[name]))
         loc = _create_spawn_locator(
             name,
-            spawn_points_data[name][0],
             spawn_points_data[name][1],
             spawn_points_data[name][2],
             spawn_points_data[name][3],
@@ -1021,8 +921,7 @@ def load(filepath):
             traffic_lights_data[name][3],  # tsem_id
             traffic_lights_data[name][4],  # tsem_intervals
             traffic_lights_data[name][5],  # tsem_cycle
-            traffic_lights_data[name][6],  # tsem_model
-            traffic_lights_data[name][7],  # tsem_profile
+            traffic_lights_data[name][6],  # tsem_profile
             scs_globals.scs_tsem_profile_inventory
         )
         if loc:
@@ -1035,39 +934,25 @@ def load(filepath):
     for index in nav_curves_data:
 
         # assemble variables
-        cur_name = nav_curves_data[index][0]
+        # cur_name = nav_curves_data[index][0]
         cur_flags = nav_curves_data[index][1]
-        cur_leads_to_nodes = nav_curves_data[index][2]
-        cur_speed_limit = nav_curves_data[index][3]
-        cur_traffic_light_id = nav_curves_data[index][4]
+        cur_traffic_rule = nav_curves_data[index][3]
+        cur_sempahore_id = nav_curves_data[index][4]
         cur_next_curves = nav_curves_data[index][5]
         cur_prev_curves = nav_curves_data[index][6]
-        # cur_length = nav_curves_data[index][7]
+
         bezier_start_pos = nav_curves_data[index][8]
+        bezier_start_dir = bezier_start_qua = bezier_end_dir = bezier_end_qua = None
         if nav_curves_data[index][9]:
             bezier_start_dir = _curve_utils.set_direction(nav_curves_data[index][9])
         else:
             bezier_start_qua = nav_curves_data[index][10]
+
         bezier_end_pos = nav_curves_data[index][11]
         if nav_curves_data[index][12]:
             bezier_end_dir = _curve_utils.set_direction(nav_curves_data[index][12])
         else:
             bezier_end_qua = nav_curves_data[index][13]
-
-        # print('nav_curves_data[%i]: %r' % (index, str(nav_curves_data[index][0])))
-        # print('  name: %r' % cur_name)
-        # print('  flags: %r' % cur_flags)
-        # print('  leads_to_nodes: %r' % cur_leads_to_nodes)
-        # print('  curve_speed_limit: %r' % cur_speed_limit)
-        # print('  curve_traffic_light_id: %r' % cur_traffic_light_id)
-        # print('  next: %s' % str(cur_next_curves))
-        # print('  prev: %s' % str(cur_prev_curves))
-        # print('  start POS: %s' % str(bezier_start_pos))
-        # print('  start DIR: %s' % str(bezier_start_dir))
-        # print('  start QUA: %s' % str(bezier_start_qua))
-        # print('  end POS: %s' % str(bezier_end_pos))
-        # print('  end DIR: %s' % str(bezier_end_dir))
-        # print('  end QUA: %s' % str(bezier_end_qua))
 
         # check if there is need to create new one or alter the existing
         curve_locators_to_create = {"start": True, "end": True}
@@ -1107,105 +992,75 @@ def load(filepath):
         # CREATE 2 LOCATORS FOR EACH CURVE IF NEEDED
         for loc_key in curve_locators_to_create:
 
-            # start_obj.scs_props.locator_prefab_np_stopper: number |= 0x00000001
-            # start_obj.scs_props.locator_prefab_np_low_prior and end_obj.scs_props.locator_prefab_np_low_prior: number |= 0x00000002
-            # end_obj.scs_props.locator_prefab_np_allowed_veh == 'to': number |= 0x00000004 # Trucks Only
-            # start_obj.scs_props.locator_prefab_np_blinker == 'rb': number |= 0x00000008 # Right Blinker
-            # start_obj.scs_props.locator_prefab_np_blinker == 'lb': number |= 0x00000010 # Left Blinker
-            # start_obj.scs_props.locator_prefab_np_crossroad and end_obj.scs_props.locator_prefab_np_crossroad: number |= 0x00000200
-            # end_obj.scs_props.locator_prefab_np_allowed_veh == 'nt': number |= 0x00000400 # No Trucks
-            # start_obj.scs_props.locator_prefab_np_tl_activ: number |= 0x00000800
-            # end_obj.scs_props.locator_prefab_np_allowed_veh == 'po': number |= 0x00001000 # Player Only
-            # end_obj.scs_props.locator_prefab_np_low_probab: number |= 0x00002000
-            # start_obj.scs_props.locator_prefab_np_ig_blink_prior: number |= 0x00004000
-            # start_obj.scs_props.locator_prefab_np_add_priority: number |= 0x00008000
-
-            # locators already exists just cover the needed properties
-            if curve_locators_to_create[loc_key] is False:
-
-                loc_obj = conns_dict[index][loc_key]
-                if loc_key == "start":
-
-                    loc_obj.scs_props.locator_prefab_np_stopper = (cur_flags & 0x00000001) != 0
-                    loc_obj.scs_props.locator_prefab_np_tl_activ = (cur_flags & 0x00000800) != 0
-                    loc_obj.scs_props.locator_prefab_np_ig_blink_prior = (cur_flags & 0x00004000) != 0
-
-                else:
-
-                    loc_obj.scs_props.locator_prefab_np_low_probab = (cur_flags & 0x00002000) != 0
-
-                continue
-
             nav_locator_data = {}
+
             nav_locs_count += 1
             if loc_key == "start":
 
                 nav_locator_data['np_name'] = "Nav_Point_" + str(nav_locs_count)
                 nav_locator_data['np_pos'] = bezier_start_pos
-                if bezier_start_qua is not None:
-                    nav_locator_data['np_dir'] = None
-                    nav_locator_data['np_qua'] = bezier_start_qua
-                else:
-                    nav_locator_data['np_dir'] = bezier_start_dir
-                    nav_locator_data['np_qua'] = None
-                nav_locator_data['np_stopper'] = (cur_flags & 0x00000001) != 0
-                # nav_locator_data['np_allowed_veh'] = 'all'
-                # nav_locator_data['np_blinker'] = (cur_flags & 0x00000008) != 0
-                # nav_locator_data['np_blinker'] = (cur_flags & 0x00000010) != 0
-                nav_locator_data['np_tl_activ'] = (cur_flags & 0x00000800) != 0
-                nav_locator_data['np_low_probab'] = False
-                nav_locator_data['np_ig_blink_prior'] = (cur_flags & 0x00004000) != 0
+                nav_locator_data['np_dir'] = bezier_start_dir
+                nav_locator_data['np_qua'] = bezier_start_qua
 
             elif loc_key == "end":
 
                 nav_locator_data['np_name'] = "Nav_Point_" + str(nav_locs_count)
                 nav_locator_data['np_pos'] = bezier_end_pos
-                if bezier_end_qua is not None:
-                    nav_locator_data['np_dir'] = None
-                    nav_locator_data['np_qua'] = bezier_end_qua
-                else:
-                    nav_locator_data['np_dir'] = bezier_end_dir
-                    nav_locator_data['np_qua'] = None
-                nav_locator_data['np_stopper'] = False
-                nav_locator_data['np_tl_activ'] = False
-                # nav_locator_data['np_blinker'] = 'no'
-                # nav_locator_data['np_allowed_veh'] = (cur_flags & 0x00000004) != 0
-                # nav_locator_data['np_allowed_veh'] = (cur_flags & 0x00000400) != 0
-                # nav_locator_data['np_allowed_veh'] = (cur_flags & 0x00001000) != 0
-                nav_locator_data['np_low_probab'] = (cur_flags & 0x00002000) != 0
-                nav_locator_data['np_ig_blink_prior'] = False
+                nav_locator_data['np_dir'] = bezier_end_dir
+                nav_locator_data['np_qua'] = bezier_end_qua
 
-            nav_locator_data['np_low_prior'] = (cur_flags & 0x00000002) != 0
-            nav_locator_data['np_crossroad'] = (cur_flags & 0x00000200) != 0
-            nav_locator_data['np_add_priority'] = (cur_flags & 0x00008000) != 0
-            # nav_locator_data['np_priority_mask'] = (cur_flags & 0x000F0000) != 0  # PRIORITY MASK
+            nav_locator_data['np_low_probab'] = (cur_flags & _PL_consts.PNCF.LOW_PROBABILITY) != 0
+            nav_locator_data['np_add_priority'] = (cur_flags & _PL_consts.PNCF.ADDITIVE_PRIORITY) != 0
+            nav_locator_data['np_limit_displace'] = (cur_flags & _PL_consts.PNCF.LIMIT_DISPLACEMENT) != 0
 
-            if cur_speed_limit:
-                nav_locator_data['np_speed_limit'] = cur_speed_limit  # from 'start' locator - Float - "Speed Limit [km/h]"
+            nav_locator_data['np_allowed_veh'] = cur_flags & _PL_consts.PNCF.ALLOWED_VEHICLES_MASK
+
+            if cur_flags & _PL_consts.PNCF.LEFT_BLINKER != 0:
+                nav_locator_data['np_blinker'] = _PL_consts.PNCF.LEFT_BLINKER
+            elif cur_flags & _PL_consts.PNCF.FORCE_NO_BLINKER != 0:
+                nav_locator_data['np_blinker'] = _PL_consts.PNCF.FORCE_NO_BLINKER
+            elif cur_flags & _PL_consts.PNCF.RIGHT_BLINKER != 0:
+                nav_locator_data['np_blinker'] = _PL_consts.PNCF.RIGHT_BLINKER
             else:
-                nav_locator_data['np_speed_limit'] = 0.0
+                nav_locator_data['np_blinker'] = 0
 
-            # TODO: setup enums properly!
-            nav_locator_data['np_blinker'] = 'no'  # from "cur_flags" - Enum - "Blinker"
-            nav_locator_data['np_boundary'] = 'no'  # ??? - Enum - "Boundary"
-            nav_locator_data['np_boundary_node'] = '0'  # ??? - Enum - "Boundary Node"
-            nav_locator_data['np_traffic_light'] = '-1'  # (Enum) - Enum - "Traffic Semaphore"
-            nav_locator_data['np_priority_mask'] = '-1'  # (Enum) - Enum - "Priority Modifier"
-            nav_locator_data['np_allowed_veh'] = 'all'  # (Enum) - Enum - "Allowed Vehicles"
+            nav_locator_data['np_prior_modif'] = (cur_flags & _PL_consts.PNCF.PRIORITY_MASK) >> _PL_consts.PNCF.PRIORITY_SHIFT
 
-            # print(' %r' % str(nav_locator_data['locator_prefab_np_name']))
-            # print(' --> locator_prefab_np_stopper: %s' % str(nav_locator_data['locator_prefab_np_stopper']))
-            # print(' --> locator_prefab_np_allowed_veh: %s' % str(nav_locator_data['locator_prefab_np_allowed_veh']))
-            # print(' --> locator_prefab_np_blinker: %s' % str(nav_locator_data['locator_prefab_np_blinker']))
-            # print(' --> locator_prefab_np_tl_activ: %s' % str(nav_locator_data['locator_prefab_np_tl_activ']))
-            # print(' --> locator_prefab_np_low_probab: %s' % str(nav_locator_data['locator_prefab_np_low_probab']))
-            # print(' --> locator_prefab_np_ig_blink_prior: %s' % str(nav_locator_data['locator_prefab_np_ig_blink_prior']))
-            # print(' --> locator_prefab_np_low_prior: %s' % str(nav_locator_data['locator_prefab_np_low_prior']))
-            # print(' --> locator_prefab_np_crossroad: %s' % str(nav_locator_data['locator_prefab_np_crossroad']))
-            # print(' --> locator_prefab_np_add_priority: %s' % str(nav_locator_data['locator_prefab_np_add_priority']))
-            # print(' --> locator_prefab_np_priority_mask: %s' % str(nav_locator_data['locator_prefab_np_priority_mask']))
+            nav_locator_data['np_semaphore_id'] = cur_sempahore_id
+            nav_locator_data['np_traffic_rule'] = cur_traffic_rule
+
+            for node_data in nodes_data.values():
+
+                if loc_key == "start":
+
+                    for lane_index, curve_index in enumerate(node_data[3]):
+
+                        if curve_index == index:
+
+                            nav_locator_data['np_boundary'] = 1 + lane_index
+                            nav_locator_data['np_boundary_node'] = node_data[0]
+                            break
+
+                else:
+
+                    for lane_index, curve_index in enumerate(node_data[4]):
+
+                        if curve_index == index:
+
+                            nav_locator_data['np_boundary'] = 1 + lane_index + _PL_consts.PREFAB_LANE_COUNT_MAX
+                            nav_locator_data['np_boundary_node'] = node_data[0]
+                            break
+
+            # locator already exists just set properties
+            if curve_locators_to_create[loc_key] is False:
+
+                loc_obj = conns_dict[index][loc_key]
+                _set_nav_locator_props(loc_obj, nav_locator_data, loc_key == "start")
+
+                continue
 
             loc = _create_nav_locator(nav_locator_data)
+            _set_nav_locator_props(loc, nav_locator_data, loc_key == "start")
             locators.append(loc)
             if loc:
                 # decide which side to update
@@ -1217,7 +1072,7 @@ def load(filepath):
                     related_end = "start"
 
                 # create or update references for current connection
-                if not index in conns_dict:
+                if index not in conns_dict:
                     conns_dict[index] = {
                         loc_key: loc
                     }
@@ -1231,7 +1086,7 @@ def load(filepath):
 
                         if prev_curve_ind in conns_dict:
 
-                            if not related_end in conns_dict[prev_curve_ind]:
+                            if related_end not in conns_dict[prev_curve_ind]:
                                 conns_dict[prev_curve_ind][related_end] = loc
 
                         else:
@@ -1246,114 +1101,111 @@ def load(filepath):
 
     # COLLECT MAP POINT CONNECTIONS
     connections = []
-    for loc_index, map_point in enumerate(map_points_data):
-        # print('      map_point: %s' % str(map_point))
-        # print('      name: %r' % map_point[0])
+    for map_point in map_points_data:
+
+        # ignore auto generated map points
+        if map_point[3] & _PL_consts.MPNF.NAV_BASE != 0:
+            continue
+
+        loc_index = map_point[1]
+
         for loc_neighbour_index in map_point[5]:
-            if loc_neighbour_index != -1:
-                add_con = True
-                for con in connections:
-                    if loc_neighbour_index == con[0] and loc_index == con[1]:
-                        add_con = False
-                if loc_index == loc_neighbour_index:
-                    add_con = False
-                if add_con:
-                    connections.append((loc_index, loc_neighbour_index))
-                    # print('Map Point connections:')
-                    # for connection_i, connection in enumerate(connections):
-                    # print('    %i\t%s' % (connection_i, str(connection)))
-                    # print('    connections:\n%s' % str(connections))
+
+            if loc_neighbour_index == -1:
+                continue
+
+            if loc_index == loc_neighbour_index:
+                continue
+
+            for con in connections:
+                if loc_neighbour_index == con[0] and loc_index == con[1]:
+                    continue
+
+                if loc_neighbour_index == con[1] and loc_index == con[0]:
+                    continue
+
+            connections.append((loc_index, loc_neighbour_index))
 
     # CREATE MAP POINTS
-    mp_locs = []
+    mp_locs = {}
     for map_point in map_points_data:
         name = map_point[0]
-        # print('map_points_data[%r]: %s' % (name, str(map_point)))
+
+        # ignore auto generated map points
+        if map_point[3] & _PL_consts.MPNF.NAV_BASE != 0:
+            continue
+
         loc = _create_map_locator(
             map_point[0],
-            map_point[1],
             map_point[2],
             map_point[3],
             map_point[4],
-            map_point[5],
         )
+
+        _print_locator_result(loc, "Map Point", name)
+
         if loc:
-            _print_locator_result(loc, "Map Point", name)
             locators.append(loc)
-            mp_locs.append(loc)
+            mp_locs[map_point[1]] = loc
 
     # APPLY MAP POINT CONNECTIONS
-    # print('      mp_locs: %s' % str(mp_locs))
-    # for mp_loc in mp_locs:
-    # print('      mp_loc: %s' % str(mp_loc))
-    if len(mp_locs) > 0:
-        for connection_i, connection in enumerate(connections):
+    for connection in connections:
 
-            # safety check if connection indexes really exists
-            if connection[0] < len(mp_locs) and connection[1] < len(mp_locs):
-                start_node = mp_locs[connection[0]]
-                end_node = mp_locs[connection[1]]
-            else:
-                lprint('E Map connection out of range: %s', (str(connection),))
-                continue
+        # safety check if connection indexes really exists
+        if connection[0] in mp_locs and connection[1] in mp_locs:
+            start_node = mp_locs[connection[0]]
+            end_node = mp_locs[connection[1]]
+        else:
+            lprint('E Map connection out of range: %s', (str(connection),))
+            continue
 
-            _group_connections_wrapper.create_connection(start_node, end_node)
+        _group_connections_wrapper.create_connection(start_node, end_node)
 
     # COLLECT TRIGGER POINT CONNECTIONS
     connections = []
-    for loc_index, tr_point in enumerate(trigger_points_data):
-        # print('      name: %s' % tr_point[0])
-        if len(tr_point[9]) != 2:
-            lprint('W Unexpected number of connections (%i) for Trigger Point "%s"!', (len(tr_point[9]), tr_point[0]))
+    for tr_point in trigger_points_data:
 
-        for loc_neighbour_index in tr_point[9]:
+        loc_index = tr_point[1]
+
+        # print('      name: %s' % tr_point[0])
+        if len(tr_point[7]) != 2:
+            lprint('W Unexpected number of connections (%i) for Trigger Point "%s"!', (len(tr_point[7]), tr_point[0]))
+
+        for loc_neighbour_index in tr_point[7]:
             connections.append((loc_index, loc_neighbour_index))
 
     # CREATE TRIGGER POINTS
-    tp_locs = []
+    tp_locs = {}
     for tr_point in trigger_points_data:
         name = tr_point[0]
         # print('trigger_points_data[%r]: %s' % (name, str(tr_point)))
         loc = _create_trigger_locator(
             tr_point[0],
-            tr_point[1],
             tr_point[2],
             tr_point[3],
             tr_point[4],
             tr_point[5],
             tr_point[6],
-            tr_point[7],
-            tr_point[8],
-            tr_point[9],
+            scs_globals.scs_trigger_actions_inventory
         )
+
+        _print_locator_result(loc, "Trigger Point", name)
+
         if loc:
-            _print_locator_result(loc, "Trigger Point", name)
             locators.append(loc)
-            tp_locs.append(loc)
+            tp_locs[tr_point[1]] = loc
 
-            # APPLY TRIGGER POINT CONNECTIONS
-            # print('      tp_locs: %s' % str(tp_locs))
-            # for tp_loc in tp_locs:
-            # print('      tp_loc: %s' % str(tp_loc))
-    if len(tp_locs) > 0:
-        for connection_i, connection in enumerate(connections):
+    for connection in connections:
 
-            # safety check if connection indexes really exists
-            if connection[0] < len(tp_locs) and connection[1] < len(tp_locs):
-                start_node = tp_locs[connection[0]]
-                end_node = tp_locs[connection[1]]
-            else:
-                print('E Trigger connection: %s', (str(connection),))
-                continue
+        # safety check if connection indexes really exists
+        if connection[0] in tp_locs and connection[1] in tp_locs:
+            start_node = tp_locs[connection[0]]
+            end_node = tp_locs[connection[1]]
+        else:
+            print('E Trigger connection: %s', (str(connection),))
+            continue
 
-            _group_connections_wrapper.create_connection(start_node, end_node)
-
-    '''
-    # WARNING PRINTOUTS
-    if piece_count < 0: Print(dump_level, '\nW More Pieces found than were declared!')
-    if piece_count > 0: Print(dump_level, '\nW Some Pieces not found, but were declared!')
-    if dump_level > 1: print('')
-    '''
+        _group_connections_wrapper.create_connection(start_node, end_node)
 
     print("************************************")
     return {'FINISHED'}, locators

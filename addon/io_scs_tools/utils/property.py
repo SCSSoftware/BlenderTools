@@ -18,6 +18,8 @@
 
 # Copyright (C) 2013-2014: SCS Software
 
+from bpy.props import EnumProperty
+
 
 def get_default(blender_property):
     """Gets default value of Blender ID property
@@ -28,3 +30,27 @@ def get_default(blender_property):
     :rtype: object
     """
     return blender_property[1]['default']
+
+
+def get_filebrowser_display_type(is_image=False):
+    """Gets enum property for specifying display type of file browser.
+    If is_image argument is not passed or is False default display type is used.
+
+    :param is_image: flag specifying if display type shall be image preview
+    :type is_image: bool
+    :return: enum property of display type for Blender file browser
+    :rtype: bpy.types.EnumProperty
+    """
+
+    default_value = "FILE_IMGDISPLAY" if is_image else "FILE_DEFAULTDISPLAY"
+
+    return EnumProperty(
+        items=[
+            ("FILE_DEFAULTDISPLAY", "", ""),
+            ("FILE_SHORTDISPLAY", "", ""),
+            ("FILE_LONGDISPLAY", "", ""),
+            ("FILE_IMGDISPLAY", "", "")
+        ],
+        default=default_value,
+        options={'HIDDEN'}
+    )

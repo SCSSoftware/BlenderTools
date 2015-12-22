@@ -1,0 +1,7 @@
+material : "eut2.dif.a.decal.over"
+{
+	texture : "lines.tobj"
+	texture_name : "texture_base"
+	specular : { 0.1, 0.1, 0.1 }
+	shininess : 1
+}

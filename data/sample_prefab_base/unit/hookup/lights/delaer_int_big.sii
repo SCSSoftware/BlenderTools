@@ -1,0 +1,18 @@
+SiiNunit
+{
+light_source : dealer.int.big
+{
+	ambient_color: (0.0000, 0.0000, 0.0000)
+	diffuse_color: (2, 2, 2)
+	specular_color: (0.1, 0.1, 0.1)
+
+	range: 25
+	cut_range: 25
+	inner_angle: 150.0
+	outer_angle: 170.0
+	attenuation_start_range: 20
+	forward_distance: false
+	always_on: true
+}
+
+}

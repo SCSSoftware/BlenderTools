@@ -1,0 +1,1074 @@
+SiiNunit
+{
+
+pedestrian_hookup : man_sitting
+{
+	## Possibility to set spawning daytime.
+	## Valid values: true; false Default value: true
+	#
+	active_during_day: true
+	active_during_night: false
+	active_during_rain: false
+	active_during_sun: true
+
+	show_probability: 1
+	pedestrian[]: .man_sitting.1
+	pedestrian[]: .man_sitting.2
+	pedestrian[]: .man_sitting.3
+	pedestrian[]: .man_sitting.4
+	pedestrian[]: .man_sitting.5
+	pedestrian[]: .man_sitting.6
+	pedestrian[]: .man_sitting.7
+	pedestrian[]: .man_sitting.8
+}
+
+	pedestrian_desc : .man_sitting.1
+	{
+		mover_name: "walker_man_01"
+		anim_index: 3
+	}
+	pedestrian_desc : .man_sitting.2
+	{
+		mover_name: "walker_man_02"
+		anim_index: 3
+	}
+	pedestrian_desc : .man_sitting.3
+	{
+		mover_name: "walker_man_03"
+		anim_index: 3
+	}
+	pedestrian_desc : .man_sitting.4
+	{
+		mover_name: "walker_man_04"
+		anim_index: 3
+	}
+	pedestrian_desc : .man_sitting.5
+	{
+		mover_name: "walker_man_05"
+		anim_index: 3
+	}
+	pedestrian_desc : .man_sitting.6
+	{
+		mover_name: "walker_man_06"
+		anim_index: 3
+	}
+	pedestrian_desc : .man_sitting.7
+	{
+		mover_name: "walker_man_07"
+		anim_index: 3
+	}
+	pedestrian_desc : .man_sitting.8
+	{
+		mover_name: "walker_man_08"
+		anim_index: 3
+	}
+
+pedestrian_hookup : woman_sit
+{
+	active_during_day: true
+	active_during_night: false
+	active_during_rain: false
+	active_during_sun: true
+
+	show_probability: 1
+	pedestrian[]: .woman_sit.1
+	pedestrian[]: .woman_sit.2
+	pedestrian[]: .woman_sit.3
+	pedestrian[]: .woman_sit.4
+	pedestrian[]: .woman_sit.5
+	pedestrian[]: .woman_sit.6
+	pedestrian[]: .woman_sit.7
+	pedestrian[]: .woman_sit.8
+	pedestrian[]: .woman_sit.9
+	pedestrian[]: .woman_sit.10
+	pedestrian[]: .woman_sit.11
+	pedestrian[]: .woman_sit.12
+	pedestrian[]: .woman_sit.13
+	pedestrian[]: .woman_sit.14
+	pedestrian[]: .woman_sit.15
+	pedestrian[]: .woman_sit.16
+	pedestrian[]: .woman_sit.17
+	pedestrian[]: .woman_sit.18
+	pedestrian[]: .woman_sit.19
+	pedestrian[]: .woman_sit.20
+	pedestrian[]: .woman_sit.21
+	pedestrian[]: .woman_sit.22
+	pedestrian[]: .woman_sit.23
+	pedestrian[]: .woman_sit.24
+}
+
+	pedestrian_desc : .woman_sit.1
+	{
+		mover_name: "walker_woman_01"
+		anim_index: 2
+	}
+	pedestrian_desc : .woman_sit.2
+	{
+		mover_name: "walker_woman_02"
+		anim_index: 2
+	}
+	pedestrian_desc : .woman_sit.3
+	{
+		mover_name: "walker_woman_03"
+		anim_index: 2
+	}
+	pedestrian_desc : .woman_sit.4
+	{
+		mover_name: "walker_woman_04"
+		anim_index: 2
+	}
+	pedestrian_desc : .woman_sit.5
+	{
+		mover_name: "walker_woman_05"
+		anim_index: 2
+	}
+	pedestrian_desc : .woman_sit.6
+	{
+		mover_name: "walker_woman_06"
+		anim_index: 2
+	}
+	pedestrian_desc : .woman_sit.7
+	{
+		mover_name: "walker_woman_07"
+		anim_index: 2
+	}
+	pedestrian_desc : .woman_sit.8
+	{
+		mover_name: "walker_woman_08"
+		anim_index: 2
+	}
+	pedestrian_desc : .woman_sit.9
+	{
+		mover_name: "walker_woman_09"
+		anim_index: 2
+	}
+	pedestrian_desc : .woman_sit.10
+	{
+		mover_name: "walker_woman_10"
+		anim_index: 2
+	}
+	pedestrian_desc : .woman_sit.11
+	{
+		mover_name: "walker_woman_11"
+		anim_index: 2
+	}
+	pedestrian_desc : .woman_sit.12
+	{
+		mover_name: "walker_woman_12"
+		anim_index: 2
+	}
+	pedestrian_desc : .woman_sit.13
+	{
+		mover_name: "walker_woman_13"
+		anim_index: 2
+	}
+	pedestrian_desc : .woman_sit.14
+	{
+		mover_name: "walker_woman_14"
+		anim_index: 2
+	}
+	pedestrian_desc : .woman_sit.15
+	{
+		mover_name: "walker_woman_15"
+		anim_index: 2
+	}
+	pedestrian_desc : .woman_sit.16
+	{
+		mover_name: "walker_woman_16"
+		anim_index: 2
+	}
+	pedestrian_desc : .woman_sit.17
+	{
+		mover_name: "walker_woman_17"
+		anim_index: 2
+	}
+	pedestrian_desc : .woman_sit.18
+	{
+		mover_name: "walker_woman_18"
+		anim_index: 2
+	}
+	pedestrian_desc : .woman_sit.19
+	{
+		mover_name: "walker_woman_19"
+		anim_index: 2
+	}
+	pedestrian_desc : .woman_sit.20
+	{
+		mover_name: "walker_woman_20"
+		anim_index: 2
+	}
+	pedestrian_desc : .woman_sit.21
+	{
+		mover_name: "walker_woman_21"
+		anim_index: 2
+	}
+	pedestrian_desc : .woman_sit.22
+	{
+		mover_name: "walker_woman_22"
+		anim_index: 2
+	}
+	pedestrian_desc : .woman_sit.23
+	{
+		mover_name: "walker_woman_23"
+		anim_index: 2
+	}
+	pedestrian_desc : .woman_sit.24
+	{
+		mover_name: "walker_woman_24"
+		anim_index: 2
+	}
+
+pedestrian_hookup : civil_man
+{
+	active_during_day: true
+	active_during_night: false
+	active_during_rain: false
+	active_during_sun: true
+
+	show_probability: 1
+	pedestrian[]: .civil_man.1
+	pedestrian[]: .civil_man.2
+	pedestrian[]: .civil_man.3
+	pedestrian[]: .civil_man.4
+	pedestrian[]: .civil_man.5
+	pedestrian[]: .civil_man.6
+	pedestrian[]: .civil_man.7
+	pedestrian[]: .civil_man.8
+}
+
+	pedestrian_desc : .civil_man.1
+	{
+		mover_name: "walker_man_01"
+		anim_index: 2
+	}
+	pedestrian_desc : .civil_man.2
+	{
+		mover_name: "walker_man_02"
+		anim_index: 1
+	}
+	pedestrian_desc : .civil_man.3
+	{
+		mover_name: "walker_man_03"
+		anim_index: 1
+	}
+	pedestrian_desc : .civil_man.4
+	{
+		mover_name: "walker_man_04"
+		anim_index: 2
+	}
+	pedestrian_desc : .civil_man.5
+	{
+		mover_name: "walker_man_05"
+		anim_index: 1
+	}
+	pedestrian_desc : .civil_man.6
+	{
+		mover_name: "walker_man_06"
+		anim_index: 2
+	}
+	pedestrian_desc : .civil_man.7
+	{
+		mover_name: "walker_man_07"
+		anim_index: 1
+	}
+	pedestrian_desc : .civil_man.8
+	{
+		mover_name: "walker_man_08"
+		anim_index: 2
+	}
+
+pedestrian_hookup : civil_woman
+{
+	active_during_day: true
+	active_during_night: false
+	active_during_rain: false
+	active_during_sun: true
+
+	show_probability: 1
+	pedestrian[]: .civil_woman.1
+	pedestrian[]: .civil_woman.2
+	pedestrian[]: .civil_woman.3
+	pedestrian[]: .civil_woman.4
+	pedestrian[]: .civil_woman.5
+	pedestrian[]: .civil_woman.6
+	pedestrian[]: .civil_woman.7
+	pedestrian[]: .civil_woman.8
+	pedestrian[]: .civil_woman.9
+	pedestrian[]: .civil_woman.10
+	pedestrian[]: .civil_woman.11
+	pedestrian[]: .civil_woman.12
+	pedestrian[]: .civil_woman.13
+	pedestrian[]: .civil_woman.14
+	pedestrian[]: .civil_woman.15
+	pedestrian[]: .civil_woman.16
+	pedestrian[]: .civil_woman.17
+	pedestrian[]: .civil_woman.18
+	pedestrian[]: .civil_woman.19
+	pedestrian[]: .civil_woman.20
+	pedestrian[]: .civil_woman.21
+	pedestrian[]: .civil_woman.22
+	pedestrian[]: .civil_woman.23
+	pedestrian[]: .civil_woman.24
+}
+
+	pedestrian_desc : .civil_woman.1
+	{
+		mover_name: "walker_woman_01"
+		anim_index: 1
+	}
+	pedestrian_desc : .civil_woman.2
+	{
+		mover_name: "walker_woman_02"
+		anim_index: 1
+	}
+	pedestrian_desc : .civil_woman.3
+	{
+		mover_name: "walker_woman_03"
+		anim_index: 1
+	}
+	pedestrian_desc : .civil_woman.4
+	{
+		mover_name: "walker_woman_04"
+		anim_index: 1
+	}
+	pedestrian_desc : .civil_woman.5
+	{
+		mover_name: "walker_woman_05"
+		anim_index: 1
+	}
+	pedestrian_desc : .civil_woman.6
+	{
+		mover_name: "walker_woman_06"
+		anim_index: 1
+	}
+	pedestrian_desc : .civil_woman.7
+	{
+		mover_name: "walker_woman_07"
+		anim_index: 1
+	}
+	pedestrian_desc : .civil_woman.8
+	{
+		mover_name: "walker_woman_08"
+		anim_index: 1
+	}
+	pedestrian_desc : .civil_woman.9
+	{
+		mover_name: "walker_woman_09"
+		anim_index: 1
+	}
+	pedestrian_desc : .civil_woman.10
+	{
+		mover_name: "walker_woman_10"
+		anim_index: 1
+	}
+	pedestrian_desc : .civil_woman.11
+	{
+		mover_name: "walker_woman_11"
+		anim_index: 1
+	}
+	pedestrian_desc : .civil_woman.12
+	{
+		mover_name: "walker_woman_12"
+		anim_index: 1
+	}
+	pedestrian_desc : .civil_woman.13
+	{
+		mover_name: "walker_woman_13"
+		anim_index: 1
+	}
+	pedestrian_desc : .civil_woman.14
+	{
+		mover_name: "walker_woman_14"
+		anim_index: 1
+	}
+	pedestrian_desc : .civil_woman.15
+	{
+		mover_name: "walker_woman_15"
+		anim_index: 1
+	}
+	pedestrian_desc : .civil_woman.16
+	{
+		mover_name: "walker_woman_16"
+		anim_index: 1
+	}
+	pedestrian_desc : .civil_woman.17
+	{
+		mover_name: "walker_woman_17"
+		anim_index: 1
+	}
+	pedestrian_desc : .civil_woman.18
+	{
+		mover_name: "walker_woman_18"
+		anim_index: 1
+	}
+	pedestrian_desc : .civil_woman.19
+	{
+		mover_name: "walker_woman_19"
+		anim_index: 1
+	}
+	pedestrian_desc : .civil_woman.20
+	{
+		mover_name: "walker_woman_20"
+		anim_index: 1
+	}
+	pedestrian_desc : .civil_woman.21
+	{
+		mover_name: "walker_woman_21"
+		anim_index: 1
+	}
+	pedestrian_desc : .civil_woman.22
+	{
+		mover_name: "walker_woman_22"
+		anim_index: 1
+	}
+	pedestrian_desc : .civil_woman.23
+	{
+		mover_name: "walker_woman_23"
+		anim_index: 1
+	}
+	pedestrian_desc : .civil_woman.24
+	{
+		mover_name: "walker_woman_24"
+		anim_index: 1
+	}
+
+pedestrian_hookup : worker01
+{
+	active_during_day: true
+	active_during_night: false
+	active_during_rain: false
+	active_during_sun: true
+
+	show_probability: 1.0
+	pedestrian[]: .worker01.1
+	pedestrian[]: .worker01.2
+	pedestrian[]: .worker01.3
+	pedestrian[]: .worker01.4
+	pedestrian[]: .worker01.5
+	pedestrian[]: .worker01.6
+}
+	pedestrian_desc : .worker01.1
+	{
+		mover_name: "worker_01"
+		anim_index: 1
+	}
+	pedestrian_desc : .worker01.2
+	{
+		mover_name: "worker_02"
+		anim_index: 1
+	}
+	pedestrian_desc : .worker01.3
+	{
+		mover_name: "worker_03"
+		anim_index: 0
+	}
+	pedestrian_desc : .worker01.4
+	{
+		mover_name: "worker_04"
+		anim_index: 0
+	}
+	pedestrian_desc : .worker01.5
+	{
+		mover_name: "worker_05"
+		anim_index: 1
+	}
+	pedestrian_desc : .worker01.6
+	{
+		mover_name: "worker_06"
+		anim_index: 0
+	}
+
+pedestrian_hookup : police01
+{
+	show_probability: 1.0
+	pedestrian[]: .police01.1
+	pedestrian[]: .police01.2
+	pedestrian[]: .police01.3
+	pedestrian[]: .police01.4
+	pedestrian[]: .police01.5
+	pedestrian[]: .police01.6
+}
+
+	pedestrian_desc : .police01.1
+	{
+		mover_name: "security_man_01"
+		anim_index: 0
+	}
+	pedestrian_desc : .police01.2
+	{
+		mover_name: "security_man_02"
+		anim_index: 1
+	}
+	pedestrian_desc : .police01.3
+	{
+		mover_name: "security_man_03"
+		anim_index: 1
+	}
+	pedestrian_desc : .police01.4
+	{
+		mover_name: "security_man_04"
+		anim_index: 0
+	}
+	pedestrian_desc : .police01.5
+	{
+		mover_name: "security_man_05"
+		anim_index: 0
+	}
+	pedestrian_desc : .police01.6
+	{
+		mover_name: "security_man_06"
+		anim_index: 1
+	}
+
+
+
+pedestrian_hookup : serviceman
+{
+	active_during_day: true
+	active_during_night: false
+	active_during_rain: false
+	active_during_sun: true
+
+	show_probability: 1.0
+	pedestrian[]: .serviceman.1
+	pedestrian[]: .serviceman.2
+	pedestrian[]: .serviceman.3
+	pedestrian[]: .serviceman.4
+	pedestrian[]: .serviceman.5
+	pedestrian[]: .serviceman.6
+}
+	pedestrian_desc : .serviceman.1
+	{
+		mover_name: "serviceman_01"
+		anim_index: 6
+	}
+	pedestrian_desc : .serviceman.2
+	{
+		mover_name: "serviceman_02"
+		anim_index: 6
+	}
+	pedestrian_desc : .serviceman.3
+	{
+		mover_name: "serviceman_03"
+		anim_index: 6
+	}
+	pedestrian_desc : .serviceman.4
+	{
+		mover_name: "serviceman_04"
+		anim_index: 6
+	}
+	pedestrian_desc : .serviceman.5
+	{
+		mover_name: "serviceman_05"
+		anim_index: 6
+	}
+	pedestrian_desc : .serviceman.6
+	{
+		mover_name: "serviceman_06"
+		anim_index: 6
+	}
+
+pedestrian_hookup : serviceman_n
+{
+	active_during_day: true
+	active_during_night: false
+	active_during_rain: false
+	active_during_sun: true
+
+	show_probability: 1.0
+	pedestrian[]: .serviceman_n.1
+	pedestrian[]: .serviceman_n.2
+	pedestrian[]: .serviceman_n.3
+	pedestrian[]: .serviceman_n.4
+	pedestrian[]: .serviceman_n.5
+	pedestrian[]: .serviceman_n.6
+}
+	pedestrian_desc : .serviceman_n.1
+	{
+		mover_name: "service_man_noter_01"
+		anim_index: 0
+	}
+	pedestrian_desc : .serviceman_n.2
+	{
+		mover_name: "service_man_noter_02"
+		anim_index: 0
+	}
+	pedestrian_desc : .serviceman_n.3
+	{
+		mover_name: "service_man_noter_03"
+		anim_index: 0
+	}
+	pedestrian_desc : .serviceman_n.4
+	{
+		mover_name: "service_man_noter_04"
+		anim_index: 0
+	}
+	pedestrian_desc : .serviceman_n.5
+	{
+		mover_name: "service_man_noter_05"
+		anim_index: 0
+	}
+	pedestrian_desc : .serviceman_n.6
+	{
+		mover_name: "service_man_noter_06"
+		anim_index: 0
+	}
+
+pedestrian_hookup : serviceman_s
+{
+	active_during_day: true
+	active_during_night: false
+	active_during_rain: false
+	active_during_sun: true
+
+	show_probability: 1.0
+	pedestrian[]: .serviceman_s.1
+	pedestrian[]: .serviceman_s.2
+	pedestrian[]: .serviceman_s.3
+	pedestrian[]: .serviceman_s.4
+	pedestrian[]: .serviceman_s.5
+	pedestrian[]: .serviceman_s.6
+}
+	pedestrian_desc : .serviceman_s.1
+	{
+		mover_name: "service_man_sponge_01"
+		anim_index: 0
+	}
+	pedestrian_desc : .serviceman_s.2
+	{
+		mover_name: "service_man_sponge_02"
+		anim_index: 0
+	}
+	pedestrian_desc : .serviceman_s.3
+	{
+		mover_name: "service_man_sponge_03"
+		anim_index: 0
+	}
+	pedestrian_desc : .serviceman_s.4
+	{
+		mover_name: "service_man_sponge_04"
+		anim_index: 0
+	}
+	pedestrian_desc : .serviceman_s.5
+	{
+		mover_name: "service_man_sponge_05"
+		anim_index: 0
+	}
+	pedestrian_desc : .serviceman_s.6
+	{
+		mover_name: "service_man_sponge_06"
+		anim_index: 0
+	}
+
+
+
+pedestrian_hookup : serviceman_i
+{
+	active_during_day: true
+	active_during_night: false
+	active_during_rain: false
+	active_during_sun: true
+
+	show_probability: 1.0
+	pedestrian[]: .serviceman_i.1
+	pedestrian[]: .serviceman_i.2
+	pedestrian[]: .serviceman_i.3
+	pedestrian[]: .serviceman_i.4
+	pedestrian[]: .serviceman_i.5
+	pedestrian[]: .serviceman_i.6
+}
+	pedestrian_desc : .serviceman_i.1
+	{
+		mover_name: "serviceman_01"
+		anim_index: 0
+	}
+	pedestrian_desc : .serviceman_i.2
+	{
+		mover_name: "serviceman_02"
+		anim_index: 0
+	}
+	pedestrian_desc : .serviceman_i.3
+	{
+		mover_name: "serviceman_03"
+		anim_index: 0
+	}
+	pedestrian_desc : .serviceman_i.4
+	{
+		mover_name: "serviceman_04"
+		anim_index: 1
+	}
+	pedestrian_desc : .serviceman_i.5
+	{
+		mover_name: "serviceman_05"
+		anim_index: 1
+	}
+	pedestrian_desc : .serviceman_i.6
+	{
+		mover_name: "serviceman_06"
+		anim_index: 1
+	}
+
+pedestrian_hookup : worker_n
+{
+	active_during_day: true
+	active_during_night: false
+	active_during_rain: false
+	active_during_sun: true
+
+	show_probability: 1.0
+	pedestrian[]: .worker_n.1
+	pedestrian[]: .worker_n.2
+	pedestrian[]: .worker_n.3
+	pedestrian[]: .worker_n.4
+	pedestrian[]: .worker_n.5
+	pedestrian[]: .worker_n.6
+}
+	pedestrian_desc : .worker_n.1
+	{
+		mover_name: "worker_noter_01"
+		anim_index: 0
+	}
+	pedestrian_desc : .worker_n.2
+	{
+		mover_name: "worker_noter_02"
+		anim_index: 0
+	}
+	pedestrian_desc : .worker_n.3
+	{
+		mover_name: "worker_noter_03"
+		anim_index: 0
+	}
+	pedestrian_desc : .worker_n.4
+	{
+		mover_name: "worker_noter_04"
+		anim_index: 0
+	}
+	pedestrian_desc : .worker_n.5
+	{
+		mover_name: "worker_noter_05"
+		anim_index: 0
+	}
+	pedestrian_desc : .worker_n.6
+	{
+		mover_name: "worker_noter_06"
+		anim_index: 0
+	}
+	
+pedestrian_hookup : worker_s
+{
+	active_during_day: true
+	active_during_night: false
+	active_during_rain: false
+	active_during_sun: true
+
+	show_probability: 1.0
+	pedestrian[]: .worker_s.1
+	pedestrian[]: .worker_s.2
+	pedestrian[]: .worker_s.3
+	pedestrian[]: .worker_s.4
+	pedestrian[]: .worker_s.5
+	pedestrian[]: .worker_s.6
+}
+	pedestrian_desc : .worker_s.1
+	{
+		mover_name: "worker_sponge_01"
+		anim_index: 0
+	}
+	pedestrian_desc : .worker_s.2
+	{
+		mover_name: "worker_sponge_02"
+		anim_index: 0
+	}
+	pedestrian_desc : .worker_s.3
+	{
+		mover_name: "worker_sponge_03"
+		anim_index: 0
+	}
+	pedestrian_desc : .worker_s.4
+	{
+		mover_name: "worker_sponge_04"
+		anim_index: 0
+	}
+	pedestrian_desc : .worker_s.5
+	{
+		mover_name: "worker_sponge_05"
+		anim_index: 0
+	}
+	pedestrian_desc : .worker_s.6
+	{
+		mover_name: "worker_sponge_06"
+		anim_index: 0
+	}
+
+pedestrian_hookup : serviceman_r
+{
+	active_during_day: true
+	active_during_night: false
+	active_during_rain: false
+	active_during_sun: true
+
+	show_probability: 1.0
+	pedestrian[]: .serviceman_r.1
+	pedestrian[]: .serviceman_r.2
+	pedestrian[]: .serviceman_r.3
+	pedestrian[]: .serviceman_r.4
+	pedestrian[]: .serviceman_r.5
+	pedestrian[]: .serviceman_r.6
+}
+	pedestrian_desc : .serviceman_r.1
+	{
+		mover_name: "serviceman_01"
+		anim_index: 2
+	}
+	pedestrian_desc : .serviceman_r.2
+	{
+		mover_name: "serviceman_02"
+		anim_index: 2
+	}
+	pedestrian_desc : .serviceman_r.3
+	{
+		mover_name: "serviceman_03"
+		anim_index: 2
+	}
+	pedestrian_desc : .serviceman_r.4
+	{
+		mover_name: "serviceman_04"
+		anim_index: 2
+	}
+	pedestrian_desc : .serviceman_r.5
+	{
+		mover_name: "serviceman_05"
+		anim_index: 2
+	}
+	pedestrian_desc : .serviceman_r.6
+	{
+		mover_name: "serviceman_06"
+		anim_index: 2
+	}
+
+pedestrian_hookup : police_r
+{
+
+	show_probability: 1.0
+	pedestrian[]: .police_r.1
+	pedestrian[]: .police_r.2
+	pedestrian[]: .police_r.3
+	pedestrian[]: .police_r.4
+	pedestrian[]: .police_r.5
+	pedestrian[]: .police_r.6
+}
+
+	pedestrian_desc : .police_r.1
+	{
+		mover_name: "security_man_01"
+		anim_index: 2
+	}
+	pedestrian_desc : .police_r.2
+	{
+		mover_name: "security_man_02"
+		anim_index: 2
+	}
+	pedestrian_desc : .police_r.3
+	{
+		mover_name: "security_man_03"
+		anim_index: 2
+	}
+	pedestrian_desc : .police_r.4
+	{
+		mover_name: "security_man_04"
+		anim_index: 2
+	}
+	pedestrian_desc : .police_r.5
+	{
+		mover_name: "security_man_05"
+		anim_index: 2
+	}
+	pedestrian_desc : .police_r.6
+	{
+		mover_name: "security_man_06"
+		anim_index: 2
+	}
+
+pedestrian_hookup : worker_r
+{
+	active_during_day: true
+	active_during_night: false
+	active_during_rain: false
+	active_during_sun: true
+
+	show_probability: 1.0
+	pedestrian[]: .worker_r.1
+	pedestrian[]: .worker_r.2
+	pedestrian[]: .worker_r.3
+	pedestrian[]: .worker_r.4
+	pedestrian[]: .worker_r.5
+	pedestrian[]: .worker_r.6
+}
+	pedestrian_desc : .worker_r.1
+	{
+		mover_name: "worker_01"
+		anim_index: 2
+	}
+	pedestrian_desc : .worker_r.2
+	{
+		mover_name: "worker_02"
+		anim_index: 2
+	}
+	pedestrian_desc : .worker_r.3
+	{
+		mover_name: "worker_03"
+		anim_index: 2
+	}
+	pedestrian_desc : .worker_r.4
+	{
+		mover_name: "worker_04"
+		anim_index: 2
+	}
+	pedestrian_desc : .worker_r.5
+	{
+		mover_name: "worker_05"
+		anim_index: 2
+	}
+	pedestrian_desc : .worker_r.6
+	{
+		mover_name: "worker_06"
+		anim_index: 2
+	}
+
+pedestrian_hookup : srvcmn_sit
+{
+	active_during_day: true
+	active_during_night: false
+	active_during_rain: false
+	active_during_sun: true
+
+	show_probability: 1.0
+	pedestrian[]: .srvcmn_sit.1
+	pedestrian[]: .srvcmn_sit.2
+	pedestrian[]: .srvcmn_sit.3
+	pedestrian[]: .srvcmn_sit.4
+	pedestrian[]: .srvcmn_sit.5
+	pedestrian[]: .srvcmn_sit.6
+}
+	pedestrian_desc : .srvcmn_sit.1
+	{
+		mover_name: "serviceman_01"
+		anim_index: 3
+	}
+	pedestrian_desc : .srvcmn_sit.2
+	{
+		mover_name: "serviceman_02"
+		anim_index: 3
+	}
+	pedestrian_desc : .srvcmn_sit.3
+	{
+		mover_name: "serviceman_03"
+		anim_index: 3
+	}
+	pedestrian_desc : .srvcmn_sit.4
+	{
+		mover_name: "serviceman_04"
+		anim_index: 3
+	}
+	pedestrian_desc : .srvcmn_sit.5
+	{
+		mover_name: "serviceman_05"
+		anim_index: 3
+	}
+	pedestrian_desc : .srvcmn_sit.6
+	{
+		mover_name: "serviceman_06"
+		anim_index: 3
+	}
+
+pedestrian_hookup : police_sit
+{
+	show_probability: 1.0
+	pedestrian[]: .police_sit.1
+	pedestrian[]: .police_sit.2
+	pedestrian[]: .police_sit.3
+	pedestrian[]: .police_sit.4
+	pedestrian[]: .police_sit.5
+	pedestrian[]: .police_sit.6
+}
+
+	pedestrian_desc : .police_sit.1
+	{
+		mover_name: "security_man_01"
+		anim_index: 3
+	}
+	pedestrian_desc : .police_sit.2
+	{
+		mover_name: "security_man_02"
+		anim_index: 3
+	}
+	pedestrian_desc : .police_sit.3
+	{
+		mover_name: "security_man_03"
+		anim_index: 3
+	}
+	pedestrian_desc : .police_sit.4
+	{
+		mover_name: "security_man_04"
+		anim_index: 3
+	}
+	pedestrian_desc : .police_sit.5
+	{
+		mover_name: "security_man_05"
+		anim_index: 3
+	}
+	pedestrian_desc : .police_sit.6
+	{
+		mover_name: "security_man_06"
+		anim_index: 3
+	}
+
+pedestrian_hookup : worker_sit
+{
+	active_during_day: true
+	active_during_night: false
+	active_during_rain: false
+	active_during_sun: true
+
+	show_probability: 1.0
+	pedestrian[]: .worker_sit.1
+	pedestrian[]: .worker_sit.2
+	pedestrian[]: .worker_sit.3
+	pedestrian[]: .worker_sit.4
+	pedestrian[]: .worker_sit.5
+	pedestrian[]: .worker_sit.6
+}
+	pedestrian_desc : .worker_sit.1
+	{
+		mover_name: "worker_01"
+		anim_index: 3
+	}
+	pedestrian_desc : .worker_sit.2
+	{
+		mover_name: "worker_02"
+		anim_index: 3
+	}
+	pedestrian_desc : .worker_sit.3
+	{
+		mover_name: "worker_03"
+		anim_index: 3
+	}
+	pedestrian_desc : .worker_sit.4
+	{
+		mover_name: "worker_04"
+		anim_index: 3
+	}
+	pedestrian_desc : .worker_sit.5
+	{
+		mover_name: "worker_05"
+		anim_index: 3
+	}
+	pedestrian_desc : .worker_sit.6
+	{
+		mover_name: "worker_06"
+		anim_index: 3
+	}
+
+
+
+}

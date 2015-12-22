@@ -8,8 +8,8 @@ flare_traffic_light: flare.traffic.green
 
 	type: spot
 
-	range: 15.0
-	cut_range: 19.0
+	range: 5.0
+	cut_range: 10.0
 	inner_angle: 20.0
 	outer_angle: 90.0
 
@@ -35,8 +35,8 @@ flare_traffic_light: flare.traffic.red
 
 	type: spot
 
-	range: 15.0
-	cut_range: 19.0
+	range: 5.0
+	cut_range: 10.0
 	inner_angle: 20.0
 	outer_angle: 90.0
 
@@ -60,8 +60,8 @@ flare_traffic_light: flare.traffic.red.blink
 
 	type: spot
 
-	range: 15.0
-	cut_range: 19.0
+	range: 5.0
+	cut_range: 10.0
 	inner_angle: 20.0
 	outer_angle: 90.0
 
@@ -87,8 +87,8 @@ flare_traffic_light: flare.traffic.red.blink.shift
 
 	type: spot
 
-	range: 15.0
-	cut_range: 19.0
+	range: 5.0
+	cut_range: 10.0
 	inner_angle: 20.0
 	outer_angle: 90.0
 
@@ -115,8 +115,8 @@ flare_traffic_light: flare.traffic.yellow
 
 	type: spot
 
-	range: 15.0
-	cut_range: 19.0
+	range: 5.0
+	cut_range: 10.0
 	inner_angle: 20.0
 	outer_angle: 90.0
 
@@ -140,8 +140,8 @@ flare_traffic_light: flare.traffic.yellow.blink
 
 	type: spot
 
-	range: 15.0
-	cut_range: 19.0
+	range: 5.0
+	cut_range: 10.0
 	inner_angle: 20.0
 	outer_angle: 90.0
 
@@ -167,8 +167,8 @@ flare_traffic_light: flare.traffic.yellow.blink.sleep
 
 	type: spot
 
-	range: 15.0
-	cut_range: 19.0
+	range: 5.0
+	cut_range: 10.0
 	inner_angle: 20.0
 	outer_angle: 90.0
 
@@ -194,8 +194,8 @@ flare_traffic_light: flare.traffic.white.blink
 
 	type: spot
 
-	range: 15.0
-	cut_range: 19.0
+	range: 5.0
+	cut_range: 10.0
 	inner_angle: 20.0
 	outer_angle: 90.0
 
@@ -221,8 +221,8 @@ flare_traffic_light: flare.traffic.yellow.blink.uk
 
 	type: spot
 
-	range: 15.0
-	cut_range: 19.0
+	range: 5.0
+	cut_range: 10.0
 	inner_angle: 20.0
 	outer_angle: 90.0
 
@@ -248,8 +248,8 @@ flare_traffic_light: flare.traffic.red.blink.uk
 
 	type: spot
 
-	range: 15.0
-	cut_range: 19.0
+	range: 5.0
+	cut_range: 10.0
 	inner_angle: 20.0
 	outer_angle: 90.0
 
@@ -276,8 +276,8 @@ flare_traffic_light: flare.traffic.red.blink.shift.uk
 
 	type: spot
 
-	range: 15.0
-	cut_range: 19.0
+	range: 5.0
+	cut_range: 10.0
 	inner_angle: 20.0
 	outer_angle: 90.0
 
@@ -304,8 +304,8 @@ flare_traffic_light: flare.traffic.red.toll
 
 	type: spot
 
-	range: 15.0
-	cut_range: 19.0
+	range: 5.0
+	cut_range: 10.0
 	inner_angle: 20.0
 	outer_angle: 90.0
 

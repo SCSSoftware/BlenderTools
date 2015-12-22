@@ -66,3 +66,22 @@ class DifLum(Dif):
         node_tree.links.new(lum_mix_n.inputs['Color2'], base_tex_n.outputs['Color'])
 
         node_tree.links.new(output_n.inputs['Color'], lum_mix_n.outputs['Color'])
+
+    @staticmethod
+    def set_lvcol_flavor(node_tree, switch_on):
+        """Set (vertex color*luminance) flavor to this shader.
+
+        :param node_tree: node tree of current shader
+        :type node_tree: bpy.types.NodeTree
+        :param switch_on: flag indication if flavor should be switched on or off
+        :type switch_on: bool
+        """
+
+        base_tex_n = node_tree.nodes[Dif.BASE_TEX_NODE]
+        vcol_mult_n = node_tree.nodes[Dif.VCOLOR_MULT_NODE]
+        lum_mix_n = node_tree.nodes[DifLum.LUM_MIX_NODE]
+
+        if switch_on:
+            node_tree.links.new(lum_mix_n.inputs['Color2'], vcol_mult_n.outputs['Color'])
+        else:
+            node_tree.links.new(lum_mix_n.inputs['Color2'], base_tex_n.outputs['Color'])

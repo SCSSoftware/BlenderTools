@@ -1,0 +1,15 @@
+SiiNunit
+{
+light_source : truck.dealer.omni.light
+{
+	ambient_color: (0.0, 0.0000, 0.0000)
+	diffuse_color: (0.35, 0.32, 0.25)
+	specular_color: (0.498, 0.602, 0.936)
+
+	type: point
+	range: 9
+
+
+}
+
+}

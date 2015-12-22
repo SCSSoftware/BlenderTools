@@ -1,6 +1,6 @@
 Header {
     FormatVersion: 3
-    Source: "Blender 2.74.0 (hash: 000dfc0), SCS Blender Tools: 0.5.bfcf60f"
+    Source: "Blender 2.76.0 (hash: 48f7dd6), SCS Blender Tools: 0.6.e9daf33"
     Type: "Animation"
     Name: "speed"
 }
@@ -25,21 +25,22 @@ BoneChannel {
     Stream {
         Format: FLOAT4x4
         Tag: "_MATRIX"
-        0    (  &b9fc9f0f  &3ef1e941  &3f619f75  &00000000
-                &3f6bc58d  &beafb2cf  &3e3ce5f2  &00000000
-                &3ec779c6  &3f4fd15b  &bedeb629  &00000000
-                &3de649b8  &beed0dd6  &bf5e7530  &3f800000 )
-        1    (  &b9fc9eb8  &3ef1e941  &3f619f75  &00000000
-                &bda0b5b1  &bf60ee85  &3ef125e8  &00000000
-                &3f7f35e4  &bd8d2cd1  &3d19997a  &00000000
-                &3de649b8  &beed0dd6  &bf5e7530  &3f800000 )
-        2    (  &b9fc9ce3  &3ef1e941  &3f619f75  &00000000
-                &bf787912  &be597644  &3de812fe  &00000000
-                &3e767bc2  &bf5af9a4  &3eead9d2  &00000000
-                &3de649b8  &beed0dd6  &bf5e7530  &3f800000 )
-        3    (  &b9fca526  &3ef1e940  &3f619f75  &00000000
-                &bf090295  &3f3e8f0b  &becc7729  &00000000
-                &bf584010  &bef19a7e  &3e814943  &00000000
-                &3de649b8  &beed0dd6  &bf5e7530  &3f800000 )
+        0    (  &b9fc9fc4  &3ef1e93d  &3f619f73  &00000000 
+                &3f6bc588  &beafb2cc  &3e3ce5ef  &00000000
+                &3ec779c6  &3f4fd15a  &bedeb627  &00000000
+                &3de649b3  &beed0dd6  &bf5e7530  &3f800000 )
+        1    (  &b9fca153  &3ef1e93d  &3f619f73  &00000000 
+                &bda0b5af  &bf60ee82  &3ef125e5  &00000000
+                &3f7f35e1  &bd8d2ccc  &3d19997e  &00000000
+                &3de649b3  &beed0dd6  &bf5e7530  &3f800000 )
+        2    (  &b9fcb06b  &3ef1e93e  &3f619f73  &00000000 
+                &bf78790e  &be597644  &3de812e6  &00000000
+                &3e767bbc  &bf5af99f  &3eead9cf  &00000000
+                &3de649b3  &beed0dd6  &bf5e7530  &3f800000 )
+        3    (  &b9fc8a57  &3ef1e93a  &3f619f73  &00000000 
+                &bf090296  &3f3e8f08  &becc771e  &00000000
+                &bf58400a  &bef19a7d  &3e814948  &00000000
+                &3de649b3  &beed0dd6  &bf5e7530  &3f800000 )
     }
 }
+

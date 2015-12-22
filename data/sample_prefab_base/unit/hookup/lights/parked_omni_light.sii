@@ -1,0 +1,18 @@
+SiiNunit
+{
+light_source : parked.omni.light
+{
+	ambient_color: (0.1, 0.1000, 0.1000)
+	diffuse_color: (0.2, 0.2, 0.2)
+	specular_color: (0.2, 0.2, 0.2)
+
+	type: point
+	range: 12.5
+
+	fade_distance: 100
+	fade_span: 120
+
+	state_change_duration: 1.0
+}
+
+}

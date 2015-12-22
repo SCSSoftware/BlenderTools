@@ -20,8 +20,9 @@
 
 import bmesh
 import bpy
-
 from bpy.props import StringProperty, FloatProperty
+
+from io_scs_tools.consts import Mesh as _MESH_consts
 from io_scs_tools.consts import LampTools as _LT_consts
 from io_scs_tools.consts import VertexColorTools as _VCT_consts
 
@@ -239,10 +240,78 @@ class VertexColorTools:
             for i in range(0, 3):
                 c_avg.append(c_sum[i] / colors_count)
 
-            self.report({"INFO"}, "Vertex color stats: MIN(%.1f, %.1f, %.2f), MAX(%.1f, %.1f, %.1f), AVG(%.1f, %.1f, %.1f)" %
+            self.report({"INFO"}, "Vertex color stats: MIN(%.2f, %.2f, %.2f), MAX(%.2f, %.2f, %.2f), AVG(%.2f, %.2f, %.2f)" %
                         (c_min[0], c_min[1], c_min[2],
                          c_max[0], c_max[1], c_max[2],
                          c_avg[0], c_avg[1], c_avg[2]))
+
+            return {'FINISHED'}
+
+    class AddVertexColorsToActive(bpy.types.Operator):
+        bl_label = "Add Vertex Colors To Active"
+        bl_idname = "mesh.scs_add_vcolors_to_active"
+        bl_description = "Adds missing vertex colors layers to active object."
+        bl_options = {'REGISTER', 'UNDO'}
+
+        @classmethod
+        def poll(cls, context):
+            return context.object is not None and context.object.active_material is not None
+
+        def execute(self, context):
+
+            layer_name = _MESH_consts.default_vcol
+            layer_a_name = _MESH_consts.default_vcol + _MESH_consts.vcol_a_suffix
+
+            for curr_lay_name in (layer_name, layer_a_name):
+
+                if curr_lay_name not in context.object.data.vertex_colors:
+
+                    vcolor = context.object.data.vertex_colors.new(name=curr_lay_name)
+                    vcolor.name = curr_lay_name  # repeat naming step to make sure it's properly named
+
+                    # setting neutral value (0.5) to all colors
+                    for vertex_col_data in context.object.data.vertex_colors[curr_lay_name].data:
+                        vertex_col_data.color = (0.5,) * 3
+
+            return {'FINISHED'}
+
+    class AddVertexColorsToAll(bpy.types.Operator):
+        bl_label = "Add Vertex Colors To All"
+        bl_idname = "mesh.scs_add_vcolors_to_all"
+        bl_description = "Adds missing vertex colors layers to all objects using this material."
+        bl_options = {'REGISTER', 'UNDO'}
+
+        @classmethod
+        def poll(cls, context):
+            return context.object is not None and context.object.active_material is not None
+
+        def execute(self, context):
+
+            layer_name = _MESH_consts.default_vcol
+            layer_a_name = _MESH_consts.default_vcol + _MESH_consts.vcol_a_suffix
+
+            objs_using_active_material = []
+
+            # search for all objects using active material and put them into list
+            for obj in bpy.data.objects:
+                for mat_slot in obj.material_slots:
+
+                    if mat_slot.material and mat_slot.material.name == context.object.active_material.name:
+                        objs_using_active_material.append(obj)
+                        break
+
+            # add missing vertex color layers to found objects
+            for obj in objs_using_active_material:
+                for curr_lay_name in (layer_name, layer_a_name):
+
+                    if curr_lay_name not in obj.data.vertex_colors:
+
+                        vcolor = obj.data.vertex_colors.new(name=curr_lay_name)
+                        vcolor.name = curr_lay_name  # repeat naming step to make sure it's properly named
+
+                        # setting neutral value (0.5) to all colors
+                        for vertex_col_data in obj.data.vertex_colors[curr_lay_name].data:
+                            vertex_col_data.color = (0.5,) * 3
 
             return {'FINISHED'}
 

@@ -45,3 +45,38 @@ def get_combined_ver_str():
 
     (version, build) = get_blender_version()
     return "Blender " + version + build + ", SCS Blender Tools: " + get_tools_version()
+
+
+def cmp_ver_str(version_str, version_str2):
+    """Compers two version string of format "X.X.X..." where X is number.
+
+    :param version_str: version string to check (should be in format: "X.Y" where X and Y are version numbers)
+    :type version_str: str
+    :return: -1 if first is greater; 0 if equal; 1 if second is greater;
+    :rtype: int
+    """
+
+    version_str = version_str.split(".")
+    version_str2 = version_str2.split(".")
+
+    ver_cmp = []
+    for ver_i in range(0, 2):
+        if version_str[ver_i] < version_str2[ver_i]:
+            ver_cmp.append(-1)
+        elif version_str[ver_i] == version_str2[ver_i]:
+            ver_cmp.append(0)
+        else:
+            ver_cmp.append(1)
+
+        ver_i += 1
+
+    # first version smaller than second
+    if ver_cmp[0] < 0 or (ver_cmp[0] == 0 and ver_cmp[1] <= 0):
+        return -1
+
+    # equal versions
+    if ver_cmp[0] == 0 and ver_cmp[1] == 0:
+        return 0
+
+    # otherwise we directly assume that second is greater
+    return 1

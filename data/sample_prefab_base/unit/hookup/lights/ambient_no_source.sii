@@ -1,0 +1,18 @@
+SiiNunit
+{
+light_source : ambient.no.source
+{
+	ambient_color: (0.0000, 0.0000, 0.0000)
+	diffuse_color: (0.04, 0.03, 0.015)
+	specular_color: (0.1, 0.1, 0.1)
+
+	range: 32
+	cut_range: 18
+	inner_angle: 150.0
+	outer_angle: 170.0
+	attenuation_start_range: 5
+	forward_distance: false
+
+}
+
+}

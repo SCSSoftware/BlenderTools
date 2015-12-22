@@ -21,6 +21,7 @@
 import os
 import bpy
 from mathutils import Vector
+from io_scs_tools.consts import Bones as _BONE_consts
 from io_scs_tools.utils.printout import lprint
 from io_scs_tools.utils import convert as _convert_utils
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
@@ -179,6 +180,12 @@ def load(filepath, armature, get_only=False):
                                                     bone_import_scale *
                                                     import_scale)
         armature.data.edit_bones[bone.name].roll = angle
+
+        # save initial bone scaling to use it in calculation when importing PIA animations
+        # NOTE: bones after import always have scale of 1:
+        # 1. because edit bones don't have scale, just tail and head
+        # 2. because any scaling in pose bones will be overwritten by animation itself
+        armature.pose.bones[bone.name][_BONE_consts.init_scale_key] = bone_matrix.to_scale()
 
         # CONNECTED BONES
         # NOTE: Doesn't work as expected! Disabled for now in UI.

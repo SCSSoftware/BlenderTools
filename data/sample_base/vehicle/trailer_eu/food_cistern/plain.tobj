@@ -1,2 +1,2 @@
-map	2d	plain.tga
+map	2d	plain.tga	
 addr	clamp_to_edge	clamp_to_edge

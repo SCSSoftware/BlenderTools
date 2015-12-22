@@ -9,13 +9,13 @@ SiiNunit
 # same namespace so suffixes or prefixes should be used to avoid conflicts.
 
 
-mover_model : mover.sample.1 {
+mover_model : mover.sample_1 {
 	mover_name: "walker_sample"
 	model_desc: "/model/mover/characters/models/generic/m_vanilla_ice_sample.pmd"
 	model_anim: "/model/mover/characters/animations/man/walk/walk_sample.pma"
 
 }
-mover_model : mover.sample.2 {
+mover_model : mover.sample_2 {
 	mover_name: "Wind Powerplant Sample"
 	model_desc: "/model/mover/wind_powerplant_sample.pmd"
 	model_anim: "/model/mover/wind_pp_sample.pma"

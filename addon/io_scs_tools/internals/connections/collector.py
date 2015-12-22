@@ -19,6 +19,8 @@
 # Copyright (C) 2013-2014: SCS Software
 
 import bpy
+from mathutils import Vector
+from io_scs_tools.consts import PrefabLocators as _PL_consts
 from io_scs_tools.utils import curve as _curve_utils
 from io_scs_tools.utils import math as _math_utils
 
@@ -43,25 +45,46 @@ def collect_nav_curve_data(loc0_obj, loc1_obj):
 
     nav_point_0_loc = loc0_obj.matrix_world.translation
     nav_point_0_rot = loc0_obj.matrix_world.to_euler('XYZ')
+    nav_point_0_dir = loc0_obj.matrix_world.to_quaternion() * Vector((0, 1, 0))
     nav_point_1_loc = loc1_obj.matrix_world.translation
     nav_point_1_rot = loc1_obj.matrix_world.to_euler('XYZ')
+    nav_point_1_dir = loc1_obj.matrix_world.to_quaternion() * Vector((0, 1, 0))
 
-    curve_data = _curve_utils.compute_curve(loc0_obj, nav_point_0_loc, loc1_obj, nav_point_1_loc, curve_steps)
+    curve_data = _curve_utils.compute_curve(nav_point_0_loc, nav_point_0_dir,
+                                            nav_point_1_loc, nav_point_1_dir, curve_steps)
 
     curve_data['curve_steps'] = curve_steps
-    if loc0_obj.scs_props.locator_prefab_np_crossroad:
-        curve_data['curve_color0'] = (0, 0, 1)
-    elif loc0_obj.scs_props.locator_prefab_np_low_prior:
-        curve_data['curve_color0'] = (0.5, 0.5, 1)
-    elif loc1_obj.scs_props.locator_prefab_np_allowed_veh == 'to':
-        curve_data['curve_color0'] = (0, 1, 0)
-    elif loc1_obj.scs_props.locator_prefab_np_allowed_veh == 'nt':
-        curve_data['curve_color0'] = (1, 0, 0)
 
-    if loc0_obj.scs_props.locator_prefab_np_blinker == 'rb':
-        curve_data['curve_color1'] = (0.2, 0.7, 1)
-    elif loc0_obj.scs_props.locator_prefab_np_blinker == 'lb':
-        curve_data['curve_color1'] = (1, 0.2, 0.7)
+    loc0_scs_props = loc0_obj.scs_props
+    """:type: io_scs_tools.properties.object.ObjectSCSTools"""
+    loc1_scs_props = loc1_obj.scs_props
+    """:type: io_scs_tools.properties.object.ObjectSCSTools"""
+
+    # blinker
+    blinker = int(loc0_scs_props.locator_prefab_np_blinker)
+    if blinker == _PL_consts.PNCF.LEFT_BLINKER:
+        curve_data['curve_color1'] = (1, 0.2, 0.698)
+    elif blinker == _PL_consts.PNCF.RIGHT_BLINKER:
+        curve_data['curve_color1'] = (0.2, 0.698, 1)
+    elif blinker == _PL_consts.PNCF.FORCE_NO_BLINKER:
+        curve_data['curve_color1'] = (0.698, 0.098, 1)
+
+    # priority modifier
+    priority_modifier = int(loc0_scs_props.locator_prefab_np_priority_modifier)
+    if 0 < priority_modifier < 8:
+        curve_data['curve_color0'] = (0.494, 0.6, 0.898)
+    elif priority_modifier >= 8:
+        curve_data['curve_color0'] = (0, 0, 0.898)
+
+    # allowed vehicles
+    allowed_vehicles = int(loc1_scs_props.locator_prefab_np_allowed_veh)
+    if allowed_vehicles == _PL_consts.PNCF.SMALL_VEHICLES:
+        curve_data['curve_color1'] = (0.898, 0, 0)
+    elif allowed_vehicles == _PL_consts.PNCF.LARGE_VEHICLES:
+        curve_data['curve_color1'] = (0, 0.898, 0)
+    elif allowed_vehicles == 0:
+        curve_data['curve_color0'] = (0, 0.898, 0)
+        curve_data['curve_color1'] = (0, 0.898, 0)
 
     curve_data['locrot_0'] = (nav_point_0_loc.x, nav_point_0_loc.y, nav_point_0_loc.z, nav_point_0_rot.x,
                               nav_point_0_rot.y, nav_point_0_rot.z)
@@ -88,22 +111,26 @@ def collect_map_line_data(loc0_obj, loc1_obj):
 
     line_data = {}
 
-    if loc0_obj.scs_props.locator_prefab_mp_custom_color == 'light':
-        line_data['line_color0'] = (0.9, 0.9, 0.9)
-    elif loc0_obj.scs_props.locator_prefab_mp_custom_color == 'dark':
-        line_data['line_color0'] = (0.1, 0.1, 0.1)
-    elif loc0_obj.scs_props.locator_prefab_mp_custom_color == 'green':
-        line_data['line_color0'] = (0, 0.4, 0)
+    if loc0_obj.scs_props.locator_prefab_mp_road_size == str(_PL_consts.MPVF.ROAD_SIZE_MANUAL):
+
+        if loc0_obj.scs_props.locator_prefab_mp_custom_color == str(_PL_consts.MPVF.CUSTOM_COLOR1):
+            line_data['line_color0'] = (0.9, 0.9, 0.9)
+        elif loc0_obj.scs_props.locator_prefab_mp_custom_color == str(_PL_consts.MPVF.CUSTOM_COLOR2):
+            line_data['line_color0'] = (0.1, 0.1, 0.1)
+        elif loc0_obj.scs_props.locator_prefab_mp_custom_color == str(_PL_consts.MPVF.CUSTOM_COLOR3):
+            line_data['line_color0'] = (0, 0.4, 0)
 
     if loc0_obj.scs_props.locator_prefab_mp_prefab_exit:
         line_data['line_color0'] = (0.6, 0, 0)
 
-    if loc1_obj.scs_props.locator_prefab_mp_custom_color == 'light':
-        line_data['line_color1'] = (0.9, 0.9, 0.9)
-    elif loc1_obj.scs_props.locator_prefab_mp_custom_color == 'dark':
-        line_data['line_color1'] = (0.1, 0.1, 0.1)
-    elif loc1_obj.scs_props.locator_prefab_mp_custom_color == 'green':
-        line_data['line_color1'] = (0, 0.4, 0)
+    if loc1_obj.scs_props.locator_prefab_mp_road_size == str(_PL_consts.MPVF.ROAD_SIZE_MANUAL):
+
+        if loc1_obj.scs_props.locator_prefab_mp_custom_color == str(_PL_consts.MPVF.CUSTOM_COLOR1):
+            line_data['line_color1'] = (0.9, 0.9, 0.9)
+        elif loc1_obj.scs_props.locator_prefab_mp_custom_color == str(_PL_consts.MPVF.CUSTOM_COLOR2):
+            line_data['line_color1'] = (0.1, 0.1, 0.1)
+        elif loc1_obj.scs_props.locator_prefab_mp_custom_color == str(_PL_consts.MPVF.CUSTOM_COLOR3):
+            line_data['line_color1'] = (0, 0.4, 0)
 
     if loc1_obj.scs_props.locator_prefab_mp_prefab_exit:
         line_data['line_color1'] = (0.6, 0, 0)

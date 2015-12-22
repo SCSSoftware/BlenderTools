@@ -20,19 +20,20 @@
 
 import bpy
 import os
-from io_scs_tools.internals import inventory as _inventory
-from io_scs_tools.utils import get_scs_globals as _get_scs_globals
-from io_scs_tools.utils import material as _material_utils
-from io_scs_tools.utils import name as _name_utils
-from io_scs_tools.utils import object as _object_utils
-from io_scs_tools.utils.printout import lprint
-
+from io_scs_tools.consts import Operators as _OP_consts
 from io_scs_tools.imp import pia as _pia
 from io_scs_tools.imp import pic as _pic
 from io_scs_tools.imp import pim as _pim
 from io_scs_tools.imp import pip as _pip
 from io_scs_tools.imp import pis as _pis
 from io_scs_tools.imp import pit as _pit
+from io_scs_tools.imp.transition_structs.terrain_points import TerrainPntsTrans
+from io_scs_tools.internals import inventory as _inventory
+from io_scs_tools.utils import get_scs_globals as _get_scs_globals
+from io_scs_tools.utils import material as _material_utils
+from io_scs_tools.utils import name as _name_utils
+from io_scs_tools.utils import object as _object_utils
+from io_scs_tools.utils.printout import lprint
 
 
 def _get_shader_data(material_data):
@@ -50,53 +51,7 @@ def _get_shader_data(material_data):
     return material_effect, material_attributes, material_textures, material_section
 
 
-def _find_preset(presets_container, material_effect, material_textures):
-    """Tries to find suitable Shader Preset (as defined in shader_presets.txt file) for imported shader. If it cannot be found, it will return None.
-
-    :param presets_container: preset container in which preset shall be searched for; if none presets are readed from file
-    :type presets_container: io_scs_tools.internals.structure.SectionData | None
-    :param material_effect: Name of the requested Look
-    :type material_effect: str
-    :param material_textures: material textures dictionary (key: tex_id, value: tex_path)
-    :type material_textures: dict
-    :return: Preset index and name or None
-    :rtype: (int, str) | None
-    """
-
-    scs_shader_presets_inventory = bpy.data.worlds[0].scs_shader_presets_inventory
-    for i, shader_preset in enumerate(scs_shader_presets_inventory):
-
-        if shader_preset.name != "<none>":
-            preset_section = _material_utils.get_shader_preset(_get_scs_globals().shader_presets_filepath, shader_preset.name, presets_container)
-            for preset_prop in preset_section.props:
-                if preset_prop[0] == "Effect":
-
-                    if preset_prop[1] == material_effect:
-
-                        # also check for matching among locked textures
-                        # NOTE: this check is needed because of possible multiple
-                        # presets with the same effect name and different locked texture
-                        matched_textures = 0
-                        matched_textures_avaliable = 0
-                        for tex_sec in preset_section.get_sections("Texture"):
-
-                            tex_id = tex_sec.get_prop("Tag")[1]
-                            tex_path = tex_sec.get_prop("Value")[1]
-                            tex_lock = tex_sec.get_prop("Lock")
-
-                            if tex_lock and tex_lock[1] == "True":
-                                matched_textures_avaliable += 1
-
-                                if tex_id in material_textures and (tex_path == material_textures[tex_id] or tex_path == ""):
-                                    matched_textures += 1
-
-                        if matched_textures == matched_textures_avaliable or matched_textures_avaliable == 0:
-                            return i, shader_preset.name, preset_section
-
-    return None, None, None
-
-
-def _create_scs_root_object(name, loaded_variants, loaded_looks, mats_info, objects, skinned_objects, locators, armature):
+def _create_scs_root_object(name, loaded_variants, loaded_looks, mats_info, objects, locators, armature):
     """Creates an 'SCS Root Object' (Empty Object) for currently imported
     'SCS Game Object' and parent all import content to it.
 
@@ -110,8 +65,6 @@ def _create_scs_root_object(name, loaded_variants, loaded_looks, mats_info, obje
     :type mats_info: list of list
     :param objects: X
     :type objects: list
-    :param skinned_objects: X
-    :type skinned_objects: list
     :param locators: X
     :type locators: list
     :param armature: Armature Object
@@ -155,12 +108,11 @@ def _create_scs_root_object(name, loaded_variants, loaded_looks, mats_info, obje
         armature.scs_props.parent_identity = scs_root_object.name
 
     for obj in objects:
-        if obj not in skinned_objects:
-            # print('OBJ.pos: %s' % str(object.location))
-            bpy.ops.object.select_all(action='DESELECT')
-            obj.select = True
-            bpy.ops.object.parent_set(type='OBJECT', keep_transform=False)
-            obj.scs_props.parent_identity = scs_root_object.name
+        # print('OBJ.pos: %s' % str(object.location))
+        bpy.ops.object.select_all(action='DESELECT')
+        obj.select = True
+        bpy.ops.object.parent_set(type='OBJECT', keep_transform=False)
+        obj.scs_props.parent_identity = scs_root_object.name
 
     for obj in locators:
         bpy.ops.object.select_all(action='DESELECT')
@@ -180,29 +132,73 @@ def _create_scs_root_object(name, loaded_variants, loaded_looks, mats_info, obje
 
     # MAKE PART RECORD
     part_inventory = scs_root_object.scs_object_part_inventory
-    for part_name in _object_utils.collect_parts_on_root(scs_root_object):
+    parts_dict = _object_utils.collect_parts_on_root(scs_root_object)
+    for part_name in parts_dict:
         _inventory.add_item(part_inventory, part_name)
 
     # MAKE VARIANT RECORD
     variant_inventory = scs_root_object.scs_object_variant_inventory
-    for variant_record in loaded_variants:
+    for variant_i, variant_record in enumerate(loaded_variants):
         variant_name = variant_record[0]
         variantparts = variant_record[1]
 
         variant = _inventory.add_item(variant_inventory, variant_name)
 
-        # fore every variant create all of the part entries and mark them included properly
+        # for every variant create all of the part entries and mark them included properly
         for part in part_inventory:
 
             part = _inventory.add_item(variant.parts, part.name)
             if part.name in variantparts:
                 part.include = True
+
+                # cleanup generated terrain points vertex layers by variant
+                for obj in parts_dict[part.name]:
+
+                    if obj.type != "MESH":
+                        continue
+
+                    vg_to_delete = []
+                    accepted_vg_nodes = {}
+                    for vertex_group in obj.vertex_groups:
+
+                        # ignore any vertex group which isn't from terrain points
+                        # (others might come from skinning)
+                        if _OP_consts.TerrainPoints.vg_name_prefix not in vertex_group.name:
+                            continue
+
+                        # ignore already fixed vertex group
+                        if vertex_group.name.startswith(_OP_consts.TerrainPoints.vg_name_prefix):
+                            continue
+
+                        # get variant index from first 6 chars -> check PIM importer for more info
+                        vg_var_index = int(vertex_group.name[:6])
+                        # ignore other variant vertex groups and add them to delete list
+                        if vg_var_index >= 0 and vg_var_index != variant_i:
+                            vg_to_delete.append(vertex_group)
+                            continue
+
+                        # finally remove variant prefixing name if variant is not defined (-1)
+                        # or index matches current one
+                        vertex_group.name = vertex_group.name[6:]
+
+                        # log accepted node index for identifying which vertex groups
+                        # really have to be deleted
+                        accepted_vg_nodes[vertex_group.name[-1]] = 1
+
+                    # cleanup possible duplicates for the same node
+                    # because one object anyway can not have terrain points vertex groups for multiple variants
+                    while len(vg_to_delete) > 0 and len(accepted_vg_nodes) > 0:
+                        curr_vg = vg_to_delete.pop()
+
+                        # extra caution step where group can be deleted
+                        # only if one of vertex groups for this node was accepted
+                        if curr_vg.name[-1] in accepted_vg_nodes:
+                            obj.vertex_groups.remove(curr_vg)
+
             else:
                 part.include = False
 
     # MAKE LOOK RECORDS
-    # get preset container only once to speed up import process
-    presets_container = _material_utils.get_shader_presets_container(_get_scs_globals().shader_presets_filepath)
     for look_i, look in enumerate(loaded_looks):
 
         look_name = look[0]
@@ -217,9 +213,9 @@ def _create_scs_root_object(name, loaded_variants, loaded_looks, mats_info, obje
                 material_effect, material_attributes, material_textures, material_section = _get_shader_data(look_mat_settings[mat_info[2]])
 
                 # TRY TO FIND SUITABLE PRESET
-                (preset_index, preset_name, preset_section) = _find_preset(presets_container, material_effect, material_textures)
+                (preset_name, preset_section) = _material_utils.find_preset(material_effect, material_textures)
 
-                if preset_index:  # preset name is found within presets shaders
+                if preset_name:  # preset name is found within presets shaders
 
                     mat.scs_props.active_shader_preset_name = preset_name
 
@@ -230,14 +226,12 @@ def _create_scs_root_object(name, loaded_variants, loaded_looks, mats_info, obje
 
                         if look_i == 0:
                             # apply default shader settings
-                            _material_utils.set_shader_data_to_material(mat, preset_section, preset_effect,
-                                                                        is_import=True)
+                            _material_utils.set_shader_data_to_material(mat, preset_section, is_import=True)
 
                         # reapply settings from material
-                        _material_utils.set_shader_data_to_material(mat, material_section, material_effect,
-                                                                    is_import=True, override_back_data=False)
+                        _material_utils.set_shader_data_to_material(mat, material_section, is_import=True, override_back_data=False)
 
-                        lprint("I Using shader preset on material %r.", (mat.name,))
+                        lprint("D Using shader preset on material %r.", (mat.name,))
 
                     else:
                         print('''NO "preset_section"! (Shouldn't happen!)''')
@@ -245,10 +239,9 @@ def _create_scs_root_object(name, loaded_variants, loaded_looks, mats_info, obje
                 else:  # import shader directly from material and mark it as imported
 
                     mat.scs_props.active_shader_preset_name = "<imported>"
-                    _material_utils.set_shader_data_to_material(mat, material_section, material_effect,
-                                                                is_import=True)
+                    _material_utils.set_shader_data_to_material(mat, material_section, is_import=True)
 
-                    lprint("I Using imported shader on material %r.", (mat.name,))
+                    lprint("W Using imported shader on material %r, effect: %r.", (mat.name, mat.scs_props.mat_effect_name))
 
                 if look_i == len(loaded_looks) - 1:
                     # delete not needed data on material
@@ -281,11 +274,7 @@ def load(context, filepath):
 
     t = time.time()
     bpy.context.window.cursor_modal_set('WAIT')
-    # import_scale = _get_scs_globals().import_scale
-    # load_textures = _get_scs_globals().load_textures
-    # mesh_creation_type = _get_scs_globals().mesh_creation_type
     scs_globals = _get_scs_globals()
-    dump_level = int(scs_globals.dump_level)
     lprint("", report_errors=-1, report_warnings=-1)  # Clear the 'error_messages' and 'warning_messages'
 
     collision_locators = []
@@ -293,22 +282,34 @@ def load(context, filepath):
     loaded_variants = []
     loaded_looks = []
     objects = []
-    skinned_objects = []
     locators = []
     mats_info = []
     scs_root_object = skeleton = bones = armature = None
 
-    # ## NEW SCENE CREATION
-    # if _get_scs_globals().scs_lod_definition_type == 'scenes':
-    # if context.scene.name != 'Scene':
-    # bpy.ops.scene.new(type='NEW')
+    # TRANSITIONAL STRUCTURES
+    terrain_points = TerrainPntsTrans()
+
+    # IMPORT PIP -> has to be loaded before PIM because of terrain points
+    if scs_globals.import_pip_file:
+        pip_filepath = str(filepath[:-1] + 'p')
+        if os.path.isfile(pip_filepath):
+            lprint('\nD PIP filepath:\n  %s', (pip_filepath,))
+            # print('PIP filepath:\n  %s' % pip_filepath)
+            result, prefab_locators = _pip.load(pip_filepath, terrain_points)
+        else:
+            lprint('\nI No PIP file.')
+            # print('INFO - No PIP file.')
 
     # IMPORT PIM
     if scs_globals.import_pim_file or scs_globals.import_pis_file:
         if filepath:
             if os.path.isfile(filepath):
                 lprint('\nD PIM filepath:\n  %s', (filepath.replace("\\", "/"),))
-                result, objects, skinned_objects, locators, armature, skeleton, mats_info = _pim.load(context, filepath)
+                result, objects, locators, armature, skeleton, mats_info = _pim.load(
+                    context,
+                    filepath,
+                    terrain_points_trans=terrain_points
+                )
                 # print('  armature:\n%s\n  skeleton:\n%s' % (str(armature), str(skeleton)))
             else:
                 lprint('\nI No file found at %r!' % (filepath.replace("\\", "/"),))
@@ -338,17 +339,6 @@ def load(context, filepath):
             lprint('\nI No PIC file.')
             # print('INFO - No PIC file.')
 
-    # IMPORT PIP
-    if scs_globals.import_pip_file:
-        pip_filepath = str(filepath[:-1] + 'p')
-        if os.path.isfile(pip_filepath):
-            lprint('\nD PIP filepath:\n  %s', (pip_filepath,))
-            # print('PIP filepath:\n  %s' % pip_filepath)
-            result, prefab_locators = _pip.load(pip_filepath)
-        else:
-            lprint('\nI No PIP file.')
-            # print('INFO - No PIP file.')
-
     # SETUP 'SCS GAME OBJECTS'
     for item in collision_locators:
         locators.append(item)
@@ -358,7 +348,7 @@ def load(context, filepath):
     # print('  path: %r\n  file: %r' % (path, file))
     lod_name, ext = os.path.splitext(file)
     if objects or locators or (armature and skeleton):
-        scs_root_object = _create_scs_root_object(lod_name, loaded_variants, loaded_looks, mats_info, objects, skinned_objects, locators, armature)
+        scs_root_object = _create_scs_root_object(lod_name, loaded_variants, loaded_looks, mats_info, objects, locators, armature)
 
     # IMPORT PIS
     if scs_globals.import_pis_file:

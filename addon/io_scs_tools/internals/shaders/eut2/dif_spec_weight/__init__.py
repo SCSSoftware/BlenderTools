@@ -26,6 +26,11 @@ class DifSpecWeight(DifSpec):
     SPEC_DIFF_MULT_NODE = "SpecDiffMultiplier"
 
     @staticmethod
+    def get_name():
+        """Get name of this shader file with full modules path."""
+        return __name__
+
+    @staticmethod
     def init(node_tree):
         """Initialize node tree with links for this shader.
 
@@ -44,7 +49,7 @@ class DifSpecWeight(DifSpec):
         out_mat_n = node_tree.nodes[DifSpec.OUT_MAT_NODE]
         output_n = node_tree.nodes[DifSpec.OUTPUT_NODE]
         vcol_mult_n = node_tree.nodes[DifSpec.VCOLOR_MULT_NODE]
-        spec_scale_n = node_tree.nodes[DifSpec.SPEC_SCALE_NODE]
+        spec_mult_n = node_tree.nodes[DifSpec.SPEC_MULT_NODE]
 
         # move existing
         out_mat_n.location.x += pos_x_shift
@@ -59,7 +64,7 @@ class DifSpecWeight(DifSpec):
         spec_diff_mult_n.inputs['Fac'].default_value = 1.0
 
         # links creation
-        node_tree.links.new(spec_diff_mult_n.inputs['Color1'], spec_scale_n.outputs['Color'])
+        node_tree.links.new(spec_diff_mult_n.inputs['Color1'], spec_mult_n.outputs['Color'])
         node_tree.links.new(spec_diff_mult_n.inputs['Color2'], vcol_mult_n.outputs['Color'])
 
         node_tree.links.new(out_mat_n.inputs['Spec'], spec_diff_mult_n.outputs['Color'])

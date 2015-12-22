@@ -24,6 +24,11 @@ from io_scs_tools.internals.shaders.eut2.dif_spec_add_env import DifSpecAddEnv
 
 class DifSpecAddEnvNoFresnel(DifSpecAddEnv):
     @staticmethod
+    def get_name():
+        """Get name of this shader file with full modules path."""
+        return __name__
+
+    @staticmethod
     def init(node_tree):
         """Initialize node tree with links for this shader.
 

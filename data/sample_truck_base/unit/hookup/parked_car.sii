@@ -30,6 +30,7 @@ parked_car: brand_truck.parked.physics
 	truck_model: true
 	low_poly_only: false
 	no_trailer: true
+	always_visible: true
 }
 
 parked_car: truck.always.parked.physics

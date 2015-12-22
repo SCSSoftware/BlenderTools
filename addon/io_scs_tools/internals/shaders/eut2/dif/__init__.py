@@ -20,16 +20,22 @@
 
 
 from mathutils import Color
+from io_scs_tools.consts import Mesh as _MESH_consts
+from io_scs_tools.internals.shaders.eut2.std_node_groups import vcolor_input
 from io_scs_tools.internals.shaders.flavors import alpha_test
 from io_scs_tools.internals.shaders.flavors import blend_over
 from io_scs_tools.internals.shaders.flavors import blend_add
 from io_scs_tools.internals.shaders.flavors import nmap
+from io_scs_tools.internals.shaders.flavors import tg0
+from io_scs_tools.utils import convert as _convert_utils
 
 
 class Dif:
     DIFF_COL_NODE = "DiffuseColor"
     SPEC_COL_NODE = "SpecularColor"
     GEOM_NODE = "Geometry"
+    VCOL_GROUP_NODE = "VColorGroup"
+    OPACITY_NODE = "OpacityMultiplier"
     BASE_TEX_NODE = "BaseTex"
     DIFF_MULT_NODE = "DiffMultiplier"
     VCOLOR_MULT_NODE = "VertexColorMultiplier"
@@ -55,13 +61,18 @@ class Dif:
 
         pos_x_shift = 185
 
-        node_tree.nodes.clear()
-
         # node creation
+        vcol_group_n = node_tree.nodes.new("ShaderNodeGroup")
+        vcol_group_n.name = Dif.VCOL_GROUP_NODE
+        vcol_group_n.label = Dif.VCOL_GROUP_NODE
+        vcol_group_n.location = (start_pos_x - pos_x_shift, start_pos_y + 1650)
+        vcol_group_n.node_tree = vcolor_input.get_node_group()
+
         geometry_n = node_tree.nodes.new("ShaderNodeGeometry")
         geometry_n.name = Dif.GEOM_NODE
         geometry_n.label = Dif.GEOM_NODE
-        geometry_n.location = (start_pos_x - pos_x_shift, start_pos_y + 1900)
+        geometry_n.location = (start_pos_x - pos_x_shift, start_pos_y + 1500)
+        geometry_n.uv_layer = _MESH_consts.none_uv
 
         diff_col_n = node_tree.nodes.new("ShaderNodeRGB")
         diff_col_n.name = Dif.DIFF_COL_NODE
@@ -79,7 +90,13 @@ class Dif:
         vcol_scale_n.location = (start_pos_x + pos_x_shift * 3, start_pos_y + 1550)
         vcol_scale_n.blend_type = "MULTIPLY"
         vcol_scale_n.inputs['Fac'].default_value = 1
-        vcol_scale_n.inputs['Color2'].default_value = (4,) * 4
+        vcol_scale_n.inputs['Color2'].default_value = (2,) * 4
+
+        opacity_n = node_tree.nodes.new("ShaderNodeMath")
+        opacity_n.name = Dif.OPACITY_NODE
+        opacity_n.label = Dif.OPACITY_NODE
+        opacity_n.location = (start_pos_x + pos_x_shift * 3, start_pos_y + 1300)
+        opacity_n.operation = "MULTIPLY"
 
         base_tex_n = node_tree.nodes.new("ShaderNodeTexture")
         base_tex_n.name = Dif.BASE_TEX_NODE
@@ -117,13 +134,15 @@ class Dif:
 
         # links creation
         node_tree.links.new(base_tex_n.inputs['Vector'], geometry_n.outputs['UV'])
-        node_tree.links.new(vcol_scale_n.inputs['Color1'], geometry_n.outputs['Vertex Color'])
+        node_tree.links.new(vcol_scale_n.inputs['Color1'], vcol_group_n.outputs['Vertex Color'])
 
         node_tree.links.new(vcol_mult_n.inputs['Color1'], vcol_scale_n.outputs['Color'])
         node_tree.links.new(vcol_mult_n.inputs['Color2'], base_tex_n.outputs['Color'])
 
         node_tree.links.new(diff_mult_n.inputs['Color1'], diff_col_n.outputs['Color'])
         node_tree.links.new(diff_mult_n.inputs['Color2'], vcol_mult_n.outputs['Color'])
+        node_tree.links.new(opacity_n.inputs[0], base_tex_n.outputs["Value"])
+        node_tree.links.new(opacity_n.inputs[1], vcol_group_n.outputs["Vertex Color Alpha"])
 
         node_tree.links.new(out_mat_n.inputs['Color'], diff_mult_n.outputs['Color'])
         node_tree.links.new(out_mat_n.inputs['Spec'], spec_col_n.outputs['Color'])
@@ -142,6 +161,10 @@ class Dif:
         """
 
         node_tree.nodes[Dif.OUT_MAT_NODE].material = material
+
+        # make sure to reset to lambert always as flat flavor might use fresnel diffuse shader
+        material.diffuse_shader = "LAMBERT"
+
         material.emit = 0.02
 
     @staticmethod
@@ -171,20 +194,21 @@ class Dif:
         :type color: Color or tuple
         """
 
-        hsv_col = Color(color[:3])
-        # force diffuse color to be rendered so ambient color can be simulated!
-        if hsv_col.v == 0:
-            hsv_col.v = 0.000001  # this is the smallest value Blender still uses for rendering
-
-        color = tuple(hsv_col) + (1,)
+        color = _convert_utils.to_node_color(color)
 
         node_tree.nodes[Dif.DIFF_COL_NODE].outputs['Color'].default_value = color
-        node_tree.nodes[Dif.OUT_MAT_NODE].material.diffuse_intensity = hsv_col.v * 0.7
+
+        # in the case of flat flavor (diffuse shader is set to FRESNEL)
+        # intensity of diffuse has to be 1 for correct results
+        if node_tree.nodes[Dif.OUT_MAT_NODE].material.diffuse_shader == "FRESNEL":
+            node_tree.nodes[Dif.OUT_MAT_NODE].material.diffuse_intensity = 1
+        else:
+            node_tree.nodes[Dif.OUT_MAT_NODE].material.diffuse_intensity = Color(color[:3]).v * 0.7
 
         # fix emit color representing ambient.
         # NOTE: because emit works upon diffuse light we need to fake factors if diffuse drops
         ambient = node_tree.nodes[Dif.OUT_MAT_NODE].material.scs_props.shader_attribute_add_ambient
-        node_tree.nodes[Dif.OUT_MAT_NODE].material.emit = (ambient / 10) * (1 / hsv_col.v)
+        node_tree.nodes[Dif.OUT_MAT_NODE].material.emit = (ambient / 10) * (1 / Color(color[:3]).v)
 
     @staticmethod
     def set_specular(node_tree, color):
@@ -196,11 +220,11 @@ class Dif:
         :type color: Color or tuple
         """
 
-        if len(color) == 3:
-            color = tuple(color) + (1,)
+        color = _convert_utils.to_node_color(color)
 
         node_tree.nodes[Dif.SPEC_COL_NODE].outputs['Color'].default_value = color
-        node_tree.nodes[Dif.OUT_MAT_NODE].material.specular_intensity = Color(color[:3]).v
+        # fix intensity each time if user might changed it by hand directly on material
+        node_tree.nodes[Dif.OUT_MAT_NODE].material.specular_intensity = 1.0
 
     @staticmethod
     def set_shininess(node_tree, factor):
@@ -260,6 +284,9 @@ class Dif:
         :type uv_layer: str
         """
 
+        if uv_layer is None or uv_layer == "":
+            uv_layer = _MESH_consts.none_uv
+
         node_tree.nodes[Dif.GEOM_NODE].uv_layer = uv_layer
 
     @staticmethod
@@ -274,7 +301,7 @@ class Dif:
 
         if switch_on and not blend_over.is_set(node_tree):
             out_node = node_tree.nodes[Dif.OUT_MAT_NODE]
-            in_node = node_tree.nodes[Dif.BASE_TEX_NODE]
+            in_node = node_tree.nodes[Dif.OPACITY_NODE]
             location = (out_node.location.x - 185 * 2, out_node.location.y - 500)
 
             alpha_test.init(node_tree, location, in_node.outputs['Value'], out_node.inputs['Alpha'])
@@ -296,7 +323,7 @@ class Dif:
             Dif.set_alpha_test_flavor(node_tree, False)
 
         out_node = node_tree.nodes[Dif.OUT_MAT_NODE]
-        in_node = node_tree.nodes[Dif.BASE_TEX_NODE]
+        in_node = node_tree.nodes[Dif.OPACITY_NODE]
 
         if switch_on:
             blend_over.init(node_tree, in_node.outputs['Value'], out_node.inputs['Alpha'])
@@ -318,7 +345,7 @@ class Dif:
             Dif.set_alpha_test_flavor(node_tree, False)
 
         out_node = node_tree.nodes[Dif.OUT_MAT_NODE]
-        in_node = node_tree.nodes[Dif.BASE_TEX_NODE]
+        in_node = node_tree.nodes[Dif.OPACITY_NODE]
 
         if switch_on:
             blend_add.init(node_tree, in_node.outputs['Value'], out_node.inputs['Alpha'])
@@ -336,8 +363,15 @@ class Dif:
         """
 
         if switch_on:
+
+            # find minimal y position for input nodes and position flavor beneath it
+            min_y = None
+            for node in node_tree.nodes:
+                if node.location.x <= 185 and (min_y is None or min_y > node.location.y):
+                    min_y = node.location.y
+
             out_node = node_tree.nodes[Dif.OUT_MAT_NODE]
-            location = (out_node.location.x - 185, out_node.location.y - 400)
+            location = (out_node.location.x - 185, min_y - 400)
 
             nmap.init(node_tree, location, out_node.inputs['Normal'])
         else:
@@ -366,3 +400,89 @@ class Dif:
         """
 
         nmap.set_uv(node_tree, uv_layer)
+
+    @staticmethod
+    def set_tg0_flavor(node_tree, switch_on):
+        """Set zero texture generation flavor to this shader.
+
+        :param node_tree: node tree of current shader
+        :type node_tree: bpy.types.NodeTree
+        :param switch_on: flag indication if flavor should be switched on or off
+        :type switch_on: bool
+        """
+
+        if switch_on and not tg0.is_set(node_tree):
+
+            out_node = node_tree.nodes[Dif.GEOM_NODE]
+            in_node = node_tree.nodes[Dif.BASE_TEX_NODE]
+
+            out_node.location.x -= 185
+            location = (out_node.location.x + 185, out_node.location.y)
+
+            tg0.init(node_tree, location, out_node.outputs["Global"], in_node.inputs["Vector"])
+
+        elif not switch_on:
+
+            tg0.delete(node_tree)
+
+    @staticmethod
+    def set_aux0(node_tree, aux_property):
+        """Set zero texture generation scale.
+
+        :param node_tree: node tree of current shader
+        :type node_tree: bpy.types.NodeTree
+        :param aux_property: zero texture generation scale represented with property group
+        :type aux_property: bpy.types.IDPropertyGroup
+        """
+
+        if tg0.is_set(node_tree):
+
+            tg0.set_scale(node_tree, aux_property[0]['value'], aux_property[1]['value'])
+
+    @staticmethod
+    def set_flat_flavor(node_tree, switch_on):
+        """Set flat shading flavor to this shader.
+
+        :param node_tree: node tree of current shader
+        :type node_tree: bpy.types.NodeTree
+        :param switch_on: flag indication if flavor should be switched on or off
+        :type switch_on: bool
+        """
+
+        _FLAT_FAC_MULT_NODE = "FlatFlavorMult"
+
+        out_mat_n = node_tree.nodes[Dif.OUT_MAT_NODE]
+        output_n = node_tree.nodes[Dif.OUTPUT_NODE]
+        diff_mult_n = node_tree.nodes[Dif.DIFF_MULT_NODE]
+
+        if switch_on:
+
+            out_mat_n.use_specular = False
+            out_mat_n.material.diffuse_shader = "FRESNEL"
+            out_mat_n.material.diffuse_fresnel = 0
+
+            out_mat_n.location.x += 185
+            output_n.location.x += 185
+
+            flat_mult_n = node_tree.nodes.new("ShaderNodeMixRGB")
+            flat_mult_n.name = flat_mult_n.label = _FLAT_FAC_MULT_NODE
+            flat_mult_n.location = (out_mat_n.location.x - 185 * 2, diff_mult_n.location.y)
+            flat_mult_n.blend_type = "MULTIPLY"
+            flat_mult_n.inputs['Fac'].default_value = 1
+            flat_mult_n.inputs['Color2'].default_value = (0.4,) * 3 + (1,)  # factor is 0.4
+
+            node_tree.links.new(flat_mult_n.inputs['Color1'], diff_mult_n.outputs['Color'])
+            node_tree.links.new(out_mat_n.inputs['Color'], flat_mult_n.outputs['Color'])
+
+        else:
+
+            out_mat_n.use_specular = True
+            out_mat_n.material.diffuse_shader = "LAMBERT"
+
+            out_mat_n.location.x -= 185
+            output_n.location.x -= 185
+
+            if _FLAT_FAC_MULT_NODE in node_tree.nodes:
+                node_tree.nodes.remove(node_tree.nodes[_FLAT_FAC_MULT_NODE])
+
+            node_tree.links.new(out_mat_n.inputs['Color'], diff_mult_n.outputs['Color'])

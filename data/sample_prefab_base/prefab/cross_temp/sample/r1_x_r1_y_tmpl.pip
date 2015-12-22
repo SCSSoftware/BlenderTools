@@ -1,0 +1,1235 @@
+Header {
+    FormatVersion: 2
+    Source: "Blender 2.76.0 (hash: 48f7dd6), SCS Blender Tools: 1.0.27abe27"
+    Type: "Prefab"
+    Name: "r1_x_r1_y_tmpl"
+}
+Global {
+    NodeCount: 3
+    TerrainPointCount: 32
+    TerrainPointVariantCount: 3
+    NavCurveCount: 32
+    SignCount: 0
+    SpawnPointCount: 0
+    SemaphoreCount: 0
+    MapPointCount: 4
+    TriggerPointCount: 0
+    IntersectionCount: 36
+}
+Node {
+    Index: 0
+    Position: ( &c1d49e3d  &b4c79d33  &409d97c1 )
+    Direction: ( &3f5db3d9  &b322216b  &befffffe )
+    InputLanes: ( 28 -1 -1 -1 -1 -1 -1 -1 )
+    OutputLanes: ( 9 -1 -1 -1 -1 -1 -1 -1 )
+
+    TerrainPointCount: 18
+    TerrainPointVariantCount: 1
+    StreamCount: 3
+    Stream {
+        Format: FLOAT3
+        Tag: "_POSITION"
+        0    ( &c1ba9e3c  &b555e3b2  &4128dcef )
+        1    ( &c1b146d0  &b5496760  &411f017b )
+        2    ( &c1a73a50  &b5404ea7  &4117d2fb )
+        3    ( &c19c0826  &b53a5598  &41131bcf )
+        4    ( &c1905830  &b53863c4  &411192c8 )
+        5    ( &c183c117  &b53afd7c  &4113a05b )
+        6    ( &c171aad3  &b540db05  &411841cd )
+        7    ( &c15da0bc  &b549ecf3  &411f6aef )
+        8    ( &c14b1f72  &b556214f  &41290d94 )
+        9    ( &c139b47c  &b564b3ba  &41348eb2 )
+        10   ( &c129201d  &b5760da6  &41424189 )
+        11   ( &c1195ea8  &b5850d7e  &4152163e )
+        12   ( &c10b2172  &b58f81a2  &416297cc )
+        13   ( &c0fe8635  &b59af052  &4174a4f7 )
+        14   ( &c0ebd582  &b5a611bc  &41831c0f )
+        15   ( &c0dd2284  &b5b31a0f  &418d660c )
+        16   ( &c0d3d76a  &b5c0fc3f  &41985c08 )
+        17   ( &c0cffffb  &b5cfbacf  &41a40000 )
+    }
+    Stream {
+        Format: FLOAT3
+        Tag: "_NORMAL"
+        0    ( &9822f5f8  &3f800000  &33a22169 )
+        1    ( &9822f5f8  &3f800000  &33a22169 )
+        2    ( &9822f5f8  &3f800000  &33a22169 )
+        3    ( &9822f5f8  &3f800000  &33a22169 )
+        4    ( &9822f5f8  &3f800000  &33a22169 )
+        5    ( &9822f5f8  &3f800000  &33a22169 )
+        6    ( &9822f5f8  &3f800000  &33a22169 )
+        7    ( &9822f5f8  &3f800000  &33a22169 )
+        8    ( &9822f5f8  &3f800000  &33a22169 )
+        9    ( &9822f5f8  &3f800000  &33a22169 )
+        10   ( &9822f5f8  &3f800000  &33a22169 )
+        11   ( &9822f5f8  &3f800000  &33a22169 )
+        12   ( &9822f5f8  &3f800000  &33a22169 )
+        13   ( &9822f5f8  &3f800000  &33a22169 )
+        14   ( &9822f5f8  &3f800000  &33a22169 )
+        15   ( &9822f5f8  &3f800000  &33a22169 )
+        16   ( &9822f5f8  &3f800000  &33a22169 )
+        17   ( &9822f5f8  &3f800000  &33a22169 )
+    }
+    Stream {
+        Format: INT2
+        Tag: "_VARIANT_BLOCK"
+        0    ( 0     18 )
+    }
+}
+Node {
+    Index: 1
+    Position: ( &261ed600  &35cfbacf  &c1a40000 )
+    Direction: ( &33bbbd2e  &b4222169  &3f800000 )
+    InputLanes: ( 8 -1 -1 -1 -1 -1 -1 -1 )
+    OutputLanes: ( 26 -1 -1 -1 -1 -1 -1 -1 )
+
+    TerrainPointCount: 11
+    TerrainPointVariantCount: 1
+    StreamCount: 3
+    Stream {
+        Format: FLOAT3
+        Tag: "_POSITION"
+        0    ( &c0d00006  &35cd4873  &c1a40001 )
+        1    ( &c0d2a9cc  &35c0a0ab  &c19813bb )
+        2    ( &c0db9900  &35b34763  &c18d89d5 )
+        3    ( &c0ea94ae  &35a5eda4  &c182ff90 )
+        4    ( &c0fc0d7b  &359a6c20  &c173d43c )
+        5    ( &c10a3724  &358eb8a6  &c1615a74 )
+        6    ( &c1181d57  &35848821  &c15143aa )
+        7    ( &c1286019  &35746279  &c140f049 )
+        8    ( &c1388d8f  &3563833c  &c1339e4d )
+        9    ( &c14a850a  &3554783c  &c127bdfc )
+        10   ( &c1ee9e3b  &336467f2  &bf3452de )
+    }
+    Stream {
+        Format: FLOAT3
+        Tag: "_NORMAL"
+        0    ( &00000000  &3f800000  &33a22169 )
+        1    ( &00000000  &3f800000  &33a22169 )
+        2    ( &00000000  &3f800000  &33a22169 )
+        3    ( &00000000  &3f800000  &33a22169 )
+        4    ( &00000000  &3f800000  &33a22169 )
+        5    ( &00000000  &3f800000  &33a22169 )
+        6    ( &00000000  &3f800000  &33a22169 )
+        7    ( &00000000  &3f800000  &33a22169 )
+        8    ( &00000000  &3f800000  &33a22169 )
+        9    ( &00000000  &3f800000  &33a22169 )
+        10   ( &00000000  &3f800000  &33a22169 )
+    }
+    Stream {
+        Format: INT2
+        Tag: "_VARIANT_BLOCK"
+        0    ( 0     11 )
+    }
+}
+Node {
+    Index: 2
+    Position: ( &a61ed600  &b5cfbacf  &41a40000 )
+    Direction: ( &00000000  &00000000  &bf800000 )
+    InputLanes: ( 31 -1 -1 -1 -1 -1 -1 -1 )
+    OutputLanes: ( 4 -1 -1 -1 -1 -1 -1 -1 )
+
+    TerrainPointCount: 3
+    TerrainPointVariantCount: 1
+    StreamCount: 3
+    Stream {
+        Format: FLOAT3
+        Tag: "_POSITION"
+        0    ( &40cffffc  &b5cfbacf  &41a40000 )
+        1    ( &40cffffb  &a8fde2c6  &34c8708f )
+        2    ( &40cffffb  &35cfbacf  &c1a40000 )
+    }
+    Stream {
+        Format: FLOAT3
+        Tag: "_NORMAL"
+        0    ( &00000000  &3f800000  &33a22169 )
+        1    ( &00000000  &3f800000  &33a22169 )
+        2    ( &00000000  &3f800000  &33a22169 )
+    }
+    Stream {
+        Format: INT2
+        Tag: "_VARIANT_BLOCK"
+        0    ( 0     3 )
+    }
+}
+Curve {
+    Index: 0
+    # start locator: 'Nav_Point_4'
+    Name: "nav_point_4"
+
+    Flags: 786528
+
+    LeadsToNodes: 17039618
+
+    NextCurves: ( 26 -1 -1 -1 )
+    PrevCurves: ( 22 -1 -1 -1 )
+
+    Length: &41d25da9
+
+    Bezier {
+        Start {
+            Position: ( &40100000  &b51e59b3  &40fa0803 )
+            Rotation: ( &3f800000  &00000000  &00000000  &00000000 )
+        }
+        End {
+            Position: ( &40100000  &35bb4899  &c193dba8 )
+            Rotation: ( &3f800000  &00000000  &00000000  &00000000 )
+        }
+    }
+}
+Curve {
+    Index: 1
+    # start locator: 'Nav_Point_46'
+    Name: "nav_point_46"
+
+    Flags: 64
+
+    LeadsToNodes: 16843012
+
+    NextCurves: ( 11 -1 -1 -1 )
+    PrevCurves: ( 10 -1 -1 -1 )
+
+    Length: &41845647
+
+    Bezier {
+        Start {
+            Position: ( &c1b7b432  &b4dc575d  &40adf4e8 )
+            Rotation: ( &3f5db3d7  &a693cd3a  &bf000001  &00000000 )
+        }
+        End {
+            Position: ( &c0e68769  &b4929b8b  &40677d5d )
+            Rotation: ( &3f0447bf  &a7f7b769  &bf5b2cf4  &a839c993 )
+        }
+    }
+}
+Curve {
+    Index: 2
+    # start locator: 'Nav_Point_48'
+    Name: "nav_point_48"
+
+    Flags: 262192
+
+    LeadsToNodes: 16843010
+
+    NextCurves: ( 29 -1 -1 -1 )
+    PrevCurves: ( 13 -1 -1 -1 )
+
+    Length: &40ffb3d6
+
+    Bezier {
+        Start {
+            Position: ( &c10c4834  &b4183e0b  &3ff06309 )
+            Rotation: ( &3f426de5  &00000000  &bf268876  &00000000 )
+        }
+        End {
+            Position: ( &bff5eebc  &34195b97  &bff225e8 )
+            Rotation: ( &3f713bc7  &2687d5cf  &beab6026  &2787d5cf )
+        }
+    }
+}
+Curve {
+    Index: 3
+    # start locator: 'Nav_Point_46'
+    Name: "nav_point_46"
+
+    Flags: 32
+
+    LeadsToNodes: 16843012
+
+    NextCurves: ( 14 -1 -1 -1 )
+    PrevCurves: ( 10 -1 -1 -1 )
+
+    Length: &4181c800
+
+    Bezier {
+        Start {
+            Position: ( &c1b7b432  &b4dc575d  &40adf4e8 )
+            Rotation: ( &3f5db3d7  &a693cd3a  &bf000001  &00000000 )
+        }
+        End {
+            Position: ( &c0f3a0a7  &b4e34237  &40b36af8 )
+            Rotation: ( &3ee3ff41  &a7d794ea  &bf653780  &00000000 )
+        }
+    }
+}
+Curve {
+    Index: 4
+    # start locator: 'Nav_Point_27'
+    Name: "nav_point_27"
+
+    Flags: 96
+
+    LeadsToNodes: 16974084
+
+    NextCurves: ( -1 -1 -1 -1 )
+    PrevCurves: ( 27 16 -1 -1 )
+
+    Length: &40042568
+
+    Bezier {
+        Start {
+            Position: ( &c0100000  &b5bace94  &41937b53 )
+            Rotation: ( &b33bbd2e  &00000000  &3f800000  &00000000 )
+        }
+        End {
+            Position: ( &c0100000  &b5cfbacf  &41a40000 )
+            Rotation: ( &b33bbd2e  &00000000  &3f800000  &00000000 )
+        }
+    }
+}
+Curve {
+    Index: 5
+    # start locator: 'Nav_Point_38'
+    Name: "nav_point_38"
+
+    Flags: 64
+
+    LeadsToNodes: 16843010
+
+    NextCurves: ( 21 -1 -1 -1 )
+    PrevCurves: ( 28 -1 -1 -1 )
+
+    Length: &41785ed2
+
+    Bezier {
+        Start {
+            Position: ( &c1bc8542  &b4ea6e50  &40b9148c )
+            Rotation: ( &3f5db3d7  &a693cd3a  &bf000001  &00000000 )
+        }
+        End {
+            Position: ( &c106588a  &b499a221  &40729549 )
+            Rotation: ( &3f309136  &a6a262c0  &bf395d53  &00000000 )
+        }
+    }
+}
+Curve {
+    Index: 6
+    # start locator: 'Nav_Point_17'
+    Name: "nav_point_17"
+
+    Flags: 671856
+
+    LeadsToNodes: 17039617
+
+    NextCurves: ( 9 -1 -1 -1 )
+    PrevCurves: ( 19 -1 -1 -1 )
+
+    Length: &41cd5b92
+
+    Bezier {
+        Start {
+            Position: ( &c0200b80  &34f9c57b  &c0c530ff )
+            Rotation: ( &3f599906  &269696fd  &3f06dc2a  &00000000 )
+        }
+        End {
+            Position: ( &c1cd8543  &b4131745  &3fe840b9 )
+            Rotation: ( &3efffffe  &28200003  &3f5db3da  &277ffffe )
+        }
+    }
+}
+Curve {
+    Index: 7
+    # start locator: 'Nav_Point_26'
+    Name: "nav_point_26"
+
+    Flags: 96
+
+    LeadsToNodes: 16908545
+
+    NextCurves: ( 20 -1 -1 -1 )
+    PrevCurves: ( 15 -1 -1 -1 )
+
+    Length: &41132561
+
+    Bezier {
+        Start {
+            Position: ( &c0100000  &35afbce4  &c18abe2a )
+            Rotation: ( &b33bbd2e  &00000000  &3f800000  &00000000 )
+        }
+        End {
+            Position: ( &c0c8785f  &353dc1f6  &c115cfb1 )
+            Rotation: ( &3ed11705  &a81cb79b  &3f69ae15  &a71cb7a1 )
+        }
+    }
+}
+Curve {
+    Index: 8
+    # start locator: 'Nav_Point_29'
+    Name: "nav_point_29"
+
+    Flags: 96
+
+    LeadsToNodes: 16908549
+
+    NextCurves: ( 23 15 -1 -1 )
+    PrevCurves: ( -1 -1 -1 -1 )
+
+    Length: &400b0610
+
+    Bezier {
+        Start {
+            Position: ( &c0100000  &35cfbacf  &c1a40000 )
+            Rotation: ( &b33bbd2e  &00000000  &3f800000  &00000000 )
+        }
+        End {
+            Position: ( &c0100000  &35b9b7d0  &c1929f3e )
+            Rotation: ( &b33bbd2e  &00000000  &3f800000  &00000000 )
+        }
+    }
+}
+Curve {
+    Index: 9
+    # start locator: 'Nav_Point_12'
+    Name: "nav_point_12"
+
+    Flags: 96
+
+    LeadsToNodes: 17170689
+
+    NextCurves: ( -1 -1 -1 -1 )
+    PrevCurves: ( 25 6 17 -1 )
+
+    Length: &4014b3f5
+
+    Bezier {
+        Start {
+            Position: ( &c1cd8543  &b4131745  &3fe840b9 )
+            Rotation: ( &3efffffe  &28200003  &3f5db3da  &277ffffe )
+        }
+        End {
+            Position: ( &c1dd9e3d  &b4714490  &403e7a59 )
+            Rotation: ( &3efffffe  &28200003  &3f5db3da  &277ffffe )
+        }
+    }
+}
+Curve {
+    Index: 10
+    # start locator: 'Nav_Point_38'
+    Name: "nav_point_38"
+
+    Flags: 96
+
+    LeadsToNodes: 16843012
+
+    NextCurves: ( 3 1 -1 -1 )
+    PrevCurves: ( 28 -1 -1 -1 )
+
+    Length: &3f31fa32
+
+    Bezier {
+        Start {
+            Position: ( &c1bc8542  &b4ea6e50  &40b9148c )
+            Rotation: ( &3f5db3d7  &a693cd3a  &bf000001  &00000000 )
+        }
+        End {
+            Position: ( &c1b7b432  &b4dc575d  &40adf4e8 )
+            Rotation: ( &3f5db3d7  &a693cd3a  &bf000001  &00000000 )
+        }
+    }
+}
+Curve {
+    Index: 11
+    # start locator: 'Nav_Point_31'
+    Name: "nav_point_31"
+
+    Flags: 327784
+
+    LeadsToNodes: 16843012
+
+    NextCurves: ( 16 -1 -1 -1 )
+    PrevCurves: ( 1 -1 -1 -1 )
+
+    Length: &41790dcb
+
+    Bezier {
+        Start {
+            Position: ( &c0e68769  &b4929b8b  &40677d5d )
+            Rotation: ( &3f0447bf  &a7f7b769  &bf5b2cf4  &a839c993 )
+        }
+        End {
+            Position: ( &c0100000  &b5b2003b  &418c878c )
+            Rotation: ( &b33bbd2e  &00000000  &3f800000  &00000000 )
+        }
+    }
+}
+Curve {
+    Index: 12
+    # start locator: 'Nav_Point_1'
+    Name: "nav_point_1"
+
+    Flags: 64
+
+    LeadsToNodes: 17039617
+
+    NextCurves: ( 19 -1 -1 -1 )
+    PrevCurves: ( 31 -1 -1 -1 )
+
+    Length: &418f8b9f
+
+    Bezier {
+        Start {
+            Position: ( &40100000  &b5bbf754  &4194659b )
+            Rotation: ( &3f800000  &00000000  &00000000  &00000000 )
+        }
+        End {
+            Position: ( &4041cc4e  &b3591138  &3f2b5f34 )
+            Rotation: ( &3f7f2ed4  &00000000  &3da37f5d  &00000000 )
+        }
+    }
+}
+Curve {
+    Index: 13
+    # start locator: 'Nav_Point_38'
+    Name: "nav_point_38"
+
+    Flags: 32
+
+    LeadsToNodes: 16843010
+
+    NextCurves: ( 2 -1 -1 -1 )
+    PrevCurves: ( 28 -1 -1 -1 )
+
+    Length: &41766995
+
+    Bezier {
+        Start {
+            Position: ( &c1bc8542  &b4ea6e50  &40b9148c )
+            Rotation: ( &3f5db3d7  &a693cd3a  &bf000001  &00000000 )
+        }
+        End {
+            Position: ( &c10c4834  &b4183e0b  &3ff06309 )
+            Rotation: ( &3f426de5  &00000000  &bf268876  &00000000 )
+        }
+    }
+}
+Curve {
+    Index: 14
+    # start locator: 'Nav_Point_51'
+    Name: "nav_point_51"
+
+    Flags: 327784
+
+    LeadsToNodes: 16843012
+
+    NextCurves: ( 16 -1 -1 -1 )
+    PrevCurves: ( 3 -1 -1 -1 )
+
+    Length: &4159255e
+
+    Bezier {
+        Start {
+            Position: ( &c0f3a0a7  &b4e34237  &40b36af8 )
+            Rotation: ( &3ee3ff41  &a7d794ea  &bf653780  &00000000 )
+        }
+        End {
+            Position: ( &c0100000  &b5b2003b  &418c878c )
+            Rotation: ( &b33bbd2e  &00000000  &3f800000  &00000000 )
+        }
+    }
+}
+Curve {
+    Index: 15
+    # start locator: 'Nav_Point_23'
+    Name: "nav_point_23"
+
+    Flags: 96
+
+    LeadsToNodes: 16908545
+
+    NextCurves: ( 7 -1 -1 -1 )
+    PrevCurves: ( 8 -1 -1 -1 )
+
+    Length: &3f7c2280
+
+    Bezier {
+        Start {
+            Position: ( &c0100000  &35b9b7d0  &c1929f3e )
+            Rotation: ( &b33bbd2e  &00000000  &3f800000  &00000000 )
+        }
+        End {
+            Position: ( &c0100000  &35afbce4  &c18abe2a )
+            Rotation: ( &b33bbd2e  &00000000  &3f800000  &00000000 )
+        }
+    }
+}
+Curve {
+    Index: 16
+    # start locator: 'Nav_Point_32'
+    Name: "nav_point_32"
+
+    Flags: 327776
+
+    LeadsToNodes: 16843012
+
+    NextCurves: ( 4 -1 -1 -1 )
+    PrevCurves: ( 11 14 -1 -1 )
+
+    Length: &3f5e78e0
+
+    Bezier {
+        Start {
+            Position: ( &c0100000  &b5b2003b  &418c878c )
+            Rotation: ( &b33bbd2e  &00000000  &3f800000  &00000000 )
+        }
+        End {
+            Position: ( &c0100000  &b5bace94  &41937b53 )
+            Rotation: ( &b33bbd2e  &00000000  &3f800000  &00000000 )
+        }
+    }
+}
+Curve {
+    Index: 17
+    # start locator: 'Nav_Point_36'
+    Name: "nav_point_36"
+
+    Flags: 655456
+
+    LeadsToNodes: 16908545
+
+    NextCurves: ( 9 -1 -1 -1 )
+    PrevCurves: ( 20 -1 -1 -1 )
+
+    Length: &3f31fa4d
+
+    Bezier {
+        Start {
+            Position: ( &c1c8b432  &b3edd2be  &3fbbc229 )
+            Rotation: ( &3efffffe  &28200003  &3f5db3da  &277ffffe )
+        }
+        End {
+            Position: ( &c1cd8543  &b4131745  &3fe840b9 )
+            Rotation: ( &3efffffe  &28200003  &3f5db3da  &277ffffe )
+        }
+    }
+}
+Curve {
+    Index: 18
+    # start locator: 'Nav_Point_15'
+    Name: "nav_point_15"
+
+    Flags: 262256
+
+    LeadsToNodes: 16843010
+
+    NextCurves: ( 26 -1 -1 -1 )
+    PrevCurves: ( 21 -1 -1 -1 )
+
+    Length: &419cd2c0
+
+    Bezier {
+        Start {
+            Position: ( &3f83ad57  &b3538e4d  &3f27054d )
+            Rotation: ( &3f733e24  &00000000  &be9f9c96  &00000000 )
+        }
+        End {
+            Position: ( &40100000  &35bb4899  &c193dba8 )
+            Rotation: ( &3f800000  &00000000  &00000000  &00000000 )
+        }
+    }
+}
+Curve {
+    Index: 19
+    # start locator: 'Nav_Point_6'
+    Name: "nav_point_6"
+
+    Flags: 655440
+
+    LeadsToNodes: 17039617
+
+    NextCurves: ( 6 -1 -1 -1 )
+    PrevCurves: ( 12 -1 -1 -1 )
+
+    Length: &4111e5d6
+
+    Bezier {
+        Start {
+            Position: ( &4041cc4e  &b3591138  &3f2b5f34 )
+            Rotation: ( &3f7f2ed4  &00000000  &3da37f5d  &00000000 )
+        }
+        End {
+            Position: ( &c0200b80  &34f9c57b  &c0c530ff )
+            Rotation: ( &3f599906  &269696fd  &3f06dc2a  &00000000 )
+        }
+    }
+}
+Curve {
+    Index: 20
+    # start locator: 'Nav_Point_35'
+    Name: "nav_point_35"
+
+    Flags: 721000
+
+    LeadsToNodes: 16908545
+
+    NextCurves: ( 17 -1 -1 -1 )
+    PrevCurves: ( 7 -1 -1 -1 )
+
+    Length: &41ae39c7
+
+    Bezier {
+        Start {
+            Position: ( &c0c8785f  &353dc1f6  &c115cfb1 )
+            Rotation: ( &3ed11705  &a81cb79b  &3f69ae15  &a71cb7a1 )
+        }
+        End {
+            Position: ( &c1c8b432  &b3edd2be  &3fbbc229 )
+            Rotation: ( &3efffffe  &28200003  &3f5db3da  &277ffffe )
+        }
+    }
+}
+Curve {
+    Index: 21
+    # start locator: 'Nav_Point_44'
+    Name: "nav_point_44"
+
+    Flags: 262224
+
+    LeadsToNodes: 16843010
+
+    NextCurves: ( 18 -1 -1 -1 )
+    PrevCurves: ( 5 -1 -1 -1 )
+
+    Length: &4125836f
+
+    Bezier {
+        Start {
+            Position: ( &c106588a  &b499a221  &40729549 )
+            Rotation: ( &3f309136  &a6a262c0  &bf395d53  &00000000 )
+        }
+        End {
+            Position: ( &3f83ad57  &b3538e4d  &3f27054d )
+            Rotation: ( &3f733e24  &00000000  &be9f9c96  &00000000 )
+        }
+    }
+}
+Curve {
+    Index: 22
+    # start locator: 'Nav_Point_1'
+    Name: "nav_point_1"
+
+    Flags: 96
+
+    LeadsToNodes: 17039618
+
+    NextCurves: ( 0 -1 -1 -1 )
+    PrevCurves: ( 31 -1 -1 -1 )
+
+    Length: &412bc734
+
+    Bezier {
+        Start {
+            Position: ( &40100000  &b5bbf754  &4194659b )
+            Rotation: ( &3f800000  &00000000  &00000000  &00000000 )
+        }
+        End {
+            Position: ( &40100000  &b51e59b3  &40fa0803 )
+            Rotation: ( &3f800000  &00000000  &00000000  &00000000 )
+        }
+    }
+}
+Curve {
+    Index: 23
+    # start locator: 'Nav_Point_23'
+    Name: "nav_point_23"
+
+    Flags: 96
+
+    LeadsToNodes: 16908548
+
+    NextCurves: ( 27 -1 -1 -1 )
+    PrevCurves: ( 8 -1 -1 -1 )
+
+    Length: &4096fcd2
+
+    Bezier {
+        Start {
+            Position: ( &c0100000  &35b9b7d0  &c1929f3e )
+            Rotation: ( &b33bbd2e  &00000000  &3f800000  &00000000 )
+        }
+        End {
+            Position: ( &c0100000  &3589e7f7  &c159c013 )
+            Rotation: ( &b33bbd2e  &00000000  &3f800000  &00000000 )
+        }
+    }
+}
+Curve {
+    Index: 24
+    # start locator: 'Nav_Point_2'
+    Name: "nav_point_2"
+
+    Flags: 655408
+
+    LeadsToNodes: 17039617
+
+    NextCurves: ( 25 -1 -1 -1 )
+    PrevCurves: ( 30 -1 -1 -1 )
+
+    Length: &4114c825
+
+    Bezier {
+        Start {
+            Position: ( &3fe995c1  &b537928a  &4110ed99 )
+            Rotation: ( &3f7f2ed4  &00000000  &3da37f5d  &00000000 )
+        }
+        End {
+            Position: ( &c0200b80  &b3a2f06c  &3f80a370 )
+            Rotation: ( &3f6b9c39  &268b13c0  &3ec83cec  &00000000 )
+        }
+    }
+}
+Curve {
+    Index: 25
+    # start locator: 'Nav_Point_10'
+    Name: "nav_point_10"
+
+    Flags: 655472
+
+    LeadsToNodes: 17039617
+
+    NextCurves: ( 9 -1 -1 -1 )
+    PrevCurves: ( 24 -1 -1 -1 )
+
+    Length: &41c69c6b
+
+    Bezier {
+        Start {
+            Position: ( &c0200b80  &b3a2f06c  &3f80a370 )
+            Rotation: ( &3f6b9c39  &268b13c0  &3ec83cec  &00000000 )
+        }
+        End {
+            Position: ( &c1cd8543  &b4131745  &3fe840b9 )
+            Rotation: ( &3efffffe  &28200003  &3f5db3da  &277ffffe )
+        }
+    }
+}
+Curve {
+    Index: 26
+    # start locator: 'Nav_Point_8'
+    Name: "nav_point_8"
+
+    Flags: 96
+
+    LeadsToNodes: 17105154
+
+    NextCurves: ( -1 -1 -1 -1 )
+    PrevCurves: ( 0 29 18 -1 )
+
+    Length: &400122c0
+
+    Bezier {
+        Start {
+            Position: ( &40100000  &35bb4899  &c193dba8 )
+            Rotation: ( &3f800000  &00000000  &00000000  &00000000 )
+        }
+        End {
+            Position: ( &40100000  &35cfbacf  &c1a40000 )
+            Rotation: ( &3f800000  &00000000  &00000000  &00000000 )
+        }
+    }
+}
+Curve {
+    Index: 27
+    # start locator: 'Nav_Point_24'
+    Name: "nav_point_24"
+
+    Flags: 786528
+
+    LeadsToNodes: 16908548
+
+    NextCurves: ( 4 -1 -1 -1 )
+    PrevCurves: ( 23 -1 -1 -1 )
+
+    Length: &42002dae
+
+    Bezier {
+        Start {
+            Position: ( &c0100000  &3589e7f7  &c159c013 )
+            Rotation: ( &b33bbd2e  &00000000  &3f800000  &00000000 )
+        }
+        End {
+            Position: ( &c0100000  &b5bace94  &41937b53 )
+            Rotation: ( &b33bbd2e  &00000000  &3f800000  &00000000 )
+        }
+    }
+}
+Curve {
+    Index: 28
+    # start locator: 'Nav_Point_37'
+    Name: "nav_point_37"
+
+    Flags: 96
+
+    LeadsToNodes: 16843014
+
+    NextCurves: ( 5 10 13 -1 )
+    PrevCurves: ( -1 -1 -1 -1 )
+
+    Length: &400b7729
+
+    Bezier {
+        Start {
+            Position: ( &c1cb9e3d  &b50b4c0f  &40dbf256 )
+            Rotation: ( &3f5db3d7  &a693cd3a  &bf000001  &00000000 )
+        }
+        End {
+            Position: ( &c1bc8542  &b4ea6e50  &40b9148c )
+            Rotation: ( &3f5db3d7  &a693cd3a  &bf000001  &00000000 )
+        }
+    }
+}
+Curve {
+    Index: 29
+    # start locator: 'Nav_Point_13'
+    Name: "nav_point_13"
+
+    Flags: 262256
+
+    LeadsToNodes: 16843010
+
+    NextCurves: ( 26 -1 -1 -1 )
+    PrevCurves: ( 2 -1 -1 -1 )
+
+    Length: &418b9d07
+
+    Bezier {
+        Start {
+            Position: ( &bff5eebc  &34195b97  &bff225e8 )
+            Rotation: ( &3f713bc7  &2687d5cf  &beab6026  &2787d5cf )
+        }
+        End {
+            Position: ( &40100000  &35bb4899  &c193dba8 )
+            Rotation: ( &3f800000  &00000000  &00000000  &00000000 )
+        }
+    }
+}
+Curve {
+    Index: 30
+    # start locator: 'Nav_Point_1'
+    Name: "nav_point_1"
+
+    Flags: 32
+
+    LeadsToNodes: 17039617
+
+    NextCurves: ( 24 -1 -1 -1 )
+    PrevCurves: ( 31 -1 -1 -1 )
+
+    Length: &411832c9
+
+    Bezier {
+        Start {
+            Position: ( &40100000  &b5bbf754  &4194659b )
+            Rotation: ( &3f800000  &00000000  &00000000  &00000000 )
+        }
+        End {
+            Position: ( &3fe995c1  &b537928a  &4110ed99 )
+            Rotation: ( &3f7f2ed4  &00000000  &3da37f5d  &00000000 )
+        }
+    }
+}
+Curve {
+    Index: 31
+    # start locator: 'Nav_Point_21'
+    Name: "nav_point_21"
+
+    Flags: 96
+
+    LeadsToNodes: 17039619
+
+    NextCurves: ( 30 22 12 -1 )
+    PrevCurves: ( -1 -1 -1 -1 )
+
+    Length: &3ff9a650
+
+    Bezier {
+        Start {
+            Position: ( &40100000  &b5cfbacf  &41a40000 )
+            Rotation: ( &3f800000  &00000000  &00000000  &00000000 )
+        }
+        End {
+            Position: ( &40100000  &b5bbf754  &4194659b )
+            Rotation: ( &3f800000  &00000000  &00000000  &00000000 )
+        }
+    }
+}
+MapPoint {
+    Index: 1
+    MapVisualFlags: 3584
+    MapNavFlags: 770
+    Position: ( &261ed600  &00000000  &c1a40000 )
+    Neighbours: ( 3 -1 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 0
+    MapVisualFlags: 3584
+    MapNavFlags: 769
+    Position: ( &c1d49e3d  &00000000  &409d97c1 )
+    Neighbours: ( 3 -1 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 2
+    MapVisualFlags: 3584
+    MapNavFlags: 772
+    Position: ( &a61ed600  &00000000  &41a40000 )
+    Neighbours: ( 3 -1 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 3
+    MapVisualFlags: 3584
+    MapNavFlags: 519
+    Position: ( &00000000  &00000000  &3fd21fab )
+    Neighbours: ( 0 1 2 -1 -1 -1 )
+}
+Intersection {
+    # curve start locator: 'Nav_Point_1'
+    InterCurveID: 12
+    InterPosition: 0.0
+    InterRadius: 25.9
+    Flags: 65584
+}
+Intersection {
+    # curve start locator: 'Nav_Point_1'
+    InterCurveID: 22
+    InterPosition: 0.0
+    InterRadius: 25.9
+    Flags: 0
+}
+Intersection {
+    # curve start locator: 'Nav_Point_1'
+    InterCurveID: 30
+    InterPosition: 0.0
+    InterRadius: 25.9
+    Flags: 0
+}
+Intersection {
+    # curve start locator: 'Nav_Point_38'
+    InterCurveID: 5
+    InterPosition: 0.0
+    InterRadius: 22.5
+    Flags: 65584
+}
+Intersection {
+    # curve start locator: 'Nav_Point_38'
+    InterCurveID: 10
+    InterPosition: 0.0
+    InterRadius: 22.5
+    Flags: 0
+}
+Intersection {
+    # curve start locator: 'Nav_Point_38'
+    InterCurveID: 13
+    InterPosition: 0.0
+    InterRadius: 22.5
+    Flags: 0
+}
+Intersection {
+    # curve start locator: 'Nav_Point_23'
+    InterCurveID: 15
+    InterPosition: 0.0
+    InterRadius: 10.0
+    Flags: 65568
+}
+Intersection {
+    # curve start locator: 'Nav_Point_23'
+    InterCurveID: 23
+    InterPosition: 0.0
+    InterRadius: 10.0
+    Flags: 0
+}
+Intersection {
+    # curve start locator: 'Nav_Point_46'
+    InterCurveID: 1
+    InterPosition: 0.0
+    InterRadius: 0.0
+    Flags: 65568
+}
+Intersection {
+    # curve start locator: 'Nav_Point_46'
+    InterCurveID: 3
+    InterPosition: 0.0
+    InterRadius: 0.0
+    Flags: 0
+}
+Intersection {
+    # curve start locator: 'Nav_Point_32'
+    InterCurveID: 16
+    InterPosition: 0.869032
+    InterRadius: 15.2
+    Flags: 131104
+}
+Intersection {
+    # curve start locator: 'Nav_Point_24'
+    InterCurveID: 27
+    InterPosition: 32.04461
+    InterRadius: 15.2
+    Flags: 0
+}
+Intersection {
+    # curve start locator: 'Nav_Point_4'
+    InterCurveID: 0
+    InterPosition: 26.295732
+    InterRadius: 22.9
+    Flags: 131120
+}
+Intersection {
+    # curve start locator: 'Nav_Point_15'
+    InterCurveID: 18
+    InterPosition: 19.602906
+    InterRadius: 22.9
+    Flags: 0
+}
+Intersection {
+    # curve start locator: 'Nav_Point_13'
+    InterCurveID: 29
+    InterPosition: 17.451673
+    InterRadius: 22.9
+    Flags: 0
+}
+Intersection {
+    # curve start locator: 'Nav_Point_31'
+    InterCurveID: 11
+    InterPosition: 15.565868
+    InterRadius: 0.0
+    Flags: 131104
+}
+Intersection {
+    # curve start locator: 'Nav_Point_51'
+    InterCurveID: 14
+    InterPosition: 13.571623
+    InterRadius: 0.0
+    Flags: 0
+}
+Intersection {
+    # curve start locator: 'Nav_Point_17'
+    InterCurveID: 6
+    InterPosition: 25.669712
+    InterRadius: 24.2
+    Flags: 131120
+}
+Intersection {
+    # curve start locator: 'Nav_Point_36'
+    InterCurveID: 17
+    InterPosition: 0.695226
+    InterRadius: 24.2
+    Flags: 0
+}
+Intersection {
+    # curve start locator: 'Nav_Point_10'
+    InterCurveID: 25
+    InterPosition: 24.826376
+    InterRadius: 24.2
+    Flags: 0
+}
+Intersection {
+    # curve start locator: 'Nav_Point_48'
+    InterCurveID: 2
+    InterPosition: 5.297909
+    InterRadius: 4.6
+    Flags: 32
+}
+Intersection {
+    # curve start locator: 'Nav_Point_10'
+    InterCurveID: 25
+    InterPosition: 1.797812
+    InterRadius: 4.6
+    Flags: 0
+}
+Intersection {
+    # curve start locator: 'Nav_Point_15'
+    InterCurveID: 18
+    InterPosition: 2.699732
+    InterRadius: 5.4
+    Flags: 32
+}
+Intersection {
+    # curve start locator: 'Nav_Point_6'
+    InterCurveID: 19
+    InterPosition: 2.480535
+    InterRadius: 5.4
+    Flags: 0
+}
+Intersection {
+    # curve start locator: 'Nav_Point_2'
+    InterCurveID: 24
+    InterPosition: 8.940101
+    InterRadius: 6.7
+    Flags: 32
+}
+Intersection {
+    # curve start locator: 'Nav_Point_24'
+    InterCurveID: 27
+    InterPosition: 14.871117
+    InterRadius: 6.7
+    Flags: 0
+}
+Intersection {
+    # curve start locator: 'Nav_Point_6'
+    InterCurveID: 19
+    InterPosition: 8.833657
+    InterRadius: 4.8
+    Flags: 32
+}
+Intersection {
+    # curve start locator: 'Nav_Point_24'
+    InterCurveID: 27
+    InterPosition: 7.584163
+    InterRadius: 4.8
+    Flags: 0
+}
+Intersection {
+    # curve start locator: 'Nav_Point_6'
+    InterCurveID: 19
+    InterPosition: 6.344028
+    InterRadius: 4.4
+    Flags: 32
+}
+Intersection {
+    # curve start locator: 'Nav_Point_13'
+    InterCurveID: 29
+    InterPosition: 3.302213
+    InterRadius: 4.4
+    Flags: 0
+}
+Intersection {
+    # curve start locator: 'Nav_Point_44'
+    InterCurveID: 21
+    InterPosition: 6.131821
+    InterRadius: 4.1
+    Flags: 32
+}
+Intersection {
+    # curve start locator: 'Nav_Point_24'
+    InterCurveID: 27
+    InterPosition: 16.637784
+    InterRadius: 4.1
+    Flags: 0
+}
+Intersection {
+    # curve start locator: 'Nav_Point_44'
+    InterCurveID: 21
+    InterPosition: 7.387177
+    InterRadius: 4.2
+    Flags: 32
+}
+Intersection {
+    # curve start locator: 'Nav_Point_2'
+    InterCurveID: 24
+    InterPosition: 7.266315
+    InterRadius: 4.2
+    Flags: 0
+}
+Intersection {
+    # curve start locator: 'Nav_Point_48'
+    InterCurveID: 2
+    InterPosition: 7.494454
+    InterRadius: 4.6
+    Flags: 32
+}
+Intersection {
+    # curve start locator: 'Nav_Point_24'
+    InterCurveID: 27
+    InterPosition: 12.088385
+    InterRadius: 4.6
+    Flags: 0
+}
+

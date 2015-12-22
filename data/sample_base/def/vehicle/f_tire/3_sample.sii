@@ -9,5 +9,9 @@ accessory_wheel_data : 3_sample.ftire
 	icon: "f_tire_03"
 	front_wheel:true
 	look: goodyears
+
+	roll_resistance: 4.5
+	wet_grip: 1.05
+	noise_volume: 72
 }
 }

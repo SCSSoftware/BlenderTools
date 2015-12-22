@@ -117,6 +117,8 @@ def _fill_part_sections(locator_list, used_parts):
 
     :param locator_list: list of Blender Objects - only 'Empty' typs, set as 'SCS Model Locators'
     :type locator_list: list
+    :param used_parts: parts transitional structure for storing used parts inside this PIC export
+    :type used_parts: io_scs_tools.exp.transition_structs.parts.PartsTrans
     :return: list of 'part_sections'
     :rtype: list
     """
@@ -135,24 +137,30 @@ def _fill_part_sections(locator_list, used_parts):
             parts.append(scs_part)
 
     # PART SECTIONS
-    part_sections = {}
-    for part_name in parts:
+    ordered_part_sections = []
+    for part_name in used_parts.get_as_list():
 
-        # PIECE COUNT
         piece_count = 0
-        # PIECES
         pieces = None
-
-        # LOCATOR COUNT
         locator_count = 0
-        if part_name in locator_parts:
-            locator_count = len(locator_parts[part_name])
-
-        # LOCATORS
         locators = None
-        if part_name in locator_parts:
-            if locator_parts[part_name]:
-                locators = locator_parts[part_name]
+
+        # fill up part data from PIC data
+        if part_name in parts:
+
+            # PIECE COUNT
+            piece_count = 0
+            # PIECES
+            pieces = None
+
+            # LOCATOR COUNT
+            if part_name in locator_parts:
+                locator_count = len(locator_parts[part_name])
+            # LOCATORS
+            locators = None
+            if part_name in locator_parts:
+                if locator_parts[part_name]:
+                    locators = locator_parts[part_name]
 
         # MAKE SECTION
         part_section = _SectionData("Part")
@@ -161,25 +169,7 @@ def _fill_part_sections(locator_list, used_parts):
         part_section.props.append(("LocatorCount", locator_count))
         part_section.props.append(("Pieces", pieces))
         part_section.props.append(("Locators", locators))
-        part_sections[part_name] = part_section
-
-        # add this part to used parts dictionary
-        if part_name not in used_parts:
-            used_parts[part_name] = 1
-
-    # add parts from PIM file which are not yet addded
-    ordered_part_sections = []
-    for part_name in used_parts.keys():
-        if part_name in part_sections:
-            ordered_part_sections.append(part_sections[part_name])
-        else:
-            part_section = _SectionData("Part")
-            part_section.props.append(("Name", part_name))
-            part_section.props.append(("PieceCount", 0))
-            part_section.props.append(("LocatorCount", 0))
-            part_section.props.append(("Pieces", None))
-            part_section.props.append(("Locators", None))
-            ordered_part_sections.append(part_section)
+        ordered_part_sections.append(part_section)
 
     return ordered_part_sections
 
@@ -281,14 +271,10 @@ def export(collision_locator_list, filepath, filename, used_parts):
     :type filepath:
     :param filename:
     :type filename:
-    :param used_parts: dictionary of used parts for current game object (it will get extended if some part from pic is not yet in)
-    :type: dict
-    :return:
-    :rtype:
+    :param used_parts: parts transitional structure for storing used parts inside this PIC export
+    :type used_parts: io_scs_tools.exp.transition_structs.parts.PartsTrans
     """
-    # scene = context.scene
     scs_globals = _get_scs_globals()
-    # output_type = scs_globals.output_type  # TODO: UNUSED!
 
     print("\n************************************")
     print("**      SCS PIC Exporter          **")

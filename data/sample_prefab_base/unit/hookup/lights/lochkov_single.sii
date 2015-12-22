@@ -1,0 +1,18 @@
+SiiNunit
+{
+light_source : lochkov.single
+{
+	ambient_color: (0.0000, 0.0000, 0.0000)
+	diffuse_color: (0.9047, 0.8632, 0.6038)
+	specular_color: (0.9911, 0.9911, 0.9387)
+
+	range: 19.0
+	cut_range: 17.0
+	inner_angle: 80.0
+	outer_angle: 120.0
+
+	dir_type: all
+	model: "/model/flare/lamp_flare.pmd"
+	scale_factor: 2
+}
+}

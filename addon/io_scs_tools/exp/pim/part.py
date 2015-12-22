@@ -22,22 +22,22 @@ from io_scs_tools.internals.structure import SectionData as _SectionData
 
 
 class Part:
-    _name = ""
-    _piece_count = 0
-    _locator_count = 0
+    __name = ""
+    __piece_count = 0
+    __locator_count = 0
 
-    _pieces = {}  # references to Piece classes used in this part
-    _locators = {}  # references to Locator classes used in this part
+    __pieces = {}  # references to Piece classes used in this part
+    __locators = {}  # references to Locator classes used in this part
 
-    _global_part_counter = 0
+    __global_part_counter = 0
 
     @staticmethod
     def reset_counter():
-        Part._global_part_counter = 0
+        Part.__global_part_counter = 0
 
     @staticmethod
     def get_global_material_count():
-        return Part._global_part_counter
+        return Part.__global_part_counter
 
     def __init__(self, name):
         """Constructor for part with it's name.
@@ -45,11 +45,11 @@ class Part:
         :param name: name of the part
         :type name: str
         """
-        self._pieces = {}
-        self._locators = {}
+        self.__pieces = {}
+        self.__locators = {}
 
-        self._name = name
-        Part._global_part_counter += 1
+        self.__name = name
+        Part.__global_part_counter += 1
 
     def add_piece(self, piece):
         """Adds piece to part.
@@ -60,10 +60,10 @@ class Part:
         :return: True if piece was added; False otherwise
         :rtype: bool
         """
-        if piece.get_index() in self._pieces:
+        if piece.get_index() in self.__pieces:
             return False
 
-        self._pieces[piece.get_index()] = piece
+        self.__pieces[piece.get_index()] = piece
         return True
 
     def add_locator(self, locator):
@@ -74,10 +74,10 @@ class Part:
         :return: True if locator was added; False otherwise
         :rtype: bool
         """
-        if locator.get_index() in self._locators:
+        if locator.get_index() in self.__locators:
             return False
 
-        self._locators[locator.get_index()] = locator
+        self.__locators[locator.get_index()] = locator
         return True
 
     def get_as_section(self):
@@ -87,21 +87,20 @@ class Part:
         """
 
         # update counters first
-        self._piece_count = len(self._pieces)
-        self._locator_count = len(self._locators)
+        self.__piece_count = len(self.__pieces)
+        self.__locator_count = len(self.__locators)
 
         section = _SectionData("Part")
-        section.props.append(("Name", self._name))
-        section.props.append(("PieceCount", self._piece_count))
-        section.props.append(("LocatorCount", self._locator_count))
-        if self._piece_count == 0:
+        section.props.append(("Name", self.__name))
+        section.props.append(("PieceCount", self.__piece_count))
+        section.props.append(("LocatorCount", self.__locator_count))
+        if self.__piece_count == 0:
             section.props.append(("Pieces", None))
         else:
-            section.props.append(("Pieces", list(self._pieces.keys())))
-        if self._locator_count == 0:
+            section.props.append(("Pieces", list(self.__pieces.keys())))
+        if self.__locator_count == 0:
             section.props.append(("Locators", None))
         else:
-            section.props.append(("Locators", list(self._locators.keys())))
+            section.props.append(("Locators", list(self.__locators.keys())))
 
         return section
-

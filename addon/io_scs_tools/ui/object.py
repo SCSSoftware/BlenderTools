@@ -23,6 +23,7 @@ import os
 import bpy
 from bpy.types import Panel
 from io_scs_tools.consts import Operators as _OP_consts
+from io_scs_tools.consts import PrefabLocators as _PL_consts
 from io_scs_tools.internals.connections.wrappers import group as _connections_group_wrapper
 from io_scs_tools.utils import object as _object_utils
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
@@ -168,7 +169,7 @@ def _draw_locator_preview_panel(layout, obj, draw_box=True):
     row.prop(obj.scs_props, 'locator_preview_model_type', icon='NONE')
 
 
-def _draw_locator_panel(layout, context, scene, obj):
+def _draw_locator_panel(layout, context, scene, obj, enabled=True):
     """Draw Locator Settings Panel.
 
     :param layout: Blender UI Layout to draw to
@@ -179,12 +180,9 @@ def _draw_locator_panel(layout, context, scene, obj):
     :type scene: bpy.types.Scene
     :param obj: SCS Locator Object
     :type obj: bpy.types.Object
+    :param enabled: if locator type selecting shall be disabled
+    :type enabled: bool
     """
-
-    group_name = "SCS_connection_numbers"
-    nav_curve_data_name = "nav_curves_used_numbers"
-    map_line_data_name = "map_lines_used_numbers"
-    tp_line_data_name = "tp_lines_used_numbers"
 
     layout_box = layout.box()
     if scene.scs_props.locator_settings_expand:
@@ -192,6 +190,7 @@ def _draw_locator_panel(layout, context, scene, obj):
         loc_header.prop(scene.scs_props, 'locator_settings_expand', text="Locator Settings:", icon='TRIA_DOWN', icon_only=True, emboss=False)
         loc_header.label('')
         row = layout_box.row()
+        row.enabled = enabled
         row.prop(obj.scs_props, 'locator_type', icon='NONE')
 
         # MODEL LOCATORS
@@ -257,14 +256,41 @@ def _draw_locator_panel(layout, context, scene, obj):
         # PREFAB LOCATORS
         elif obj.scs_props.locator_type == 'Prefab':
             box_row = layout_box.row()
+            box_row.enabled = enabled
             box_row.prop(obj.scs_props, 'locator_prefab_type', icon='NONE')
             box_row = layout_box.row()
             box_row_box = box_row.box()
             if obj.scs_props.locator_prefab_type == 'Control Node':
                 loc_set = box_row_box.row()
                 loc_set.prop(obj.scs_props, 'locator_prefab_con_node_index', icon='NONE')
-                loc_set = box_row_box.row()
-                loc_set.operator('object.assign_terrain_points', text="Assign Terrain Points")
+
+                loc_set_col = box_row_box.column(align=True)
+                loc_set = loc_set_col.row(align=True)
+
+                if not _object_utils.can_assign_terrain_points(context):
+                    _shared.draw_warning_operator(
+                        loc_set,
+                        "Assigning Terrain Points",
+                        str("To be able to assign terrain points you have to:\n"
+                            "1. Select 'Control Node' locator and mesh object from which vertices you want to use as terrain points\n"
+                            "2. Make sure that mesh object was selected last\n"
+                            "3. Switch to 'Edit Mode'"),
+                        icon="INFO"
+                    )
+
+                loc_set.operator('object.assign_terrain_points')
+
+                loc_set = loc_set_col.row(align=True)
+                loc_set.operator('object.clear_all_terrain_points')
+
+                loc_set = box_row_box.row(align=True).split(percentage=0.5, align=True)
+                loc_set.label("Preview Terrain Points:", icon="VISIBLE_IPO_ON")
+                props = loc_set.operator('object.preview_terrain_points', text="Visible")
+                props.preview_all = False
+                props = loc_set.operator('object.preview_terrain_points', text="All")
+                props.preview_all = True
+                loc_set.operator('object.abort_preview_terrain_points', text="Abort")
+
             if obj.scs_props.locator_prefab_type == 'Sign':
                 loc_set = box_row_box.column()
                 loc_set.prop_search(obj.scs_props, 'locator_prefab_sign_model', _get_scs_globals(), 'scs_sign_model_inventory',
@@ -285,63 +311,34 @@ def _draw_locator_panel(layout, context, scene, obj):
                     loc_set_col.enabled = False
                 else:
                     loc_set_col.enabled = True
-                loc_set = loc_set_col.row()
-                loc_set.separator()
                 loc_set = loc_set_col.row(align=True)
-                if obj.scs_props.locator_prefab_tsem_type == '6':
-                    loc_set.label('Distances:', icon='NONE')
-                    loc_set.prop(obj.scs_props, 'locator_prefab_tsem_gm', icon='NONE')
-                    loc_set.prop(obj.scs_props, 'locator_prefab_tsem_om1', icon='NONE')
-                    loc_set.prop(obj.scs_props, 'locator_prefab_tsem_rm', icon='NONE')
-                    # loc_set.prop(obj.scs_props, 'locator_prefab_tsem_om2', icon='NONE')
-                else:
-                    loc_set.label('Intervals:', icon='NONE')
-                    loc_set.prop(obj.scs_props, 'locator_prefab_tsem_gs', icon='NONE')
-                    loc_set.prop(obj.scs_props, 'locator_prefab_tsem_os1', icon='NONE')
-                    loc_set.prop(obj.scs_props, 'locator_prefab_tsem_rs', icon='NONE')
-                    loc_set.prop(obj.scs_props, 'locator_prefab_tsem_os2', icon='NONE')
+                loc_set.label('Intervals/Distances:', icon='NONE')
+                loc_set = loc_set_col.row(align=True)
+                loc_set.prop(obj.scs_props, 'locator_prefab_tsem_gs', icon='NONE')
+                loc_set.prop(obj.scs_props, 'locator_prefab_tsem_os1', icon='NONE')
+                loc_set.prop(obj.scs_props, 'locator_prefab_tsem_rs', icon='NONE')
+                loc_set.prop(obj.scs_props, 'locator_prefab_tsem_os2', icon='NONE')
+
                 loc_set = loc_set_col.row()
                 loc_set.prop(obj.scs_props, 'locator_prefab_tsem_cyc_delay', icon='NONE')
-                # loc_set = box_row_box.row()
-                # loc_set.prop(obj.scs_props, 'locator_prefab_tsem_activation', icon='NONE')
-                # loc_set = box_row_box.row()
-                # loc_set.prop(obj.scs_props, 'locator_prefab_tsem_ai_only', icon='NONE')
-            # if obj.scs_props.locator_prefab_type == 'cob':
-            # loc_set = box_row_box.row()
-            # loc_set.prop(obj.scs_props, 'locator_prefab_colbox_size', icon='NONE')
-            # loc_set = box_row_box.row()
-            # loc_set.label('Colbox Size:', icon='NONE')
-            # loc_set.prop(obj.scs_props, 'locator_prefab_colbox_size_w', icon='NONE')
-            # loc_set.prop(obj.scs_props, 'locator_prefab_colbox_size_h', icon='NONE')
-            # loc_set.prop(obj.scs_props, 'locator_prefab_colbox_size_d', icon='NONE')
+
             if obj.scs_props.locator_prefab_type == 'Navigation Point':
                 loc_set = box_row_box.column(align=True)
 
-                loc_set_row = loc_set.row()
-                loc_set_row.prop(obj.scs_props, 'locator_prefab_np_stopper', icon='NONE')
+                loc_bools_col = loc_set.column(align=True)
+                loc_set_row = loc_bools_col.row()
                 loc_set_row.prop(obj.scs_props, 'locator_prefab_np_low_probab', icon='NONE')
-                loc_set_row = loc_set.row()
                 loc_set_row.prop(obj.scs_props, 'locator_prefab_np_add_priority', icon='NONE')
-
-                # loc_set_row = loc_set.row()
-                # loc_set_row.prop(obj.scs_props, 'locator_prefab_np_tl_activ', icon='NONE')
-                # loc_set_row.prop(obj.scs_props, 'locator_prefab_np_low_prior', icon='NONE')
-                # loc_set_row = loc_set.row()
-                # loc_set_row.prop(obj.scs_props, 'locator_prefab_np_ig_blink_prior', icon='NONE')
-                # loc_set_row.prop(obj.scs_props, 'locator_prefab_np_crossroad', icon='NONE')
-                # loc_set_row = loc_set.row()
-                # loc_set_row.prop(obj.scs_props, 'locator_prefab_np_stopper', icon='NONE')
-                # loc_set_row.prop(obj.scs_props, 'locator_prefab_np_low_probab', icon='NONE')
+                loc_set_row = loc_bools_col.row()
+                loc_set_row.prop(obj.scs_props, 'locator_prefab_np_limit_displace', icon='NONE')
 
                 loc_set = box_row_box.row()
                 loc_set.prop(obj.scs_props, 'locator_prefab_np_allowed_veh', icon='NONE')
-                # loc_set = box_row_box.row()
-                # loc_set.prop(obj.scs_props, 'locator_prefab_np_speed_limit', icon='NONE')
                 loc_set = box_row_box.row()
                 loc_set.prop(obj.scs_props, 'locator_prefab_np_blinker', icon='NONE', expand=True)
                 loc_set = box_row_box.column()
-                loc_set.prop(obj.scs_props, 'locator_prefab_np_priority_mask', icon='NONE')
-                loc_set.prop(obj.scs_props, 'locator_prefab_np_traffic_light', icon='NONE')
+                loc_set.prop(obj.scs_props, 'locator_prefab_np_priority_modifier', icon='NONE')
+                loc_set.prop(obj.scs_props, 'locator_prefab_np_traffic_semaphore', icon='NONE')
                 loc_set.prop_search(obj.scs_props, 'locator_prefab_np_traffic_rule', _get_scs_globals(),
                                     'scs_traffic_rules_inventory', icon='NONE')
                 loc_set.prop(obj.scs_props, 'locator_prefab_np_boundary', icon='NONE')
@@ -375,28 +372,33 @@ def _draw_locator_panel(layout, context, scene, obj):
             # loc_set = box_row_box.row()
             # loc_set.label('?', icon='QUESTION')
             if obj.scs_props.locator_prefab_type == 'Map Point':
+
+                is_polygon = int(obj.scs_props.locator_prefab_mp_road_size) == _PL_consts.MPVF.ROAD_SIZE_MANUAL
+
                 loc_set = box_row_box.column(align=True)
                 loc_set_row = loc_set.row()
                 loc_set_row.prop(obj.scs_props, 'locator_prefab_mp_road_over', icon='NONE')
                 loc_set_row.prop(obj.scs_props, 'locator_prefab_mp_no_outline', icon='NONE')
                 loc_set_row = loc_set.row()
+                loc_set_row.active = not is_polygon
                 loc_set_row.prop(obj.scs_props, 'locator_prefab_mp_no_arrow', icon='NONE')
                 loc_set_row.prop(obj.scs_props, 'locator_prefab_mp_prefab_exit', icon='NONE')
+
                 loc_set = box_row_box.column()
-                loc_set.prop(obj.scs_props, 'locator_prefab_mp_road_size', icon='NONE')
-                loc_set.prop(obj.scs_props, 'locator_prefab_mp_road_offset', icon='NONE')
-                loc_set.prop(obj.scs_props, 'locator_prefab_mp_custom_color', icon='NONE')
-                loc_set.prop(obj.scs_props, 'locator_prefab_mp_assigned_node', icon='NONE')
-                loc_set = box_row_box.column(align=True)
-                loc_set.label('Destination Nodes:', icon='NONE')
                 loc_set_row = loc_set.row()
-                loc_set_row.prop(obj.scs_props, 'locator_prefab_mp_des_nodes_0', icon='NONE')
-                loc_set_row.prop(obj.scs_props, 'locator_prefab_mp_des_nodes_2', icon='NONE')
+                loc_set_row.prop(obj.scs_props, 'locator_prefab_mp_road_size', icon='NONE')
                 loc_set_row = loc_set.row()
-                loc_set_row.prop(obj.scs_props, 'locator_prefab_mp_des_nodes_1', icon='NONE')
-                loc_set_row.prop(obj.scs_props, 'locator_prefab_mp_des_nodes_3', icon='NONE')
+                loc_set_row.active = not is_polygon
+                loc_set_row.prop(obj.scs_props, 'locator_prefab_mp_road_offset', icon='NONE')
                 loc_set_row = loc_set.row()
-                loc_set_row.prop(obj.scs_props, 'locator_prefab_mp_des_nodes_ct', icon='NONE')
+                loc_set_row.active = is_polygon
+                loc_set_row.prop(obj.scs_props, 'locator_prefab_mp_custom_color', icon='NONE')
+                loc_set_row = loc_set.row()
+                loc_set_row.active = not is_polygon
+                loc_set_row.prop(obj.scs_props, 'locator_prefab_mp_assigned_node', icon='NONE')
+                loc_set_row = loc_set.row()
+                loc_set_row.active = not is_polygon and obj.scs_props.locator_prefab_mp_assigned_node == "0"
+                loc_set_row.prop_menu_enum(obj.scs_props, 'locator_prefab_mp_dest_nodes')
 
                 loc_set = box_row_box.row()
                 if len(context.selected_objects) == 2:
@@ -420,7 +422,9 @@ def _draw_locator_panel(layout, context, scene, obj):
 
             if obj.scs_props.locator_prefab_type == 'Trigger Point':
                 loc_set = box_row_box.row()
-                loc_set.prop(obj.scs_props, 'locator_prefab_tp_action', icon='NONE')
+                loc_set.prop_search(obj.scs_props, 'locator_prefab_tp_action',
+                                    _get_scs_globals(), 'scs_trigger_actions_inventory',
+                                    icon='NONE')
                 loc_set = box_row_box.column(align=True)
                 loc_set.prop(obj.scs_props, 'locator_prefab_tp_range', icon='NONE')
                 loc_set.prop(obj.scs_props, 'locator_prefab_tp_reset_delay', icon='NONE')
@@ -866,7 +870,7 @@ def _draw_part_list_for_variant(layout, scene, variant):
     :param scene: Blender Scene
     :type scene: bpy.types.Scene
     :param variant: Variant from the SCS Root Object
-    :type variant: io_scs_tools.ObjectVariantInventory
+    :type variant: io_scs_tools.properties.object.ObjectVariantInventoryItem
     """
     if scene.scs_props.part_list_sorted:
         inventory_names = []
@@ -888,7 +892,7 @@ def _draw_vertical_variant_block(layout, scene, variant):
     :param scene: Blender Scene
     :type scene: bpy.types.Scene
     :param variant: Variant from the SCS Root Object
-    :type variant: io_scs_tools.ObjectVariantInventory
+    :type variant: io_scs_tools.properties.object.ObjectVariantInventoryItem
     """
     layout_box = layout.box()
     row = layout_box.row()
@@ -924,7 +928,7 @@ def _draw_horizontal_scs_variant_block(layout, variant):
     :param layout: Blender UI Layout to draw to
     :type layout: bpy.types.UILayout
     :param variant: Variant from the SCS Root Object
-    :type variant: io_scs_tools.ObjectVariantInventory
+    :type variant: io_scs_tools.properties.object.ObjectVariantInventoryItem
     """
     box = layout.box()
     row = box.row()
@@ -989,7 +993,7 @@ def _draw_scs_root_panel(layout, scene, obj):
         row.label('')
 
 
-def _draw_empty_object_panel(layout, context, scene, obj):
+def _draw_empty_object_panel(layout, context, scene, obj, enabled=True):
     """Creates 'Empty Object' settings sub-panel.
 
     :param layout: Blender UI Layout to draw to
@@ -1000,6 +1004,8 @@ def _draw_empty_object_panel(layout, context, scene, obj):
     :type scene: bpy.types.Scene
     :param obj: Blender Empty Object
     :type obj: bpy.types.Object
+    :param enabled: if locator type selecting shall be disabled
+    :type enabled: bool
     """
     layout_column = layout.column(align=True)
     box = layout_column.box()
@@ -1009,6 +1015,7 @@ def _draw_empty_object_panel(layout, context, scene, obj):
         row.label('')
         box = layout_column.box()
         row = box.row()
+        row.enabled = enabled
         row.prop(obj.scs_props, 'empty_object_type', text="Object Type", icon='NONE')
 
         # SCS ROOT PANEL
@@ -1017,7 +1024,7 @@ def _draw_empty_object_panel(layout, context, scene, obj):
 
         # LOCATOR PANEL
         elif obj.scs_props.empty_object_type == 'Locator':
-            _draw_locator_panel(box, context, scene, obj)
+            _draw_locator_panel(box, context, scene, obj, enabled=enabled)
     else:
         row = box.row()
         row.prop(scene.scs_props, 'empty_object_settings_expand', text="SCS Objects:", icon='TRIA_RIGHT', icon_only=True, emboss=False)
@@ -1247,6 +1254,8 @@ class SCSTools(_ObjectPanelBlDefs, Panel):
         layout = self.layout
         scene = context.scene
         obj = context.object
+        other_obj = _object_utils.get_other_object(context.selected_objects, obj)
+
         # print('obj:   %s\t- %s' % (obj, context.object))
 
         # ##   SCS OBJECT SPECIALS PANEL   ################
@@ -1273,6 +1282,9 @@ class SCSTools(_ObjectPanelBlDefs, Panel):
 
                 # SCS LOOK PANEL
                 _shared.draw_scs_looks_panel(layout, scene, obj, scs_root_obj)
+
+            if _object_utils.can_assign_terrain_points(context):
+                _draw_empty_object_panel(layout, context, scene, other_obj, enabled=False)
 
         # EMPTY OBJECT PANEL
         if obj.type == 'EMPTY':

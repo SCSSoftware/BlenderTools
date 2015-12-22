@@ -2,8 +2,11 @@ SiiNunit
 {
 flare_vehicle: flare.vehicle.whiteledl
 {
-	dir_type: wide
 	light_type: parking
-	model: "/model/flare/vehicle_white_led_l.pmd"
+  
+  dir_type: angle
+  flare_inner_angle: 40.0
+  flare_outer_angle: 60.0
+	model: "/model/flare/vehicle_white_led_l.pmd" 
 }
 }

@@ -24,7 +24,11 @@ from io_scs_tools.internals.shaders.eut2.dif import Dif
 
 class DifSpec(Dif):
     SPEC_MULT_NODE = "SpecMultiplier"
-    SPEC_SCALE_NODE = "SpecScale"
+
+    @staticmethod
+    def get_name():
+        """Get name of this shader file with full modules path."""
+        return __name__
 
     @staticmethod
     def init(node_tree):
@@ -54,18 +58,8 @@ class DifSpec(Dif):
         spec_mult_n.blend_type = "MULTIPLY"
         spec_mult_n.inputs['Fac'].default_value = 1
 
-        spec_scale_n = node_tree.nodes.new("ShaderNodeMixRGB")
-        spec_scale_n.name = DifSpec.SPEC_SCALE_NODE
-        spec_scale_n.label = DifSpec.SPEC_SCALE_NODE
-        spec_scale_n.location = (start_pos_x + pos_x_shift * 4, start_pos_y + 1900)
-        spec_scale_n.blend_type = "MULTIPLY"
-        spec_scale_n.inputs['Fac'].default_value = 2
-        spec_scale_n.inputs['Color2'].default_value = (2,) * 4
-
         # links creation
         node_tree.links.new(spec_mult_n.inputs['Color2'], base_tex_n.outputs['Value'])
         node_tree.links.new(spec_mult_n.inputs['Color1'], spec_col_n.outputs['Color'])
 
-        node_tree.links.new(spec_scale_n.inputs['Color1'], spec_mult_n.outputs['Color'])
-
-        node_tree.links.new(out_mat_n.inputs['Spec'], spec_scale_n.outputs['Color'])
+        node_tree.links.new(out_mat_n.inputs['Spec'], spec_mult_n.outputs['Color'])

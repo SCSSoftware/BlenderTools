@@ -18,6 +18,8 @@
 
 # Copyright (C) 2013-2014: SCS Software
 
+import os
+from io_scs_tools.internals.containers.tobj import TobjContainer as _TobjContainer
 from io_scs_tools.utils.printout import lprint
 
 
@@ -33,13 +35,30 @@ def export(filepath, texture_name, settings):
     :return: True if file was written successfully; False otherwise
     """
 
-    try:
+    # try to load tobj container from file path
+    # to be able to keep all the settings from before
+    # and overwrite only what settings we support
+    container = None
+    if os.path.isfile(filepath):
+        container = _TobjContainer.read_data_from_file(filepath)
 
-        file = open(filepath, "w", encoding="utf8", newline="\n")
-        fw = file.write
+    # if container for some reason wasn't loaded create new one
+    if container is None:
+        container = _TobjContainer()
+        container.map_type = "2d"
+        if texture_name is not None:
+            container.map_names.append(texture_name)
 
-        # MAP
-        fw("map\t2d\t%s\n" % texture_name)
+    # change settings only on supported 2d texture type
+    if container.map_type == "2d":
+
+        # MAP NAMES
+        # try to change map names with current texture name
+        # otherwise add new value
+        if len(container.map_names) > 0:
+            container.map_names[0] = texture_name
+        elif texture_name is not None:
+            container.map_names.append(texture_name)
 
         # ADDR
         if "u_repeat" in settings:
@@ -52,26 +71,15 @@ def export(filepath, texture_name, settings):
         else:
             addr_v = "clamp_to_edge"
 
-        fw("addr\t%s\t%s\n" % (addr_u, addr_v))
+        container.addr.clear()
+        container.addr.append(addr_u)
+        container.addr.append(addr_v)
 
         # USAGE
-        if "tsnormal" in settings:
-            fw("usage\ttsnormal\n")
+        container.usage = "tsnormal" if "tsnormal" in settings else ""
 
-        # NO MIPS
-        if "nomips" in settings:
-            fw("nomips\n")
+    else:
 
-        # NO COMPRESS
-        if "nocompress" in settings:
-            fw("nocompress\n")
+        lprint("D Ignoring TOBJ settings save as TOBJ is featuring non 2d map type!")
 
-        file.close()
-
-        return True
-
-    except IOError:
-
-        lprint("W Can't write TOBJ file into path:\n\t   %r", (filepath,))
-
-    return False
+    return container.write_data_to_file(filepath)

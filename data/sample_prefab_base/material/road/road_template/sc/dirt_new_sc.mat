@@ -1,0 +1,16 @@
+material : "eut2.dif.spec.weight.mult2"
+{
+	texture[0] : "dirt_new_sc.tobj"
+	texture_name[0] : "texture_base"
+	texture[1] : "asphalt_new_sc.tobj"
+	texture_name[1] : "texture_mult"
+	substance : "road"
+	aux[5] : { 4.4, 12.0 }
+
+	specular : { 1, 1, 1 }
+	shininess : 40
+
+	reflection: 1.3
+}
+
+

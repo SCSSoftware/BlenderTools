@@ -30,7 +30,7 @@ accessory_chassis_data : 4x2.man.tgx.sample.chassis
 	powered_wheel[3]: true	# rear wheel right
 	kerb_weight[0]:	5000.1
 	kerb_weight[1]:	1900.1
-
+  
   defaults[]: "/def/vehicle/truck/man.tgx.sample/chs_badges/chs_badges_18.sii"
 }
 }

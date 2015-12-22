@@ -1,2 +1,2 @@
-map	2d	lamp_mask.tga
+map	2d	lamp_mask.tga	
 addr	clamp_to_edge	clamp_to_edge

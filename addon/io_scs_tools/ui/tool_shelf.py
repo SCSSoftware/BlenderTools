@@ -22,9 +22,9 @@ from bpy.types import Panel
 from io_scs_tools.consts import Icons as _ICONS_consts
 from io_scs_tools.consts import Operators as _OP_consts
 from io_scs_tools.consts import LampTools as _LT_consts
+from io_scs_tools.internals.icons import get_icon
 from io_scs_tools.ui import shared as _shared
 from io_scs_tools.utils import object as _object_utils
-from io_scs_tools.internals.icons.wrapper import get_icon
 
 _ICON_TYPES = _ICONS_consts.Types
 
@@ -204,8 +204,8 @@ class SCSToolsVisibility(_ToolShelfBlDefs, Panel):
             props.view_type = _OP_consts.ViewType.viewonly
             props = row1.operator('object.switch_glass_objects_visibility', text='', icon_value=get_icon(_ICON_TYPES.mesh_glass))
             props.view_type = _OP_consts.ViewType.viewonly
-            # TODO: Material Physics - has it sense?
-            row1.operator('object.blank_operator', text='', icon_value=get_icon(_ICON_TYPES.mesh_with_physics))
+            props = row1.operator('object.switch_substance_objects_visibility', text='', icon_value=get_icon(_ICON_TYPES.mesh_with_physics))
+            props.view_type = _OP_consts.ViewType.viewonly
             row2 = col.row(align=True)
             row2.alignment = 'CENTER'
             props = row2.operator('object.switch_all_locators_visibility', text='', icon_value=get_icon(_ICON_TYPES.loc))

@@ -1,0 +1,10 @@
+SiiNunit
+{
+sign_overlay : sign.road_1s
+{
+	model_type: road
+	board_index: 1
+	scale: 0.85
+}
+
+}

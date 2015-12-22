@@ -21,11 +21,10 @@
 bl_info = {
     "name": "SCS Tools",
     "description": "Setup models, Import-Export SCS data format",
-    "author": "Milos Zajic (4museman), Simon Lusenc (50keda)",
-    "version": (0, 6, "792edf5"),
-    "blender": (2, 73, 0),
+    "author": "Simon Lusenc (50keda), Milos Zajic (4museman)",
+    "version": (1, 0, "76261ad"),
+    "blender": (2, 75, 0),
     "location": "File > Import-Export",
-    "warning": "WIP - beta version, doesn't include all features!",
     "wiki_url": "https://github.com/SCSSoftware/BlenderTools/wiki",
     "tracker_url": "http://forum.scssoft.com/viewforum.php?f=165",
     "support": "COMMUNITY",
@@ -51,11 +50,10 @@ from bpy_extras.io_utils import ImportHelper, ExportHelper
 from io_scs_tools.imp import pix as _pix_import
 from io_scs_tools.internals.callbacks import open_gl as _open_gl_callback
 from io_scs_tools.internals.callbacks import persistent as _persistent_callback
+from io_scs_tools.internals.icons import release_icons_data
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
 from io_scs_tools.utils.view3d import switch_layers_visibility as _switch_layers_visibility
 from io_scs_tools.utils.printout import lprint
-
-
 # importing all SCS Tools modules which creates panels in UI
 from io_scs_tools import ui
 from io_scs_tools import operators
@@ -97,15 +95,15 @@ class ImportSCS(bpy.types.Operator, ImportHelper):
             paths.append(self.path)
 
         failed_files = []
-        for self.filepath in paths:
+        for filepath in paths:
 
             result = False
-            if self.filepath.endswith("pim"):
+            if filepath.endswith("pim"):
 
                 try:
 
                     _get_scs_globals().import_in_progress = True
-                    result = _pix_import.load(context, self.filepath)
+                    result = _pix_import.load(context, filepath)
                     _get_scs_globals().import_in_progress = False
 
                 except Exception as e:
@@ -117,7 +115,7 @@ class ImportSCS(bpy.types.Operator, ImportHelper):
                     lprint("E Unexpected %r accured during import, see stack trace above.", (type(e).__name__,))
 
             if result is False:
-                failed_files.append(str(self.filepath).replace("\\", "/"))
+                failed_files.append(str(filepath).replace("\\", "/"))
 
         if len(failed_files) > 0:
             err_message = "E Following files failed to load:\n"
@@ -146,35 +144,29 @@ class ImportSCS(bpy.types.Operator, ImportHelper):
 
         box2 = layout.box()
 
-        row = box2.row()
-        row.prop(scs_globals, "import_pim_file", toggle=True)
+        col = box2.column(align=True)
+        col.row().prop(scs_globals, "import_pim_file", toggle=True, icon="FILE_TICK" if scs_globals.import_pim_file else "X")
         if scs_globals.import_pim_file:
-            row = box2.row()
-            row.prop(scs_globals, "use_welding")
+            col.row().prop(scs_globals, "use_normals")
+            col.row().prop(scs_globals, "use_welding")
             if scs_globals.use_welding:
-                row = box2.row()
-                row.prop(scs_globals, "welding_precision")
-        row = box2.row()
-        row.prop(scs_globals, "import_pit_file", toggle=True)
+                col.row().prop(scs_globals, "welding_precision")
+        col.row().separator()
+        col.row().prop(scs_globals, "import_pit_file", toggle=True, icon="FILE_TICK" if scs_globals.import_pit_file else "X")
         if scs_globals.import_pit_file:
-            row = box2.row()
-            row.prop(scs_globals, "load_textures")
-        row = box2.row()
-        row.prop(scs_globals, "import_pic_file", toggle=True)
-        row = box2.row()
-        row.prop(scs_globals, "import_pip_file", toggle=True)
-        row = box2.row()
-        row.prop(scs_globals, "import_pis_file", toggle=True)
+            col.row().prop(scs_globals, "load_textures")
+            col.row().separator()
+        col.row().prop(scs_globals, "import_pic_file", toggle=True, icon="FILE_TICK" if scs_globals.import_pic_file else "X")
+        col.row().separator()
+        col.row().prop(scs_globals, "import_pip_file", toggle=True, icon="FILE_TICK" if scs_globals.import_pip_file else "X")
+        col.row().separator()
+        col.row(align=True).prop(scs_globals, "import_pis_file", toggle=True, icon="FILE_TICK" if scs_globals.import_pis_file else "X")
         if scs_globals.import_pis_file:
-            # row = box2.row()
-            # row.prop(_get_scs_globals(), "connected_bones")
-            row = box2.row()
-            row.prop(scs_globals, "bone_import_scale")
-            row = box2.row()
-            row.prop(scs_globals, "import_pia_file", toggle=True)
+            col.row(align=True).prop(scs_globals, "bone_import_scale")
+            col.row().separator()
+            col.row().prop(scs_globals, "import_pia_file", toggle=True, icon="FILE_TICK" if scs_globals.import_pia_file else "X")
             if scs_globals.import_pia_file:
-                row = box2.row()
-                row.prop(scs_globals, "include_subdirs_for_pia")
+                col.row().prop(scs_globals, "include_subdirs_for_pia")
 
         # SCS Project Path
         box3 = layout.box()
@@ -199,6 +191,7 @@ class ExportSCS(bpy.types.Operator, ExportHelper):
     bl_idname = "export_mesh.pim"
     bl_label = "SCS Export"
     bl_description = "Export complex geometries to the SCS file formats."
+    bl_options = set()
 
     filename_ext = ".pim"
     filter_glob = StringProperty(default=str("*" + filename_ext), options={'HIDDEN'})
@@ -254,7 +247,7 @@ class ExportSCS(bpy.types.Operator, ExportHelper):
             init_obj_list = tuple(bpy.data.objects)
 
         try:
-            result = _export.batch_export(self, init_obj_list, export_type != "selection", filepath)
+            result = _export.batch_export(self, init_obj_list, menu_filepath=filepath)
         except Exception as e:
 
             result = {"CANCELLED"}
@@ -294,36 +287,24 @@ def register():
 
     # PROPERTIES REGISTRATION
     bpy.types.Object.scs_object_look_inventory = CollectionProperty(
-        type=properties.object.ObjectLooksInventory
+        type=properties.object.ObjectLooksInventoryItem
     )
 
     bpy.types.Object.scs_object_part_inventory = CollectionProperty(
-        type=properties.object.ObjectPartInventory
+        type=properties.object.ObjectPartInventoryItem
     )
 
     bpy.types.Object.scs_object_variant_inventory = CollectionProperty(
-        type=properties.object.ObjectVariantInventory
+        type=properties.object.ObjectVariantInventoryItem
     )
 
     bpy.types.Object.scs_object_animation_inventory = CollectionProperty(
-        type=properties.object.ObjectAnimationInventory
+        type=properties.object.ObjectAnimationInventoryItem
     )
 
     bpy.types.World.scs_shader_presets_inventory = CollectionProperty(
-        type=properties.world.SceneShaderPresetsInventory
+        type=properties.world.ShaderPresetsInventoryItem
     )
-
-    # bpy.types.Scene.scs_cgfx_template_inventory = CollectionProperty(
-    # type=scene_props.SceneCgFXTemplateInventory
-    # )
-    #
-    # bpy.types.Scene.scs_cgfx_inventory = CollectionProperty(
-    # type=scene_props.SceneCgFXShaderInventory
-    # )
-    #
-    # bpy.types.Material.scs_cgfx_looks = CollectionProperty(
-    # type=material_props.MaterialCgFXShaderLooks
-    # )
 
     bpy.types.World.scs_globals = PointerProperty(
         name="SCS Tools Global Variables",
@@ -375,6 +356,9 @@ def register():
 
 def unregister():
     bpy.utils.unregister_module(__name__)
+
+    # CUSTOM ICONS CLEANUP
+    release_icons_data()
 
     # REMOVE MENU ENTRIES
     bpy.types.INFO_MT_file_export.remove(menu_func_export)

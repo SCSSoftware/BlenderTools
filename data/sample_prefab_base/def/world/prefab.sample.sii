@@ -1,0 +1,42 @@
+SiiNunit
+{
+
+prefab_model : prefab.sample_0 {
+	model_desc: "/prefab/company/seafood_company_sample.pmd"
+	prefab_desc: "/prefab/company/seafood_company_sample.ppd"
+	category: "sample"
+	use_perlin: false
+}
+
+prefab_model : prefab.sample_1 {
+	model_desc: "/prefab/gas/gas_small_road_sample.pmd"
+	prefab_desc: "/prefab/gas/gas_small_road_sample.ppd"
+	category: "sample"
+	use_perlin: false
+	slow_time: true
+
+}
+
+prefab_model : prefab.sample_2 {
+	model_desc: "/prefab/cross_temp/sample/r1_x_r1_y_tmpl.pmd"
+	prefab_desc: "/prefab/cross_temp/sample/r1_x_r1_y_tmpl.ppd"
+	category: "sample"
+}
+
+prefab_model : prefab.sample_3 {
+	model_desc: "/prefab/cross/road2_x_road1_sample.pmd"
+	prefab_desc: "/prefab/cross/road2_x_road1_sample.ppd"
+	category: "sample"
+}
+
+prefab_model : prefab.sample_4 {
+	model_desc: "/prefab/tollgate/tollgate_sample/tollgate_small.pmd"
+	prefab_desc: "/prefab/tollgate/tollgate_sample/tollgate_small.ppd"
+	category: "sample"
+	use_perlin: false
+	tweak_detail_vegetation: true
+	slow_time: true
+}
+
+}
+

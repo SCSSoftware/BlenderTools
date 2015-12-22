@@ -117,7 +117,7 @@ def load(locator):
         filepath = locator.scs_props.locator_preview_model_path
         if filepath:
             if filepath.lower().endswith(".pim"):
-                abs_filepath = _path_utils.get_abs_path(filepath)
+                abs_filepath = _path_utils.get_abs_path(filepath, skip_mod_check=True)
                 if not os.path.isfile(abs_filepath):
                     lprint("W Locator %r has invalid path to Preview Model PIM file: %r", (locator.name, abs_filepath.replace("\\", "/")))
                     load_model = False
@@ -137,21 +137,7 @@ def load(locator):
         if not obj:
             from io_scs_tools.imp import pim as _pim_import
 
-            obj = _pim_import.load_pim_file(
-                bpy.context,
-                abs_filepath,
-                preview_model=True,
-                looks_and_materials=False,
-                textures=False,
-                uv=False,
-                vc=False,
-                vg=False,
-                weld_smoothed=False,
-                bones=False,
-                shadow_casters=False,
-                create_locators=False,
-                parts_and_variants=False,
-            )
+            obj = _pim_import.load_pim_file(bpy.context, abs_filepath, preview_model=True)
             obj.name = prem_name
             obj.data.name = prem_name
             obj.data.scs_props.locator_preview_model_path = locator.scs_props.locator_preview_model_path

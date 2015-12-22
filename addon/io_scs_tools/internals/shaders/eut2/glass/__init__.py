@@ -18,9 +18,12 @@
 
 # Copyright (C) 2015: SCS Software
 
-from mathutils import Color
 
+from mathutils import Color
+from io_scs_tools.consts import Mesh as _MESH_consts
 from io_scs_tools.internals.shaders.eut2.std_node_groups import add_env
+from io_scs_tools.internals.shaders.eut2.std_node_groups import vcolor_input
+from io_scs_tools.utils import convert as _convert_utils
 
 
 class Glass:
@@ -28,12 +31,12 @@ class Glass:
     SPEC_COL_NODE = "SpecularColor"
     TINT_COL_NODE = "TintColor"
     TINT_OPACITY_NODE = "TintOpacity"
+    VCOL_GROUP_NODE = "VColorGroup"
     GEOM_NODE = "Geometry"
     BASE_TEX_NODE = "BaseTex"
     REFL_TEX_NODE = "ReflTex"
     ENV_COLOR_NODE = "EnvFactorColor"
     ADD_ENV_GROUP_NODE = "AddEnvGroup"
-    VCOLOR_SCALE_NODE = "VertexColorScale"
 
     TINT_HSV_NODE = "TintColHSV"
     TINT_OPACITY_COMBINE_NODE = "TintColCombine"
@@ -58,9 +61,6 @@ class Glass:
 
     OUT_ADD_REFL_NODE = "OutputAddRefl"
     OUT_ADD_TINT_MAX_A_NODE = "OutputAddTintMaximum"
-    VCOL_SUBTRACT_NODE = "VertexColorSubtract"
-
-    OUT_ALPHA_MAX = "OutputMaximumAlpha"
 
     OUTPUT_NODE = "Output"
 
@@ -84,14 +84,19 @@ class Glass:
 
         pos_x_shift = 185
 
-        node_tree.nodes.clear()
-
         # node creation
         # geometry
+        vcol_group_n = node_tree.nodes.new("ShaderNodeGroup")
+        vcol_group_n.name = Glass.VCOL_GROUP_NODE
+        vcol_group_n.label = Glass.VCOL_GROUP_NODE
+        vcol_group_n.location = (start_pos_x - pos_x_shift, start_pos_y + 1650)
+        vcol_group_n.node_tree = vcolor_input.get_node_group()
+
         geometry_n = node_tree.nodes.new("ShaderNodeGeometry")
         geometry_n.name = Glass.GEOM_NODE
         geometry_n.label = Glass.GEOM_NODE
-        geometry_n.location = (start_pos_x - pos_x_shift, start_pos_y + 1900)
+        geometry_n.location = (start_pos_x - pos_x_shift, start_pos_y + 1500)
+        geometry_n.uv_layer = _MESH_consts.none_uv
 
         # inputs
         refl_tex_n = node_tree.nodes.new("ShaderNodeTexture")
@@ -129,14 +134,6 @@ class Glass:
         base_tex_n.label = Glass.BASE_TEX_NODE
         base_tex_n.location = (start_pos_x + pos_x_shift, start_pos_y + 1500)
 
-        vcol_scale_n = node_tree.nodes.new("ShaderNodeMixRGB")
-        vcol_scale_n.name = Glass.VCOLOR_SCALE_NODE
-        vcol_scale_n.label = Glass.VCOLOR_SCALE_NODE
-        vcol_scale_n.location = (start_pos_x + pos_x_shift, start_pos_y + 1200)
-        vcol_scale_n.blend_type = "MULTIPLY"
-        vcol_scale_n.inputs['Fac'].default_value = 1
-        vcol_scale_n.inputs['Color2'].default_value = (4,) * 4
-
         # pass 1
         add_env_gn = node_tree.nodes.new("ShaderNodeGroup")
         add_env_gn.name = Glass.ADD_ENV_GROUP_NODE
@@ -144,7 +141,7 @@ class Glass:
         add_env_gn.location = (start_pos_x + pos_x_shift * 3, start_pos_y + 2500)
         add_env_gn.node_tree = add_env.get_node_group()
         add_env_gn.inputs['Apply Fresnel'].default_value = 1.0
-        add_env_gn.inputs['Base Texture Alpha'].default_value = (1.0,) * 4
+        add_env_gn.inputs['Base Texture Alpha'].default_value = 1.0
         add_env_gn.inputs['Fresnel Scale'].default_value = 2.0
         add_env_gn.inputs['Fresnel Bias'].default_value = 1.0
 
@@ -258,22 +255,6 @@ class Glass:
         out_add_tint_max_a_n.name = Glass.OUT_ADD_TINT_MAX_A_NODE
         out_add_tint_max_a_n.label = Glass.OUT_ADD_TINT_MAX_A_NODE
         out_add_tint_max_a_n.location = (start_pos_x + pos_x_shift * 9, start_pos_y + 1500)
-        out_add_tint_max_a_n.operation = "ADD"
-
-        vcol_subtract_n = node_tree.nodes.new("ShaderNodeMixRGB")
-        vcol_subtract_n.name = Glass.VCOL_SUBTRACT_NODE
-        vcol_subtract_n.label = Glass.VCOL_SUBTRACT_NODE
-        vcol_subtract_n.location = (start_pos_x + pos_x_shift * 9, start_pos_y + 1300)
-        vcol_subtract_n.blend_type = "SUBTRACT"
-        vcol_subtract_n.inputs['Fac'].default_value = 1
-        vcol_subtract_n.inputs['Color1'].default_value = (2.0,) * 4
-
-        # pass 8
-        out_max_a_n = node_tree.nodes.new("ShaderNodeMath")
-        out_max_a_n.name = Glass.OUT_ALPHA_MAX
-        out_max_a_n.label = Glass.OUT_ALPHA_MAX
-        out_max_a_n.location = (start_pos_x + pos_x_shift * 10, start_pos_y + 1450)
-        out_max_a_n.operation = "MAXIMUM"
 
         # output
         output_n = node_tree.nodes.new("ShaderNodeOutput")
@@ -285,7 +266,6 @@ class Glass:
         # input
         node_tree.links.new(base_tex_n.inputs['Vector'], geometry_n.outputs['UV'])
         node_tree.links.new(refl_tex_n.inputs['Vector'], geometry_n.outputs['Normal'])
-        node_tree.links.new(vcol_scale_n.inputs['Color1'], geometry_n.outputs['Vertex Color'])
 
         # pass 1
         node_tree.links.new(add_env_gn.inputs['Normal Vector'], geometry_n.outputs['Normal'])
@@ -301,7 +281,7 @@ class Glass:
         node_tree.links.new(tint_opacity_combine_n.inputs['B'], tint_opacity_n.outputs['Value'])
 
         node_tree.links.new(diff_vcol_mult_n.inputs['Color1'], diff_col_n.outputs['Color'])
-        node_tree.links.new(diff_vcol_mult_n.inputs['Color2'], vcol_scale_n.outputs['Color'])
+        node_tree.links.new(diff_vcol_mult_n.inputs['Color2'], vcol_group_n.outputs['Vertex Color'])
 
         node_tree.links.new(spec_mult_n.inputs['Color1'], spec_col_n.outputs['Color'])
         node_tree.links.new(spec_mult_n.inputs['Color2'], base_tex_n.outputs['Value'])
@@ -310,7 +290,7 @@ class Glass:
         node_tree.links.new(tint_sat_subtract_n.inputs[1], tint_col_hsv_n.outputs['S'])
 
         node_tree.links.new(tint_vcol_mult_n.inputs['Color1'], tint_col_n.outputs['Color'])
-        node_tree.links.new(tint_vcol_mult_n.inputs['Color2'], vcol_scale_n.outputs['Color'])
+        node_tree.links.new(tint_vcol_mult_n.inputs['Color2'], vcol_group_n.outputs['Vertex Color'])
 
         node_tree.links.new(diff_opacity_mult_n.inputs['Color1'], tint_opacity_combine_n.outputs['Image'])
         node_tree.links.new(diff_opacity_mult_n.inputs['Color2'], diff_vcol_mult_n.outputs['Color'])
@@ -326,7 +306,7 @@ class Glass:
 
         # pass 5
         node_tree.links.new(out_mat_n.inputs['Spec'], spec_mult_n.outputs['Color'])
-        node_tree.links.new(tint_val_subtract_n.inputs[1], tint_col_hsv_n.outputs['V'])
+        node_tree.links.new(tint_val_subtract_n.inputs[1], vcol_group_n.outputs['Vertex Color Alpha'])
 
         # pass 6
         node_tree.links.new(out_add_spec_n.inputs['Color1'], out_mat_n.outputs['Spec'])
@@ -345,15 +325,9 @@ class Glass:
         node_tree.links.new(out_add_tint_max_a_n.inputs[0], out_add_spec_a_n.outputs[0])
         node_tree.links.new(out_add_tint_max_a_n.inputs[1], max_tint_n.outputs[0])
 
-        node_tree.links.new(vcol_subtract_n.inputs['Color2'], vcol_scale_n.outputs['Color'])
-
-        # pass 8
-        node_tree.links.new(out_max_a_n.inputs[0], out_add_tint_max_a_n.outputs[0])
-        node_tree.links.new(out_max_a_n.inputs[1], vcol_subtract_n.outputs['Color'])
-
         # output
         node_tree.links.new(output_n.inputs['Color'], out_add_refl_n.outputs['Color'])
-        node_tree.links.new(output_n.inputs['Alpha'], out_max_a_n.outputs[0])
+        node_tree.links.new(output_n.inputs['Alpha'], out_add_tint_max_a_n.outputs[0])
 
     @staticmethod
     def set_material(node_tree, material):
@@ -397,20 +371,15 @@ class Glass:
         :type color: Color or tuple
         """
 
-        hsv_col = Color(color[:3])
-        # force diffuse color to be rendered so ambient color can be simulated!
-        if hsv_col.v == 0:
-            hsv_col.v = 0.000001  # this is the smallest value Blender still uses for rendering
-
-        color = tuple(hsv_col) + (1,)
+        color = _convert_utils.to_node_color(color)
 
         node_tree.nodes[Glass.DIFF_COL_NODE].outputs['Color'].default_value = color
-        node_tree.nodes[Glass.OUT_MAT_NODE].material.diffuse_intensity = hsv_col.v * 0.7
+        node_tree.nodes[Glass.OUT_MAT_NODE].material.diffuse_intensity = Color(color[:3]).v * 0.7
 
         # fix emit color representing ambient.
         # NOTE: because emit works upon diffuse light we need to fake factors if diffuse drops
         ambient = node_tree.nodes[Glass.OUT_MAT_NODE].material.scs_props.shader_attribute_add_ambient
-        node_tree.nodes[Glass.OUT_MAT_NODE].material.emit = (ambient / 10) * (1 / hsv_col.v)
+        node_tree.nodes[Glass.OUT_MAT_NODE].material.emit = (ambient / 10) * (1 / Color(color[:3]).v)
 
     @staticmethod
     def set_specular(node_tree, color):
@@ -422,11 +391,11 @@ class Glass:
         :type color: Color or tuple
         """
 
-        if len(color) == 3:
-            color = tuple(color) + (1,)
+        color = _convert_utils.to_node_color(color)
 
         node_tree.nodes[Glass.SPEC_COL_NODE].outputs['Color'].default_value = color
-        node_tree.nodes[Glass.OUT_MAT_NODE].material.specular_intensity = Color(color[:3]).v
+        # fix intensity each time if user might changed it by hand directly on material
+        node_tree.nodes[Glass.OUT_MAT_NODE].material.specular_intensity = 1.0
 
     @staticmethod
     def set_shininess(node_tree, factor):
@@ -474,6 +443,9 @@ class Glass:
         :type uv_layer: str
         """
 
+        if uv_layer is None or uv_layer == "":
+            uv_layer = _MESH_consts.none_uv
+
         node_tree.nodes[Glass.GEOM_NODE].uv_layer = uv_layer
 
     @staticmethod
@@ -498,8 +470,7 @@ class Glass:
         :type color: Color or tuple
         """
 
-        if len(color) == 3:
-            color = tuple(color) + (1,)
+        color = _convert_utils.to_node_color(color)
 
         node_tree.nodes[Glass.ENV_COLOR_NODE].outputs[0].default_value = color
 
@@ -538,7 +509,6 @@ class Glass:
         :type color: Color or tuple
         """
 
-        if len(color) == 3:
-            color = tuple(color) + (1,)
+        color = _convert_utils.to_node_color(color)
 
         node_tree.nodes[Glass.TINT_COL_NODE].outputs[0].default_value = color

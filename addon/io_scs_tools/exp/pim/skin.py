@@ -19,13 +19,13 @@
 # Copyright (C) 2013-2015: SCS Software
 
 from collections import OrderedDict
-from io_scs_tools.exp.pim.skinstream import SkinStream
+from io_scs_tools.exp.pim.skin_stream import SkinStream
 from io_scs_tools.internals.structure import SectionData as _SectionData
 
 
 class Skin:
-    _skin_streams_count = 0
-    _skin_streams = OrderedDict()
+    __skin_streams_count = 0
+    __skin_streams = OrderedDict()
 
     def __init__(self, skin_stream):
         """Initialize skin with given skin stream object.
@@ -33,7 +33,7 @@ class Skin:
         :type skin_stream: SkinStream
         """
 
-        self._skin_streams[skin_stream.get_tag()] = skin_stream
+        self.__skin_streams[skin_stream.get_tag()] = skin_stream
 
     def get_as_section(self):
         """Gets whole model skin represented with SectionData structure class.
@@ -41,13 +41,13 @@ class Skin:
         :rtype: io_scs_tools.internals.structure.SectionData
         """
 
-        self._skin_streams_count = len(self._skin_streams)
+        self.__skin_streams_count = len(self.__skin_streams)
 
         section = _SectionData("Skin")
 
-        section.props.append(("StreamCount", self._skin_streams_count))
+        section.props.append(("StreamCount", self.__skin_streams_count))
 
-        for skin_stream in self._skin_streams.values():
+        for skin_stream in self.__skin_streams.values():
             section.sections.append(skin_stream.get_as_section())
 
         return section

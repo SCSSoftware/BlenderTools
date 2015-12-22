@@ -1,0 +1,15 @@
+SiiNunit
+{
+light_source : sculpture.omni.light
+{
+	ambient_color: (0.0, 0.0000, 0.0000)
+	diffuse_color: (0.936, 0.759, 0.514)
+	specular_color: (0.536, 0.402, 0.358)
+
+	type: point
+	range: 6
+
+
+}
+
+}

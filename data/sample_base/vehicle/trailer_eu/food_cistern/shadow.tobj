@@ -1,2 +1,2 @@
-map	2d	shadow.tga
-addr 	clamp_to_edge	clamp_to_edge
+map	2d	shadow.tga 
+addr 	clamp_to_edge	clamp_to_edge 

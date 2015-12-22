@@ -1,0 +1,329 @@
+Header {
+    FormatVersion: 2
+    Source: "Blender 2.76.0 (hash: 48f7dd6), SCS Blender Tools: 1.0.27abe27"
+    Type: "Prefab"
+    Name: "seafood_company_sample"
+}
+Global {
+    NodeCount: 2
+    TerrainPointCount: 0
+    TerrainPointVariantCount: 0
+    NavCurveCount: 0
+    SignCount: 7
+    SpawnPointCount: 4
+    SemaphoreCount: 0
+    MapPointCount: 31
+    TriggerPointCount: 0
+    IntersectionCount: 0
+}
+Node {
+    Index: 0
+    Position: ( &00000000  &373759b5  &c24100f9 )
+    Direction: ( &00000000  &00000000  &bf800000 )
+    InputLanes: ( -1 -1 -1 -1 -1 -1 -1 -1 )
+    OutputLanes: ( -1 -1 -1 -1 -1 -1 -1 -1 )
+
+    TerrainPointCount: 0
+    StreamCount: 0
+}
+Node {
+    Index: 1
+    Position: ( &3fbff4c8  &35eaba8e  &c0f71652 )
+    Direction: ( &00000000  &00000000  &bf800000 )
+    InputLanes: ( -1 -1 -1 -1 -1 -1 -1 -1 )
+    OutputLanes: ( -1 -1 -1 -1 -1 -1 -1 -1 )
+
+    TerrainPointCount: 0
+    StreamCount: 0
+}
+Sign {
+    Name: "PrefabLoc103"
+    Position: ( &c11a390b  &367a85f4  &c183db4d )
+    Rotation: ( &3f49bffb  &00000000  &3f1d95b5  &00000000 )
+    Model: "dlc_no_117"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc"
+    Position: ( &c13de1b0  &41463c9c  &c21bc8b4 )
+    Rotation: ( &3f800000  &00000000  &00000000  &00000000 )
+    Model: "dlc_no_81"
+    Part: "polar_fish"
+}
+Sign {
+    Name: "PrefabLoc101"
+    Position: ( &c11ae176  &36978acf  &c19f855a )
+    Rotation: ( &3f3fca81  &262ada46  &3f299093  &00000000 )
+    Model: "dlc_no_117"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc100"
+    Position: ( &c0ce592a  &360c0b04  &c1136a91 )
+    Rotation: ( &3f800000  &00000000  &00000000  &00000000 )
+    Model: "dlc_no_62"
+    Part: "polar_fish"
+}
+Sign {
+    Name: "PrefabLoc102"
+    Position: ( &c11a0ed9  &368a822a  &c191cd09 )
+    Rotation: ( &3f2b4ff1  &27e32409  &3f3e3b52  &a8bf46c5 )
+    Model: "dlc_no_117"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc91"
+    Position: ( &4121f773  &3e21d3ff  &c11345b8 )
+    Rotation: ( &3f800000  &00000000  &00000000  &00000000 )
+    Model: "dlc_no_2"
+    Part: "vis"
+}
+Sign {
+    Name: "PrefabLoc92"
+    Position: ( &41ed8b08  &3e310458  &c11e68ed )
+    Rotation: ( &3f3504f2  &289170ba  &bf3504f4  &283504f4 )
+    Model: "dlc_no_2"
+    Part: "vis"
+}
+SpawnPoint {
+    Name: "PrefabLoc86"
+    Position: ( &3fcdb303  &368c96fe  &c193fdea )
+    Rotation: ( &3f800000  &00000000  &00000000  &00000000 )
+    Type: 13
+}
+SpawnPoint {
+    Name: "PrefabLoc85"
+    Position: ( &c0e5ffa0  &36f72e5c  &c20218fb )
+    Rotation: ( &3f3504f2  &289170ba  &bf3504f4  &283504f4 )
+    Type: 2
+}
+SpawnPoint {
+    Name: "PrefabLoc10"
+    Position: ( &c104f2cb  &3c155703  &c2340bad )
+    Rotation: ( &3f3504f2  &289170ba  &bf3504f4  &283504f4 )
+    Type: 1
+}
+SpawnPoint {
+    Name: "PrefabLoc72"
+    Position: ( &c106202a  &3c15509d  &c21916b3 )
+    Rotation: ( &3f3504f2  &289170ba  &bf3504f4  &283504f4 )
+    Type: 1
+}
+MapPoint {
+    Index: 0
+    MapVisualFlags: 1379584
+    MapNavFlags: 0
+    Position: ( &c1255a1e  &00000000  &c161b799 )
+    Neighbours: ( 1 2 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 3
+    MapVisualFlags: 134400
+    MapNavFlags: 0
+    Position: ( &41fbfd01  &00000000  &c0fd181f )
+    Neighbours: ( 4 5 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 6
+    MapVisualFlags: 1641728
+    MapNavFlags: 0
+    Position: ( &41fc9a1b  &00000000  &c26b0e7c )
+    Neighbours: ( 7 8 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 2
+    MapVisualFlags: 1379584
+    MapNavFlags: 0
+    Position: ( &c24620f9  &00000000  &c161b799 )
+    Neighbours: ( 9 0 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 10
+    MapVisualFlags: 1379584
+    MapNavFlags: 0
+    Position: ( &c2506c2b  &00000000  &c1f6eba7 )
+    Neighbours: ( 11 12 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 13
+    MapVisualFlags: 1641728
+    MapNavFlags: 0
+    Position: ( &c23ad4d0  &00000000  &c27e3be7 )
+    Neighbours: ( 7 8 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 12
+    MapVisualFlags: 1379584
+    MapNavFlags: 0
+    Position: ( &c19cca65  &00000000  &c1f6eba7 )
+    Neighbours: ( 10 15 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 11
+    MapVisualFlags: 1379584
+    MapNavFlags: 0
+    Position: ( &c2506c2b  &00000000  &c15357b4 )
+    Neighbours: ( 15 10 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 16
+    MapVisualFlags: 1641728
+    MapNavFlags: 0
+    Position: ( &c10b0345  &00000000  &c141194d )
+    Neighbours: ( 17 18 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 18
+    MapVisualFlags: 1641728
+    MapNavFlags: 0
+    Position: ( &c21b4087  &00000000  &c141194d )
+    Neighbours: ( 19 16 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 20
+    MapVisualFlags: 1641728
+    MapNavFlags: 0
+    Position: ( &410c51f5  &00000000  &c0fcf046 )
+    Neighbours: ( 21 22 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 15
+    MapVisualFlags: 1379584
+    MapNavFlags: 0
+    Position: ( &c19cca65  &00000000  &c15357b4 )
+    Neighbours: ( 11 12 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 30
+    MapVisualFlags: 3584
+    MapNavFlags: 770
+    Position: ( &3fbff4c8  &00000000  &c0f71652 )
+    Neighbours: ( 29 -1 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 7
+    MapVisualFlags: 1641728
+    MapNavFlags: 0
+    Position: ( &c23ad4d0  &00000000  &c26b0e7c )
+    Neighbours: ( 13 6 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 14
+    MapVisualFlags: 134400
+    MapNavFlags: 0
+    Position: ( &c23a36ea  &00000000  &c27e52c0 )
+    Neighbours: ( 5 4 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 8
+    MapVisualFlags: 1641728
+    MapNavFlags: 0
+    Position: ( &41fc9a1b  &00000000  &c27e3be7 )
+    Neighbours: ( 13 6 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 24
+    MapVisualFlags: 1379584
+    MapNavFlags: 0
+    Position: ( &c0a0bae6  &00000000  &c261c9ca )
+    Neighbours: ( 25 26 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 23
+    MapVisualFlags: 256
+    MapNavFlags: 1281
+    Position: ( &3fbff4c8  &00000000  &c0f71652 )
+    Neighbours: ( -1 -1 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 1
+    MapVisualFlags: 1379584
+    MapNavFlags: 0
+    Position: ( &c1255a1e  &00000000  &c26a6044 )
+    Neighbours: ( 0 9 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 25
+    MapVisualFlags: 1379584
+    MapNavFlags: 0
+    Position: ( &c136d127  &00000000  &c261c9ca )
+    Neighbours: ( 27 24 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 4
+    MapVisualFlags: 134400
+    MapNavFlags: 0
+    Position: ( &c23a36ea  &00000000  &c0fd181f )
+    Neighbours: ( 3 14 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 19
+    MapVisualFlags: 1641728
+    MapNavFlags: 0
+    Position: ( &c21b4087  &00000000  &c0fcf046 )
+    Neighbours: ( 18 17 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 26
+    MapVisualFlags: 1379584
+    MapNavFlags: 0
+    Position: ( &c0a0bae6  &00000000  &c24b9eb4 )
+    Neighbours: ( 27 24 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 22
+    MapVisualFlags: 1641728
+    MapNavFlags: 0
+    Position: ( &41fbfd01  &00000000  &c0fcf046 )
+    Neighbours: ( 28 20 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 17
+    MapVisualFlags: 1641728
+    MapNavFlags: 0
+    Position: ( &c0998243  &00000000  &c0fcf046 )
+    Neighbours: ( 16 19 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 29
+    MapVisualFlags: 3584
+    MapNavFlags: 769
+    Position: ( &00000000  &00000000  &c24100f9 )
+    Neighbours: ( 30 -1 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 21
+    MapVisualFlags: 1641728
+    MapNavFlags: 0
+    Position: ( &4142f244  &00000000  &c141194d )
+    Neighbours: ( 20 28 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 9
+    MapVisualFlags: 1379584
+    MapNavFlags: 0
+    Position: ( &c24620f9  &00000000  &c26a6044 )
+    Neighbours: ( 2 1 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 28
+    MapVisualFlags: 1641728
+    MapNavFlags: 0
+    Position: ( &41fbfd01  &00000000  &c141194d )
+    Neighbours: ( 21 22 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 27
+    MapVisualFlags: 1379584
+    MapNavFlags: 0
+    Position: ( &c136d127  &00000000  &c24b9eb4 )
+    Neighbours: ( 25 26 -1 -1 -1 -1 )
+}
+MapPoint {
+    Index: 5
+    MapVisualFlags: 134400
+    MapNavFlags: 0
+    Position: ( &41fbfd01  &00000000  &c27e52c0 )
+    Neighbours: ( 3 14 -1 -1 -1 -1 )
+}
+

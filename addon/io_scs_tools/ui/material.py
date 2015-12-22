@@ -20,10 +20,11 @@
 
 import bpy
 import os
-from io_scs_tools.utils import material as _material_utils
+from io_scs_tools.consts import Mesh as _MESH_consts
 from io_scs_tools.utils import object as _object_utils
 from io_scs_tools.utils import path as _path_utils
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
+from io_scs_tools.utils import get_shader_presets_inventory as _get_shader_presets_inventory
 from io_scs_tools.ui import shared as _shared
 
 
@@ -69,6 +70,47 @@ def _draw_shader_presets(layout, scs_props, scs_globals, read_only=False):
             column.prop_search(scs_globals, "shader_preset_search_value", bpy.data.worlds[0], "scs_shader_presets_inventory", text="", icon="BLANK1")
 
 
+def _draw_shader_flavors(layout, mat):
+    """Draws shader flavors if any.
+
+    :param layout: layout to draw on
+    :type layout: bpy.types.UILayout
+    :param mat: material for which flavors should be drawn
+    :type mat: bpy.types.Material
+    """
+
+    if mat.scs_props.active_shader_preset_name == "<none>":
+        return
+
+    for preset in _get_shader_presets_inventory():
+        if preset.name == mat.scs_props.active_shader_preset_name:
+
+            # strip of base effect name, to avoid any flavor matching in base effect name
+            effect_flavor_part = mat.scs_props.mat_effect_name[len(preset.effect):]
+
+            if len(preset.flavors) > 0:
+
+                column = layout.box().column(align=True)
+                column.alignment = "LEFT"
+
+            for flavor in preset.flavors:
+
+                row = column.row(align=True)
+
+                for flavor_variant in flavor.variants:
+
+                    is_in_middle = "." + flavor_variant.name + "." in effect_flavor_part
+                    is_on_end = effect_flavor_part.endswith("." + flavor_variant.name)
+
+                    icon = "FILE_TICK" if is_in_middle or is_on_end else "X"
+                    props = row.operator("material.scs_switch_flavor", text=flavor_variant.name, icon=icon)
+                    props.flavor_name = flavor_variant.name
+                    props.flavor_enabled = is_in_middle or is_on_end
+
+            # once preset was found just use return to skip other presets
+            return
+
+
 def _draw_shader_attribute(layout, mat, split_perc, attribute):
     """Draws one material attribute.
 
@@ -85,14 +127,20 @@ def _draw_shader_attribute(layout, mat, split_perc, attribute):
     linked_vals = False  # DEBUG: Side by side display of values
 
     tag = attribute.get('Tag', "")
+    frendly_tag = attribute.get('FriendlyTag', None)
+    attribute_label = frendly_tag + ":" if frendly_tag else str(tag.replace('_', ' ').title() + ":")
     hide_state = attribute.get('Hide', None)
     lock_state = attribute.get('Lock', None)
-    attribute_label = str(tag.replace('_', ' ').title() + ":")
+    preview_only_state = attribute.get('PreviewOnly', None)
+
+    # ignore substance from attributes because it's drawn before already
+    if tag.lower() == "substance":
+        return
 
     if hide_state == 'True':
         return
 
-    attr_row = layout.row()
+    attr_row = layout.row(align=True)
     item_space = attr_row.split(percentage=split_perc, align=True)
 
     label_icon = 'ERROR'
@@ -101,7 +149,16 @@ def _draw_shader_attribute(layout, mat, split_perc, attribute):
         attribute_label = str(attribute_label[:-1] + " (locked):")
         label_icon = 'LOCKED'
 
-    item_space.label(attribute_label)
+    tag_layout = item_space.row()
+    tag_layout.label(attribute_label)
+
+    # create info operator for preview only attributes
+    if preview_only_state == "True":
+        _shared.draw_warning_operator(tag_layout,
+                                      "Preview Attribute Info",
+                                      "This attribute is used for preview only.\n"
+                                      "It won't be exported so it doesn't matter what value is used.",
+                                      icon="INFO")
 
     '''
     shader_attribute_id = str("shader_attribute_" + tag)
@@ -111,7 +168,7 @@ def _draw_shader_attribute(layout, mat, split_perc, attribute):
         print(' %r is NOT defined in SCS Blender Tools...!' % shader_attribute_id)
     '''
 
-    item_space = item_space.split(percentage=(1 - split_perc) * 0.2, align=True)
+    item_space = item_space.split(percentage=1 / (1 - split_perc + 0.000001) * 0.1, align=True)
     props = item_space.operator("material.scs_looks_wt", text="WT")
     props.property_str = "shader_attribute_" + tag
 
@@ -188,9 +245,9 @@ def _draw_shader_texture(layout, mat, split_perc, texture, read_only):
     if hide_state == 'True':
         return
 
-    texture_box = layout.box()
+    texture_box = layout.box().column()  # create column for compact display with alignment
 
-    header_split = texture_box.row().split(percentage=0.5)
+    header_split = texture_box.row(align=True).split(percentage=0.5)
     header_split.label(texture_type.title(), icon="TEXTURE_SHADED")
 
     if hasattr(mat.scs_props, shader_texture_id):
@@ -205,11 +262,11 @@ def _draw_shader_texture(layout, mat, split_perc, texture, read_only):
 
             if use_imported_tobj:
 
-                texture_row = texture_box.row()
+                texture_row = texture_box.row(align=True)
                 item_space = texture_row.split(percentage=split_perc, align=True)
                 item_space.label("TOBJ Path:")
 
-                item_space = item_space.split(percentage=(1 - split_perc) * 0.2, align=True)
+                item_space = item_space.split(percentage=1 / (1 - split_perc + 0.000001) * 0.1, align=True)
                 props = item_space.operator("material.scs_looks_wt", text="WT")
                 props.property_str = shader_texture_id
                 item_space.prop(mat.scs_props, shader_texture_id + "_imported_tobj", text="")
@@ -217,7 +274,7 @@ def _draw_shader_texture(layout, mat, split_perc, texture, read_only):
         # disable whole texture layout if it's locked
         texture_box.enabled = not mat.scs_props.get(shader_texture_id + "_locked", False)
 
-        texture_row = texture_box.row()
+        texture_row = texture_box.row(align=True)
         item_space = texture_row.split(percentage=split_perc, align=True)
 
         # in case of custom tobj value texture is used only for preview
@@ -235,7 +292,7 @@ def _draw_shader_texture(layout, mat, split_perc, texture, read_only):
             texture_icon = 'MATPLANE'
 
         # MARK INVALID SLOTS
-        if _material_utils.is_valid_shader_texture_path(shader_texture):
+        if _path_utils.is_valid_shader_texture_path(shader_texture):
             layout_box_row.alert = False
         else:
             layout_box_row.alert = True
@@ -245,35 +302,35 @@ def _draw_shader_texture(layout, mat, split_perc, texture, read_only):
         if shader_texture == "":
             layout_box_row.alert = True
 
-        layout_box_row = layout_box_row.split(percentage=(1 - split_perc) * 0.2, align=True)
+        layout_box_row = layout_box_row.split(percentage=1 / (1 - split_perc + 0.000001) * 0.1, align=True)
         props = layout_box_row.operator("material.scs_looks_wt", text="WT")
         props.property_str = shader_texture_id
 
         layout_box_row = layout_box_row.row(align=True)
         layout_box_row.prop(mat.scs_props, shader_texture_id, text='', icon=texture_icon)
-        props = layout_box_row.operator('scene.select_shader_texture_filepath', text='', icon='FILESEL')
+        props = layout_box_row.operator('material.scs_select_shader_texture_filepath', text='', icon='FILESEL')
         props.shader_texture = shader_texture_id  # DYNAMIC ID SAVE (FOR FILE REQUESTER)
 
         # ADDITIONAL TEXTURE SETTINGS
         if (not read_only or (read_only and not use_imported_tobj)) and texture_box.enabled:
 
-            tobj_exists = _material_utils.is_valid_shader_texture_path(shader_texture, True)
+            tobj_filepath = _path_utils.get_tobj_path_from_shader_texture(shader_texture)
 
-            if not tobj_exists:
-                item_split = layout_box_col.split(percentage=(1 - split_perc) * 0.2, align=True)
-
-                item_space = item_split.row(align=True)
+            if not tobj_filepath:
+                layout_box_inner_col = layout_box_col.row(align=True)
+                item_space = layout_box_inner_col.column(align=True)
                 props = item_space.operator("material.scs_create_tobj", icon="NEW", text="")
                 props.texture_type = texture_type
-
-                item_space = item_split.row(align=True)
+                # creating extra column->row so it can be properly disabled as tobj doesn't exists
+                item_space = layout_box_inner_col.column(align=True).row(align=True)
             else:
                 item_space = layout_box_col.row(align=True)
 
-            item_space.enabled = tobj_exists
+            # enable settings only if tobj exists and map type of the tobj is 2d
+            item_space.enabled = tobj_filepath is not None and getattr(mat.scs_props, shader_texture_id + "_map_type", "") == "2d"
 
-            if tobj_exists:
-                mtime = str(os.path.getmtime(_path_utils.get_abs_path(shader_texture[:-4] + ".tobj")))
+            if tobj_filepath:
+                mtime = str(os.path.getmtime(tobj_filepath))
                 item_space.alert = (mtime != getattr(mat.scs_props, shader_texture_id + "_tobj_load_time", "NOT FOUND"))
             else:
                 item_space.alert = True
@@ -292,7 +349,7 @@ def _draw_shader_texture(layout, mat, split_perc, texture, read_only):
 
         if len(uv_mappings) > 0:
 
-            texture_row = texture_box.row()
+            texture_row = texture_box.row(align=True)
             item_space = texture_row.split(percentage=split_perc, align=True)
             if read_only:
                 item_space.label("Preview UV Map:")
@@ -337,7 +394,7 @@ def _draw_shader_texture(layout, mat, split_perc, texture, read_only):
 
 def _draw_shader_parameters(layout, mat, scs_props, scs_globals, read_only=False):
     """Creates Shader Parameters sub-panel."""
-    split_perc = 0.3
+    split_perc = scs_props.shader_item_split_percentage
     # panel_header = layout_box.split(percentage=0.5)
     # panel_header_1 = panel_header.row()
     # panel_header_1.prop(scene.scs_props, 'shader_presets_expand', text="Shader Parameters:", icon='TRIA_DOWN', icon_only=True, emboss=False)
@@ -350,23 +407,97 @@ def _draw_shader_parameters(layout, mat, scs_props, scs_globals, read_only=False
         info_box = layout.box()
         info_box.label('Select a shader from the preset list.', icon='ERROR')
     else:
+
+        # MISSING VERTEX COLOR
+        active_vcolors = bpy.context.active_object.data.vertex_colors
+        is_valid_vcolor = _MESH_consts.default_vcol in active_vcolors
+        is_valid_vcolor_a = _MESH_consts.default_vcol + _MESH_consts.vcol_a_suffix in active_vcolors
+        if not is_valid_vcolor or not is_valid_vcolor_a:
+
+            vcol_missing_box = layout.box()
+
+            title_row = vcol_missing_box.row(align=True)
+            title_row.label("Vertex color layer(s) missing!", icon="ERROR")
+
+            info_msg = "Currently active object is missing vertex color layers with names:\n"
+            if not is_valid_vcolor:
+                info_msg += "-> '" + _MESH_consts.default_vcol + "'\n"
+
+            if not is_valid_vcolor_a:
+                info_msg += "-> '" + _MESH_consts.default_vcol + _MESH_consts.vcol_a_suffix + "'\n"
+
+            info_msg += "You can use 'Add Vertex Colors To (Active/All)' button to add needed layers or add layers manually."
+            _shared.draw_warning_operator(title_row, "Vertex Colors Missing", info_msg, text="More Info", icon="INFO")
+
+            col = vcol_missing_box.column(align=True)
+            col.operator("mesh.scs_add_vcolors_to_active")
+            col.operator("mesh.scs_add_vcolors_to_all")
+
+        global_mat_attr = layout.column(align=True)
+
+        # UI SPLIT PERCENTAGE PROPERTY
+        global_mat_attr.row().prop(scs_props, "shader_item_split_percentage", slider=True)
+
         # PRESET INFO
-        # print(' ...active_shader_preset_name: %r' % str(mat.scs_props.active_shader_preset_name))
-        preset_name = mat.scs_props.active_shader_preset_name.upper()
-        # effect_name = shader_data.get('effect', "NO EFFECT")
         effect_name = mat.scs_props.mat_effect_name
         effect_name = str('"' + effect_name + '"')
-        preset_info_row = layout.row()
+        preset_info_row = global_mat_attr.row()
         preset_info_space = preset_info_row.split(percentage=split_perc, align=True)
-        preset_info_space.label(preset_name, icon='NONE')
+        preset_info_space.label("Effect:", icon='NONE')
         preset_info_space.label(effect_name, icon='NONE')
 
+        # MATERIAL ALIASING
+        alias_row = global_mat_attr.row()
+        alias_row.enabled = not read_only
+        alias_row = alias_row.split(percentage=split_perc)
+        alias_row.label("Aliasing:")
+
+        alias_row = alias_row.row(align=True)
+        alias_text = "Enabled" if mat.scs_props.enable_aliasing else "Disabled"
+        alias_icon = "FILE_TICK" if mat.scs_props.enable_aliasing else "X_VEC"
+        alias_row.prop(mat.scs_props, "enable_aliasing", icon=alias_icon, text=alias_text, toggle=True)
+
+        normalized_base_tex_path = mat.scs_props.shader_texture_base.replace("\\", "/")
+        is_aliasing_path = ("/material/road" in normalized_base_tex_path or
+                            "/material/terrain" in normalized_base_tex_path or
+                            "/material/custom" in normalized_base_tex_path)
+
+        is_aliasable = ('textures' in shader_data and
+                        (
+                            len(shader_data["textures"]) == 1 or
+                            (len(shader_data["textures"]) == 2 and "dif.spec.weight.mult2" in effect_name)
+                        ))
+
+        if mat.scs_props.enable_aliasing:
+
+            if not (is_aliasing_path and is_aliasable):
+
+                aliasing_info_msg = str("Material aliasing will work only for materials which 'Base' texture\n"
+                                        "is loaded from this directories and their subdirectories:\n"
+                                        "-> '/material/road'\n"
+                                        "-> '/material/terrain'\n"
+                                        "-> '/material/custom'\n"
+                                        "Additional requirement for aliasing is also single texture material or\n"
+                                        "exceptionally multi texture material of 'dif.spec.weight.mult2' family.\n\n"
+                                        "Currently aliasing can not be done because:")
+
+                if not is_aliasing_path:
+                    aliasing_info_msg += "\n-> Your 'Base' texture doesn't point to any of this (sub)directories."
+                if not is_aliasable:
+                    aliasing_info_msg += "\n-> Current shader type use multiple textures or it's not 'dif.spec.weight.mult2' family type."
+
+                _shared.draw_warning_operator(alias_row, "Aliasing Info", aliasing_info_msg, icon="INFO")
+
+            alias_op_col = alias_row.column(align=True)
+            alias_op_col.enabled = is_aliasing_path and is_aliasable
+            alias_op_col.operator('material.load_aliased_material', icon="LOAD_FACTORY", text="")
+
         # MATERIAL SUBSTANCE
-        substance_row = layout.row()
+        substance_row = global_mat_attr.row()
         substance_row.enabled = not read_only
         substance_row = substance_row.split(percentage=split_perc)
         substance_row.label("Substance:")
-        substance_row = substance_row.split(percentage=(1 - split_perc) * 0.2, align=True)
+        substance_row = substance_row.split(percentage=1 / (1 - split_perc + 0.000001) * 0.1, align=True)
         props = substance_row.operator("material.scs_looks_wt", text="WT")
         props.property_str = "substance"
         substance_row.prop_search(mat.scs_props, 'substance', scs_globals, 'scs_matsubs_inventory', icon='NONE', text="")
@@ -397,9 +528,9 @@ def _draw_shader_parameters(layout, mat, scs_props, scs_globals, read_only=False
 
                 attributes_data = shader_data['attributes']
                 if attributes_data:
-
+                    attrs_column = attributes_box.column()  # create column for compact display with alignment
                     for attribute_key in sorted(attributes_data.keys()):
-                        _draw_shader_attribute(attributes_box, mat, split_perc, attributes_data[attribute_key])
+                        _draw_shader_attribute(attrs_column, mat, split_perc, attributes_data[attribute_key])
 
             else:
                 panel_header = attributes_box.split(percentage=0.5)
@@ -469,221 +600,11 @@ def _draw_preset_shader_panel(layout, mat, scene_scs_props, scs_globals):
     # SHADER PRESETS PANEL
     _draw_shader_presets(layout, scene_scs_props, scs_globals, read_only=has_imported_shader)
 
+    # FLAVORS PANEL
+    _draw_shader_flavors(layout, mat)
+
     # PARAMETERS PANEL
     _draw_shader_parameters(layout, mat, scene_scs_props, scs_globals, read_only=has_imported_shader)
-
-
-'''
-def draw_cgfx_data(layout):
-    """Creates CgFX parameter sub-panel."""
-    layout_box = layout.box()
-    if scene.scs_props.cgfx_data_expand:
-        panel_header = layout_box.row()
-        panel_header.prop(
-            scene.scs_props,
-            'cgfx_data_expand',
-            text=str('"' + mat.scs_props.cgfx_filename + '" Parameters:'),
-            icon='TRIA_DOWN',
-            icon_only=True,
-            emboss=False
-        )
-        if cgfx_utils.get_cgfx_filepath(mat.scs_props.cgfx_filename):
-            # layout_box_row = layout_box.row()
-            # layout_box_row.operator('scene.print_cgfx_inventory', text='Print CgFX Inventory')
-
-            ## SUBSTANCE
-            layout_box_row = layout_box.row()
-            layout_box_row.prop_search(mat.scs_props, 'substance', scs_globals, 'scs_matsubs_inventory', icon='NONE')
-
-            ## ----- ##
-            # layout_box_row = layout_box.row()
-            # layout_box_row.prop(bpy.context.window.scs_globals, 'dummy', icon='NONE')
-            # layout_box_row.prop(screen.scs_test, 'dummy', icon='NONE')
-            # layout_box_row.prop(bpy.context.window.scs_test, 'dummy', icon='NONE')
-            ## ----- ##
-
-            # layout_box_row = layout_box.row()
-            # layout_box_row.prop(screen.scs_cgfx_ui, 'wt_enum', text='')#, icon='LIBRARY_DATA_DIRECT', emboss=False)
-
-            # if mat.scs_cgfx_looks[actual_look].cgfx_data:
-            if 0:
-                layout_box_row = layout_box.row()
-                layout_box_row.separator()
-
-                ## MAKE A LIST OF UI ITEMS NAMES FOR SORTING...
-                ui_items = []
-                for item in mat.scs_cgfx_looks[actual_look].cgfx_sorter:
-                    if not item.name.endswith("_mtplr"):
-                        ui_items.append(item.name)
-                # item_i = 0
-
-                for item in sorted(ui_items):
-                    if item[4:] in mat.scs_cgfx_looks[actual_look].cgfx_data:
-                        if not mat.scs_cgfx_looks[actual_look].cgfx_data[item[4:]].hide:
-                            # layout_boxSplit = layout_box.split(percentage=0.8)
-                            # cgfx_params_1 = layout_boxSplit.row()
-                            cgfx_params_1 = layout_box.row()
-                            cgfx_params_1.enabled = mat.scs_cgfx_looks[actual_look].cgfx_data[item[4:]].enabled
-                            # cgfx_params_1.prop_enum(
-                            #     screen.scs_cgfx_ui,
-                            #     'wt_enum',
-                            #     str(item_i),
-                            #     text='',
-                            #     icon='LIBRARY_DATA_DIRECT'
-                            # )#, emboss=False)
-                            # cgfx_params_1.prop(screen.scs_cgfx_ui, item, icon='NONE')#, text=item.name, expand=True, toggle=True)
-                            cgfx_params_1.operator('scene.wt', text='', icon='LIBRARY_DATA_DIRECT')#, emboss=False)
-                            parameter = mat.scs_cgfx_looks[actual_look].cgfx_data[item[4:]]
-                            if parameter.type == "color":
-                                cgfx_params_1Split = cgfx_params_1.split(percentage=0.8)
-                                cgfx_params_1a = cgfx_params_1Split.row()
-                                cgfx_params_1a.prop(screen.scs_cgfx_ui, str("cgfx_" + item[4:]), icon='NONE')
-                                cgfx_params_1b = cgfx_params_1Split.row()
-                                cgfx_params_1b.prop(screen.scs_cgfx_ui, str("cgfx_" + item[4:] + "_mtplr"), text='', icon='NONE')
-                            else:
-                                cgfx_params_1.prop(screen.scs_cgfx_ui, str("cgfx_" + item[4:]), icon='NONE')
-                            # cgfx_params_2 = layout_boxSplit.row()
-                            # cgfx_params_2.prop(parameter, 'value', text='', icon='NONE')#, expand=True, toggle=True)
-                            # item_i += 1
-            else:
-                layout_box_row = layout_box.column()
-                layout_box_row.label('CgFX Shader needs re-compilation!', icon='ERROR')
-                layout_box_row.operator('material.recompile_cgfx', text="Recompile Shader")
-    else:
-        panel_header = layout_box.row()
-        panel_header.prop(
-            scene.scs_props,
-            'cgfx_data_expand',
-            text=str('"' + mat.scs_props.cgfx_filename + '" Parameters:'),
-            icon='TRIA_RIGHT',
-            icon_only=True,
-            emboss=False
-        )
-
-def draw_cgfx_templates(layout):
-    """Creates CgFX template sub-panel."""
-    layout_box = layout.box()
-    if scene.scs_props.cgfx_templates_expand:
-        panel_header = layout_box.split(percentage=0.5)
-        panel_header_1 = panel_header.row()
-        panel_header_1.prop(scene.scs_props,
-                            'cgfx_templates_expand',
-                            text="Shader Templates:",
-                            icon='TRIA_DOWN',
-                            icon_only=True,
-                            emboss=False)
-        panel_header_2 = panel_header.row(align=True)
-        panel_header_2.alignment = 'RIGHT'
-        panel_header_2a = panel_header_2.row()
-        panel_header_2a.prop(scene.scs_props, 'cgfx_templates_list_sorted', text='', icon='SORTALPHA', expand=True, toggle=True)
-
-        ## CgFX Templates File (FILE_PATH)
-        layout_box_row = layout_box.row(align=True)
-        if _utils.is_valid_cgfx_template_library_path():
-            layout_box_row.alert = False
-        else:
-            layout_box_row.alert = True
-        layout_box_row.prop(scs_globals, 'cgfx_templates_filepath', text='', icon='FILE_TEXT')
-        layout_box_row.operator('scene.select_cgfx_templates_filepath', text='', icon='FILESEL')
-
-        layout_box_row = layout_box.column()
-        layout_box_row.prop(scene.scs_props, 'cgfx_templates_list', expand=True, toggle=True)
-    else:
-        layout_box_row = layout_box.row()
-        layout_box_row.prop(scene.scs_props,
-                            'cgfx_templates_expand',
-                            text="Shader Templates:",
-                            icon='TRIA_RIGHT',
-                            icon_only=True,
-                            emboss=False)
-        layout_box_row.prop(scene.scs_props, 'cgfx_templates_list', text='')
-
-def draw_cgfx_file_library(layout):
-    """Creates CgFX library sub-panel."""
-    layout_box = layout.box()
-    if scene.scs_props.cgfx_lib_expand:
-        panel_header = layout_box.split(percentage=0.5)
-        panel_header_1 = panel_header.row()
-        panel_header_1.prop(scene.scs_props, 'cgfx_lib_expand', text="Shader Library:", icon='TRIA_DOWN', icon_only=True, emboss=False)
-        panel_header_2 = panel_header.row(align=True)
-        panel_header_2.alignment = 'RIGHT'
-        # panel_header_2a = panel_header_2.row()
-        # panel_header_2a.prop(scene.scs_props, 'cgfx_list_sorted', text='', icon='SORTALPHA', expand=True, toggle=True)
-
-        ## CgFX Library Directory (DIR_PATH - relative)
-        layout_box_row = layout_box.row(align=True)
-        if _utils.is_valid_cgfx_library_rel_path():
-            layout_box_row.alert = False
-        else:
-            layout_box_row.alert = True
-        layout_box_row.prop(scs_globals, 'cgfx_library_rel_path', text='', icon='FILE_FOLDER')
-        layout_box_row.operator('scene.select_cgfx_library_rel_path', text='', icon='FILESEL')
-
-        layout_box_row.operator('scene.select_cgfx_library_rel_path', text='', icon='FILESEL')
-        layout_box_row = layout_box.column()
-        layout_box_row.prop(scene.scs_props, 'cgfx_file_list', expand=True, toggle=True)
-    else:
-        layout_box_row = layout_box.row()
-        layout_box_row.prop(scene.scs_props, 'cgfx_lib_expand', text="Shader Library:", icon='TRIA_RIGHT', icon_only=True, emboss=False)
-        layout_box_row.prop(scene.scs_props, 'cgfx_file_list', text='')
-
-def draw_cgfx_shader_panel(layout):
-    """Creates CgFX Shader sub-panel."""
-    layout_box = layout.box()
-    if scene.scs_props.cgfx_shader_expand:
-        panel_header = layout_box.split(percentage=0.5)
-        panel_header_1 = panel_header.row()
-        panel_header_1.prop(scene.scs_props, 'cgfx_shader_expand', text="CgFX Shader", icon='TRIA_DOWN', icon_only=True, emboss=False)
-        panel_header_2 = panel_header.row(align=True)
-        panel_header_2.alignment = 'RIGHT'
-        panel_header_2.label('version ' + str(version()), icon='DOT')
-
-        ## CgFX TEMPLATE PANEL
-        draw_cgfx_templates(layout_box)
-
-        # CgFX LIBRARY PANEL
-        if scene.scs_cgfx_template_inventory["<custom>"].active:
-            draw_cgfx_file_library(layout_box)
-
-        # CgFX PARAMETERS PANEL
-        draw_cgfx_data(layout_box)
-
-        # CgFX VERTEX DATA PANEL
-        try:
-            if len(mat.scs_cgfx_looks[actual_look].cgfx_vertex_data) > 0:
-                draw_cgfx_vertex_data(layout_box)
-        except:
-            pass
-    else:
-        panel_header = layout_box.split(percentage=0.5)
-        panel_header_1 = panel_header.row()
-        panel_header_1.prop(scene.scs_props, 'cgfx_shader_expand', text="CgFX Shader", icon='TRIA_RIGHT', icon_only=True, emboss=False)
-        panel_header_2 = panel_header.row(align=True)
-        panel_header_2.alignment = 'RIGHT'
-        panel_header_2.label('version ' + str(version()), icon='DOT')
-
-def draw_cgfx_vertex_data(layout):
-    """Creates CgFX parameter sub-panel."""
-    layout_box = layout.box()
-    if scene.scs_props.cgfx_vertex_data_expand:
-        panel_header = layout_box.row()
-        panel_header.prop(scene.scs_props, 'cgfx_vertex_data_expand', text='Vertex Data:', icon='TRIA_DOWN', icon_only=True, emboss=False)
-        panel_header.label('')
-        if cgfx_utils.get_cgfx_filepath(mat.scs_props.cgfx_filename):
-
-            ## MAKE A LIST OF UI ITEMS NAMES FOR SORTING...
-            ui_items = []
-            for item in mat.scs_cgfx_looks[actual_look].cgfx_vertex_sorter:
-                ui_items.append(item.name)
-            # item_i = 0
-            layout_box_row = layout_box.column()
-            for item in sorted(ui_items):
-                layout_box_row.prop(screen.scs_cgfx_vertex_ui, "cgfx_" + item[4:], icon='NONE')#, expand=True, toggle=True)
-    else:
-        panel_header = layout_box.row()
-        panel_header.prop(scene.scs_props, 'cgfx_vertex_data_expand', text='Vertex Data:', icon='TRIA_RIGHT', icon_only=True, emboss=False)
-        panel_header.label('')
-'''
 
 
 class SCSMaterialCustomMappingSlot(bpy.types.UIList):

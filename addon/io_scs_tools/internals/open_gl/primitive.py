@@ -354,6 +354,22 @@ def draw_polygon_object(mat, vertices, faces, face_color, draw_faces, draw_wires
             glPointSize(1.0)
 
 
+def draw_point(vector, color):
+    """Draw point on given vector, with given color
+
+    :param vector: position vector of point in Blender coordinates
+    :type vector: mathutils.Vector
+    :param color: tuple of RGB color
+    :type color: tuple
+    """
+    glBegin(GL_POINTS)
+    glColor3f(color[0], color[1], color[2])
+
+    glVertex3f(vector[0], vector[1], vector[2])
+
+    glEnd()
+
+
 def draw_circle(radius, steps, mat, scene_scs_props):
     """
     Draw a horizontal circle of given radius and using given number of steps.

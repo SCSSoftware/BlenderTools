@@ -1,0 +1,16 @@
+map cube
+	generic_s.tga
+	generic_s.tga
+	generic_t.tga
+	generic_b.tga
+	generic_s.tga
+	generic_s.tga
+
+quality	high
+
+addr
+	clamp_to_edge
+	clamp_to_edge
+	clamp_to_edge
+
+nomips

@@ -1,0 +1,1509 @@
+# Look Names:
+#	light_gray
+#	def_dk
+#	gray_dk
+#	new_sc
+#	def_swe
+#
+# Variant Names:
+#	shoulder_a
+#
+Header {
+    FormatVersion: 1
+    Source: "Blender 2.76.0 (hash: 48f7dd6), SCS Blender Tools: 1.0.27abe27"
+    Type: "Trait"
+    Name: "r1_x_r1_y_tmpl"
+}
+Global {
+    LookCount: 5
+    VariantCount: 1
+    PartCount: 7
+    MaterialCount: 6
+}
+Look {
+    Name: "light_gray"
+    Material {
+        Alias: "curb_01_scan_trans"
+        Effect: "eut2.dif.spec.weight.weight.dif.spec.weight"
+        Flags: 0
+        AttributeCount: 8
+        TextureCount: 2
+        Attribute {
+            Format: STRING
+            Tag: "substance"
+            Value: ( "road" )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.20000000298023224 0.20000000298023224 0.20000000298023224 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 12.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT4
+            Tag: "aux[3]"
+            Value: ( 0.20000000298023224 0.20000000298023224 0.20000000298023224 12.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection2"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/road/road_template/sc/ter_trans_placeholder"
+        }
+        Texture {
+            Tag: "texture[1]:texture_over"
+            Value: "/material/road/road_template/sc/shoulder_01"
+        }
+    }
+    Material {
+        Alias: "road_scan_01"
+        Effect: "eut2.dif.spec.weight.mult2"
+        Flags: 0
+        AttributeCount: 7
+        TextureCount: 2
+        Attribute {
+            Format: STRING
+            Tag: "substance"
+            Value: ( "road" )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 40.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 1.2999999523162842 )
+        }
+        Attribute {
+            Format: FLOAT2
+            Tag: "aux[5]"
+            Value: ( 4.400000095367432 12.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/road/road_template/sc/dirt_light_gray"
+        }
+        Texture {
+            Tag: "texture[1]:texture_mult"
+            Value: "/material/road/road_template/sc/asphalt_light_gray"
+        }
+    }
+    Material {
+        Alias: "stripes_01"
+        Effect: "eut2.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/stripes_01"
+        }
+    }
+    Material {
+        Alias: "decal_ground_01"
+        Effect: "eut2.dif.spec.decal.over"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.0 0.0 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 4.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/special/decal_ground_01"
+        }
+    }
+    Material {
+        Alias: "road_01_scan_trans"
+        Effect: "eut2.dif.spec.weight.mult2.weight2"
+        Flags: 0
+        AttributeCount: 9
+        TextureCount: 4
+        Attribute {
+            Format: STRING
+            Tag: "substance"
+            Value: ( "road" )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 40.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 1.2999999523162842 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection2"
+            Value: ( 1.2999999523162842 )
+        }
+        Attribute {
+            Format: FLOAT4
+            Tag: "aux[3]"
+            Value: ( 1.0 1.0 1.0 40.0 )
+        }
+        Attribute {
+            Format: FLOAT4
+            Tag: "aux[5]"
+            Value: ( 4.400000095367432 12.0 4.400000095367432 12.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/road/road_template/sc/dirt_light_gray"
+        }
+        Texture {
+            Tag: "texture[1]:texture_mult"
+            Value: "/material/road/road_template/sc/asphalt_light_gray"
+        }
+        Texture {
+            Tag: "texture[2]:texture_base_1"
+            Value: "/material/road/road_template/sc/dirt_light_gray"
+        }
+        Texture {
+            Tag: "texture[3]:texture_mult_1"
+            Value: "/material/road/road_template/sc/asphalt_light_gray"
+        }
+    }
+    Material {
+        Alias: "shoulder_decal"
+        Effect: "eut2.dif.spec.decal.over"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.0 0.0 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 4.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/road/road_template/sc/decal_def_dk"
+        }
+    }
+}
+Look {
+    Name: "def_dk"
+    Material {
+        Alias: "curb_01_scan_trans"
+        Effect: "eut2.dif.spec.weight.weight.dif.spec.weight"
+        Flags: 0
+        AttributeCount: 8
+        TextureCount: 2
+        Attribute {
+            Format: STRING
+            Tag: "substance"
+            Value: ( "road" )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.20000000298023224 0.20000000298023224 0.20000000298023224 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 12.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT4
+            Tag: "aux[3]"
+            Value: ( 0.20000000298023224 0.20000000298023224 0.20000000298023224 12.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection2"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/road/road_template/sc/ter_trans_placeholder"
+        }
+        Texture {
+            Tag: "texture[1]:texture_over"
+            Value: "/material/road/road_template/sc/shoulder_01"
+        }
+    }
+    Material {
+        Alias: "road_scan_01"
+        Effect: "eut2.dif.spec.weight.mult2"
+        Flags: 0
+        AttributeCount: 7
+        TextureCount: 2
+        Attribute {
+            Format: STRING
+            Tag: "substance"
+            Value: ( "road" )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 40.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 1.2999999523162842 )
+        }
+        Attribute {
+            Format: FLOAT2
+            Tag: "aux[5]"
+            Value: ( 4.400000095367432 12.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/road/road_template/sc/dirt_def_dk"
+        }
+        Texture {
+            Tag: "texture[1]:texture_mult"
+            Value: "/material/road/road_template/sc/asphalt_def_dk"
+        }
+    }
+    Material {
+        Alias: "stripes_01"
+        Effect: "eut2.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/stripes_01"
+        }
+    }
+    Material {
+        Alias: "decal_ground_01"
+        Effect: "eut2.dif.spec.decal.over"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.0 0.0 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 4.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/special/decal_ground_01"
+        }
+    }
+    Material {
+        Alias: "road_01_scan_trans"
+        Effect: "eut2.dif.spec.weight.mult2.weight2"
+        Flags: 0
+        AttributeCount: 9
+        TextureCount: 4
+        Attribute {
+            Format: STRING
+            Tag: "substance"
+            Value: ( "road" )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 40.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 1.2999999523162842 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection2"
+            Value: ( 1.2999999523162842 )
+        }
+        Attribute {
+            Format: FLOAT4
+            Tag: "aux[3]"
+            Value: ( 1.0 1.0 1.0 40.0 )
+        }
+        Attribute {
+            Format: FLOAT4
+            Tag: "aux[5]"
+            Value: ( 4.400000095367432 12.0 4.400000095367432 12.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/road/road_template/sc/dirt_def_dk"
+        }
+        Texture {
+            Tag: "texture[1]:texture_mult"
+            Value: "/material/road/road_template/sc/asphalt_def_dk"
+        }
+        Texture {
+            Tag: "texture[2]:texture_base_1"
+            Value: "/material/road/road_template/sc/dirt_def_dk"
+        }
+        Texture {
+            Tag: "texture[3]:texture_mult_1"
+            Value: "/material/road/road_template/sc/asphalt_def_dk"
+        }
+    }
+    Material {
+        Alias: "shoulder_decal"
+        Effect: "eut2.dif.spec.decal.over"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.0 0.0 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 4.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/road/road_template/sc/decal_def_dk"
+        }
+    }
+}
+Look {
+    Name: "gray_dk"
+    Material {
+        Alias: "curb_01_scan_trans"
+        Effect: "eut2.dif.spec.weight.weight.dif.spec.weight"
+        Flags: 0
+        AttributeCount: 8
+        TextureCount: 2
+        Attribute {
+            Format: STRING
+            Tag: "substance"
+            Value: ( "road" )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.20000000298023224 0.20000000298023224 0.20000000298023224 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 12.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT4
+            Tag: "aux[3]"
+            Value: ( 0.20000000298023224 0.20000000298023224 0.20000000298023224 12.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection2"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/road/road_template/sc/ter_trans_placeholder"
+        }
+        Texture {
+            Tag: "texture[1]:texture_over"
+            Value: "/material/road/road_template/sc/shoulder_01"
+        }
+    }
+    Material {
+        Alias: "road_scan_01"
+        Effect: "eut2.dif.spec.weight.mult2"
+        Flags: 0
+        AttributeCount: 7
+        TextureCount: 2
+        Attribute {
+            Format: STRING
+            Tag: "substance"
+            Value: ( "road" )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 40.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 1.2999999523162842 )
+        }
+        Attribute {
+            Format: FLOAT2
+            Tag: "aux[5]"
+            Value: ( 4.400000095367432 12.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/road/road_template/sc/dirt_gray_dk"
+        }
+        Texture {
+            Tag: "texture[1]:texture_mult"
+            Value: "/material/road/road_template/sc/asphalt_gray_dk"
+        }
+    }
+    Material {
+        Alias: "stripes_01"
+        Effect: "eut2.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/stripes_01"
+        }
+    }
+    Material {
+        Alias: "decal_ground_01"
+        Effect: "eut2.dif.spec.decal.over"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.0 0.0 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 4.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/special/decal_ground_01"
+        }
+    }
+    Material {
+        Alias: "road_01_scan_trans"
+        Effect: "eut2.dif.spec.weight.mult2.weight2"
+        Flags: 0
+        AttributeCount: 9
+        TextureCount: 4
+        Attribute {
+            Format: STRING
+            Tag: "substance"
+            Value: ( "road" )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 40.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 1.2999999523162842 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection2"
+            Value: ( 1.2999999523162842 )
+        }
+        Attribute {
+            Format: FLOAT4
+            Tag: "aux[3]"
+            Value: ( 1.0 1.0 1.0 40.0 )
+        }
+        Attribute {
+            Format: FLOAT4
+            Tag: "aux[5]"
+            Value: ( 4.400000095367432 12.0 4.400000095367432 12.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/road/road_template/sc/dirt_gray_dk"
+        }
+        Texture {
+            Tag: "texture[1]:texture_mult"
+            Value: "/material/road/road_template/sc/asphalt_gray_dk"
+        }
+        Texture {
+            Tag: "texture[2]:texture_base_1"
+            Value: "/material/road/road_template/sc/dirt_gray_dk"
+        }
+        Texture {
+            Tag: "texture[3]:texture_mult_1"
+            Value: "/material/road/road_template/sc/asphalt_gray_dk"
+        }
+    }
+    Material {
+        Alias: "shoulder_decal"
+        Effect: "eut2.dif.spec.decal.over"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.0 0.0 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 4.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/road/road_template/sc/decal_def_dk"
+        }
+    }
+}
+Look {
+    Name: "new_sc"
+    Material {
+        Alias: "curb_01_scan_trans"
+        Effect: "eut2.dif.spec.weight.weight.dif.spec.weight"
+        Flags: 0
+        AttributeCount: 8
+        TextureCount: 2
+        Attribute {
+            Format: STRING
+            Tag: "substance"
+            Value: ( "road" )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.20000000298023224 0.20000000298023224 0.20000000298023224 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 12.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT4
+            Tag: "aux[3]"
+            Value: ( 0.20000000298023224 0.20000000298023224 0.20000000298023224 12.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection2"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/road/road_template/sc/ter_trans_placeholder"
+        }
+        Texture {
+            Tag: "texture[1]:texture_over"
+            Value: "/material/road/road_template/sc/shoulder_01"
+        }
+    }
+    Material {
+        Alias: "road_scan_01"
+        Effect: "eut2.dif.spec.weight.mult2"
+        Flags: 0
+        AttributeCount: 7
+        TextureCount: 2
+        Attribute {
+            Format: STRING
+            Tag: "substance"
+            Value: ( "road_dirt" )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 40.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 1.2999999523162842 )
+        }
+        Attribute {
+            Format: FLOAT2
+            Tag: "aux[5]"
+            Value: ( 4.400000095367432 12.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/road/road_template/sc/dirt_new_sc"
+        }
+        Texture {
+            Tag: "texture[1]:texture_mult"
+            Value: "/material/road/road_template/sc/asphalt_new_sc"
+        }
+    }
+    Material {
+        Alias: "stripes_01"
+        Effect: "eut2.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/stripes_01"
+        }
+    }
+    Material {
+        Alias: "decal_ground_01"
+        Effect: "eut2.dif.spec.decal.over"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.0 0.0 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 4.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/special/decal_ground_01"
+        }
+    }
+    Material {
+        Alias: "road_01_scan_trans"
+        Effect: "eut2.dif.spec.weight.mult2.weight2"
+        Flags: 0
+        AttributeCount: 9
+        TextureCount: 4
+        Attribute {
+            Format: STRING
+            Tag: "substance"
+            Value: ( "road_dirt" )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 40.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 1.2999999523162842 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection2"
+            Value: ( 1.2999999523162842 )
+        }
+        Attribute {
+            Format: FLOAT4
+            Tag: "aux[3]"
+            Value: ( 1.0 1.0 1.0 40.0 )
+        }
+        Attribute {
+            Format: FLOAT4
+            Tag: "aux[5]"
+            Value: ( 4.400000095367432 12.0 4.400000095367432 12.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/road/road_template/sc/dirt_new_sc"
+        }
+        Texture {
+            Tag: "texture[1]:texture_mult"
+            Value: "/material/road/road_template/sc/asphalt_new_sc"
+        }
+        Texture {
+            Tag: "texture[2]:texture_base_1"
+            Value: "/material/road/road_template/sc/dirt_new_sc"
+        }
+        Texture {
+            Tag: "texture[3]:texture_mult_1"
+            Value: "/material/road/road_template/sc/asphalt_new_sc"
+        }
+    }
+    Material {
+        Alias: "shoulder_decal"
+        Effect: "eut2.dif.spec.decal.over"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.0 0.0 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 4.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/road/road_template/sc/decal_def_dk"
+        }
+    }
+}
+Look {
+    Name: "def_swe"
+    Material {
+        Alias: "curb_01_scan_trans"
+        Effect: "eut2.dif.spec.weight.weight.dif.spec.weight"
+        Flags: 0
+        AttributeCount: 8
+        TextureCount: 2
+        Attribute {
+            Format: STRING
+            Tag: "substance"
+            Value: ( "road" )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.20000000298023224 0.20000000298023224 0.20000000298023224 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 12.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT4
+            Tag: "aux[3]"
+            Value: ( 0.20000000298023224 0.20000000298023224 0.20000000298023224 12.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection2"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/road/road_template/sc/ter_trans_placeholder"
+        }
+        Texture {
+            Tag: "texture[1]:texture_over"
+            Value: "/material/road/road_template/sc/shoulder_01"
+        }
+    }
+    Material {
+        Alias: "road_scan_01"
+        Effect: "eut2.dif.spec.weight.mult2"
+        Flags: 0
+        AttributeCount: 7
+        TextureCount: 2
+        Attribute {
+            Format: STRING
+            Tag: "substance"
+            Value: ( "road" )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 0.9179999828338623 0.9179999828338623 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 40.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 1.2999999523162842 )
+        }
+        Attribute {
+            Format: FLOAT2
+            Tag: "aux[5]"
+            Value: ( 4.400000095367432 12.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/road/road_template/sc/dirt_def_swe"
+        }
+        Texture {
+            Tag: "texture[1]:texture_mult"
+            Value: "/material/road/road_template/sc/asphalt_def_swe"
+        }
+    }
+    Material {
+        Alias: "stripes_01"
+        Effect: "eut2.dif.spec"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 65.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/tiled/stripes_01"
+        }
+    }
+    Material {
+        Alias: "decal_ground_01"
+        Effect: "eut2.dif.spec.decal.over"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.0 0.0 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 4.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/special/decal_ground_01"
+        }
+    }
+    Material {
+        Alias: "road_01_scan_trans"
+        Effect: "eut2.dif.spec.weight.mult2.weight2"
+        Flags: 0
+        AttributeCount: 9
+        TextureCount: 4
+        Attribute {
+            Format: STRING
+            Tag: "substance"
+            Value: ( "road" )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 1.0 0.9179999828338623 0.9179999828338623 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 40.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 1.2999999523162842 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection2"
+            Value: ( 1.2999999523162842 )
+        }
+        Attribute {
+            Format: FLOAT4
+            Tag: "aux[3]"
+            Value: ( 1.0 0.9179999828338623 0.9179999828338623 40.0 )
+        }
+        Attribute {
+            Format: FLOAT4
+            Tag: "aux[5]"
+            Value: ( 4.400000095367432 12.0 4.400000095367432 12.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/road/road_template/sc/dirt_def_swe"
+        }
+        Texture {
+            Tag: "texture[1]:texture_mult"
+            Value: "/material/road/road_template/sc/asphalt_def_swe"
+        }
+        Texture {
+            Tag: "texture[2]:texture_base_1"
+            Value: "/material/road/road_template/sc/dirt_def_swe"
+        }
+        Texture {
+            Tag: "texture[3]:texture_mult_1"
+            Value: "/material/road/road_template/sc/asphalt_def_swe"
+        }
+    }
+    Material {
+        Alias: "shoulder_decal"
+        Effect: "eut2.dif.spec.decal.over"
+        Flags: 0
+        AttributeCount: 5
+        TextureCount: 1
+        Attribute {
+            Format: FLOAT3
+            Tag: "diffuse"
+            Value: ( 1.0 1.0 1.0 )
+        }
+        Attribute {
+            Format: FLOAT3
+            Tag: "specular"
+            Value: ( 0.0 0.0 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "shininess"
+            Value: ( 4.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "add_ambient"
+            Value: ( 0.0 )
+        }
+        Attribute {
+            Format: FLOAT
+            Tag: "reflection"
+            Value: ( 0.0 )
+        }
+        Texture {
+            Tag: "texture[0]:texture_base"
+            Value: "/material/road/road_template/sc/decal_def_dk"
+        }
+    }
+}
+Variant {
+    Name: "shoulder_a"
+    Part {
+        Name: "tran_0_sh"
+        AttributeCount: 1
+        Attribute {
+            Format: INT
+            Tag: "visible"
+            Value: ( 1 )
+        }
+    }
+    Part {
+        Name: "vis"
+        AttributeCount: 1
+        Attribute {
+            Format: INT
+            Tag: "visible"
+            Value: ( 1 )
+        }
+    }
+    Part {
+        Name: "coll_sh"
+        AttributeCount: 1
+        Attribute {
+            Format: INT
+            Tag: "visible"
+            Value: ( 1 )
+        }
+    }
+    Part {
+        Name: "tran_1_sh"
+        AttributeCount: 1
+        Attribute {
+            Format: INT
+            Tag: "visible"
+            Value: ( 1 )
+        }
+    }
+    Part {
+        Name: "tran_2_sh"
+        AttributeCount: 1
+        Attribute {
+            Format: INT
+            Tag: "visible"
+            Value: ( 1 )
+        }
+    }
+    Part {
+        Name: "coll"
+        AttributeCount: 1
+        Attribute {
+            Format: INT
+            Tag: "visible"
+            Value: ( 1 )
+        }
+    }
+    Part {
+        Name: "decal_sh"
+        AttributeCount: 1
+        Attribute {
+            Format: INT
+            Tag: "visible"
+            Value: ( 1 )
+        }
+    }
+}
+

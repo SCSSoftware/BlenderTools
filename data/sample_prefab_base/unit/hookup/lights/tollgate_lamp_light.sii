@@ -1,0 +1,19 @@
+SiiNunit
+{
+light_source : tollgate.lamp.light
+{
+	ambient_color: (0.0000, 0.0000, 0.0000)
+	diffuse_color: (0.9047, 0.8632, 0.6038)
+	specular_color: (0.9911, 0.9911, 0.9387)
+
+	range: 40
+	cut_range: 40
+	inner_angle: 50.0
+	outer_angle: 110.0
+	attenuation_start_range: 17
+
+	dir_type: all
+	model: "/model/flare/lamp_flare.pmd"
+	scale_factor: 2
+}
+}

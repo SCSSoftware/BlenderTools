@@ -1,0 +1,8 @@
+SiiNunit
+{
+flare_lamp : yell.garage.light
+{
+	dir_type: all
+	model: "/model/flare/yell_garage_light.pmd"
+}
+}
