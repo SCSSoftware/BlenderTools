@@ -33,7 +33,7 @@ Notes:
 ------
  - In case of trouble installing SCS Blender Tools make sure you're using
    compatible Blender version. SCS Blender Tools for Blender versions
-   prior 2.73 are not supported.
+   prior 2.75 are not supported.
 
 
 Help, questions, troubleshooting:
