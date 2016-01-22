@@ -22,7 +22,6 @@
 from io_scs_tools.consts import Mesh as _MESH_consts
 from io_scs_tools.internals.shaders.eut2.dif_spec_weight_mult2 import DifSpecWeightMult2
 from io_scs_tools.internals.shaders.eut2.std_node_groups import mult2_mix
-from io_scs_tools.internals.shaders.flavors import tg0
 from io_scs_tools.internals.shaders.flavors import tg1
 from io_scs_tools.utils import convert as _convert_utils
 
@@ -65,7 +64,6 @@ class DifSpecWeightMult2Weight2(DifSpecWeightMult2):
 
         base_tex_n = node_tree.nodes[DifSpecWeightMult2.BASE_TEX_NODE]
         geom_n = node_tree.nodes[DifSpecWeightMult2.GEOM_NODE]
-        sec_geom_n = node_tree.nodes[DifSpecWeightMult2.SEC_GEOM_NODE]
         spec_col_n = node_tree.nodes[DifSpecWeightMult2.SPEC_COL_NODE]
         vcol_group_n = node_tree.nodes[DifSpecWeightMult2.VCOL_GROUP_NODE]
         mult2_mix_gn = node_tree.nodes[DifSpecWeightMult2.MULT2_MIX_GROUP_NODE]
@@ -74,7 +72,6 @@ class DifSpecWeightMult2Weight2(DifSpecWeightMult2):
         opacity_mult_n = node_tree.nodes[DifSpecWeightMult2.OPACITY_NODE]
 
         # delete existing
-        node_tree.nodes.remove(geom_n)
         node_tree.nodes.remove(opacity_mult_n)
 
         # move existing
@@ -130,7 +127,7 @@ class DifSpecWeightMult2Weight2(DifSpecWeightMult2):
 
         # links creation
         node_tree.links.new(sec_uv_scale_n.inputs["Vector"], thrd_geom_n.outputs["UV"])
-        node_tree.links.new(base_tex_n.inputs["Vector"], sec_geom_n.outputs["UV"])
+        node_tree.links.new(base_tex_n.inputs["Vector"], geom_n.outputs["UV"])
 
         node_tree.links.new(mult_1_tex_n.inputs["Vector"], sec_uv_scale_n.outputs["Vector"])
         node_tree.links.new(base_1_tex_n.inputs["Vector"], thrd_geom_n.outputs["UV"])
@@ -302,44 +299,6 @@ class DifSpecWeightMult2Weight2(DifSpecWeightMult2):
         pass  # NOTE: no support for this flavor; overriding with empty function
 
     @staticmethod
-    def set_tg0_flavor(node_tree, switch_on):
-        """Set zero texture generation flavor to this shader.
-
-        :param node_tree: node tree of current shader
-        :type node_tree: bpy.types.NodeTree
-        :param switch_on: flag indication if flavor should be switched on or off
-        :type switch_on: bool
-        """
-
-        if switch_on and not tg0.is_set(node_tree):
-
-            out_node = node_tree.nodes[DifSpecWeightMult2Weight2.SEC_GEOM_NODE]
-            in_node = node_tree.nodes[DifSpecWeightMult2Weight2.UV_SCALE_NODE]
-
-            out_node.location.x -= 185 * 2
-            location = (out_node.location.x + 185, out_node.location.y)
-
-            tg0.init(node_tree, location, out_node.outputs["Global"], in_node.inputs["Vector"])
-
-        elif not switch_on:
-
-            tg0.delete(node_tree)
-
-    @staticmethod
-    def set_aux0(node_tree, aux_property):
-        """Set zero texture generation scale.
-
-        :param node_tree: node tree of current shader
-        :type node_tree: bpy.types.NodeTree
-        :param aux_property: secondary specular color represented with property group
-        :type aux_property: bpy.types.IDPropertyGroup
-        """
-
-        if tg0.is_set(node_tree):
-
-            tg0.set_scale(node_tree, aux_property[0]['value'], aux_property[1]['value'])
-
-    @staticmethod
     def set_tg1_flavor(node_tree, switch_on):
         """Set zero texture generation flavor to this shader.
 
@@ -353,11 +312,13 @@ class DifSpecWeightMult2Weight2(DifSpecWeightMult2):
 
             out_node = node_tree.nodes[DifSpecWeightMult2Weight2.THRD_GEOM_NODE]
             in_node = node_tree.nodes[DifSpecWeightMult2Weight2.SEC_UV_SCALE_NODE]
+            in_node2 = node_tree.nodes[DifSpecWeightMult2Weight2.BASE_1_TEX_NODE]
 
             out_node.location.x -= 185 * 2
             location = (out_node.location.x + 185, out_node.location.y)
 
             tg1.init(node_tree, location, out_node.outputs["Global"], in_node.inputs["Vector"])
+            tg1.init(node_tree, location, out_node.outputs["Global"], in_node2.inputs["Vector"])
 
         elif not switch_on:
 

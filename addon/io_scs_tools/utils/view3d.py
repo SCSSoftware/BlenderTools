@@ -19,6 +19,7 @@
 # Copyright (C) 2013-2014: SCS Software
 
 import bpy
+from io_scs_tools.utils import get_scs_globals as _get_scs_globals
 from io_scs_tools.utils.printout import lprint
 
 
@@ -53,8 +54,8 @@ def switch_local_view(show):
                 }
                 bpy.ops.view3d.localview(override)
 
-    if bpy.context.scene.scs_props.preview_export_selection_active != show:
-        bpy.context.scene.scs_props.preview_export_selection_active = show
+    if _get_scs_globals().preview_export_selection_active != show:
+        _get_scs_globals().preview_export_selection_active = show
         # redraw properties panels because of preview property change
         for area in bpy.context.screen.areas:
             if area.type == "PROPERTIES":

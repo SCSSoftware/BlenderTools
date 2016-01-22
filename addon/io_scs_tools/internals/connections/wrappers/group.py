@@ -22,6 +22,7 @@ import bpy
 from io_scs_tools.consts import ConnectionsStorage as _CS_consts
 from io_scs_tools.internals.connections import core as _core
 from io_scs_tools.internals.open_gl import primitive as _gl_primitive
+from io_scs_tools.utils import get_scs_globals as _get_scs_globals
 from io_scs_tools.utils.printout import lprint as lprint
 
 _GROUP_NAME = _CS_consts.group_name
@@ -276,12 +277,15 @@ def switch_to_stall():
     _CACHE[_DATA_UP_TO_DATE] = True
 
 
-def _execute_draw():
+def _execute_draw(optimized_drawing):
     """Checks if connections should be drawn.
+
+    :param optimized_drawing: optimized connections drawing property from SCS globals
+    :type optimized_drawing: bool
     """
 
-    # exlude optimization drawing
-    if not bpy.context.scene.scs_props.optimized_connections_drawing:
+    # exclude optimization drawing
+    if not optimized_drawing:
         _core.update_for_redraw(bpy.data.groups[_GROUP_NAME], None)
         return True
 
@@ -296,7 +300,9 @@ def draw(visible_loc_names):
     :type visible_loc_names: dict
     """
 
-    if _execute_draw():
+    scs_globals = _get_scs_globals()
+
+    if _execute_draw(scs_globals.optimized_connections_drawing):
 
         connections = bpy.data.groups[_GROUP_NAME][_core.MAIN_DICT][_core.REFS][_core.CONNECTIONS][_core.ENTRIES]
 
@@ -308,6 +314,6 @@ def draw(visible_loc_names):
 
             locator_type = bpy.data.objects[conn_entry[_core.IN]].scs_props.locator_prefab_type
             if locator_type == "Navigation Point":
-                _gl_primitive.draw_shape_curve(conn_entry[_core.DATA], not conn_entry[_core.VALID])
+                _gl_primitive.draw_shape_curve(conn_entry[_core.DATA], not conn_entry[_core.VALID], scs_globals)
             else:
-                _gl_primitive.draw_shape_line(conn_entry[_core.DATA], not conn_entry[_core.VALID], locator_type == "Map Point")
+                _gl_primitive.draw_shape_line(conn_entry[_core.DATA], not conn_entry[_core.VALID], locator_type == "Map Point", scs_globals)

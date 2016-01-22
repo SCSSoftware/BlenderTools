@@ -370,21 +370,21 @@ def draw_point(vector, color):
     glEnd()
 
 
-def draw_circle(radius, steps, mat, scene_scs_props):
+def draw_circle(radius, steps, mat, scs_globals):
     """
     Draw a horizontal circle of given radius and using given number of steps.
     :param radius:
     :param steps:
     :param mat:
-    :param scene_scs_props:
+    :param scs_globals:
     :return:
     """
     import math
 
     glBegin(GL_LINE_LOOP)
-    glColor3f(scene_scs_props.locator_prefab_wire_color.r,
-              scene_scs_props.locator_prefab_wire_color.g,
-              scene_scs_props.locator_prefab_wire_color.b)
+    glColor3f(scs_globals.locator_prefab_wire_color.r,
+              scs_globals.locator_prefab_wire_color.g,
+              scs_globals.locator_prefab_wire_color.b)
     for step in range(steps):
         a = (math.pi * 2 / steps) * step
         glVertex3f(*(mat * Vector((0 + radius * math.cos(a), 0 + radius * math.sin(a), 0.0))))
@@ -480,7 +480,7 @@ def draw_shape_z_axis_neg(mat, size):
     glLineWidth(1.0)
 
 
-def draw_shape_line(line, stipple, is_map_line):
+def draw_shape_line(line, stipple, is_map_line, scs_globals):
     """Draw line from loc_0 to loc_1 with specified colors of the ends ("line_colorX").
     There is also middle point loc_btw which separates color sides
 
@@ -493,6 +493,8 @@ def draw_shape_line(line, stipple, is_map_line):
     :type stipple: bool
     :param is_map_line: boolean indicating if line is map line; if false it means it's trigger line
     :type is_map_line: bool
+    :param scs_globals: SCS globals
+    :type scs_globals: io_scs_tools.properties.world.GlobalSCSProps
     :return:
     :rtype:
     """
@@ -500,25 +502,25 @@ def draw_shape_line(line, stipple, is_map_line):
         color0 = line['line_color0']
     else:
         if is_map_line:
-            color0 = (bpy.context.scene.scs_props.mp_connection_base_color.r,
-                      bpy.context.scene.scs_props.mp_connection_base_color.g,
-                      bpy.context.scene.scs_props.mp_connection_base_color.b)
+            color0 = (scs_globals.mp_connection_base_color.r,
+                      scs_globals.mp_connection_base_color.g,
+                      scs_globals.mp_connection_base_color.b)
         else:
-            color0 = (bpy.context.scene.scs_props.tp_connection_base_color.r,
-                      bpy.context.scene.scs_props.tp_connection_base_color.g,
-                      bpy.context.scene.scs_props.tp_connection_base_color.b)
+            color0 = (scs_globals.tp_connection_base_color.r,
+                      scs_globals.tp_connection_base_color.g,
+                      scs_globals.tp_connection_base_color.b)
 
     if 'line_color1' in line:
         color1 = line['line_color1']
     else:
         if is_map_line:
-            color1 = (bpy.context.scene.scs_props.mp_connection_base_color.r,
-                      bpy.context.scene.scs_props.mp_connection_base_color.g,
-                      bpy.context.scene.scs_props.mp_connection_base_color.b)
+            color1 = (scs_globals.mp_connection_base_color.r,
+                      scs_globals.mp_connection_base_color.g,
+                      scs_globals.mp_connection_base_color.b)
         else:
-            color1 = (bpy.context.scene.scs_props.tp_connection_base_color.r,
-                      bpy.context.scene.scs_props.tp_connection_base_color.g,
-                      bpy.context.scene.scs_props.tp_connection_base_color.b)
+            color1 = (scs_globals.tp_connection_base_color.r,
+                      scs_globals.tp_connection_base_color.g,
+                      scs_globals.tp_connection_base_color.b)
 
     if stipple:
         glEnable(GL_LINE_STIPPLE)
@@ -534,7 +536,7 @@ def draw_shape_line(line, stipple, is_map_line):
         glDisable(GL_LINE_STIPPLE)
 
 
-def draw_shape_curve(curve, stipple):
+def draw_shape_curve(curve, stipple, scs_globals):
     """Draw curve from location points of dictionary entry "curve_points" with specified step
     in entry "curve_steps".
     First half of points will be drawn with color specified in "curve_color0" and second half
@@ -547,22 +549,24 @@ def draw_shape_curve(curve, stipple):
     :type curve: dict
     :param stipple: flag indicating if line should be stipple or not
     :type stipple: bool
+    :param scs_globals: SCS globals
+    :type scs_globals: io_scs_tools.properties.world.GlobalSCSProps
     :return:
     :rtype:
     """
     if 'curve_color0' in curve:
         color0 = curve['curve_color0']
     else:
-        color0 = (bpy.context.scene.scs_props.np_connection_base_color.r,
-                  bpy.context.scene.scs_props.np_connection_base_color.g,
-                  bpy.context.scene.scs_props.np_connection_base_color.b)
+        color0 = (scs_globals.np_connection_base_color.r,
+                  scs_globals.np_connection_base_color.g,
+                  scs_globals.np_connection_base_color.b)
 
     if 'curve_color1' in curve:
         color1 = curve['curve_color1']
     else:
-        color1 = (bpy.context.scene.scs_props.np_connection_base_color.r,
-                  bpy.context.scene.scs_props.np_connection_base_color.g,
-                  bpy.context.scene.scs_props.np_connection_base_color.b)
+        color1 = (scs_globals.np_connection_base_color.r,
+                  scs_globals.np_connection_base_color.g,
+                  scs_globals.np_connection_base_color.b)
 
     glColor3f(color0[0], color0[1], color0[2])
 

@@ -22,15 +22,15 @@ from io_scs_tools.internals.open_gl import primitive as _primitive
 from mathutils import Matrix
 
 
-def draw_shape_box(mat, obj_scs_props, scene_scs_props):
+def draw_shape_box(mat, obj_scs_props, scs_globals):
     """Draw box collider.
 
     :param mat: Object matrix 4x4
     :type mat: Matrix
     :param obj_scs_props: SCS Object properties
     :type obj_scs_props: prop
-    :param scene_scs_props: Blender Scene properties
-    :type scene_scs_props: prop
+    :param scs_globals: global settings
+    :type scs_globals: prop
     """
 
     if obj_scs_props.locator_collider_centered:
@@ -48,22 +48,22 @@ def draw_shape_box(mat, obj_scs_props, scene_scs_props):
     _primitive.draw_polygon_object(mat1,
                                    cube_vertices,
                                    cube_faces,
-                                   scene_scs_props.locator_coll_face_color,
+                                   scs_globals.locator_coll_face_color,
                                    obj_scs_props.locator_collider_faces,
                                    obj_scs_props.locator_collider_wires,
                                    cube_wire_lines,
-                                   scene_scs_props.locator_coll_wire_color)
+                                   scs_globals.locator_coll_wire_color)
 
 
-def draw_shape_sphere(mat, obj_scs_props, scene_scs_props):
+def draw_shape_sphere(mat, obj_scs_props, scs_globals):
     """Draw sphere collider.
 
     :param mat: Object matrix 4x4
     :type mat: Matrix
     :param obj_scs_props: SCS Object properties
     :type obj_scs_props: prop
-    :param scene_scs_props: Blender Scene properties
-    :type scene_scs_props: prop
+    :param scs_globals: global settings
+    :type scs_globals: prop
     """
 
     if obj_scs_props.locator_collider_centered:
@@ -77,22 +77,22 @@ def draw_shape_sphere(mat, obj_scs_props, scene_scs_props):
     _primitive.draw_polygon_object(mat1,
                                    sphere_vertices,
                                    sphere_faces,
-                                   scene_scs_props.locator_coll_face_color,
+                                   scs_globals.locator_coll_face_color,
                                    obj_scs_props.locator_collider_faces,
                                    obj_scs_props.locator_collider_wires,
                                    sphere_wire_lines,
-                                   scene_scs_props.locator_coll_wire_color)
+                                   scs_globals.locator_coll_wire_color)
 
 
-def draw_shape_capsule(mat, obj_scs_props, scene_scs_props):
+def draw_shape_capsule(mat, obj_scs_props, scs_globals):
     """Draw capsule collider.
 
     :param mat: Object matrix 4x4
     :type mat: Matrix
     :param obj_scs_props: SCS Object properties
     :type obj_scs_props: prop
-    :param scene_scs_props: Blender Scene properties
-    :type scene_scs_props: prop
+    :param scs_globals: global settings
+    :type scs_globals: prop
     """
 
     if obj_scs_props.locator_collider_centered:
@@ -121,24 +121,24 @@ def draw_shape_capsule(mat, obj_scs_props, scene_scs_props):
     _primitive.draw_polygon_object(mat,
                                    capsule_vertices,
                                    capsule_faces,
-                                   scene_scs_props.locator_coll_face_color,
+                                   scs_globals.locator_coll_face_color,
                                    obj_scs_props.locator_collider_faces,
                                    obj_scs_props.locator_collider_wires,
                                    capsule_wire_lines,
-                                   scene_scs_props.locator_coll_wire_color,
+                                   scs_globals.locator_coll_wire_color,
                                    face_transforms,
                                    wire_transforms)
 
 
-def draw_shape_cylinder(mat, obj_scs_props, scene_scs_props):
+def draw_shape_cylinder(mat, obj_scs_props, scs_globals):
     """Draw cylinder collider.
 
     :param mat: Object matrix 4x4
     :type mat: Matrix
     :param obj_scs_props: SCS Object properties
     :type obj_scs_props: prop
-    :param scene_scs_props: Blender Scene properties
-    :type scene_scs_props: prop
+    :param scs_globals: global settings
+    :type scs_globals: prop
     """
 
     if obj_scs_props.locator_collider_centered:
@@ -165,24 +165,24 @@ def draw_shape_cylinder(mat, obj_scs_props, scene_scs_props):
     _primitive.draw_polygon_object(mat,
                                    cylinder_vertices,
                                    cylinder_faces,
-                                   scene_scs_props.locator_coll_face_color,
+                                   scs_globals.locator_coll_face_color,
                                    obj_scs_props.locator_collider_faces,
                                    obj_scs_props.locator_collider_wires,
                                    cylinder_wire_lines,
-                                   scene_scs_props.locator_coll_wire_color,
+                                   scs_globals.locator_coll_wire_color,
                                    face_transforms,
                                    wire_transforms)
 
 
-def draw_shape_convex(mat, obj_scs_props, scene_scs_props):
+def draw_shape_convex(mat, obj_scs_props, scs_globals):
     """Draw convex collider.
 
     :param mat: Object matrix 4x4
     :type mat: Matrix
     :param obj_scs_props: SCS Object properties
     :type obj_scs_props: prop
-    :param scene_scs_props: Blender Scene properties
-    :type scene_scs_props: prop
+    :param scs_globals: global settings
+    :type scs_globals: prop
     """
     verts = obj_scs_props.get("coll_convex_verts", None)
     faces = obj_scs_props.get("coll_convex_faces", None)
@@ -191,32 +191,32 @@ def draw_shape_convex(mat, obj_scs_props, scene_scs_props):
         _primitive.draw_polygon_object(mat,
                                        verts,
                                        faces,
-                                       scene_scs_props.locator_coll_face_color,
+                                       scs_globals.locator_coll_face_color,
                                        obj_scs_props.locator_collider_faces,
                                        obj_scs_props.locator_collider_wires,
                                        None,
-                                       scene_scs_props.locator_coll_wire_color)
+                                       scs_globals.locator_coll_wire_color)
 
 
-def draw_collision_locator(obj, scene_scs_props):
+def draw_collision_locator(obj, scs_globals):
     """Draw Collision locator.
 
     :param obj: Blender Object
     :type obj: Object
-    :param scene_scs_props: Blender Scene properties
-    :type scene_scs_props: prop
+    :param scs_globals: global settings
+    :type scs_globals: prop
     """
 
     tran, rot, sca = obj.matrix_world.decompose()
     mat_orig = Matrix.Translation(tran).to_4x4() * rot.to_matrix().to_4x4()
 
     if obj.scs_props.locator_collider_type == 'Box':
-        draw_shape_box(mat_orig, obj.scs_props, scene_scs_props)
+        draw_shape_box(mat_orig, obj.scs_props, scs_globals)
     if obj.scs_props.locator_collider_type == 'Sphere':
-        draw_shape_sphere(mat_orig, obj.scs_props, scene_scs_props)
+        draw_shape_sphere(mat_orig, obj.scs_props, scs_globals)
     if obj.scs_props.locator_collider_type == 'Capsule':
-        draw_shape_capsule(mat_orig, obj.scs_props, scene_scs_props)
+        draw_shape_capsule(mat_orig, obj.scs_props, scs_globals)
     if obj.scs_props.locator_collider_type == 'Cylinder':
-        draw_shape_cylinder(mat_orig, obj.scs_props, scene_scs_props)
+        draw_shape_cylinder(mat_orig, obj.scs_props, scs_globals)
     if obj.scs_props.locator_collider_type == 'Convex':
-        draw_shape_convex(mat_orig, obj.scs_props, scene_scs_props)
+        draw_shape_convex(mat_orig, obj.scs_props, scs_globals)

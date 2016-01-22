@@ -60,9 +60,19 @@ def __update_look__(self, context):
     """
 
     if hasattr(context, "active_object") and hasattr(context.active_object, "active_material") and context.active_object.active_material:
-        scs_root = _object_utils.get_scs_root(context.active_object)
-        if scs_root:
-            _looks.update_look_from_material(scs_root, context.active_object.active_material, "preset_change" in self)
+
+        is_preset_change = "preset_change" in self
+
+        scs_roots = []
+        if is_preset_change:  # on preset change we have to update all scs roots to sync shader type
+            scs_roots = _object_utils.gather_scs_roots(bpy.data.objects)
+        else:
+            scs_root = _object_utils.get_scs_root(context.active_object)
+            if scs_root:
+                scs_roots.append(scs_root)
+
+        for scs_root in scs_roots:
+            _looks.update_look_from_material(scs_root, context.active_object.active_material, is_preset_change)
 
 
 def __update_shader_attribute__(self, context, attr_type):

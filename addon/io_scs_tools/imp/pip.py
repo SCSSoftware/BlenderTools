@@ -472,14 +472,12 @@ def _create_traffic_light_locator(
     locator = _object_utils.create_locator_empty(tsem_name, tsem_position, tsem_rotation, (1, 1, 1), 0.1, 'Prefab')
     if locator:
         locator.scs_props.locator_prefab_type = 'Traffic Semaphore'
-        if tsem_id == -1:
-            tsem_id = 'none'
-        else:
-            tsem_id = str(tsem_id)
-        locator.scs_props.locator_prefab_tsem_id = tsem_id
+        locator.scs_props.locator_prefab_tsem_id = str(tsem_id)
 
-        tsem_profile_value = _inventory.get_item_name(scs_tsem_profile_inventory, tsem_profile, report_errors=True)
-        locator.scs_props.locator_prefab_tsem_profile = tsem_profile_value
+        # try to set semaphore profile only if it has some value
+        if tsem_profile != "":
+            tsem_profile_value = _inventory.get_item_name(scs_tsem_profile_inventory, tsem_profile, report_errors=True)
+            locator.scs_props.locator_prefab_tsem_profile = tsem_profile_value
 
         locator.scs_props.locator_prefab_tsem_type = str(tsem_type)
         locator.scs_props.locator_prefab_tsem_gs = tsem_intervals[0]
@@ -753,6 +751,9 @@ def load(filepath, terrain_points_trans):
 
             if tsem_name is None:
                 tsem_name = str('Semaphore_Locator_' + str(tsem_index))
+
+            if tsem_id is None:
+                tsem_id = -1
 
             traffic_lights_data[tsem_name] = (
                 tsem_position,

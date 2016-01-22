@@ -20,7 +20,10 @@
 
 import bpy
 import os
-from bpy.props import StringProperty, CollectionProperty, EnumProperty, IntProperty
+import platform
+import subprocess
+import shutil
+from bpy.props import StringProperty, CollectionProperty, EnumProperty, IntProperty, BoolProperty
 from io_scs_tools.utils import object as _object_utils
 from io_scs_tools.utils import view3d as _view3d_utils
 from io_scs_tools.utils import path as _path_utils
@@ -84,11 +87,11 @@ class Export:
     Wrapper class for better navigation in file
     """
 
-    class ExportSelected(bpy.types.Operator):
+    class ExportByScope(bpy.types.Operator):
         """Export selected operator."""
-        bl_idname = "scene.export_selected"
-        bl_label = "Export Selected"
-        bl_description = "Export selected objects only"
+        bl_idname = "scene.export_scs_content_by_scope"
+        bl_label = "Export By Used Scope"
+        bl_description = "Export SCS models depending on selected export scope."
         bl_options = set()
 
         @staticmethod
@@ -191,10 +194,18 @@ class Export:
             :return: succes of batch export
             :rtype: {'FINISHED'} | {'CANCELLED'}
             """
-            _get_scs_globals().content_type = 'selection'  # NOTE: I'm not sure if this is still necessary.
+
+            init_obj_list = ()
+            export_scope = _get_scs_globals().export_scope
+            if export_scope == "selection":
+                init_obj_list = tuple(bpy.context.selected_objects)
+            elif export_scope == "scene":
+                init_obj_list = tuple(bpy.context.scene.objects)
+            elif export_scope == "scenes":
+                init_obj_list = tuple(bpy.data.objects)
 
             try:
-                result = _export.batch_export(self, tuple(bpy.context.selected_objects))
+                result = _export.batch_export(self, init_obj_list)
             except Exception as e:
 
                 result = {"CANCELLED"}
@@ -236,103 +247,25 @@ class Export:
             return {'RUNNING_MODAL'}
 
         def invoke(self, context, event):
-            if len(context.selected_objects) != 0:
-                # show preview or directly execute export
-                if context.scene.scs_props.preview_export_selection:
+            # show preview or directly execute export
+            if _get_scs_globals().export_scope == "selection":
+
+                if _get_scs_globals().preview_export_selection:
+
+                    if len(context.selected_objects) == 0:
+                        print(self.not_root_objs)
+                        if len(self.not_root_objs) > 0:
+                            msg = "Selected objects are not part of any SCS Game Object!"
+                        else:
+                            msg = "Nothing selected!"
+                        self.report({'ERROR'}, msg)
+                        return {'FINISHED'}
+
                     _view3d_utils.switch_local_view(True)
                     context.window_manager.modal_handler_add(self)
                     return {'RUNNING_MODAL'}
-                else:
-                    return self.execute_export(context, False)
-            else:
-                self.report({'ERROR'}, "Nothing to export!")
-                return {'FINISHED'}
 
-    class ExportScene(bpy.types.Operator):
-        """Export active scene operator."""
-        bl_label = "Export Scene"
-        bl_idname = "scene.export_scene"
-        bl_description = "Export active scene only"
-        bl_options = set()
-
-        layers_visibilities = []
-        """List for storing layers visibility in the init of operator"""
-
-        def __init__(self):
-            """Constructor used for showing all scene visibility layers.
-            This provides possibility to updates world matrixes even on hidden objects.
-            """
-            self.layers_visibilities = _view3d_utils.switch_layers_visibility([], True)
-
-        def __del__(self):
-            """Destructor with reverting visible layers.
-            """
-            _view3d_utils.switch_layers_visibility(self.layers_visibilities, False)
-
-        def execute(self, context):
-            lprint('D Export Scene...')
-            _get_scs_globals().content_type = 'scene'
-            init_obj_list = tuple(bpy.context.scene.objects)  # Get all objects from current Scene
-
-            try:
-                result = _export.batch_export(self, init_obj_list)
-            except Exception as e:
-
-                result = {"CANCELLED"}
-                context.window.cursor_modal_restore()
-
-                import traceback
-
-                traceback.print_exc()
-                lprint("E Unexpected %r accured during batch export, see stack trace above.",
-                       (type(e).__name__,),
-                       report_errors=1,
-                       report_warnings=1)
-
-            return result
-
-    class ExportAll(bpy.types.Operator):
-        """Export all scenes operator."""
-        bl_label = "Export All"
-        bl_idname = "scene.export_all"
-        bl_description = "Export all scenes"
-        bl_options = set()
-
-        layers_visibilities = []
-        """List for storing layers visibility in the init of operator"""
-
-        def __init__(self):
-            """Constructor used for showing all scene visibility layers.
-            This provides possibility to updates world matrixes even on hidden objects.
-            """
-            self.layers_visibilities = _view3d_utils.switch_layers_visibility([], True)
-
-        def __del__(self):
-            """Destructor with reverting visible layers.
-            """
-            _view3d_utils.switch_layers_visibility(self.layers_visibilities, False)
-
-        def execute(self, context):
-            lprint('D Export All...')
-            _get_scs_globals().content_type = 'scenes'
-            init_obj_list = tuple(bpy.data.objects)  # Get all objects from all Scenes
-
-            try:
-                result = _export.batch_export(self, init_obj_list)
-            except Exception as e:
-
-                result = {"CANCELLED"}
-                context.window.cursor_modal_restore()
-
-                import traceback
-
-                traceback.print_exc()
-                lprint("E Unexpected %r accured during batch export, see stack trace above.",
-                       (type(e).__name__,),
-                       report_errors=1,
-                       report_warnings=1)
-
-            return result
+            return self.execute_export(context, False)
 
     class ExportAnimAction(bpy.types.Operator):
         bl_label = "Export SCS Animation (PIA)"
@@ -851,4 +784,324 @@ class Animation:
                 # print('anim_export_step: %s' % str(action.scs_props.anim_export_step))
                 action.scs_props.anim_export_step /= 2
 
+            return {'FINISHED'}
+
+
+class ConversionHelper:
+    """
+    Wraper class for better navigation in file
+    """
+
+    class CleanRSRC(bpy.types.Operator):
+        bl_label = "Clean RSRC"
+        bl_idname = "scene.scs_conv_hlpr_clean_rsrc"
+        bl_description = "Cleans 'rsrc' folder from any already converted content"
+
+        def execute(self, context):
+
+            main_path = _get_scs_globals().conv_hlpr_converters_path
+            extra_mount_path = os.path.join(main_path, "extra_mount.txt")
+            convert_cmd_path = os.path.join(main_path, "convert.cmd")
+            rsrc_path = os.path.join(main_path, "rsrc")
+
+            if not os.path.isfile(extra_mount_path) or not os.path.isfile(convert_cmd_path):
+                self.report({'ERROR'}, "Conversion tools path is incorrect! Please fix it first.")
+                return {'CANCELLED'}
+
+            for root, dirs, files in os.walk(rsrc_path):
+                for folder in dirs:
+                    shutil.rmtree(root + os.sep + folder)
+                for file in files:
+                    os.remove(root + os.sep + file)
+
+            self.report({'INFO'}, "Successfully cleaned 'rsrc' folder!")
+            return {'FINISHED'}
+
+    class AddConversionPath(bpy.types.Operator):
+        bl_label = "Add Path"
+        bl_idname = "scene.scs_conv_hlpr_add_path"
+        bl_description = "Adds new path to the stack of paths for conversion"
+
+        directory = StringProperty(
+            name="Directory",
+            description="Any directory on file system",
+            subtype='DIR_PATH',
+        )
+
+        def execute(self, context):
+            scs_globals = _get_scs_globals()
+
+            new_entry = scs_globals.conv_hlpr_custom_paths.add()
+            new_entry.path = self.directory
+
+            # always mark last/new one as active
+            scs_globals.conv_hlpr_custom_paths_active = len(scs_globals.conv_hlpr_custom_paths) - 1
+
+            return {'FINISHED'}
+
+        def invoke(self, context, event):
+            """Invoke a path selector."""
+            self.directory = _get_scs_globals().scs_project_path
+            context.window_manager.fileselect_add(self)
+            return {'RUNNING_MODAL'}
+
+    class RemoveConversionPath(bpy.types.Operator):
+        bl_label = "Remove Path"
+        bl_idname = "scene.scs_conv_hlpr_remove_path"
+        bl_description = "Removes path from the stack of paths for conversion"
+
+        def execute(self, context):
+            scs_globals = _get_scs_globals()
+
+            i = scs_globals.conv_hlpr_custom_paths_active
+            scs_globals.conv_hlpr_custom_paths.remove(i)
+
+            if scs_globals.conv_hlpr_custom_paths_active > 0:
+                scs_globals.conv_hlpr_custom_paths_active -= 1
+
+            return {'FINISHED'}
+
+    class OrderConversionPath(bpy.types.Operator):
+        bl_label = "Order Path"
+        bl_idname = "scene.scs_conv_hlpr_order_path"
+        bl_description = "Change order for the current path"
+
+        move_up = BoolProperty(default=True)
+
+        def execute(self, context):
+            scs_globals = _get_scs_globals()
+
+            i = scs_globals.conv_hlpr_custom_paths_active
+            other_i = i - 1 if self.move_up else i + 1
+
+            if other_i < 0 or other_i >= len(scs_globals.conv_hlpr_custom_paths):
+                self.report({'INFO'}, "Can't order, already on %s!" % ("top" if self.move_up else "bottom"))
+                return {'FINISHED'}
+
+            # get paths
+            path = scs_globals.conv_hlpr_custom_paths[i].path
+            other_path = scs_globals.conv_hlpr_custom_paths[other_i].path
+
+            # switch paths
+            scs_globals.conv_hlpr_custom_paths[i].path = other_path
+            scs_globals.conv_hlpr_custom_paths[other_i].path = path
+
+            # fix active index
+            scs_globals.conv_hlpr_custom_paths_active = other_i
+
+            return {'FINISHED'}
+
+    class RunConversion(bpy.types.Operator):
+        bl_label = "Run Conversion"
+        bl_idname = "scene.scs_conv_hlpr_run"
+        bl_description = "Dry run of conversion tools without managing extra_mount.txt file (Should not be used from UI)"
+
+        def execute(self, context):
+
+            main_path = _get_scs_globals().conv_hlpr_converters_path
+
+            system_type = platform.system()
+
+            if system_type == "Linux":
+
+                if os.system("command -v wineconsole") == 0:
+                    command = ["wineconsole " + os.path.join(main_path, "convert.cmd")]
+                else:
+                    self.report({'ERROR'}, "Conversion aborted! Please install WINE, it's required to run conversion tools on Linux!")
+                    return {'CANCELLED'}
+
+            elif system_type == "Windows":
+
+                command = 'cmd /C ""' + os.path.join(main_path, "convert.cmd") + '""'
+                command = command.replace("\\", "/")
+
+            else:
+
+                self.report({'ERROR'}, "Unsupported OS type! Make sure you are running either Linux or Windows!")
+                return {'CANCELLED'}
+
+            # try to run conversion tools
+            if subprocess.call(command, shell=True) == 0:
+                self.report({'INFO'}, "Conversion done!")
+            else:
+                self.report({'ERROR'}, "Can't run conversion tools or there were errors by converting!")
+
+            return {'FINISHED'}
+
+    class ConvertCurrentBase(bpy.types.Operator):
+        bl_label = "Convert Current Base"
+        bl_idname = "scene.scs_conv_hlpr_convert_current"
+        bl_description = "Converts current SCS Base project (the one which is currently used by SCS Blender Tools) to binary files ready for packing."
+
+        def execute(self, context):
+
+            main_path = _get_scs_globals().conv_hlpr_converters_path
+            extra_mount_path = os.path.join(main_path, "extra_mount.txt")
+            convert_cmd_path = os.path.join(main_path, "convert.cmd")
+
+            if not os.path.isfile(extra_mount_path) or not os.path.isfile(convert_cmd_path):
+                self.report({'ERROR'}, "Conversion tools path is incorrect! Please fix it first.")
+                return {'CANCELLED'}
+
+            with open(extra_mount_path, mode="w") as f:
+                f.write(os.path.realpath(_get_scs_globals().scs_project_path))
+
+            return ConversionHelper.RunConversion.execute(self, context)
+
+    class ConvertCustomPaths(bpy.types.Operator):
+        bl_label = "Convert Custom Paths"
+        bl_idname = "scene.scs_conv_hlpr_convert_custom"
+        bl_description = "Converts all paths given in Custom Paths list (order is the same as they appear in the list)"
+
+        include_current_project = BoolProperty(
+            default=False
+        )
+
+        @classmethod
+        def poll(cls, context):
+            return len(_get_scs_globals().conv_hlpr_custom_paths) > 0
+
+        def execute(self, context):
+
+            main_path = _get_scs_globals().conv_hlpr_converters_path
+            extra_mount_path = os.path.join(main_path, "extra_mount.txt")
+            convert_cmd_path = os.path.join(main_path, "convert.cmd")
+
+            if not os.path.isfile(extra_mount_path) or not os.path.isfile(convert_cmd_path):
+                self.report({'ERROR'}, "Conversion tools path is incorrect! Please fix it first.")
+                return {'CANCELLED'}
+
+            with open(extra_mount_path, mode="w") as f:
+
+                for path_entry in _get_scs_globals().conv_hlpr_custom_paths:
+
+                    path = path_entry.path.rstrip(os.sep)
+
+                    if not os.path.isdir(path):
+                        self.report({'WARNING'}, "None existing custom paths detected, they were ignored!")
+                        continue
+
+                    f.write(path)
+                    f.write("\r\n")
+
+                if self.include_current_project:
+                    f.write(os.path.realpath(_get_scs_globals().scs_project_path))
+
+            return ConversionHelper.RunConversion.execute(self, context)
+
+    class FindGameModFolder(bpy.types.Operator):
+        bl_label = "Search SCS Game 'mod' Folder"
+        bl_idname = "scene.scs_conv_hlpr_find_mod_folder"
+        bl_description = "Search for given SCS game 'mod' folder and set it as mod destination"
+
+        game = EnumProperty(
+            items=(
+                ("Euro Truck Simulator 2", "Euro Truck Simulator 2", ""),
+                ("American Truck Simulator", "American Truck Simulator", "")
+            )
+        )
+
+        def execute(self, context):
+
+            scs_globals = _get_scs_globals()
+
+            # try Windows like installation
+            mod_dir = os.path.expanduser("~/" + self.game + "/mod")
+            if os.path.isdir(mod_dir):
+                scs_globals.conv_hlpr_mod_destination = mod_dir
+                return {'FINISHED'}
+
+            # try Linux Steam like installation
+            mod_dir = os.path.expanduser("~/.local/share/" + self.game + "/mod")
+            if os.path.isdir(mod_dir):
+                scs_globals.conv_hlpr_mod_destination = mod_dir
+                return {'FINISHED'}
+
+            self.report({'WARNING'}, "Could not find '" + self.game + "' mod folder")
+            return {'CANCELLED'}
+
+        def invoke(self, context, event):
+            return context.window_manager.invoke_props_dialog(self)
+
+        def draw(self, context):
+
+            layout = self.layout
+
+            layout.prop(self, "game", expand=True)
+
+    class RunPacking(bpy.types.Operator):
+        bl_label = "Run Packing"
+        bl_idname = "scene.scs_conv_hlpr_pack"
+        bl_description = "Pack converted sources from 'rsrc' to mod package and copy it to mod destination path."
+
+        @classmethod
+        def poll(cls, context):
+            return context.scene is not None
+
+        def execute(self, context):
+
+            scs_globals = _get_scs_globals()
+
+            main_path = scs_globals.conv_hlpr_converters_path
+            extra_mount_path = os.path.join(main_path, "extra_mount.txt")
+            convert_cmd_path = os.path.join(main_path, "convert.cmd")
+            rsrc_path = os.path.join(main_path, "rsrc")
+
+            if not os.path.isfile(extra_mount_path) or not os.path.isfile(convert_cmd_path) or not os.path.isdir(rsrc_path):
+                self.report({'ERROR'}, "Conversion tools path is incorrect! Please fix it first.")
+                return {'CANCELLED'}
+
+            if scs_globals.conv_hlpr_clean_on_packing:
+
+                try:
+                    bpy.ops.scene.scs_conv_hlpr_clean_rsrc()
+                except RuntimeError as e:
+                    self.report({'ERROR'}, e.args[0])
+                    return {'CANCELLED'}
+
+            if scs_globals.conv_hlpr_export_on_packing:
+
+                try:
+                    bpy.ops.export_mesh.pim()
+                except RuntimeError as e:
+                    self.report({'ERROR'}, e.args[0])
+                    return {'CANCELLED'}
+
+            if scs_globals.conv_hlpr_convert_on_packing:
+
+                try:
+                    if len(scs_globals.conv_hlpr_custom_paths) > 0:
+                        bpy.ops.scene.scs_conv_hlpr_convert_custom(include_current_project=True)
+                    else:
+                        bpy.ops.scene.scs_conv_hlpr_convert_current()
+                except RuntimeError as e:
+                    self.report({'ERROR'}, e.args[0])
+                    return {'CANCELLED'}
+
+            mod_path = scs_globals.conv_hlpr_mod_destination
+            mod_name = scs_globals.conv_hlpr_mod_name
+
+            if not os.path.isdir(mod_path):
+                self.report({'ERROR'}, "None existing mod destination path, packing aborted!")
+                return {'CANCELLED'}
+
+            mod_filepath = os.path.join(mod_path, mod_name)
+
+            # make sure mod file name ends with proper extension: ZIP
+            if not mod_name.endswith(".zip"):
+                mod_filepath += ".zip"
+
+            from zipfile import ZipFile
+
+            with ZipFile(mod_filepath, 'w') as myzip:
+
+                for root, dirs, files in os.walk(rsrc_path):
+
+                    for file in files:
+
+                        abs_file = os.path.join(root, file)
+                        archive_file = abs_file.replace(rsrc_path, "")
+                        myzip.write(abs_file, archive_file, compress_type=int(scs_globals.conv_hlpr_mod_compression))
+
+            self.report({'INFO'}, "Packing done, mod copied to: '%s'" % mod_filepath)
             return {'FINISHED'}

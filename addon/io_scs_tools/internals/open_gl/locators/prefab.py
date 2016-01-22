@@ -26,19 +26,19 @@ from io_scs_tools.internals.open_gl import primitive as _primitive
 from mathutils import Vector, Matrix
 
 
-def draw_shape_control_node(mat, scene_scs_props):
+def draw_shape_control_node(mat, scs_globals):
     """Draws shape for "Locator" of "Control Node" type.
 
     :param mat:
-    :param scene_scs_props:
+    :param scs_globals:
     :return:
     """
     glLineWidth(2.0)
     glBegin(GL_LINES)
-    glColor3f(scene_scs_props.locator_prefab_wire_color.r,
-              scene_scs_props.locator_prefab_wire_color.g,
-              scene_scs_props.locator_prefab_wire_color.b)
-    glVertex3f(*(mat * Vector((0.0, scene_scs_props.locator_empty_size, 0.0))))
+    glColor3f(scs_globals.locator_prefab_wire_color.r,
+              scs_globals.locator_prefab_wire_color.g,
+              scs_globals.locator_prefab_wire_color.b)
+    glVertex3f(*(mat * Vector((0.0, scs_globals.locator_empty_size, 0.0))))
     glVertex3f(*(mat * Vector((0.0, 0.75, 0.0))))
     glVertex3f(*(mat * Vector((-0.15, 0.45, 0.0))))
     glVertex3f(*(mat * Vector((0.0, 0.75, 0.0))))
@@ -48,18 +48,19 @@ def draw_shape_control_node(mat, scene_scs_props):
     glLineWidth(1.0)
 
 
-def draw_shape_sign(mat, scene_scs_props):
+def draw_shape_sign(mat, scs_globals):
     """
     Draws shape for "Locator" of "Sign" type.
     :param mat:
-    :param scene_scs_props:
+    :param scs_globals:
     :return:
     """
     glLineWidth(2.0)
     glBegin(GL_LINES)
-    glColor3f(scene_scs_props.locator_prefab_wire_color.r, scene_scs_props.locator_prefab_wire_color.g,
-              scene_scs_props.locator_prefab_wire_color.b)
-    glVertex3f(*(mat * Vector((0.0, 0.0, scene_scs_props.locator_empty_size))))
+    glColor3f(scs_globals.locator_prefab_wire_color.r,
+              scs_globals.locator_prefab_wire_color.g,
+              scs_globals.locator_prefab_wire_color.b)
+    glVertex3f(*(mat * Vector((0.0, 0.0, scs_globals.locator_empty_size))))
     glVertex3f(*(mat * Vector((0.0, 0.0, 0.45))))
     glEnd()
     glBegin(GL_LINE_STRIP)
@@ -74,18 +75,19 @@ def draw_shape_sign(mat, scene_scs_props):
     glLineWidth(1.0)
 
 
-def draw_shape_spawn_point(mat, scene_scs_props):
+def draw_shape_spawn_point(mat, scs_globals):
     """
     Draws shape for "Locator" of "Spawn Point" type.
     :param mat:
-    :param scene_scs_props:
+    :param scs_globals:
     :return:
     """
     glLineWidth(2.0)
     glBegin(GL_LINES)
-    glColor3f(scene_scs_props.locator_prefab_wire_color.r, scene_scs_props.locator_prefab_wire_color.g,
-              scene_scs_props.locator_prefab_wire_color.b)
-    glVertex3f(*(mat * Vector((0.0, 0.0, scene_scs_props.locator_empty_size))))
+    glColor3f(scs_globals.locator_prefab_wire_color.r,
+              scs_globals.locator_prefab_wire_color.g,
+              scs_globals.locator_prefab_wire_color.b)
+    glVertex3f(*(mat * Vector((0.0, 0.0, scs_globals.locator_empty_size))))
     glVertex3f(*(mat * Vector((0.0, 0.0, 0.75))))
     glVertex3f(*(mat * Vector((-0.1299, 0.0, 0.525))))
     glVertex3f(*(mat * Vector((0.1299, 0.0, 0.675))))
@@ -99,7 +101,7 @@ def draw_shape_spawn_point(mat, scene_scs_props):
     glLineWidth(1.0)
 
 
-def draw_shape_traffic_light(mat, scene_scs_props):
+def draw_shape_traffic_light(mat, scs_globals):
     """
     Draws shape for "Locator" of "Traffic Semaphore" type.
     :param mat:
@@ -107,8 +109,10 @@ def draw_shape_traffic_light(mat, scene_scs_props):
     """
     glLineWidth(2.0)
     glBegin(GL_LINE_STRIP)
-    glColor3f(scene_scs_props.locator_prefab_wire_color.r, scene_scs_props.locator_prefab_wire_color.g, scene_scs_props.locator_prefab_wire_color.b)
-    glVertex3f(*(mat * Vector((0.0, 0.0, scene_scs_props.locator_empty_size))))
+    glColor3f(scs_globals.locator_prefab_wire_color.r,
+              scs_globals.locator_prefab_wire_color.g,
+              scs_globals.locator_prefab_wire_color.b)
+    glVertex3f(*(mat * Vector((0.0, 0.0, scs_globals.locator_empty_size))))
     glVertex3f(*(mat * Vector((0.0, 0.0, 0.45))))
     glVertex3f(*(mat * Vector((-0.0866, 0.0, 0.5))))
     glVertex3f(*(mat * Vector((-0.0866, 0.0, 0.84))))
@@ -129,17 +133,18 @@ def draw_shape_traffic_light(mat, scene_scs_props):
     glLineWidth(1.0)
 
 
-def draw_shape_map_point(mat, scene_scs_props):
+def draw_shape_map_point(mat, scs_globals):
     """
     Draws shape for "Locator" of "Map Point" type.
     :param mat:
-    :param scene_scs_props:
+    :param scs_globals:
     :return:
     """
     glLineWidth(2.0)
     glBegin(GL_LINES)
-    glColor3f(scene_scs_props.locator_prefab_wire_color.r, scene_scs_props.locator_prefab_wire_color.g,
-              scene_scs_props.locator_prefab_wire_color.b)
+    glColor3f(scs_globals.locator_prefab_wire_color.r,
+              scs_globals.locator_prefab_wire_color.g,
+              scs_globals.locator_prefab_wire_color.b)
     glVertex3f(*(mat * Vector((-0.17678, -0.17678, 0.17678))))
     glVertex3f(*(mat * Vector((0.17678, 0.17678, -0.17678))))
     glVertex3f(*(mat * Vector((-0.17678, 0.17678, 0.17678))))
@@ -152,35 +157,35 @@ def draw_shape_map_point(mat, scene_scs_props):
     glLineWidth(1.0)
 
 
-def draw_shape_trigger_point(mat, mat_orig, radius, scene_scs_props, draw_range):
+def draw_shape_trigger_point(mat, mat_orig, radius, scs_globals, draw_range):
     """
     Draws shape for "Locator" of "Trigger Point" type.
     :param mat:
     :param mat_orig:
     :param radius:
-    :param scene_scs_props:
+    :param scs_globals:
     :param draw_range:
     :return:
     """
     glLineWidth(2.0)
-    _primitive.draw_circle(0.25, 8, mat, scene_scs_props)
-    _primitive.draw_circle(0.4, 8, mat, scene_scs_props)
+    _primitive.draw_circle(0.25, 8, mat, scs_globals)
+    _primitive.draw_circle(0.4, 8, mat, scs_globals)
     glEnable(GL_LINE_STIPPLE)
     if draw_range:
-        _primitive.draw_circle(radius, 32, mat_orig, scene_scs_props)
+        _primitive.draw_circle(radius, 32, mat_orig, scs_globals)
     glDisable(GL_LINE_STIPPLE)
     glLineWidth(1.0)
 
 
-def draw_prefab_locator(obj, scene_scs_props):
+def draw_prefab_locator(obj, scs_globals):
     """
     Draw Prefab locator.
     :param obj:
     :return:
     """
 
-    size = scene_scs_props.locator_size
-    empty_size = scene_scs_props.locator_empty_size
+    size = scs_globals.locator_size
+    empty_size = scs_globals.locator_empty_size
     mat_sca = Matrix.Scale(size, 4)
     mat_orig = obj.matrix_world
     mat = mat_orig * mat_sca
@@ -188,7 +193,7 @@ def draw_prefab_locator(obj, scene_scs_props):
         _primitive.draw_shape_x_axis(mat, empty_size)
         _primitive.draw_shape_y_axis_neg(mat, empty_size)
         _primitive.draw_shape_z_axis(mat, empty_size)
-        draw_shape_control_node(mat, scene_scs_props)
+        draw_shape_control_node(mat, scs_globals)
 
         glPointSize(12.0)
         glBegin(GL_POINTS)
@@ -204,38 +209,38 @@ def draw_prefab_locator(obj, scene_scs_props):
         _primitive.draw_shape_x_axis(mat, empty_size)
         _primitive.draw_shape_y_axis(mat, empty_size)
         _primitive.draw_shape_z_axis_neg(mat, empty_size)
-        if not obj.scs_props.locator_preview_model_present or not scene_scs_props.show_preview_models:
-            draw_shape_sign(mat, scene_scs_props)
+        if not obj.scs_props.locator_preview_model_present or not scs_globals.show_preview_models:
+            draw_shape_sign(mat, scs_globals)
 
     elif obj.scs_props.locator_prefab_type == 'Spawn Point':
         _primitive.draw_shape_x_axis(mat, empty_size)
         _primitive.draw_shape_y_axis(mat, empty_size)
         _primitive.draw_shape_z_axis_neg(mat, empty_size)
-        if not obj.scs_props.locator_preview_model_present or not scene_scs_props.show_preview_models:
-            draw_shape_spawn_point(mat, scene_scs_props)
+        if not obj.scs_props.locator_preview_model_present or not scs_globals.show_preview_models:
+            draw_shape_spawn_point(mat, scs_globals)
 
     elif obj.scs_props.locator_prefab_type == 'Traffic Semaphore':
         _primitive.draw_shape_x_axis(mat, empty_size)
         _primitive.draw_shape_y_axis(mat, empty_size)
         _primitive.draw_shape_z_axis_neg(mat, empty_size)
-        if not obj.scs_props.locator_preview_model_present or not scene_scs_props.show_preview_models:
-            draw_shape_traffic_light(mat, scene_scs_props)
+        if not obj.scs_props.locator_preview_model_present or not scs_globals.show_preview_models:
+            draw_shape_traffic_light(mat, scs_globals)
 
     elif obj.scs_props.locator_prefab_type == 'Navigation Point':
         _primitive.draw_shape_x_axis(mat, empty_size)
         _primitive.draw_shape_y_axis_neg(mat, empty_size)
         _primitive.draw_shape_z_axis(mat, empty_size)
-        draw_shape_control_node(mat, scene_scs_props)
+        draw_shape_control_node(mat, scs_globals)
 
     elif obj.scs_props.locator_prefab_type == 'Map Point':
         _primitive.draw_shape_x_axis(mat, empty_size)
         _primitive.draw_shape_y_axis(mat, empty_size)
         _primitive.draw_shape_z_axis(mat, empty_size)
-        draw_shape_map_point(mat, scene_scs_props)
+        draw_shape_map_point(mat, scs_globals)
 
     elif obj.scs_props.locator_prefab_type == 'Trigger Point':
         _primitive.draw_shape_x_axis(mat, empty_size)
         _primitive.draw_shape_y_axis(mat, empty_size)
         _primitive.draw_shape_z_axis(mat, empty_size)
         is_sphere = obj.scs_props.locator_prefab_tp_sphere_trigger
-        draw_shape_trigger_point(mat, mat_orig, obj.scs_props.locator_prefab_tp_range, scene_scs_props, is_sphere)
+        draw_shape_trigger_point(mat, mat_orig, obj.scs_props.locator_prefab_tp_range, scs_globals, is_sphere)

@@ -358,6 +358,14 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
     def active_scs_part_get_direct(self):
         """Accessing active part index directly if needed trough script. Not used by active_scs_part property itself
         """
+
+        # make sure to set active sca part before accessing it
+        # NOTE: case where this happens is if user imports SCS model,
+        # duplicates prefab locator without part and then changes locator
+        # type to model locator.
+        if "active_scs_part_value" not in self:
+            self["active_scs_part_value"] = 0
+
         return self["active_scs_part_value"]
 
     def active_scs_part_get(self):
@@ -366,10 +374,10 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
 
         """
 
-        if not "active_scs_part_old_active" in self:
+        if "active_scs_part_old_active" not in self:
             self["active_scs_part_old_active"] = ""
 
-        if not "active_scs_part_value" in self:
+        if "active_scs_part_value" not in self:
             self["active_scs_part_value"] = 0
 
         scs_root_object = _object_utils.get_scs_root(bpy.context.active_object)

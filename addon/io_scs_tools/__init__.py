@@ -22,11 +22,11 @@ bl_info = {
     "name": "SCS Tools",
     "description": "Setup models, Import-Export SCS data format",
     "author": "Simon Lusenc (50keda), Milos Zajic (4museman)",
-    "version": (1, 0, "76261ad"),
+    "version": (1, 1, "e02402c"),
     "blender": (2, 75, 0),
     "location": "File > Import-Export",
     "wiki_url": "https://github.com/SCSSoftware/BlenderTools/wiki",
-    "tracker_url": "http://forum.scssoft.com/viewforum.php?f=165",
+    "tracker_url": "http://forum.scssoft.com/viewforum.php?f=163",
     "support": "COMMUNITY",
     "category": "Import-Export"}
 
@@ -50,7 +50,7 @@ from bpy_extras.io_utils import ImportHelper, ExportHelper
 from io_scs_tools.imp import pix as _pix_import
 from io_scs_tools.internals.callbacks import open_gl as _open_gl_callback
 from io_scs_tools.internals.callbacks import persistent as _persistent_callback
-from io_scs_tools.internals.icons import release_icons_data
+from io_scs_tools.internals import icons as _icons
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
 from io_scs_tools.utils.view3d import switch_layers_visibility as _switch_layers_visibility
 from io_scs_tools.utils.printout import lprint
@@ -218,9 +218,13 @@ class ExportSCS(bpy.types.Operator, ExportHelper):
 
         filepath = os.path.dirname(self.filepath)
 
-        export_type = _get_scs_globals().content_type
+        # convert it to None, so export will ignore given menu file path and try to export to other none menu set paths
+        if self.filepath == "":
+            filepath = None
+
+        export_scope = _get_scs_globals().export_scope
         init_obj_list = {}
-        if export_type == "selection":
+        if export_scope == "selection":
             for obj in bpy.context.selected_objects:
                 root = _object_utils.get_scs_root(obj)
                 if root:
@@ -241,9 +245,9 @@ class ExportSCS(bpy.types.Operator, ExportHelper):
                             init_obj_list[reselected_obj.name] = reselected_obj
 
             init_obj_list = tuple(init_obj_list.values())
-        elif export_type == "scene":
+        elif export_scope == "scene":
             init_obj_list = tuple(bpy.context.scene.objects)
-        elif export_type == 'scenes':
+        elif export_scope == 'scenes':
             init_obj_list = tuple(bpy.data.objects)
 
         try:
@@ -266,7 +270,7 @@ class ExportSCS(bpy.types.Operator, ExportHelper):
     def draw(self, context):
         box0 = self.layout.box()
         row = box0.row()
-        row.prop(_get_scs_globals(), 'content_type', expand=True)
+        row.prop(_get_scs_globals(), 'export_scope', expand=True)
         ui.shared.draw_export_panel(self.layout)
 
 
@@ -284,6 +288,9 @@ def register():
     from . import properties
 
     bpy.utils.register_module(__name__)
+
+    # CUSTOM ICONS CLEANUP
+    _icons.init()
 
     # PROPERTIES REGISTRATION
     bpy.types.Object.scs_object_look_inventory = CollectionProperty(
@@ -358,7 +365,7 @@ def unregister():
     bpy.utils.unregister_module(__name__)
 
     # CUSTOM ICONS CLEANUP
-    release_icons_data()
+    _icons.cleanup()
 
     # REMOVE MENU ENTRIES
     bpy.types.INFO_MT_file_export.remove(menu_func_export)

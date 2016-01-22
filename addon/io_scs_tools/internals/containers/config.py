@@ -485,6 +485,7 @@ def gather_default():
         section.props.append(("TrafficRulesUseInfixed", int(_property_utils.get_default(bpy.types.GlobalSCSProps.traffic_rules_library_use_infixed))))
         section.props.append(("HookupRelDirPath", _property_utils.get_default(bpy.types.GlobalSCSProps.hookup_library_rel_path)))
         section.props.append(("MatSubsRelFilePath", _property_utils.get_default(bpy.types.GlobalSCSProps.matsubs_library_rel_path)))
+        section.props.append(("ConvertersPath", _property_utils.get_default(bpy.types.GlobalSCSProps.conv_hlpr_converters_path)))
         return section
 
     def fill_import_section():
@@ -509,7 +510,6 @@ def gather_default():
     def fill_export_section():
         """Fills up "Export" section."""
         section = _SectionData("Export")
-        section.props.append(("ContentType", _property_utils.get_default(bpy.types.GlobalSCSProps.content_type)))
         section.props.append(("ExportScale", _property_utils.get_default(bpy.types.GlobalSCSProps.export_scale)))
         section.props.append(("ApplyModifiers", int(_property_utils.get_default(bpy.types.GlobalSCSProps.apply_modifiers))))
         section.props.append(("ExcludeEdgesplit", int(_property_utils.get_default(bpy.types.GlobalSCSProps.exclude_edgesplit))))
@@ -531,25 +531,25 @@ def gather_default():
     def fill_global_display_section():
         """Fills up "GlobalDisplay" section."""
         section = _SectionData("GlobalDisplay")
-        section.props.append(("DisplayLocators", int(_property_utils.get_default(bpy.types.SceneSCSProps.display_locators))))
-        section.props.append(("LocatorSize", _property_utils.get_default(bpy.types.SceneSCSProps.locator_size)))
-        section.props.append(("LocatorEmptySize", _property_utils.get_default(bpy.types.SceneSCSProps.locator_empty_size)))
-        section.props.append(("DisplayConnections", int(_property_utils.get_default(bpy.types.SceneSCSProps.display_connections))))
-        section.props.append(("CurveSegments", _property_utils.get_default(bpy.types.SceneSCSProps.curve_segments)))
-        section.props.append(("DisplayTextInfo", _property_utils.get_default(bpy.types.SceneSCSProps.display_info)))
+        section.props.append(("DisplayLocators", int(_property_utils.get_default(bpy.types.GlobalSCSProps.display_locators))))
+        section.props.append(("LocatorSize", _property_utils.get_default(bpy.types.GlobalSCSProps.locator_size)))
+        section.props.append(("LocatorEmptySize", _property_utils.get_default(bpy.types.GlobalSCSProps.locator_empty_size)))
+        section.props.append(("DisplayConnections", int(_property_utils.get_default(bpy.types.GlobalSCSProps.display_connections))))
+        section.props.append(("CurveSegments", _property_utils.get_default(bpy.types.GlobalSCSProps.curve_segments)))
+        section.props.append(("DisplayTextInfo", _property_utils.get_default(bpy.types.GlobalSCSProps.display_info)))
         return section
 
     def fill_global_colors_section():
         """Fills up "GlobalColors" section."""
         section = _SectionData("GlobalColors")
-        section.props.append(("PrefabLocatorsWire", tuple(_property_utils.get_default(bpy.types.SceneSCSProps.locator_prefab_wire_color))))
-        section.props.append(("ModelLocatorsWire", tuple(_property_utils.get_default(bpy.types.SceneSCSProps.locator_model_wire_color))))
-        section.props.append(("ColliderLocatorsWire", tuple(_property_utils.get_default(bpy.types.SceneSCSProps.locator_coll_wire_color))))
-        section.props.append(("ColliderLocatorsFace", tuple(_property_utils.get_default(bpy.types.SceneSCSProps.locator_coll_face_color))))
-        section.props.append(("NavigationCurveBase", tuple(_property_utils.get_default(bpy.types.SceneSCSProps.np_connection_base_color))))
-        section.props.append(("MapLineBase", tuple(_property_utils.get_default(bpy.types.SceneSCSProps.mp_connection_base_color))))
-        section.props.append(("TriggerLineBase", tuple(_property_utils.get_default(bpy.types.SceneSCSProps.tp_connection_base_color))))
-        section.props.append(("InfoText", tuple(_property_utils.get_default(bpy.types.SceneSCSProps.info_text_color))))
+        section.props.append(("PrefabLocatorsWire", tuple(_property_utils.get_default(bpy.types.GlobalSCSProps.locator_prefab_wire_color))))
+        section.props.append(("ModelLocatorsWire", tuple(_property_utils.get_default(bpy.types.GlobalSCSProps.locator_model_wire_color))))
+        section.props.append(("ColliderLocatorsWire", tuple(_property_utils.get_default(bpy.types.GlobalSCSProps.locator_coll_wire_color))))
+        section.props.append(("ColliderLocatorsFace", tuple(_property_utils.get_default(bpy.types.GlobalSCSProps.locator_coll_face_color))))
+        section.props.append(("NavigationCurveBase", tuple(_property_utils.get_default(bpy.types.GlobalSCSProps.np_connection_base_color))))
+        section.props.append(("MapLineBase", tuple(_property_utils.get_default(bpy.types.GlobalSCSProps.mp_connection_base_color))))
+        section.props.append(("TriggerLineBase", tuple(_property_utils.get_default(bpy.types.GlobalSCSProps.tp_connection_base_color))))
+        section.props.append(("InfoText", tuple(_property_utils.get_default(bpy.types.GlobalSCSProps.info_text_color))))
         return section
 
     '''
@@ -625,6 +625,7 @@ def apply_settings():
     traffic_rules_library_rel_path = _property_utils.get_default(bpy.types.GlobalSCSProps.traffic_rules_library_rel_path)
     hookup_library_rel_path = _property_utils.get_default(bpy.types.GlobalSCSProps.hookup_library_rel_path)
     matsubs_library_rel_path = _property_utils.get_default(bpy.types.GlobalSCSProps.matsubs_library_rel_path)
+    conv_hlpr_converters_path = _property_utils.get_default(bpy.types.GlobalSCSProps.conv_hlpr_converters_path)
 
     _get_scs_globals().config_update_lock = True
     # print('  > apply_settings...')
@@ -659,6 +660,8 @@ def apply_settings():
                         hookup_library_rel_path = prop[1]
                     elif prop[0] == "MatSubsRelFilePath":
                         matsubs_library_rel_path = prop[1]
+                    elif prop[0] == "ConvertersPath":
+                        conv_hlpr_converters_path = prop[1]
                     else:
                         lprint('W Unrecognised item "%s" has been found in setting file! Skipping...', (str(prop[0]),))
             elif section.type == "Import":
@@ -697,8 +700,6 @@ def apply_settings():
                 for prop in section.props:
                     if prop[0] in ("", "#"):
                         pass
-                    elif prop[0] == "ContentType":
-                        _get_scs_globals().content_type = prop[1]
                     elif prop[0] == "ExportScale":
                         _get_scs_globals().export_scale = float(prop[1])
                     elif prop[0] == "ApplyModifiers":
@@ -736,19 +737,19 @@ def apply_settings():
                     if prop[0] in ("", "#"):
                         pass
                     elif prop[0] == "DisplayLocators":
-                        bpy.context.scene.scs_props.display_locators = prop[1]
+                        _get_scs_globals().display_locators = prop[1]
                     elif prop[0] == "LocatorSize":
-                        bpy.context.scene.scs_props.locator_size = float(prop[1])
+                        _get_scs_globals().locator_size = float(prop[1])
                     elif prop[0] == "LocatorEmptySize":
-                        bpy.context.scene.scs_props.locator_empty_size = float(prop[1])
+                        _get_scs_globals().locator_empty_size = float(prop[1])
                     elif prop[0] == "DisplayConnections":
-                        bpy.context.scene.scs_props.display_connections = prop[1]
+                        _get_scs_globals().display_connections = prop[1]
                     elif prop[0] == "CurveSegments":
-                        bpy.context.scene.scs_props.curve_segments = prop[1]
+                        _get_scs_globals().curve_segments = prop[1]
                     elif prop[0] == "OptimizedConnsDrawing":
-                        bpy.context.scene.scs_props.optimized_connections_drawing = prop[1]
+                        _get_scs_globals().optimized_connections_drawing = prop[1]
                     elif prop[0] == "DisplayTextInfo":
-                        bpy.context.scene.scs_props.display_info = prop[1]
+                        _get_scs_globals().display_info = prop[1]
                     else:
                         lprint('W Unrecognised item "%s" has been found in setting file! Skipping...', (str(prop[0]),))
             elif section.type == "GlobalColors":
@@ -756,21 +757,21 @@ def apply_settings():
                     if prop[0] in ("", "#"):
                         pass
                     elif prop[0] == "PrefabLocatorsWire":
-                        bpy.context.scene.scs_props.locator_prefab_wire_color = prop[1]
+                        _get_scs_globals().locator_prefab_wire_color = prop[1]
                     elif prop[0] == "ModelLocatorsWire":
-                        bpy.context.scene.scs_props.locator_model_wire_color = prop[1]
+                        _get_scs_globals().locator_model_wire_color = prop[1]
                     elif prop[0] == "ColliderLocatorsWire":
-                        bpy.context.scene.scs_props.locator_coll_wire_color = prop[1]
+                        _get_scs_globals().locator_coll_wire_color = prop[1]
                     elif prop[0] == "ColliderLocatorsFace":
-                        bpy.context.scene.scs_props.locator_coll_face_color = prop[1]
+                        _get_scs_globals().locator_coll_face_color = prop[1]
                     elif prop[0] == "NavigationCurveBase":
-                        bpy.context.scene.scs_props.np_connection_base_color = prop[1]
+                        _get_scs_globals().np_connection_base_color = prop[1]
                     elif prop[0] == "MapLineBase":
-                        bpy.context.scene.scs_props.mp_connection_base_color = prop[1]
+                        _get_scs_globals().mp_connection_base_color = prop[1]
                     elif prop[0] == "TriggerLineBase":
-                        bpy.context.scene.scs_props.tp_connection_base_color = prop[1]
+                        _get_scs_globals().tp_connection_base_color = prop[1]
                     elif prop[0] == "InfoText":
-                        bpy.context.scene.scs_props.info_text_color = prop[1]
+                        _get_scs_globals().info_text_color = prop[1]
                     else:
                         lprint('W Unrecognised item "%s" has been found in setting file! Skipping...', (str(prop[0]),))
             elif section.type == "Various":
@@ -800,6 +801,7 @@ def apply_settings():
     _get_scs_globals().traffic_rules_library_rel_path = traffic_rules_library_rel_path
     _get_scs_globals().hookup_library_rel_path = hookup_library_rel_path
     _get_scs_globals().matsubs_library_rel_path = matsubs_library_rel_path
+    _get_scs_globals().conv_hlpr_converters_path = conv_hlpr_converters_path
 
     _get_scs_globals().config_update_lock = False
     return True

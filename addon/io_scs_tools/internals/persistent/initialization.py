@@ -76,4 +76,4 @@ def initialise_scs_dict(scene):
         _preview_models.init()
 
         # ADD DRAW HANDLERS
-        _open_gl_callback.enable(mode=bpy.context.scene.scs_props.drawing_mode)
+        _open_gl_callback.enable(mode=_get_scs_globals().drawing_mode)

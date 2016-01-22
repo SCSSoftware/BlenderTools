@@ -19,7 +19,7 @@
 # Copyright (C) 2013-2014: SCS Software
 
 import os
-from bpy.types import Panel
+from bpy.types import Panel, UIList
 from io_scs_tools.utils import path as _path_utils
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
 from io_scs_tools.ui import shared as _shared
@@ -147,7 +147,7 @@ def _draw_path_settings_panel(scene, layout, scs_globals):
         layout_box_row.label('')
 
 
-def _draw_display_settings_panel(scene, layout):
+def _draw_display_settings_panel(scene, layout, scs_globals):
     """Draw global display settings panel."""
     layout_box = layout.box()
     if scene.scs_props.global_display_settings_expand:
@@ -164,59 +164,59 @@ def _draw_display_settings_panel(scene, layout):
 
         layout_box_row = layout_box.row()
         layout_box_row.label("Drawing Mode:")
-        layout_box_row.prop(scene.scs_props, 'drawing_mode', expand=True)
+        layout_box_row.prop(scs_globals, 'drawing_mode', expand=True)
 
         layout_box_row = layout_box.row()
-        if scene.scs_props.display_locators:
+        if scs_globals.display_locators:
             icon = "FILE_TICK"
         else:
             icon = "X_VEC"
-        layout_box_row.prop(scene.scs_props, 'display_locators', icon=icon, toggle=True)
+        layout_box_row.prop(scs_globals, 'display_locators', icon=icon, toggle=True)
 
-        if scene.scs_props.display_locators:
+        if scs_globals.display_locators:
             layout_box_row = layout_box.row()
-            layout_box_row.prop(scene.scs_props, 'locator_size', icon='NONE')
-            layout_box_row.prop(scene.scs_props, 'locator_empty_size', icon='NONE')
+            layout_box_row.prop(scs_globals, 'locator_size', icon='NONE')
+            layout_box_row.prop(scs_globals, 'locator_empty_size', icon='NONE')
             layout_box_col = layout_box.column()
             layout_box_row = layout_box_col.row()
-            layout_box_row.prop(scene.scs_props, 'locator_prefab_wire_color', icon='NONE')
+            layout_box_row.prop(scs_globals, 'locator_prefab_wire_color', icon='NONE')
             layout_box_row = layout_box_col.row()
-            layout_box_row.prop(scene.scs_props, 'locator_model_wire_color', icon='NONE')
+            layout_box_row.prop(scs_globals, 'locator_model_wire_color', icon='NONE')
             layout_box_row = layout_box_col.row()
-            layout_box_row.prop(scene.scs_props, 'locator_coll_wire_color', icon='NONE')
+            layout_box_row.prop(scs_globals, 'locator_coll_wire_color', icon='NONE')
             layout_box_row = layout_box_col.row()
-            layout_box_row.prop(scene.scs_props, 'locator_coll_face_color', icon='NONE')
+            layout_box_row.prop(scs_globals, 'locator_coll_face_color', icon='NONE')
         layout_box_row = layout_box.row()
 
-        if scene.scs_props.display_connections:
+        if scs_globals.display_connections:
             icon = "FILE_TICK"
         else:
             icon = "X_VEC"
-        layout_box_row.prop(scene.scs_props, 'display_connections', icon=icon, toggle=True)
+        layout_box_row.prop(scs_globals, 'display_connections', icon=icon, toggle=True)
 
-        if scene.scs_props.display_connections:
+        if scs_globals.display_connections:
             layout_box_row = layout_box.row()
-            layout_box_row.prop(scene.scs_props, 'optimized_connections_drawing')
+            layout_box_row.prop(scs_globals, 'optimized_connections_drawing')
             layout_box_row = layout_box.row()
-            layout_box_row.prop(scene.scs_props, 'curve_segments', icon='NONE')
+            layout_box_row.prop(scs_globals, 'curve_segments', icon='NONE')
             layout_box_col = layout_box.column()
             layout_box_row = layout_box_col.row()
-            layout_box_row.prop(scene.scs_props, 'np_connection_base_color', icon='NONE')
+            layout_box_row.prop(scs_globals, 'np_connection_base_color', icon='NONE')
             layout_box_row = layout_box_col.row()
-            layout_box_row.prop(scene.scs_props, 'mp_connection_base_color', icon='NONE')
+            layout_box_row.prop(scs_globals, 'mp_connection_base_color', icon='NONE')
             layout_box_row = layout_box_col.row()
-            layout_box_row.prop(scene.scs_props, 'tp_connection_base_color', icon='NONE')
+            layout_box_row.prop(scs_globals, 'tp_connection_base_color', icon='NONE')
 
         layout_box_row = layout_box.row()
-        layout_box_row.prop(scene.scs_props, 'display_info', icon='NONE')
+        layout_box_row.prop(scs_globals, 'display_info', icon='NONE')
         layout_box_row = layout_box.row()
-        layout_box_row.prop(scene.scs_props, 'info_text_color', icon='NONE')
+        layout_box_row.prop(scs_globals, 'info_text_color', icon='NONE')
         layout_box_row = layout_box.row()
-        if scene.scs_props.show_preview_models:
+        if scs_globals.show_preview_models:
             icon = "FILE_TICK"
         else:
             icon = "X_VEC"
-        layout_box_row.prop(scene.scs_props, 'show_preview_models', icon=icon, toggle=True)
+        layout_box_row.prop(scs_globals, 'show_preview_models', icon=icon, toggle=True)
     else:
         layout_box_row = layout_box.row()
         layout_box_row.prop(
@@ -254,7 +254,7 @@ def _draw_global_settings_panel(scene, layout, scs_globals):
         _draw_path_settings_panel(scene, layout_box.row(), scs_globals)
 
         # DISPLAY SETTINGS PANEL
-        _draw_display_settings_panel(scene, layout_box.row())
+        _draw_display_settings_panel(scene, layout_box.row(), scs_globals)
 
         _shared.draw_debug_settings(layout_box)
 
@@ -281,24 +281,24 @@ def _draw_export_panel(scene, layout, scs_globals):
         box_row.label('')
 
         layout_box = layout_column.box()  # body
-        if not scene.scs_props.preview_export_selection_active:
-            col = layout_box.column(align=True)
-            col_extra = col.column(align=True)
-            col_extra.scale_y = 2
-            col_extra.operator('scene.export_selected', text='EXPORT SELECTED')
-            if scene.scs_props.preview_export_selection:
-                icon = "FILE_TICK"
-            else:
-                icon = "X_VEC"
-            col.prop(scene.scs_props, 'preview_export_selection', text="Preview Selection", icon=icon, toggle=True)
+        if not scs_globals.preview_export_selection_active:
 
-            box_row = layout_box.row()
-            box_row.scale_y = 2
-            box_row.operator('scene.export_scene', text='EXPORT SCENE')
-            box_row.operator('scene.export_all', text='EXPORT ALL')
+            col = layout_box.column(align=True)
+            col.row(align=True).prop(scs_globals, 'export_scope', expand=True)
+
+            col_row = col.row(align=True)
+            col_row.enabled = scs_globals.export_scope == "selection"
+            icon = "FILE_TICK" if scs_globals.preview_export_selection else "X_VEC"
+            col_row.prop(scs_globals, 'preview_export_selection', text="Preview Selection", icon=icon, toggle=True)
+
+            col_row = col.row(align=True)
+            col_row.scale_y = 2
+            col_row.operator('scene.export_scs_content_by_scope', text="EXPORT")
+
         else:
+
             row = layout_box.box()
-            row.prop(scene.scs_props, "preview_export_selection_active", text="Export preview mode is active!", icon='ERROR', icon_only=True,
+            row.prop(scs_globals, "preview_export_selection_active", text="Export preview mode is active!", icon='ERROR', icon_only=True,
                      emboss=False)
             row = row.column(align=True)
             row.label("Press ENTER to export selection!")
@@ -336,6 +336,112 @@ def _draw_export_panel(scene, layout, scs_globals):
         box_row.label('')
 
 
+def _draw_conversion_panel(layout, scs_globals):
+    """Draw Conversion Helper panel."""
+    layout_column = layout.column(align=True)
+    layout_box = layout_column.box()  # header
+    if scs_globals.conversion_helper_expand:
+        box_row = layout_box.row()
+        box_row.prop(scs_globals, 'conversion_helper_expand', text="Conversion Helper:", icon='TRIA_DOWN', icon_only=True, emboss=False)
+        box_row.label('')
+
+        layout_box = layout_column.box()  # body
+
+        # TOOLS PATH
+        layout_col = layout_box.column(align=True)
+        row = layout_col.row()
+        row.label("Conversion Tools Path:", icon="FILE_FOLDER")
+
+        row = layout_col.row()
+        valid = os.path.isdir(scs_globals.conv_hlpr_converters_path)
+        valid = valid and os.path.isfile(os.path.join(scs_globals.conv_hlpr_converters_path, "extra_mount.txt"))
+        valid = valid and os.path.isfile(os.path.join(scs_globals.conv_hlpr_converters_path, "convert.cmd"))
+        row.alert = not valid
+        row.prop(scs_globals, "conv_hlpr_converters_path", text="")
+
+        # CLEAN & CONVERT CURRENT
+        row = layout_box.row(align=True)
+        row.scale_y = 1.2
+        row.operator("scene.scs_conv_hlpr_clean_rsrc", text='CLEAN RSRC')
+        row.operator("scene.scs_conv_hlpr_convert_current", text='CONVERT CURRENT SCS PROJECT')
+
+        # CUSTOM PATHS & CONVERT
+        cstm_paths_col = layout_box.column(align=False)
+        cstm_paths_col.label("Custom Paths:", icon="LINENUMBERS_ON")
+
+        row = cstm_paths_col.row()
+        row.column().template_list(
+            'SCSConversionEntrySlots',
+            list_id="",
+            dataptr=scs_globals,
+            propname="conv_hlpr_custom_paths",
+            active_dataptr=scs_globals,
+            active_propname="conv_hlpr_custom_paths_active",
+            rows=3,
+            maxrows=5,
+            type='DEFAULT',
+            columns=9
+        )
+
+        side_bar = row.column(align=True)
+        side_bar.operator("scene.scs_conv_hlpr_add_path", text="", icon="ZOOMIN")
+        side_bar.operator("scene.scs_conv_hlpr_remove_path", text="", icon="ZOOMOUT")
+        side_bar.separator()
+        props = side_bar.operator("scene.scs_conv_hlpr_order_path", icon="TRIA_UP", text="")
+        props.move_up = True
+        props = side_bar.operator("scene.scs_conv_hlpr_order_path", icon="TRIA_DOWN", text="")
+        props.move_up = False
+
+        row = cstm_paths_col.row(align=True)
+        row.scale_y = 1.2
+        row.operator("scene.scs_conv_hlpr_convert_custom", text='CONVERT CUSTOM PATHS')
+
+        # PACKING
+        col = layout_box.column(align=True)
+        col.row().label("Mod Packing:", icon="PACKAGE")
+
+        row = col.row(align=True)
+        row.prop(scs_globals, "conv_hlpr_mod_destination", text="", icon="FILE_FOLDER")
+        row.operator("scene.scs_conv_hlpr_find_mod_folder", text="", icon="RECOVER_AUTO")
+
+        row = col.row(align=True)
+        row.prop(scs_globals, "conv_hlpr_mod_name", text="", icon="FILE")
+
+        row = col.row(align=True)
+        row.scale_y = 1.2
+        icon = "FILE_TICK" if scs_globals.conv_hlpr_clean_on_packing else "X_VEC"
+        row.prop(scs_globals, "conv_hlpr_clean_on_packing", toggle=True, icon=icon)
+        icon = "FILE_TICK" if scs_globals.conv_hlpr_export_on_packing else "X_VEC"
+        row.prop(scs_globals, "conv_hlpr_export_on_packing", toggle=True, icon=icon)
+        icon = "FILE_TICK" if scs_globals.conv_hlpr_convert_on_packing else "X_VEC"
+        row.prop(scs_globals, "conv_hlpr_convert_on_packing", toggle=True, icon=icon)
+
+        row = col.row(align=True)
+        row.prop(scs_globals, "conv_hlpr_mod_compression", expand=True)
+
+        row = col.row(align=True)
+        row.scale_y = 1.5
+        row.operator("scene.scs_conv_hlpr_pack", text="PACK CONVERTED DATA")
+
+    else:
+        box_row = layout_box.row()
+        box_row.prop(scs_globals, 'conversion_helper_expand', text="Conversion Helper:", icon='TRIA_RIGHT', icon_only=True, emboss=False)
+        box_row.label('')
+
+
+class SCSConversionEntrySlots(UIList):
+    """
+    Draw conversion path entry within ui list
+    """
+
+    def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
+        if item:
+            icon = "ERROR" if not os.path.isdir(_path_utils.repair_path(item.path)) else "NONE"
+            layout.prop(item, "path", text="", emboss=False, icon=icon)
+        else:
+            layout.label(text="", icon_value=icon)
+
+
 class SCSTools(_ScenePanelBlDefs, Panel):
     """Creates a Panel in the Scene properties window"""
     bl_label = "SCS Tools"
@@ -345,23 +451,9 @@ class SCSTools(_ScenePanelBlDefs, Panel):
         """UI draw function."""
         layout = self.layout
         scene = context.scene
-        # print('scene: %r\t- %r' % (scene.name, context.scene.name))
-        # obj = context.object  # FIXME: Gives 'None type' in this place - everywhere else it works normally (?!?)
-        # print('obj:   %s\t- %s' % (obj, context.object))
-        # blend_data = context.blend_data
         scs_globals = _get_scs_globals()
 
-        # def draw_scs_tools_settings_panel_box(layout):
-        # """Draw SCS Tools settings panel box."""
-        # layout_box = layout.box()
-        # layout_box_row = layout_box.row()
-        # layout_box_row.prop(scene.scs_props, 'scs_lod_definition_type', icon='NONE', expand=True)
-        # layout_box_row.prop(scs_globals, 'scs_lod_definition_type', icon='NONE', expand=True)
-
         if scene:
-            # PART PANEL
-            # if obj:  # FIXME: 'None type' obj - see above...
-            # ui.shared.draw_part_panel(layout, scene, obj)
 
             # GLOBAL SETTINGS PANEL
             _draw_global_settings_panel(scene, layout, scs_globals)
@@ -369,3 +461,6 @@ class SCSTools(_ScenePanelBlDefs, Panel):
             # EXPORT PANEL
             if context.mode == 'OBJECT':
                 _draw_export_panel(scene, layout, scs_globals)
+
+            # CONVERSION PANEL
+            _draw_conversion_panel(layout, scs_globals)

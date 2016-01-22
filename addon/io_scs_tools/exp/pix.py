@@ -96,24 +96,6 @@ def _get_objects_by_type(blender_objects, parts):
     return mesh_object_list, prefab_locator_list, model_locator_list, collision_locator_list, armature_object
 
 
-def _get_initial_selection(content_type):
-    """
-    Takes content type and returns initial object list.
-    :param content_type:
-    :return:
-    """
-    if content_type == 'selection':
-        init_obj_list = bpy.context.selected_objects
-    elif content_type == 'scene':
-        init_obj_list = bpy.context.scene.objects
-    elif content_type == 'scenes':
-        init_obj_list = bpy.data.objects
-    else:
-        init_obj_list = bpy.context.selected_objects
-        lprint('W Unkown "Selection type" - %r. Using "Selection Only".', content_type)
-    return init_obj_list
-
-
 def export(dirpath, root_object, game_object_list):
     """The main export function.
 

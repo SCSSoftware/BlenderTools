@@ -18,8 +18,9 @@
 
 # Copyright (C) 2013-2014: SCS Software
 
-import bpy
 import os
+from bpy.utils import previews
+from io_scs_tools.consts import Icons as _ICON_consts
 from io_scs_tools.utils import path as _path
 from io_scs_tools.utils.printout import lprint
 
@@ -29,56 +30,40 @@ CUSTOM_ICONS = "custom_icons"
 _preview_collections = {}
 
 
-def _load_image(icon_type):
-    """Loads image for given icon type if path exists.
-    :param icon_type: one of icons type from "io_scs_tools.consts.Icons.Types"
-    :type icon_type: str
-    :return: True if image is succesfully loaded; False otherwise
-    :rtype: bool
-    """
-
-    pcoll = _preview_collections[CUSTOM_ICONS]
-
-    tools_paths = _path.get_addon_installation_paths()
-    if len(tools_paths) > 0:
-        # create path to current icon "ui/icons/icon_type"
-        icon_path = os.path.join(tools_paths[0], 'ui' + os.sep + 'icons' + os.sep + icon_type)
-        if os.path.isfile(icon_path):
-            if icon_type not in pcoll:
-                pcoll.load(icon_type, icon_path, 'IMAGE')
-            return True
-        else:
-            lprint("W Icon %r is missing. Please try to install addon again!", (icon_type,))
-            return False
-
-
-def _init():
-    """Initialization function for getting hold of preview collection variable where icons will be stored.
-    :return: custom icons preview collection
-    :rtype: dict
+def init():
+    """Initialization function for getting hold of preview collection variable with already created custom icon objects.
     """
 
     if CUSTOM_ICONS not in _preview_collections:
 
-        import bpy.utils.previews
+        pcoll = previews.new()
 
-        pcoll = bpy.utils.previews.new()
+        # load icons
+        tools_paths = _path.get_addon_installation_paths()
+        if len(tools_paths) > 0:
+
+            for icon_type in _ICON_consts.Types.as_list():
+
+                # create path to current icon "ui/icons/icon_type"
+                icon_path = os.path.join(tools_paths[0], 'ui' + os.sep + 'icons' + os.sep + icon_type)
+                if os.path.isfile(icon_path):
+                    if icon_type not in pcoll:
+                        pcoll.load(icon_type, icon_path, 'IMAGE')
+                else:
+                    lprint("W Icon %r is missing. Please try to install addon again!", (icon_type,))
+
         _preview_collections[CUSTOM_ICONS] = pcoll
 
-    return _preview_collections[CUSTOM_ICONS]
 
-
-def release_icons_data():
+def cleanup():
     """Release custom icons internal data. This results in deleting of preview collections entries
     and preview collections dictionary itself.
     """
 
     if CUSTOM_ICONS in _preview_collections:
 
-        import bpy.utils.previews
-
         for pcoll in _preview_collections.values():
-            bpy.utils.previews.remove(pcoll)
+            previews.remove(pcoll)
 
         _preview_collections.clear()
 
@@ -91,16 +76,13 @@ def get_icon(icon_type):
     :rtype: int
     """
 
-    # get custom icons preview collection
-    pcoll = _init()
+    if CUSTOM_ICONS not in _preview_collections:
+        lprint("E Icons not yet initialized, Blender Tools were not properply initialized!")
+        return 0
 
-    # load image on request only (in some cases images might get deleted for example on Undo action)
-    image_loaded = True
-    if icon_type not in pcoll:
-        image_loaded = _load_image(icon_type)
+    pcoll = _preview_collections[CUSTOM_ICONS]
 
-    # if layout exists create icon
-    if image_loaded:
+    if icon_type in pcoll:
         return pcoll[icon_type].icon_id
     else:
         return 0

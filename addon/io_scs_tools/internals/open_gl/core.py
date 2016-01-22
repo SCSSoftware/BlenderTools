@@ -32,6 +32,7 @@ from io_scs_tools.internals.connections.wrappers import group as _connections_gr
 from io_scs_tools.operators.wm import Show3DViewReport as _Show3DViewReportOperator
 from io_scs_tools.utils import math as _math_utils
 from io_scs_tools.utils import object as _object_utils
+from io_scs_tools.utils import get_scs_globals as _get_scs_globals
 
 
 def disable_depth_test():
@@ -50,7 +51,7 @@ def draw_custom_3d_elements(mode):
     else:  # X-ray mode
         disable_depth_test()
 
-    context = bpy.context
+    scs_globals = _get_scs_globals()
 
     # TERRAIN POINTS
     glPointSize(5.0)
@@ -67,33 +68,34 @@ def draw_custom_3d_elements(mode):
     glLineWidth(2.0)
 
     # CURVES AND LINES
-    if context.scene.scs_props.display_connections:
+    if scs_globals.display_connections:
         _connections_group_wrapper.draw(prefab_locators)
 
     # reset line width to 1.0 after drawing curves and lines
     glLineWidth(1.0)
 
-    # PREFAB LOCATORS
-    if context.scene.scs_props.display_locators:
+    # LOCATORS
+    if scs_globals.display_locators:
+
+        # PREFAB LOCATORS
         if prefab_locators:
             for obj in prefab_locators.values():
-                _locators.prefab.draw_prefab_locator(obj, context.scene.scs_props)
+                _locators.prefab.draw_prefab_locator(obj, scs_globals)
 
-    # COLLISION LOCATORS
-    if context.scene.scs_props.display_locators:
+        # COLLISION LOCATORS
         if collision_locators:
             for obj in collision_locators.values():
-                _locators.collider.draw_collision_locator(obj, context.scene.scs_props)
+                _locators.collider.draw_collision_locator(obj, scs_globals)
 
-    # MODEL LOCATORS
-    if context.scene.scs_props.display_locators:
+        # MODEL LOCATORS
         if model_locators:
             for obj in model_locators.values():
-                _locators.model.draw_model_locator(obj, context.scene.scs_props)
+                _locators.model.draw_model_locator(obj, scs_globals)
 
 
 def draw_custom_2d_elements():
     context = bpy.context
+    scs_globals = _get_scs_globals()
 
     font_id = 0  # TODO: Need to find out how best to get this.
     blf.size(font_id, 12, 72)
@@ -109,9 +111,9 @@ def draw_custom_2d_elements():
         return
 
     glColor3f(
-        context.scene.scs_props.info_text_color[0],
-        context.scene.scs_props.info_text_color[1],
-        context.scene.scs_props.info_text_color[2],
+        scs_globals.info_text_color[0],
+        scs_globals.info_text_color[1],
+        scs_globals.info_text_color[2],
     )
 
     region3d = context.space_data.region_3d
@@ -125,7 +127,7 @@ def draw_custom_2d_elements():
     region_data = (perspective_matrix, region_mid_width, region_mid_height)
 
     # LOCATOR NAMES
-    if context.scene.scs_props.display_info == 'locnames':
+    if scs_globals.display_info == 'locnames':
         if prefab_locators:
             for key, obj in prefab_locators.items():
                 mat = obj.matrix_world
@@ -142,7 +144,7 @@ def draw_custom_2d_elements():
                 _primitive.draw_text(key, font_id, Vector((mat[0][3], mat[1][3], mat[2][3])), region_data)
 
     # LOCATOR COMPREHENSIVE INFO
-    elif context.scene.scs_props.display_info == 'locinfo':
+    elif scs_globals.display_info == 'locinfo':
         if prefab_locators:
             for key, obj in prefab_locators.items():
                 mat = obj.matrix_world
@@ -264,7 +266,7 @@ def draw_custom_2d_elements():
                     _primitive.draw_text(textline, font_id, Vector((mat[0][3], mat[1][3], mat[2][3])), region_data, 0, y_pos)
 
     # LOCATOR BOUNDARY NODES
-    elif context.scene.scs_props.display_info == 'locnodes':
+    elif scs_globals.display_info == 'locnodes':
         for key, obj in prefab_locators.items():
             if obj.scs_props.locator_prefab_type == 'Navigation Point':
                 mat = obj.matrix_world
@@ -272,7 +274,7 @@ def draw_custom_2d_elements():
                                      Vector((mat[0][3], mat[1][3], mat[2][3])), region_data)
 
     # LOCATOR BOUNDARY LANES
-    elif context.scene.scs_props.display_info == 'loclanes':
+    elif scs_globals.display_info == 'loclanes':
         for key, obj in prefab_locators.items():
             if obj.scs_props.locator_prefab_type == 'Navigation Point':
                 if obj.scs_props.locator_prefab_np_boundary != 'no':
@@ -291,7 +293,7 @@ def _get_custom_visual_elements():
     collision_locators = {}
     model_locators = {}
 
-    scene = bpy.context.scene
+    scs_globals = _get_scs_globals()
 
     # print(' time: %s' % str(time()))
 
@@ -325,7 +327,7 @@ def _get_custom_visual_elements():
         :param obj: Blender Object
         :type obj: bpy.types.Object
         """
-        new_draw_size = scene.scs_props.locator_empty_size * scene.scs_props.locator_size
+        new_draw_size = scs_globals.locator_empty_size * scs_globals.locator_size
         _object_utils.set_attr_if_different(obj, "empty_draw_size", new_draw_size)
         _object_utils.set_attr_if_different(obj, "empty_draw_type", 'PLAIN_AXES')
 
@@ -335,8 +337,7 @@ def _get_custom_visual_elements():
         :param obj: Blender Object
         :type obj: bpy.types.Object
         """
-        # new_draw_size = (scene.scs_props.locator_empty_size * (scene.scs_props.locator_size * 10)) / 6
-        new_draw_size = scene.scs_props.locator_empty_size * scene.scs_props.locator_size
+        new_draw_size = scs_globals.locator_empty_size * scs_globals.locator_size
         _object_utils.set_attr_if_different(obj, "empty_draw_size", new_draw_size)
         _object_utils.set_attr_if_different(obj, "empty_draw_type", 'PLAIN_AXES')
 
@@ -387,7 +388,7 @@ def _get_custom_visual_elements():
                     set_locators_original_draw_size(visib_obj)
 
             # load any lost preview models or switch their layers if needed
-            if bpy.context.scene.scs_props.show_preview_models:
+            if scs_globals.show_preview_models:
                 if visib_obj.scs_props.locator_preview_model_path != "":
                     if visib_obj.scs_props.locator_preview_model_present is False:
                         _preview_models.load(visib_obj)

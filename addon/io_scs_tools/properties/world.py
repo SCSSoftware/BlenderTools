@@ -25,7 +25,10 @@ from bpy.props import (StringProperty,
                        IntProperty,
                        FloatProperty,
                        CollectionProperty,
-                       EnumProperty)
+                       EnumProperty,
+                       FloatVectorProperty)
+from zipfile import ZIP_STORED, ZIP_DEFLATED, ZIP_BZIP2
+from io_scs_tools.internals import preview_models as _preview_models
 from io_scs_tools.internals.containers import config as _config_container
 from io_scs_tools.utils import material as _material_utils
 from io_scs_tools.utils import path as _path_utils
@@ -543,7 +546,246 @@ class GlobalSCSProps(bpy.types.PropertyGroup):
         default=False,
     )
 
-    # SETTINGS WHICH GET SAVED IN CONFIG FILE
+    # DISPLAY SETTINGS
+    def display_locators_update(self, context):
+        _config_container.update_item_in_file('GlobalDisplay.DisplayLocators', int(self.display_locators))
+        return None
+
+    def locator_size_update(self, context):
+        _config_container.update_item_in_file('GlobalDisplay.LocatorSize', self.locator_size)
+        return None
+
+    def locator_empty_size_update(self, context):
+        _config_container.update_item_in_file('GlobalDisplay.LocatorEmptySize', self.locator_empty_size)
+        return None
+
+    def locator_prefab_wire_color_update(self, context):
+        _config_container.update_item_in_file('GlobalColors.PrefabLocatorsWire',
+                                              tuple(self.locator_prefab_wire_color))
+        return None
+
+    def locator_model_wire_color_update(self, context):
+        _config_container.update_item_in_file('GlobalColors.ModelLocatorsWire',
+                                              tuple(self.locator_model_wire_color))
+        return None
+
+    def locator_coll_wire_color_update(self, context):
+        _config_container.update_item_in_file('GlobalColors.ColliderLocatorsWire',
+                                              tuple(self.locator_coll_wire_color))
+        return None
+
+    def locator_coll_face_color_update(self, context):
+        _config_container.update_item_in_file('GlobalColors.ColliderLocatorsFace',
+                                              tuple(self.locator_coll_face_color))
+        return None
+
+    def display_connections_update(self, context):
+        _config_container.update_item_in_file('GlobalDisplay.DisplayConnections', int(self.display_connections))
+        return None
+
+    def optimized_connections_drawing_update(self, context):
+        _config_container.update_item_in_file('GlobalDisplay.OptimizedConnsDrawing', int(self.optimized_connections_drawing))
+        return None
+
+    def curve_segments_update(self, context):
+        _config_container.update_item_in_file('GlobalDisplay.CurveSegments', self.curve_segments)
+        return None
+
+    def np_curve_color_update(self, context):
+        _config_container.update_item_in_file('GlobalColors.NavigationCurveBase', tuple(self.np_connection_base_color))
+        return None
+
+    def mp_line_color_update(self, context):
+        _config_container.update_item_in_file('GlobalColors.MapLineBase', tuple(self.mp_connection_base_color))
+        return None
+
+    def tp_line_color_update(self, context):
+        _config_container.update_item_in_file('GlobalColors.TriggerLineBase', tuple(self.tp_connection_base_color))
+        return None
+
+    def display_info_update(self, context):
+        _config_container.update_item_in_file('GlobalDisplay.DisplayTextInfo', self.display_info)
+        return None
+
+    def info_text_color_update(self, context):
+        _config_container.update_item_in_file('GlobalColors.InfoText', tuple(self.info_text_color))
+        return None
+
+    display_locators = BoolProperty(
+        name="Display Locators",
+        description="Display locators in 3D views",
+        default=True,
+        update=display_locators_update,
+    )
+    locator_size = FloatProperty(
+        name="Locator Size",
+        description="Locator display size in 3D views",
+        default=1.0,
+        min=0.1, max=50,
+        options={'HIDDEN'},
+        subtype='NONE',
+        unit='NONE',
+        update=locator_size_update,
+    )
+    locator_empty_size = FloatProperty(
+        name="Locator Empty Object Size",
+        description="Locator Empty object display size in 3D views",
+        default=0.05,
+        min=0.05, max=0.2,
+        step=0.1,
+        options={'HIDDEN'},
+        subtype='NONE',
+        unit='NONE',
+        update=locator_empty_size_update,
+    )
+    locator_prefab_wire_color = FloatVectorProperty(
+        name="Prefab Loc Color",
+        description="Color for prefab locators in 3D views",
+        options={'HIDDEN'},
+        subtype='COLOR',
+        min=0, max=1,
+        default=(0.5, 0.5, 0.5),
+        update=locator_prefab_wire_color_update,
+    )
+    locator_model_wire_color = FloatVectorProperty(
+        name="Model Loc Color",
+        description="Color for model locators in 3D views",
+        options={'HIDDEN'},
+        subtype='COLOR',
+        min=0, max=1,
+        # default=(0.25, 0.25, 0.25),
+        default=(0.08, 0.12, 0.25),
+        update=locator_model_wire_color_update,
+    )
+    locator_coll_wire_color = FloatVectorProperty(
+        name="Collider Loc Wire Color",
+        description="Color for collider locators' wireframe in 3D views",
+        options={'HIDDEN'},
+        subtype='COLOR',
+        min=0, max=1,
+        default=(0.5, 0.3, 0.1),
+        update=locator_coll_wire_color_update,
+    )
+    locator_coll_face_color = FloatVectorProperty(
+        name="Collider Loc Face Color",
+        description="Color for collider locators' faces in 3D views",
+        options={'HIDDEN'},
+        subtype='COLOR',
+        min=0, max=1,
+        default=(0.15, 0.05, 0.05),
+        # default=(0.065, 0.18, 0.3),
+        update=locator_coll_face_color_update,
+    )
+    display_connections = BoolProperty(
+        name="Display Connections",
+        description="Display connections in 3D views",
+        default=True,
+        update=display_connections_update,
+    )
+    curve_segments = IntProperty(
+        name="Curve Segments",
+        description="Curve segment number for displaying in 3D views",
+        default=16,
+        min=4, max=64,
+        step=1,
+        options={'HIDDEN'},
+        subtype='NONE',
+        update=curve_segments_update,
+    )
+    optimized_connections_drawing = BoolProperty(
+        name="Optimized Connections Draw",
+        description="Draw connections only when data are updated ( switching this off might give you FPS  )",
+        default=False,
+        update=optimized_connections_drawing_update,
+    )
+    np_connection_base_color = FloatVectorProperty(
+        name="Nav Curves Color",
+        description="Base color for navigation curves in 3D views",
+        options={'HIDDEN'},
+        subtype='COLOR',
+        min=0, max=1,
+        default=(0.0, 0.1167, 0.1329),
+        update=np_curve_color_update,
+    )
+    mp_connection_base_color = FloatVectorProperty(
+        name="Map Line Color",
+        description="Base color for map line connections in 3D views",
+        options={'HIDDEN'},
+        subtype='COLOR',
+        min=0, max=1,
+        default=(0.0, 0.2234, 0.0982),
+        update=mp_line_color_update,
+    )
+    tp_connection_base_color = FloatVectorProperty(
+        name="Trigger Line Color",
+        description="Base color for trigger line connections in 3D views",
+        options={'HIDDEN'},
+        subtype='COLOR',
+        min=0, max=1,
+        default=(0.1706, 0.0, 0.0593),
+        update=tp_line_color_update,
+    )
+    display_info = EnumProperty(
+        name="Display Text Info",
+        description="Display additional text information in 3D views",
+        items=(
+            ('none', "None", "No additional information displayed in 3D view"),
+            ('locnames', "Locator Names", "Display locator names only in 3D view"),
+            # ('locspeed', "Locator Nav. Points - Speed Limits", "Display navigation point locator speed limits in 3D view"),
+            ('locnodes', "Locator Nav. Points - Boundary Nodes", "Display navigation point locator boundary node numbers in 3D view"),
+            ('loclanes', "Locator Nav. Points - Boundary Lanes", "Display navigation point locator boundary lanes in 3D view"),
+            ('locinfo', "Locator Comprehensive Info", "Display comprehensive information for locators in 3D view"),
+        ),
+        default='none',
+        update=display_info_update,
+    )
+    info_text_color = FloatVectorProperty(
+        name="Info Text Color",
+        description="Base color for information text in 3D views",
+        options={'HIDDEN'},
+        subtype='COLOR',
+        min=0, max=1,
+        default=(1.0, 1.0, 1.0),
+        update=info_text_color_update,
+    )
+
+    def drawing_mode_update(self, context):
+        from io_scs_tools.internals.callbacks import open_gl as _open_gl_callback
+
+        _open_gl_callback.enable(self.drawing_mode)
+
+    drawing_mode = EnumProperty(
+        name="Custom Drawing Mode",
+        description="Drawing mode for custom elements (Locators and Connections)",
+        items=(
+            ('Normal', "Normal", "Use normal depth testing drawing"),
+            ('X-ray', "X-ray", "Use X-ray drawing"),
+        ),
+        update=drawing_mode_update
+    )
+
+    def show_preview_models_update(self, context):
+        """
+        :param context:
+        :return:
+        """
+        for obj in bpy.data.objects:
+            if obj.type == 'EMPTY':
+                if self.show_preview_models:
+                    if not _preview_models.load(obj):
+                        _preview_models.unload(obj)
+                else:
+                    _preview_models.unload(obj)
+        return None
+
+    show_preview_models = BoolProperty(
+        name="Show Preview Models",
+        description="Show preview models for locators",
+        default=True,
+        update=show_preview_models_update
+    )
+
+    # IMPORT & EXPORT SETTINGS SAVED IN CONFIG
     def dump_level_update(self, context):
         # utils.update_item_in_config_file(utils.get_config_filepath(), 'Various.DumpLevel', self.dump_level)
         _config_container.update_item_in_file('Header.DumpLevel', self.dump_level)
@@ -603,10 +845,6 @@ class GlobalSCSProps(bpy.types.PropertyGroup):
 
     def search_subdirs_for_pia_update(self, context):
         _config_container.update_item_in_file('Import.IncludeSubdirsForPia', int(self.include_subdirs_for_pia))
-        return None
-
-    def content_type_update(self, context):
-        _config_container.update_item_in_file('Export.ContentType', self.content_type)
         return None
 
     def export_scale_update(self, context):
@@ -689,7 +927,6 @@ class GlobalSCSProps(bpy.types.PropertyGroup):
         _config_container.update_item_in_file('Export.SignExport', int(self.sign_export))
         return None
 
-    # IMPORT & EXPORT OPTIONS
     dump_level = EnumProperty(
         name="Printouts",
         items=(
@@ -797,15 +1034,14 @@ class GlobalSCSProps(bpy.types.PropertyGroup):
     )
 
     # EXPORT OPTIONS
-    content_type = EnumProperty(
-        name="Content",
+    export_scope = EnumProperty(
+        name="Export Scope",
         items=(
             ('selection', "Selection", "Export selected objects only"),
             ('scene', "Active Scene", "Export only objects within active scene"),
             ('scenes', "All Scenes", "Export objects from all scenes"),
         ),
         default='scene',
-        update=content_type_update,
     )
     export_scale = FloatProperty(
         name="Scale",
@@ -930,8 +1166,98 @@ class GlobalSCSProps(bpy.types.PropertyGroup):
         default=False,
         update=sign_export_update,
     )
+
+    # COMMON SETTINGS - NOT SAVED IN CONFIG
+    preview_export_selection = BoolProperty(
+        name="Preview selection",
+        description="Preview selection which will be exported",
+        default=True,
+    )
+    preview_export_selection_active = BoolProperty(
+        name="Flag indication if selection preview is active",
+        description="",
+        default=False,
+    )
     last_load_bt_version = StringProperty(
         name="Last Load BT Version",
         description="Version string of SCS Blender Tools on last file load (used for applying fixes on older versions)",
         default="0.0",
+    )
+
+    # CONVERSION HELPER SETTINGS
+    def conv_hlpr_converters_path_update(self, context):
+
+        # if relative path detected convert it to absolute
+        if self.conv_hlpr_converters_path.startswith("//") or self.conv_hlpr_converters_path.startswith("\\"):
+
+            self.conv_hlpr_converters_path = _path_utils.repair_path(self.conv_hlpr_converters_path)
+            return None  # interrupt update, as another one will be called for saving item into config.txt (as we changed converters path)
+
+        _config_container.update_item_in_file('Paths.ConvertersPath', self.conv_hlpr_converters_path)
+
+    conv_hlpr_converters_path = StringProperty(
+        name="Converters Path",
+        description="Path to SCS conversion tools directory.",
+        subtype="DIR_PATH",
+        update=conv_hlpr_converters_path_update,
+        default="<Select Converters Path>"
+    )
+
+    class ConvHlprCustomPathEntry(bpy.types.PropertyGroup):
+
+        def path_update(self, context):
+
+            # if relative path detected convert it to absolute
+            if self.path.startswith("//") or self.path.startswith("\\"):
+                from io_scs_tools.utils.path import repair_path
+                self.path = repair_path(self.path)
+
+        path = StringProperty(subtype='DIR_PATH')
+
+    conversion_helper_expand = BoolProperty(
+        name="Expand Conversion Helper",
+        description="Expand Conversion Helper",
+        default=True,
+    )
+    conv_hlpr_custom_paths = CollectionProperty(
+        type=ConvHlprCustomPathEntry,
+        description="Custom paths used for converting more targets to one"
+    )
+    conv_hlpr_custom_paths_active = IntProperty(
+        description="Currently selected custom path"
+    )
+    conv_hlpr_mod_destination = StringProperty(
+        name="Mod Destination",
+        description="Destination folder where mod will be packed to.",
+        subtype="DIR_PATH",
+        default="<Mod Folder Path>"
+    )
+    conv_hlpr_mod_name = StringProperty(
+        name="Mod Name",
+        description="Name of the packed mod zip file",
+        default="<Mod Name>"
+    )
+    conv_hlpr_clean_on_packing = BoolProperty(
+        name="Auto Clean",
+        description="Clean converted data directory before exporting & converting & packing (usually used when firstly packing a mod).",
+        default=False
+    )
+    conv_hlpr_export_on_packing = BoolProperty(
+        name="Auto Export",
+        description="Export before converting & packing (it will use last successful batch export action).",
+        default=True
+    )
+    conv_hlpr_convert_on_packing = BoolProperty(
+        name="Auto Convert",
+        description="Execute convert before packing.",
+        default=True
+    )
+    conv_hlpr_mod_compression = EnumProperty(
+        description="Compression method for mod packing",
+        items=(
+            (str(ZIP_STORED), "No Compression", "No compression done to package"),
+            (str(ZIP_DEFLATED), "Deflated", "Use ZIP deflated compression method"),
+            (str(ZIP_BZIP2), "BZIP2", "Uses bzip2 compression method"),
+        ),
+        default=str(ZIP_DEFLATED)
     )

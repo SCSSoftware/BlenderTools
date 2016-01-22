@@ -19,13 +19,12 @@
 # Copyright (C) 2015: SCS Software
 
 
-from io_scs_tools.consts import Mesh as _MESH_consts
 from io_scs_tools.internals.shaders.eut2.dif_spec import DifSpec
 from io_scs_tools.internals.shaders.eut2.std_node_groups import mult2_mix
+from io_scs_tools.internals.shaders.flavors import tg0
 
 
 class DifSpecWeightMult2(DifSpec):
-    SEC_GEOM_NODE = "SecGeometry"
     UV_SCALE_NODE = "UVScale"
     MULT_TEX_NODE = "MultTex"
     MULT2_MIX_GROUP_NODE = "Mult2MixGroup"
@@ -52,6 +51,7 @@ class DifSpecWeightMult2(DifSpec):
         # init parent
         DifSpec.init(node_tree)
 
+        geom_n = node_tree.nodes[DifSpec.GEOM_NODE]
         base_tex_n = node_tree.nodes[DifSpec.BASE_TEX_NODE]
         spec_mult_n = node_tree.nodes[DifSpec.SPEC_MULT_NODE]
         vcol_scale_n = node_tree.nodes[DifSpec.VCOLOR_SCALE_NODE]
@@ -60,17 +60,13 @@ class DifSpecWeightMult2(DifSpec):
         out_mat_n = node_tree.nodes[DifSpec.OUT_MAT_NODE]
 
         # move existing
+        geom_n.location.x -= pos_x_shift * 2
         opacity_mult_n.location.y -= 100
         for node in node_tree.nodes:
             if node.location.x > start_pos_x + pos_x_shift:
                 node.location.x += pos_x_shift
 
         # nodes creation
-        sec_geom_n = node_tree.nodes.new("ShaderNodeGeometry")
-        sec_geom_n.name = sec_geom_n.label = DifSpecWeightMult2.SEC_GEOM_NODE
-        sec_geom_n.location = (start_pos_x - pos_x_shift * 3, start_pos_y + 1200)
-        sec_geom_n.uv_layer = _MESH_consts.none_uv
-
         uv_scale_n = node_tree.nodes.new("ShaderNodeMapping")
         uv_scale_n.name = uv_scale_n.label = DifSpecWeightMult2.UV_SCALE_NODE
         uv_scale_n.location = (start_pos_x - pos_x_shift * 2, start_pos_y + 1200)
@@ -95,7 +91,7 @@ class DifSpecWeightMult2(DifSpec):
         spec_vcol_mult_n.inputs["Fac"].default_value = 1.0
 
         # links creation
-        node_tree.links.new(uv_scale_n.inputs["Vector"], sec_geom_n.outputs["UV"])
+        node_tree.links.new(uv_scale_n.inputs["Vector"], geom_n.outputs["UV"])
 
         node_tree.links.new(mult_tex_n.inputs["Vector"], uv_scale_n.outputs["Vector"])
 
@@ -141,10 +137,7 @@ class DifSpecWeightMult2(DifSpec):
         :type uv_layer: str
         """
 
-        if uv_layer is None or uv_layer == "":
-            uv_layer = _MESH_consts.none_uv
-
-        node_tree.nodes[DifSpecWeightMult2.SEC_GEOM_NODE].uv_layer = uv_layer
+        DifSpec.set_base_uv(node_tree, uv_layer)
 
     @staticmethod
     def set_aux5(node_tree, aux_property):
@@ -158,3 +151,43 @@ class DifSpecWeightMult2(DifSpec):
 
         node_tree.nodes[DifSpecWeightMult2.UV_SCALE_NODE].scale[0] = aux_property[0]["value"]
         node_tree.nodes[DifSpecWeightMult2.UV_SCALE_NODE].scale[1] = aux_property[1]["value"]
+
+    @staticmethod
+    def set_tg0_flavor(node_tree, switch_on):
+        """Set zero texture generation flavor to this shader.
+
+        :param node_tree: node tree of current shader
+        :type node_tree: bpy.types.NodeTree
+        :param switch_on: flag indication if flavor should be switched on or off
+        :type switch_on: bool
+        """
+
+        if switch_on and not tg0.is_set(node_tree):
+
+            out_node = node_tree.nodes[DifSpecWeightMult2.GEOM_NODE]
+            in_node = node_tree.nodes[DifSpecWeightMult2.UV_SCALE_NODE]
+            in_node2 = node_tree.nodes[DifSpecWeightMult2.BASE_TEX_NODE]
+
+            out_node.location.x -= 185 * 2
+            location = (out_node.location.x + 185, out_node.location.y)
+
+            tg0.init(node_tree, location, out_node.outputs["Global"], in_node.inputs["Vector"])
+            tg0.init(node_tree, location, out_node.outputs["Global"], in_node2.inputs["Vector"])
+
+        elif not switch_on:
+
+            tg0.delete(node_tree)
+
+    @staticmethod
+    def set_aux0(node_tree, aux_property):
+        """Set zero texture generation scale.
+
+        :param node_tree: node tree of current shader
+        :type node_tree: bpy.types.NodeTree
+        :param aux_property: secondary specular color represented with property group
+        :type aux_property: bpy.types.IDPropertyGroup
+        """
+
+        if tg0.is_set(node_tree):
+
+            tg0.set_scale(node_tree, aux_property[0]['value'], aux_property[1]['value'])

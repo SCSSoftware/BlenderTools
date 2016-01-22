@@ -23,6 +23,7 @@ from mathutils import Vector
 from io_scs_tools.consts import PrefabLocators as _PL_consts
 from io_scs_tools.utils import curve as _curve_utils
 from io_scs_tools.utils import math as _math_utils
+from io_scs_tools.utils import get_scs_globals as _get_scs_globals
 
 
 def collect_nav_curve_data(loc0_obj, loc1_obj):
@@ -41,7 +42,7 @@ def collect_nav_curve_data(loc0_obj, loc1_obj):
              "locrot_1": tuple}
     """
 
-    curve_steps = bpy.context.scene.scs_props.curve_segments
+    curve_steps = _get_scs_globals().curve_segments
 
     nav_point_0_loc = loc0_obj.matrix_world.translation
     nav_point_0_rot = loc0_obj.matrix_world.to_euler('XYZ')

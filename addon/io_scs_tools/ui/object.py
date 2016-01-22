@@ -19,7 +19,6 @@
 # Copyright (C) 2013-2014: SCS Software
 
 import os
-
 import bpy
 from bpy.types import Panel
 from io_scs_tools.consts import Operators as _OP_consts
@@ -33,104 +32,6 @@ from io_scs_tools.ui import shared as _shared
 class _ObjectPanelBlDefs(_shared.HeaderIconPanel):
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
-
-
-def _draw_data_group_panel(layout):
-    """Draw data group panel.
-
-    :param layout: Blender UI Layout to draw to
-    :type layout: bpy.types.UILayout
-    """
-    row = layout.row()
-    row.separator()
-    row = layout.row()
-    row.separator()
-    box = row.box()
-    col = box.column(align=True)
-    col_row = col.row(align=True)
-    col_row.operator('scene.add_data_group')
-    col_row.operator('scene.remove_data_group')
-    col.operator('scene.print_data_group')
-    col.operator('scene.restore_data_group')
-    # col_row = col.row(align=True)
-    # col_row.operator('scene.add_to_the_group')
-    # col_row.operator('scene.remove_from_the_group')
-    row.separator()
-
-
-def _draw_collect_data_panel(layout):
-    """Draw collect data panel.
-
-    :param layout: Blender UI Layout to draw to
-    :type layout: bpy.types.UILayout
-    """
-    row = layout.row()
-    row.separator()
-    row = layout.row()
-    row.separator()
-    box = row.box()
-    col = box.column(align=True)
-    col.operator('object.collect_nav_curve_connections')
-    col.operator('object.collect_map_line_connections')
-    col.operator('object.collect_trigger_line_connections')
-    # col.template_component_menu(obj, 'scs_props', name='Props:')
-    row.separator()
-
-
-def _draw_locator_display_settings_panel(layout, scene, obj):
-    """Draw Locator Display Settings panel.
-
-    :param layout: Blender UI Layout to draw to
-    :type layout: bpy.types.UILayout
-    :param scene: Blender Scene
-    :type scene: bpy.types.Scene
-    :param obj: SCS Locator Object
-    :type obj: bpy.types.Object
-    """
-    if obj.scs_props.locator_type != 'None':
-        box = layout.box()
-        if scene.scs_props.locator_display_settings_expand:
-            row = box.row()
-            row.prop(scene.scs_props, 'locator_display_settings_expand', text="Display Settings:", icon='TRIA_DOWN', icon_only=True, emboss=False)
-            row.label('')
-            row = box.row()
-            row.prop(scene.scs_props, 'display_locators', icon='NONE', toggle=True)
-            if scene.scs_props.display_locators:
-                row = box.row(align=True)
-                row.prop(scene.scs_props, 'locator_size', icon='NONE')
-                row.prop(scene.scs_props, 'locator_empty_size', icon='NONE')
-                if obj.scs_props.locator_type == 'Prefab':
-                    row = box.row()
-                    row.prop(scene.scs_props, 'locator_prefab_wire_color', icon='NONE')
-                elif obj.scs_props.locator_type == 'Model':
-                    row = box.row()
-                    row.prop(scene.scs_props, 'locator_model_wire_color', icon='NONE')
-                elif obj.scs_props.locator_type == 'Collision':
-                    col = box.column()
-                    col_row = col.row()
-                    col_row.prop(scene.scs_props, 'locator_coll_wire_color', icon='NONE')
-                    col_row = col.row()
-                    col_row.prop(scene.scs_props, 'locator_coll_face_color', icon='NONE')
-            else:
-                row = box.row()
-                row.prop(scene.scs_props, 'locator_empty_size', icon='NONE')
-            if obj.scs_props.locator_type == 'Prefab':
-                row = box.row()
-                row.prop(scene.scs_props, 'display_connections', icon='NONE', toggle=True)
-                if scene.scs_props.display_connections:
-                    row = box.row()
-                    row.prop(scene.scs_props, 'curve_base_color', icon='NONE')
-                    row = box.row()
-                    row.prop(scene.scs_props, 'curve_segments', icon='NONE')
-            row = box.row()
-            row.prop(scene.scs_props, 'display_info', icon='NONE')
-            if scene.scs_props.display_info != 'none':
-                row = box.row()
-                row.prop(scene.scs_props, 'info_text_color', icon='NONE')
-        else:
-            row = box.row()
-            row.prop(scene.scs_props, 'locator_display_settings_expand', text="Display Settings:", icon='TRIA_RIGHT', icon_only=True, emboss=False)
-            row.label('')
 
 
 def _draw_locator_preview_panel(layout, obj, draw_box=True):

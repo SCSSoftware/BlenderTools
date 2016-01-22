@@ -184,11 +184,14 @@ def update_look_from_material(root_obj, material, preset_change=False):
         return
 
     new_mat = __create_material_entry__(material)
-    look_data[mat_id_str] = new_mat
+    # apply new material entry only if it's not preset change
+    # if there is preset change we don't want to overwrite data rather reuse old values
+    if not preset_change:
+        look_data[mat_id_str] = new_mat
 
     # cleanup and sync of all looks
     for look_id in root_obj[_MAIN_DICT]:
-        if look_id != look_id_str:
+        if look_id != look_id_str or preset_change:
 
             curr_mat = root_obj[_MAIN_DICT][look_id][mat_id_str]
 
@@ -267,6 +270,63 @@ def write_through(root_obj, material, prop):
         written_looks_count += 1
 
     return written_looks_count
+
+
+def write_prop_to_look(root_obj, look_id, material, prop):
+    """Writes given property from material to given look of given SCS game object.
+
+    :param root_obj: scs root object from which looks data will be taken
+    :type root_obj: bpy.types.Object
+    :param look_id: look id to which property should be written
+    :type look_id: int
+    :param material: material from which property value should be taken
+    :type material: bpy.types.Material
+    :param prop: property string which should be written through
+    :type prop: str
+    :return: True if property was written successfully; False otherwise
+    :rtype: bool
+    """
+    if not root_obj or not material:
+        return False
+
+    if _MAIN_DICT not in root_obj or not hasattr(material.scs_props, prop):
+        return False
+
+    mat_id_str = str(material.scs_props.id)
+
+    if str(look_id) not in root_obj[_MAIN_DICT]:
+        lprint("D SCS Root: %r doesn't have entry for look ID: %s.", (root_obj.name, look_id))
+        return False
+
+    look_entry = root_obj[_MAIN_DICT][str(look_id)]
+    if mat_id_str not in look_entry:
+        lprint("D Look with ID: %s doesn't have entry for material %r in SCS Root %r,\n\t   " +
+               "property %r won't be updated!",
+               (look_id, material.name, root_obj.name, prop))
+        return False
+
+    if prop not in look_entry[mat_id_str]:
+        lprint("D Look with ID: %s is not synced, property %r won't be updated!", (look_id, prop))
+        return False
+
+    curr_prop = getattr(material.scs_props, prop)
+    curr_prop_type = material.scs_props.bl_rna.properties[prop].bl_rna.identifier
+    if "CollectionProperty" in curr_prop_type:
+
+        coll_prop_entry = {"CollectionProperty": 1, "entries": []}
+
+        for coll_entry in curr_prop:
+            entry = {}
+            for coll_key in coll_entry.keys():
+                entry[coll_key] = getattr(coll_entry, coll_key)
+
+            coll_prop_entry["entries"].append(entry)
+
+        look_entry[mat_id_str][prop] = coll_prop_entry
+    else:
+        look_entry[mat_id_str][prop] = curr_prop
+
+    return True
 
 
 def add_materials(root_obj, mat_list):

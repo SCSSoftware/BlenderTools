@@ -149,16 +149,16 @@ def get_item_name(inventory, data_id, report_errors=False):
         if report_errors:
 
             if len(inventory) > 0:
-                inventory_class_name = type(inventory[0]).__name__.strip("Inventory")
+                inventory_class_name = type(inventory[0]).__name__.replace("Inventory", "")
 
-                lprint("W Entry with ID: %s not found in %r inventory.", (data_id, inventory_class_name))
+                lprint("W Entry with ID: %r not found in %r inventory.", (data_id, inventory_class_name))
 
             else:
                 inventory.add()
-                inventory_class_name = type(inventory[0]).__name__.strip("Inventory")
+                inventory_class_name = type(inventory[0]).__name__.replace("Inventory", "")
                 inventory.remove(0)
 
-                lprint(str("W Searching %s inventory for entry with ID: %r failed because inventory is empty.\n\t   "
+                lprint(str("W Searching %r inventory for entry with ID: %r failed because inventory is empty.\n\t   "
                            "Please check inventory path in SCS Tools Path Settings!"),
                        (inventory_class_name, data_id))
 

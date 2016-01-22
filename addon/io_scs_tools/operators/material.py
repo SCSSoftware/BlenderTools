@@ -177,31 +177,88 @@ class Looks:
     class WriteThrough(bpy.types.Operator):
         bl_label = "Write Through"
         bl_idname = "material.scs_looks_wt"
-        bl_description = "Write current material value through all currently defined looks within SCS Game Object"
-
+        bl_description = ("Write current material value through all currently defined looks within SCS Game Object "
+                          "( Ctrl + Click to WT on other SCS Root Objects on same look, "
+                          "Ctrl + Shift + Click to WT all looks of all SCS Root Objects )"
+                          )
         property_str = StringProperty(
             description="String representing which property should be written through.",
             default="",
             options={'HIDDEN'},
         )
 
+        is_ctrl = False  # WT to same look of this material in other SCS Roots
+        is_shift = False  # is_shift + is_ctrl ->  WT to all looks of this material in all SCS Roots
+
         def execute(self, context):
             material = context.active_object.active_material
 
-            if material and hasattr(material.scs_props, self.property_str):
+            if not material or not hasattr(material.scs_props, self.property_str):
+                return {'CANCELLED'}
 
-                scs_root = _object_utils.get_scs_root(context.active_object)
+            scs_roots = []
+            active_scs_root = _object_utils.get_scs_root(context.active_object)
+            if active_scs_root:
+                scs_roots.append(active_scs_root)
 
-                if scs_root:
-                    altered_looks = _looks.write_through(scs_root, material, self.property_str)
-                    if altered_looks > 0:
-                        message = "Write through successfully altered %s looks!" % altered_looks
-                    else:
-                        message = "Nothing to write through."
+            if self.is_ctrl:
+                scs_roots = _object_utils.gather_scs_roots(bpy.data.objects)
 
-                    self.report({'INFO'}, message)
+            if self.is_shift or not self.is_ctrl:  # WT either on active only or all SCS roots; (Shift + Ctrl) or none
+
+                altered_looks = 0
+                for scs_root in scs_roots:
+                    altered_looks += _looks.write_through(scs_root, material, self.property_str)
+
+                if altered_looks > 0:
+                    message = "Write through successfully altered %s looks on %s SCS Root Objects!" % (altered_looks, len(scs_roots))
+                else:
+                    message = "Nothing to write through."
+
+                self.report({'INFO'}, message)
+
+            elif self.is_ctrl:  # special WT only into the same look of other SCS Roots
+
+                # get current look id
+                look_i = active_scs_root.scs_props.active_scs_look
+                look_name = active_scs_root.scs_object_look_inventory[look_i].name if look_i >= 0 else None
+
+                if look_name is None:
+                    self.report({'WARNING'}, "Aborting as current object is not in any SCS Game Object, parent it to SCS Root first!")
+                    return {'CANCELLED'}
+
+                altered_looks = 0
+                for scs_root in scs_roots:
+
+                    # ignore active root
+                    if scs_root == active_scs_root:
+                        continue
+
+                    look_id = -1
+
+                    # search for same look by name on other scs root
+                    for look in scs_root.scs_object_look_inventory:
+                        if look.name == look_name:
+                            look_id = look.id
+                            break
+
+                    if _looks.write_prop_to_look(scs_root, look_id, material, self.property_str):
+                        altered_looks += 1
+
+                if len(scs_roots) - 1 != altered_looks:
+                    self.report({'WARNING'}, "WT partially done, same look was found on %s/%s other SCS Root Objects!" %
+                                (altered_looks, len(scs_roots) - 1))
+                else:
+                    self.report({'INFO'}, "Write through altered property on %s other SCS Root Objects!" % altered_looks)
 
             return {'FINISHED'}
+
+        def invoke(self, context, event):
+
+            self.is_shift = event.shift
+            self.is_ctrl = event.ctrl
+
+            return self.execute(context)
 
 
 class Tobj:
@@ -405,7 +462,7 @@ class Aliasing:
 
 
 class Flavors:
-    class SwitchLampMask(bpy.types.Operator):
+    class SwitchFlavor(bpy.types.Operator):
         bl_label = "Switch Given Flavor"
         bl_idname = "material.scs_switch_flavor"
         bl_description = "Enable/disable this flavor for selected shader."
@@ -467,6 +524,11 @@ class Flavors:
             section = _shader_presets_cache.get_section(preset, flavors_suffix)
             context.material.scs_props.mat_effect_name = preset.effect + flavors_suffix
             _material_utils.set_shader_data_to_material(context.material, section)
+
+            # sync shader types on all scs roots by updating looks on them
+            # to avoid different shader types on different scs roots for same material
+            for scs_root in _object_utils.gather_scs_roots(bpy.data.objects):
+                _looks.update_look_from_material(scs_root, mat, True)
 
             return {'FINISHED'}
 
