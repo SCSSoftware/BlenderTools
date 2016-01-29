@@ -27,7 +27,7 @@ from bpy.props import (StringProperty,
                        CollectionProperty,
                        EnumProperty,
                        FloatVectorProperty)
-from zipfile import ZIP_STORED, ZIP_DEFLATED, ZIP_BZIP2
+from io_scs_tools.consts import ConvHlpr as _CONV_HLPR_consts
 from io_scs_tools.internals import preview_models as _preview_models
 from io_scs_tools.internals.containers import config as _config_container
 from io_scs_tools.utils import material as _material_utils
@@ -786,11 +786,6 @@ class GlobalSCSProps(bpy.types.PropertyGroup):
     )
 
     # IMPORT & EXPORT SETTINGS SAVED IN CONFIG
-    def dump_level_update(self, context):
-        # utils.update_item_in_config_file(utils.get_config_filepath(), 'Various.DumpLevel', self.dump_level)
-        _config_container.update_item_in_file('Header.DumpLevel', self.dump_level)
-        return None
-
     def import_scale_update(self, context):
         _config_container.update_item_in_file('Import.ImportScale', float(self.import_scale))
         return None
@@ -926,20 +921,6 @@ class GlobalSCSProps(bpy.types.PropertyGroup):
     def sign_export_update(self, context):
         _config_container.update_item_in_file('Export.SignExport', int(self.sign_export))
         return None
-
-    dump_level = EnumProperty(
-        name="Printouts",
-        items=(
-            ('0', "0 - Errors Only", "Print only Errors to the console"),
-            ('1', "1 - Errors and Warnings", "Print Errors and Warnings to the console"),
-            ('2', "2 - Errors, Warnings, Info", "Print Errors, Warnings and Info to the console"),
-            ('3', "3 - Errors, Warnings, Info, Debugs", "Print Errors, Warnings, Info and Debugs to the console"),
-            ('4', "4 - Errors, Warnings, Info, Debugs, Specials", "Print Errors, Warnings, Info, Debugs and Specials to the console"),
-            ('5', "5 - Test mode (DEVELOPER ONLY)", "Extra developer mode. (Don't use it if you don't know what you are doing!)"),
-        ),
-        default='2',
-        update=dump_level_update,
-    )
 
     # IMPORT OPTIONS
     import_scale = FloatProperty(
@@ -1167,6 +1148,44 @@ class GlobalSCSProps(bpy.types.PropertyGroup):
         update=sign_export_update,
     )
 
+    # COMMON SETTINGS - SAVED IN CONFIG
+    def dump_level_update(self, context):
+        _config_container.update_item_in_file('Header.DumpLevel', self.dump_level)
+        return None
+
+    def config_storage_place_update(self, context):
+
+        _config_container.update_item_in_file('Header.ConfigStoragePlace', self.config_storage_place)
+
+        if self.config_storage_place == "ConfigFile":
+            _config_container.apply_settings()
+
+        return None
+
+    dump_level = EnumProperty(
+        name="Printouts",
+        items=(
+            ('0', "0 - Errors Only", "Print only Errors to the console"),
+            ('1', "1 - Errors and Warnings", "Print Errors and Warnings to the console"),
+            ('2', "2 - Errors, Warnings, Info", "Print Errors, Warnings and Info to the console"),
+            ('3', "3 - Errors, Warnings, Info, Debugs", "Print Errors, Warnings, Info and Debugs to the console"),
+            ('4', "4 - Errors, Warnings, Info, Debugs, Specials", "Print Errors, Warnings, Info, Debugs and Specials to the console"),
+            ('5', "5 - Test mode (DEVELOPER ONLY)", "Extra developer mode. (Don't use it if you don't know what you are doing!)"),
+        ),
+        default='2',
+        update=dump_level_update,
+    )
+    config_storage_place = EnumProperty(
+        name="Use Global Settings",
+        description="Defines place for storage of Global Settings. By default Common Config File is used for globals to be stored per machine.",
+        items=(
+            ('ConfigFile', 'From Common Config File', "Global settings stored per machine"),
+            ('BlendFile', 'From Blend File', "Global settings stored per each blend file"),
+        ),
+        default='ConfigFile',
+        update=config_storage_place_update,
+    )
+
     # COMMON SETTINGS - NOT SAVED IN CONFIG
     preview_export_selection = BoolProperty(
         name="Preview selection",
@@ -1197,7 +1216,7 @@ class GlobalSCSProps(bpy.types.PropertyGroup):
 
     conv_hlpr_converters_path = StringProperty(
         name="Converters Path",
-        description="Path to SCS conversion tools directory.",
+        description="Path to SCS conversion tools directory (needed only if you use Conversion Helper).",
         subtype="DIR_PATH",
         update=conv_hlpr_converters_path_update,
         default="<Select Converters Path>"
@@ -1255,9 +1274,10 @@ class GlobalSCSProps(bpy.types.PropertyGroup):
     conv_hlpr_mod_compression = EnumProperty(
         description="Compression method for mod packing",
         items=(
-            (str(ZIP_STORED), "No Compression", "No compression done to package"),
-            (str(ZIP_DEFLATED), "Deflated", "Use ZIP deflated compression method"),
-            (str(ZIP_BZIP2), "BZIP2", "Uses bzip2 compression method"),
+            (_CONV_HLPR_consts.NoZip, "No Archive", "Create mod folder package instead of ZIP"),
+            (_CONV_HLPR_consts.StoredZip, "No Compression", "No compression done to package"),
+            (_CONV_HLPR_consts.DeflatedZip, "Deflated", "Use ZIP deflated compression method"),
+            (_CONV_HLPR_consts.Bzip2Zip, "BZIP2", "Uses bzip2 compression method"),
         ),
-        default=str(ZIP_DEFLATED)
+        default=_CONV_HLPR_consts.DeflatedZip
     )

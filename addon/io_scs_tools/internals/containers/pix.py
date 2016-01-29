@@ -190,6 +190,10 @@ def get_data_from_file(filepath, ind, print_info=False):
     :rtype: list of SectionData
     """
 
+    if filepath is None:
+        lprint("D Aborting PIX file read, 'None' file!")
+        return None
+
     # print('    filepath: "%s"\n' % filepath)
     container, state = _pix_parser.read_data(filepath, ind, print_info)
     if len(container) < 1:

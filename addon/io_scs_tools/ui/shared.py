@@ -19,7 +19,6 @@
 # Copyright (C) 2013-2014: SCS Software
 
 import bpy
-
 from io_scs_tools.consts import Icons as _ICONS_consts
 from io_scs_tools.utils import object as _object_utils
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
@@ -160,12 +159,21 @@ def draw_export_panel(layout):
     '''
 
 
-def draw_debug_settings(layout):
-    box4 = layout.box()
-    row = box4.row()
-    row.label("Printout Settings:", icon='MOD_EXPLODE')
-    row = box4.row()
-    row.prop(_get_scs_globals(), 'dump_level', text="Dump Level")
+def draw_common_settings(layout, draw_config_storage_place=False):
+    """Draw common settings panel featuring log level and usage type of global settings if requested
+
+    :param layout: Blender UI layout to draw operator to
+    :type layout: UILayout
+    :param draw_config_storage_place: draw globals storage type property
+    :type draw_config_storage_place: bool
+    """
+    box4 = layout.box().column()
+    row = box4.row(align=True)
+    row.prop(_get_scs_globals(), 'dump_level', text="Log Level", icon='MOD_EXPLODE')
+
+    if draw_config_storage_place:
+        row = box4.row(align=True)
+        row.prop(_get_scs_globals(), 'config_storage_place', icon='NONE')
 
 
 def draw_warning_operator(layout, title, message, text="", icon="ERROR"):

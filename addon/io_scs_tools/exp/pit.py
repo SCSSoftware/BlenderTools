@@ -594,8 +594,12 @@ def export(root_object, filepath, used_materials, used_parts):
 
                         material_export_data.sections.append(texture_section)
 
-                else:
-                    # DEFAULT MATERIAL
+                else:  # when user made material presets were there, but there is no preset library at export for some reason
+
+                    lprint("W Shader preset used on %r not found in Shader Presets Library (Did you set correct path?), "
+                           "exporting default material instead!",
+                           (material_name,))
+
                     material_name = str("_" + material_name + "_-_default_settings_")
                     material_export_data = _default_material(material_name)
 

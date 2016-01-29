@@ -23,6 +23,7 @@ Constants for data group of map and navigation curves
 """
 
 from enum import Enum
+from zipfile import ZIP_STORED, ZIP_DEFLATED, ZIP_BZIP2
 
 
 class ConnectionsStorage:
@@ -379,3 +380,12 @@ class PrefabLocators:
 class Bones:
     init_scale_key = "scs_init_scale"
     """Pose bone custom property dictionary key for saving initial bone scale on PIS import."""
+
+
+class ConvHlpr:
+    """Conversion helper constants
+    """
+    NoZip = "No Archive"
+    StoredZip = str(ZIP_STORED)
+    DeflatedZip = str(ZIP_DEFLATED)
+    Bzip2Zip = str(ZIP_BZIP2)

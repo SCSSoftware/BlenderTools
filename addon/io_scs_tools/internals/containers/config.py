@@ -31,57 +31,49 @@ from io_scs_tools.internals.shader_presets import cache as _shader_presets_cache
 from io_scs_tools.internals.structure import SectionData as _SectionData
 
 
-def write_file(container, filepath, ind, postfix=""):
-    """Data container export into file.
-
-    :param container: List of SCS PIx Sections
-    :type container: list[structures.SectionData]
-    :param filepath: Config absolute Filepath
-    :type filepath: str
-    :param ind: Indentation string for the File
-    :type ind: str
-    :param postfix: Postfix to be added to the end of the filename (optional)
-    :type postfix: str
-    """
-    path, ext = os.path.splitext(filepath)
-    export_filepath = str(path + postfix + ext)
-    _pix.write_data_to_file(container, export_filepath, ind)
-
-
 def update_item_in_file(item_pointer, new_value):
     """Resaves config file with updated given item to a new value.
     The "item_pointer" variable must be in form of 'SectionName.PropertyName',
     example: 'Paths.ProjectPath'."""
 
+    # interrupt if config update is locked
     if _get_scs_globals().config_update_lock:
         return False
-    else:
-        filepath = get_config_filepath()
-        ind = '    '
-        config_container = _pix.get_data_from_file(filepath, ind)
 
-        new_settings_container = []
-        if config_container:
+    # interrupt if settings storage place is set to blend file (except when config storage place itself is being updated)
+    if _get_scs_globals().config_storage_place == "BlendFile" and not item_pointer == "Header.ConfigStoragePlace":
+        return False
 
-            new_value_changed = False
-            item_pointer_split = item_pointer.split('.', 1)
-            for section in config_container:
+    filepath = get_config_filepath()
+    ind = '    '
+    config_container = _pix.get_data_from_file(filepath, ind)
 
-                new_section = _SectionData(section.type)
-                for prop in section.props:
-                    if section.type == item_pointer_split[0] and prop[0] == item_pointer_split[1]:
-                        new_section.props.append((prop[0], new_value))
-                        new_value_changed = True
-                    else:
-                        new_section.props.append((prop[0], prop[1]))
+    # if config container is still none, there had to be permission denied
+    # by it's creation, so no sense to try to write it again
+    if config_container is None:
+        return False
 
-                # append new properties if they are not yet there
-                if not new_value_changed and section.type == item_pointer_split[0]:
-                    new_section.props.append((item_pointer_split[1], new_value))
+    new_settings_container = []
+    new_value_changed = False
+    item_pointer_split = item_pointer.split('.', 1)
+    for section in config_container:
 
-                new_settings_container.append(new_section)
+        new_section = _SectionData(section.type)
+        for prop in section.props:
+            if section.type == item_pointer_split[0] and prop[0] == item_pointer_split[1]:
+                new_section.props.append((prop[0], new_value))
+                new_value_changed = True
+            else:
+                new_section.props.append((prop[0], prop[1]))
 
-        write_file(new_settings_container, filepath, ind)
+        # append new properties if they are not yet there
+        if not new_value_changed and section.type == item_pointer_split[0]:
+            new_section.props.append((item_pointer_split[1], new_value))
+
+        new_settings_container.append(new_section)
+
+    _pix.write_data_to_file(new_settings_container, filepath, ind)
+
     return True
 
 
@@ -466,90 +458,91 @@ def gather_default():
         author = bpy.context.user_preferences.system.author
         if author:
             section.props.append(("Author", str(author)))
-        section.props.append(("DumpLevel", _property_utils.get_default(bpy.types.GlobalSCSProps.dump_level)))
+        section.props.append(("ConfigStoragePlace", _property_utils.get_by_type(bpy.types.GlobalSCSProps.config_storage_place)))
+        section.props.append(("DumpLevel", _property_utils.get_by_type(bpy.types.GlobalSCSProps.dump_level)))
         return section
 
     def fill_paths_section():
         """Fills up "Paths" section."""
         section = _SectionData("Paths")
-        section.props.append(("ProjectPath", _property_utils.get_default(bpy.types.GlobalSCSProps.scs_project_path)))
+        section.props.append(("ProjectPath", _property_utils.get_by_type(bpy.types.GlobalSCSProps.scs_project_path)))
         section.props.append(("", ""))
-        section.props.append(("ShaderPresetsFilePath", _property_utils.get_default(bpy.types.GlobalSCSProps.shader_presets_filepath)))
-        section.props.append(("TriggerActionsRelFilePath", _property_utils.get_default(bpy.types.GlobalSCSProps.trigger_actions_rel_path)))
-        section.props.append(("TriggerActionsUseInfixed", int(_property_utils.get_default(bpy.types.GlobalSCSProps.trigger_actions_use_infixed))))
-        section.props.append(("SignRelFilePath", _property_utils.get_default(bpy.types.GlobalSCSProps.sign_library_rel_path)))
-        section.props.append(("SignUseInfixed", int(_property_utils.get_default(bpy.types.GlobalSCSProps.sign_library_use_infixed))))
-        section.props.append(("TSemProfileRelFilePath", _property_utils.get_default(bpy.types.GlobalSCSProps.tsem_library_rel_path)))
-        section.props.append(("TSemProfileUseInfixed", int(_property_utils.get_default(bpy.types.GlobalSCSProps.tsem_library_use_infixed))))
-        section.props.append(("TrafficRulesRelFilePath", _property_utils.get_default(bpy.types.GlobalSCSProps.traffic_rules_library_rel_path)))
-        section.props.append(("TrafficRulesUseInfixed", int(_property_utils.get_default(bpy.types.GlobalSCSProps.traffic_rules_library_use_infixed))))
-        section.props.append(("HookupRelDirPath", _property_utils.get_default(bpy.types.GlobalSCSProps.hookup_library_rel_path)))
-        section.props.append(("MatSubsRelFilePath", _property_utils.get_default(bpy.types.GlobalSCSProps.matsubs_library_rel_path)))
-        section.props.append(("ConvertersPath", _property_utils.get_default(bpy.types.GlobalSCSProps.conv_hlpr_converters_path)))
+        section.props.append(("ShaderPresetsFilePath", _property_utils.get_by_type(bpy.types.GlobalSCSProps.shader_presets_filepath)))
+        section.props.append(("TriggerActionsRelFilePath", _property_utils.get_by_type(bpy.types.GlobalSCSProps.trigger_actions_rel_path)))
+        section.props.append(("TriggerActionsUseInfixed", int(_property_utils.get_by_type(bpy.types.GlobalSCSProps.trigger_actions_use_infixed))))
+        section.props.append(("SignRelFilePath", _property_utils.get_by_type(bpy.types.GlobalSCSProps.sign_library_rel_path)))
+        section.props.append(("SignUseInfixed", int(_property_utils.get_by_type(bpy.types.GlobalSCSProps.sign_library_use_infixed))))
+        section.props.append(("TSemProfileRelFilePath", _property_utils.get_by_type(bpy.types.GlobalSCSProps.tsem_library_rel_path)))
+        section.props.append(("TSemProfileUseInfixed", int(_property_utils.get_by_type(bpy.types.GlobalSCSProps.tsem_library_use_infixed))))
+        section.props.append(("TrafficRulesRelFilePath", _property_utils.get_by_type(bpy.types.GlobalSCSProps.traffic_rules_library_rel_path)))
+        section.props.append(("TrafficRulesUseInfixed", int(_property_utils.get_by_type(bpy.types.GlobalSCSProps.traffic_rules_library_use_infixed))))
+        section.props.append(("HookupRelDirPath", _property_utils.get_by_type(bpy.types.GlobalSCSProps.hookup_library_rel_path)))
+        section.props.append(("MatSubsRelFilePath", _property_utils.get_by_type(bpy.types.GlobalSCSProps.matsubs_library_rel_path)))
+        section.props.append(("ConvertersPath", _property_utils.get_by_type(bpy.types.GlobalSCSProps.conv_hlpr_converters_path)))
         return section
 
     def fill_import_section():
         """Fills up "Import" section."""
         section = _SectionData("Import")
-        section.props.append(("ImportScale", _property_utils.get_default(bpy.types.GlobalSCSProps.import_scale)))
-        section.props.append(("ImportPimFile", int(_property_utils.get_default(bpy.types.GlobalSCSProps.import_pim_file))))
-        section.props.append(("UseWelding", int(_property_utils.get_default(bpy.types.GlobalSCSProps.use_welding))))
-        section.props.append(("WeldingPrecision", int(_property_utils.get_default(bpy.types.GlobalSCSProps.welding_precision))))
-        section.props.append(("UseNormals", int(_property_utils.get_default(bpy.types.GlobalSCSProps.use_normals))))
-        section.props.append(("ImportPitFile", int(_property_utils.get_default(bpy.types.GlobalSCSProps.import_pit_file))))
-        section.props.append(("LoadTextures", int(_property_utils.get_default(bpy.types.GlobalSCSProps.load_textures))))
-        section.props.append(("ImportPicFile", int(_property_utils.get_default(bpy.types.GlobalSCSProps.import_pic_file))))
-        section.props.append(("ImportPipFile", int(_property_utils.get_default(bpy.types.GlobalSCSProps.import_pip_file))))
-        section.props.append(("ImportPisFile", int(_property_utils.get_default(bpy.types.GlobalSCSProps.import_pis_file))))
-        section.props.append(("ConnectedBones", int(_property_utils.get_default(bpy.types.GlobalSCSProps.connected_bones))))
-        section.props.append(("BoneImportScale", _property_utils.get_default(bpy.types.GlobalSCSProps.bone_import_scale)))
-        section.props.append(("ImportPiaFile", int(_property_utils.get_default(bpy.types.GlobalSCSProps.import_pia_file))))
-        section.props.append(("IncludeSubdirsForPia", int(_property_utils.get_default(bpy.types.GlobalSCSProps.include_subdirs_for_pia))))
+        section.props.append(("ImportScale", _property_utils.get_by_type(bpy.types.GlobalSCSProps.import_scale)))
+        section.props.append(("ImportPimFile", int(_property_utils.get_by_type(bpy.types.GlobalSCSProps.import_pim_file))))
+        section.props.append(("UseWelding", int(_property_utils.get_by_type(bpy.types.GlobalSCSProps.use_welding))))
+        section.props.append(("WeldingPrecision", int(_property_utils.get_by_type(bpy.types.GlobalSCSProps.welding_precision))))
+        section.props.append(("UseNormals", int(_property_utils.get_by_type(bpy.types.GlobalSCSProps.use_normals))))
+        section.props.append(("ImportPitFile", int(_property_utils.get_by_type(bpy.types.GlobalSCSProps.import_pit_file))))
+        section.props.append(("LoadTextures", int(_property_utils.get_by_type(bpy.types.GlobalSCSProps.load_textures))))
+        section.props.append(("ImportPicFile", int(_property_utils.get_by_type(bpy.types.GlobalSCSProps.import_pic_file))))
+        section.props.append(("ImportPipFile", int(_property_utils.get_by_type(bpy.types.GlobalSCSProps.import_pip_file))))
+        section.props.append(("ImportPisFile", int(_property_utils.get_by_type(bpy.types.GlobalSCSProps.import_pis_file))))
+        section.props.append(("ConnectedBones", int(_property_utils.get_by_type(bpy.types.GlobalSCSProps.connected_bones))))
+        section.props.append(("BoneImportScale", _property_utils.get_by_type(bpy.types.GlobalSCSProps.bone_import_scale)))
+        section.props.append(("ImportPiaFile", int(_property_utils.get_by_type(bpy.types.GlobalSCSProps.import_pia_file))))
+        section.props.append(("IncludeSubdirsForPia", int(_property_utils.get_by_type(bpy.types.GlobalSCSProps.include_subdirs_for_pia))))
         return section
 
     def fill_export_section():
         """Fills up "Export" section."""
         section = _SectionData("Export")
-        section.props.append(("ExportScale", _property_utils.get_default(bpy.types.GlobalSCSProps.export_scale)))
-        section.props.append(("ApplyModifiers", int(_property_utils.get_default(bpy.types.GlobalSCSProps.apply_modifiers))))
-        section.props.append(("ExcludeEdgesplit", int(_property_utils.get_default(bpy.types.GlobalSCSProps.exclude_edgesplit))))
-        section.props.append(("IncludeEdgesplit", int(_property_utils.get_default(bpy.types.GlobalSCSProps.include_edgesplit))))
-        section.props.append(("ActiveUVOnly", int(_property_utils.get_default(bpy.types.GlobalSCSProps.active_uv_only))))
-        section.props.append(("ExportVertexGroups", int(_property_utils.get_default(bpy.types.GlobalSCSProps.export_vertex_groups))))
-        section.props.append(("ExportVertexColor", int(_property_utils.get_default(bpy.types.GlobalSCSProps.export_vertex_color))))
-        section.props.append(("ExportVertexColorType", _property_utils.get_default(bpy.types.GlobalSCSProps.export_vertex_color_type)))
-        section.props.append(("ExportVertexColorType7", _property_utils.get_default(bpy.types.GlobalSCSProps.export_vertex_color_type_7)))
+        section.props.append(("ExportScale", _property_utils.get_by_type(bpy.types.GlobalSCSProps.export_scale)))
+        section.props.append(("ApplyModifiers", int(_property_utils.get_by_type(bpy.types.GlobalSCSProps.apply_modifiers))))
+        section.props.append(("ExcludeEdgesplit", int(_property_utils.get_by_type(bpy.types.GlobalSCSProps.exclude_edgesplit))))
+        section.props.append(("IncludeEdgesplit", int(_property_utils.get_by_type(bpy.types.GlobalSCSProps.include_edgesplit))))
+        section.props.append(("ActiveUVOnly", int(_property_utils.get_by_type(bpy.types.GlobalSCSProps.active_uv_only))))
+        section.props.append(("ExportVertexGroups", int(_property_utils.get_by_type(bpy.types.GlobalSCSProps.export_vertex_groups))))
+        section.props.append(("ExportVertexColor", int(_property_utils.get_by_type(bpy.types.GlobalSCSProps.export_vertex_color))))
+        section.props.append(("ExportVertexColorType", _property_utils.get_by_type(bpy.types.GlobalSCSProps.export_vertex_color_type)))
+        section.props.append(("ExportVertexColorType7", _property_utils.get_by_type(bpy.types.GlobalSCSProps.export_vertex_color_type_7)))
         # section.props.append(("ExportAnimFile", info.get_default_prop_value(bpy.types.GlobalSCSProps.export_anim_file)))
-        section.props.append(("ExportPimFile", int(_property_utils.get_default(bpy.types.GlobalSCSProps.export_pim_file))))
-        section.props.append(("OutputType", _property_utils.get_default(bpy.types.GlobalSCSProps.output_type)))
-        section.props.append(("ExportPitFile", int(_property_utils.get_default(bpy.types.GlobalSCSProps.export_pit_file))))
-        section.props.append(("ExportPicFile", int(_property_utils.get_default(bpy.types.GlobalSCSProps.export_pic_file))))
-        section.props.append(("ExportPipFile", int(_property_utils.get_default(bpy.types.GlobalSCSProps.export_pip_file))))
-        section.props.append(("SignExport", int(_property_utils.get_default(bpy.types.GlobalSCSProps.sign_export))))
+        section.props.append(("ExportPimFile", int(_property_utils.get_by_type(bpy.types.GlobalSCSProps.export_pim_file))))
+        section.props.append(("OutputType", _property_utils.get_by_type(bpy.types.GlobalSCSProps.output_type)))
+        section.props.append(("ExportPitFile", int(_property_utils.get_by_type(bpy.types.GlobalSCSProps.export_pit_file))))
+        section.props.append(("ExportPicFile", int(_property_utils.get_by_type(bpy.types.GlobalSCSProps.export_pic_file))))
+        section.props.append(("ExportPipFile", int(_property_utils.get_by_type(bpy.types.GlobalSCSProps.export_pip_file))))
+        section.props.append(("SignExport", int(_property_utils.get_by_type(bpy.types.GlobalSCSProps.sign_export))))
         return section
 
     def fill_global_display_section():
         """Fills up "GlobalDisplay" section."""
         section = _SectionData("GlobalDisplay")
-        section.props.append(("DisplayLocators", int(_property_utils.get_default(bpy.types.GlobalSCSProps.display_locators))))
-        section.props.append(("LocatorSize", _property_utils.get_default(bpy.types.GlobalSCSProps.locator_size)))
-        section.props.append(("LocatorEmptySize", _property_utils.get_default(bpy.types.GlobalSCSProps.locator_empty_size)))
-        section.props.append(("DisplayConnections", int(_property_utils.get_default(bpy.types.GlobalSCSProps.display_connections))))
-        section.props.append(("CurveSegments", _property_utils.get_default(bpy.types.GlobalSCSProps.curve_segments)))
-        section.props.append(("DisplayTextInfo", _property_utils.get_default(bpy.types.GlobalSCSProps.display_info)))
+        section.props.append(("DisplayLocators", int(_property_utils.get_by_type(bpy.types.GlobalSCSProps.display_locators))))
+        section.props.append(("LocatorSize", _property_utils.get_by_type(bpy.types.GlobalSCSProps.locator_size)))
+        section.props.append(("LocatorEmptySize", _property_utils.get_by_type(bpy.types.GlobalSCSProps.locator_empty_size)))
+        section.props.append(("DisplayConnections", int(_property_utils.get_by_type(bpy.types.GlobalSCSProps.display_connections))))
+        section.props.append(("CurveSegments", _property_utils.get_by_type(bpy.types.GlobalSCSProps.curve_segments)))
+        section.props.append(("DisplayTextInfo", _property_utils.get_by_type(bpy.types.GlobalSCSProps.display_info)))
         return section
 
     def fill_global_colors_section():
         """Fills up "GlobalColors" section."""
         section = _SectionData("GlobalColors")
-        section.props.append(("PrefabLocatorsWire", tuple(_property_utils.get_default(bpy.types.GlobalSCSProps.locator_prefab_wire_color))))
-        section.props.append(("ModelLocatorsWire", tuple(_property_utils.get_default(bpy.types.GlobalSCSProps.locator_model_wire_color))))
-        section.props.append(("ColliderLocatorsWire", tuple(_property_utils.get_default(bpy.types.GlobalSCSProps.locator_coll_wire_color))))
-        section.props.append(("ColliderLocatorsFace", tuple(_property_utils.get_default(bpy.types.GlobalSCSProps.locator_coll_face_color))))
-        section.props.append(("NavigationCurveBase", tuple(_property_utils.get_default(bpy.types.GlobalSCSProps.np_connection_base_color))))
-        section.props.append(("MapLineBase", tuple(_property_utils.get_default(bpy.types.GlobalSCSProps.mp_connection_base_color))))
-        section.props.append(("TriggerLineBase", tuple(_property_utils.get_default(bpy.types.GlobalSCSProps.tp_connection_base_color))))
-        section.props.append(("InfoText", tuple(_property_utils.get_default(bpy.types.GlobalSCSProps.info_text_color))))
+        section.props.append(("PrefabLocatorsWire", tuple(_property_utils.get_by_type(bpy.types.GlobalSCSProps.locator_prefab_wire_color))))
+        section.props.append(("ModelLocatorsWire", tuple(_property_utils.get_by_type(bpy.types.GlobalSCSProps.locator_model_wire_color))))
+        section.props.append(("ColliderLocatorsWire", tuple(_property_utils.get_by_type(bpy.types.GlobalSCSProps.locator_coll_wire_color))))
+        section.props.append(("ColliderLocatorsFace", tuple(_property_utils.get_by_type(bpy.types.GlobalSCSProps.locator_coll_face_color))))
+        section.props.append(("NavigationCurveBase", tuple(_property_utils.get_by_type(bpy.types.GlobalSCSProps.np_connection_base_color))))
+        section.props.append(("MapLineBase", tuple(_property_utils.get_by_type(bpy.types.GlobalSCSProps.mp_connection_base_color))))
+        section.props.append(("TriggerLineBase", tuple(_property_utils.get_by_type(bpy.types.GlobalSCSProps.tp_connection_base_color))))
+        section.props.append(("InfoText", tuple(_property_utils.get_by_type(bpy.types.GlobalSCSProps.info_text_color))))
         return section
 
     '''
@@ -580,11 +573,22 @@ def new_config_file(filepath):
     """Creates a new config file at given location and name."""
     config_container = gather_default()
     ind = "    "
-    success = _pix.write_data_to_file(config_container, filepath, ind)
-    if success:
-        return filepath
-    else:
-        return None
+    try:
+
+        if _pix.write_data_to_file(config_container, filepath, ind):
+            return filepath
+
+    except PermissionError:
+
+        # NOTE: as config.txt is crucial for running blender tools we have to warn user (even in 3D viewport)
+        # so he can not miss the problem with creation of config file; solution also provided in message
+        lprint("E Cannot create configuration file (permission denied), please ensure read/write permissions for:\n\t   %r\n\n\t   "
+               "Without configuration file Blender Tools might not work as expected!",
+               (os.path.dirname(filepath),),
+               report_errors=1,
+               report_warnings=1)
+
+    return None
 
 
 def get_config_filepath():
@@ -601,8 +605,8 @@ def get_config_filepath():
 
     # IF NO CONFIG FILE, CREATE ONE...
     if scs_config_file == '':
+        lprint("S Creating new 'config.txt' file:\n\t   %r", (os.path.join(scs_installation_dirs[0], 'config.txt'),))
         scs_config_file = new_config_file(os.path.join(scs_installation_dirs[0], 'config.txt'))
-        # print('\tMaking "config.txt" file:\n\t  "%s"\n' % os.path.join(scs_installation_dirs[0], 'config.txt'))
 
     # print('SCS Blender Tools Config File:\n  "%s"\n' % os.path.join(scs_installation_dirs[0], 'config.txt'))
     return scs_config_file
@@ -611,197 +615,213 @@ def get_config_filepath():
 def apply_settings():
     """Applies all the settings to the active scene."""
 
-    config_container = _pix.get_data_from_file(get_config_filepath(), "    ")
+    scs_globals = _get_scs_globals()
 
-    # save file paths in extra variables and apply them on the end
+    # avoid recursion if another apply settings is running already
+    if scs_globals.config_update_lock:
+        return False
+
+    # NOTE: save file paths in extra variables and apply them on the end
     # to make sure all of the settings are loaded first.
     # This is needed as some libraries reading are driven by other values from config file.
     # For example: "use_infixed"
-    scs_project_path = _property_utils.get_default(bpy.types.GlobalSCSProps.scs_project_path)
-    shader_presets_filepath = _property_utils.get_default(bpy.types.GlobalSCSProps.shader_presets_filepath)
-    trigger_actions_rel_path = _property_utils.get_default(bpy.types.GlobalSCSProps.trigger_actions_rel_path)
-    sign_library_rel_path = _property_utils.get_default(bpy.types.GlobalSCSProps.sign_library_rel_path)
-    tsem_library_rel_path = _property_utils.get_default(bpy.types.GlobalSCSProps.tsem_library_rel_path)
-    traffic_rules_library_rel_path = _property_utils.get_default(bpy.types.GlobalSCSProps.traffic_rules_library_rel_path)
-    hookup_library_rel_path = _property_utils.get_default(bpy.types.GlobalSCSProps.hookup_library_rel_path)
-    matsubs_library_rel_path = _property_utils.get_default(bpy.types.GlobalSCSProps.matsubs_library_rel_path)
-    conv_hlpr_converters_path = _property_utils.get_default(bpy.types.GlobalSCSProps.conv_hlpr_converters_path)
+    scs_project_path = _property_utils.get_by_type(bpy.types.GlobalSCSProps.scs_project_path, scs_globals)
+    shader_presets_filepath = _property_utils.get_by_type(bpy.types.GlobalSCSProps.shader_presets_filepath, scs_globals)
+    trigger_actions_rel_path = _property_utils.get_by_type(bpy.types.GlobalSCSProps.trigger_actions_rel_path, scs_globals)
+    sign_library_rel_path = _property_utils.get_by_type(bpy.types.GlobalSCSProps.sign_library_rel_path, scs_globals)
+    tsem_library_rel_path = _property_utils.get_by_type(bpy.types.GlobalSCSProps.tsem_library_rel_path, scs_globals)
+    traffic_rules_library_rel_path = _property_utils.get_by_type(bpy.types.GlobalSCSProps.traffic_rules_library_rel_path, scs_globals)
+    hookup_library_rel_path = _property_utils.get_by_type(bpy.types.GlobalSCSProps.hookup_library_rel_path, scs_globals)
+    matsubs_library_rel_path = _property_utils.get_by_type(bpy.types.GlobalSCSProps.matsubs_library_rel_path, scs_globals)
+    conv_hlpr_converters_path = _property_utils.get_by_type(bpy.types.GlobalSCSProps.conv_hlpr_converters_path, scs_globals)
 
-    _get_scs_globals().config_update_lock = True
-    # print('  > apply_settings...')
-    settings_file_valid = 0
-    for section in config_container:
-        if settings_file_valid == 2:
-            if section.type == "Paths":
+    # NOTE: as dump level is written in same section as config type
+    # applying it directly might take place before we get information about config type
+    # so it has to be saved into variable and applied only if global settings are loaded from config file
+    dump_level = scs_globals.dump_level
+
+    scs_globals.config_update_lock = True
+
+    config_container = _pix.get_data_from_file(get_config_filepath(), "    ")
+
+    # avoid applying process of config if not present (most probably permission problems on config creation)
+    if config_container is not None:
+
+        settings_file_valid = 0
+        for section in config_container:
+            if settings_file_valid == 2:
+                if section.type == "Paths":
+                    for prop in section.props:
+                        if prop[0] in ("", "#"):
+                            pass
+                        elif prop[0] == "ProjectPath":
+                            scs_project_path = prop[1]
+                        elif prop[0] == "ShaderPresetsFilePath":
+                            shader_presets_filepath = prop[1]
+                        elif prop[0] == "TriggerActionsRelFilePath":
+                            trigger_actions_rel_path = prop[1]
+                        elif prop[0] == "TriggerActionsUseInfixed":
+                            scs_globals.trigger_actions_use_infixed = prop[1]
+                        elif prop[0] == "SignRelFilePath":
+                            sign_library_rel_path = prop[1]
+                        elif prop[0] == "SignUseInfixed":
+                            scs_globals.sign_library_use_infixed = prop[1]
+                        elif prop[0] == "TSemProfileRelFilePath":
+                            tsem_library_rel_path = prop[1]
+                        elif prop[0] == "TSemProfileUseInfixed":
+                            scs_globals.tsem_library_use_infixed = prop[1]
+                        elif prop[0] == "TrafficRulesRelFilePath":
+                            traffic_rules_library_rel_path = prop[1]
+                        elif prop[0] == "TrafficRulesUseInfixed":
+                            scs_globals.traffic_rules_library_use_infixed = prop[1]
+                        elif prop[0] == "HookupRelDirPath":
+                            hookup_library_rel_path = prop[1]
+                        elif prop[0] == "MatSubsRelFilePath":
+                            matsubs_library_rel_path = prop[1]
+                        elif prop[0] == "ConvertersPath":
+                            conv_hlpr_converters_path = prop[1]
+                        else:
+                            lprint('W Unrecognised item "%s" has been found in setting file! Skipping...', (str(prop[0]),))
+                elif section.type == "Import":
+                    for prop in section.props:
+                        if prop[0] in ("", "#"):
+                            pass
+                        elif prop[0] == "ImportScale":
+                            scs_globals.import_scale = float(prop[1])
+                        elif prop[0] == "ImportPimFile":
+                            scs_globals.import_pim_file = prop[1]
+                        elif prop[0] == "UseWelding":
+                            scs_globals.use_welding = prop[1]
+                        elif prop[0] == "WeldingPrecision":
+                            scs_globals.welding_precision = prop[1]
+                        elif prop[0] == "UseNormals":
+                            scs_globals.use_normals = prop[1]
+                        elif prop[0] == "ImportPitFile":
+                            scs_globals.import_pit_file = prop[1]
+                        elif prop[0] == "LoadTextures":
+                            scs_globals.load_textures = prop[1]
+                        elif prop[0] == "ImportPicFile":
+                            scs_globals.import_pic_file = prop[1]
+                        elif prop[0] == "ImportPipFile":
+                            scs_globals.import_pip_file = prop[1]
+                        elif prop[0] == "ImportPisFile":
+                            scs_globals.import_pis_file = prop[1]
+                        elif prop[0] == "ConnectedBones":
+                            scs_globals.connected_bones = prop[1]
+                        elif prop[0] == "BoneImportScale":
+                            scs_globals.bone_import_scale = float(prop[1])
+                        elif prop[0] == "ImportPiaFile":
+                            scs_globals.import_pia_file = prop[1]
+                        elif prop[0] == "IncludeSubdirsForPia":
+                            scs_globals.include_subdirs_for_pia = prop[1]
+                elif section.type == "Export":
+                    for prop in section.props:
+                        if prop[0] in ("", "#"):
+                            pass
+                        elif prop[0] == "ExportScale":
+                            scs_globals.export_scale = float(prop[1])
+                        elif prop[0] == "ApplyModifiers":
+                            scs_globals.apply_modifiers = prop[1]
+                        elif prop[0] == "ExcludeEdgesplit":
+                            scs_globals.exclude_edgesplit = prop[1]
+                        elif prop[0] == "IncludeEdgesplit":
+                            scs_globals.include_edgesplit = prop[1]
+                        elif prop[0] == "ActiveUVOnly":
+                            scs_globals.active_uv_only = prop[1]
+                        elif prop[0] == "ExportVertexGroups":
+                            scs_globals.export_vertex_groups = prop[1]
+                        elif prop[0] == "ExportVertexColor":
+                            scs_globals.export_vertex_color = prop[1]
+                        elif prop[0] == "ExportVertexColorType":
+                            scs_globals.export_vertex_color_type = str(prop[1])
+                        elif prop[0] == "ExportVertexColorType7":
+                            scs_globals.export_vertex_color_type_7 = str(prop[1])
+                        elif prop[0] == "ExportPimFile":
+                            scs_globals.export_pim_file = prop[1]
+                        elif prop[0] == "OutputType":
+                            scs_globals.output_type = prop[1]
+                        elif prop[0] == "ExportPitFile":
+                            scs_globals.export_pit_file = prop[1]
+                        elif prop[0] == "ExportPicFile":
+                            scs_globals.export_pic_file = prop[1]
+                        elif prop[0] == "ExportPipFile":
+                            scs_globals.export_pip_file = prop[1]
+                        elif prop[0] == "SignExport":
+                            scs_globals.sign_export = prop[1]
+                elif section.type == "GlobalDisplay":
+                    for prop in section.props:
+                        if prop[0] in ("", "#"):
+                            pass
+                        elif prop[0] == "DisplayLocators":
+                            scs_globals.display_locators = prop[1]
+                        elif prop[0] == "LocatorSize":
+                            scs_globals.locator_size = float(prop[1])
+                        elif prop[0] == "LocatorEmptySize":
+                            scs_globals.locator_empty_size = float(prop[1])
+                        elif prop[0] == "DisplayConnections":
+                            scs_globals.display_connections = prop[1]
+                        elif prop[0] == "CurveSegments":
+                            scs_globals.curve_segments = prop[1]
+                        elif prop[0] == "OptimizedConnsDrawing":
+                            scs_globals.optimized_connections_drawing = prop[1]
+                        elif prop[0] == "DisplayTextInfo":
+                            scs_globals.display_info = prop[1]
+                        else:
+                            lprint('W Unrecognised item "%s" has been found in setting file! Skipping...', (str(prop[0]),))
+                elif section.type == "GlobalColors":
+                    for prop in section.props:
+                        if prop[0] in ("", "#"):
+                            pass
+                        elif prop[0] == "PrefabLocatorsWire":
+                            scs_globals.locator_prefab_wire_color = prop[1]
+                        elif prop[0] == "ModelLocatorsWire":
+                            scs_globals.locator_model_wire_color = prop[1]
+                        elif prop[0] == "ColliderLocatorsWire":
+                            scs_globals.locator_coll_wire_color = prop[1]
+                        elif prop[0] == "ColliderLocatorsFace":
+                            scs_globals.locator_coll_face_color = prop[1]
+                        elif prop[0] == "NavigationCurveBase":
+                            scs_globals.np_connection_base_color = prop[1]
+                        elif prop[0] == "MapLineBase":
+                            scs_globals.mp_connection_base_color = prop[1]
+                        elif prop[0] == "TriggerLineBase":
+                            scs_globals.tp_connection_base_color = prop[1]
+                        elif prop[0] == "InfoText":
+                            scs_globals.info_text_color = prop[1]
+                        else:
+                            lprint('W Unrecognised item "%s" has been found in setting file! Skipping...', (str(prop[0]),))
+            elif section.type == "Header":
                 for prop in section.props:
-                    if prop[0] in ("", "#"):
-                        pass
-                    elif prop[0] == "ProjectPath":
-                        scs_project_path = prop[1]
-                    elif prop[0] == "ShaderPresetsFilePath":
-                        shader_presets_filepath = prop[1]
-                    elif prop[0] == "TriggerActionsRelFilePath":
-                        trigger_actions_rel_path = prop[1]
-                    elif prop[0] == "TriggerActionsUseInfixed":
-                        _get_scs_globals().trigger_actions_use_infixed = prop[1]
-                    elif prop[0] == "SignRelFilePath":
-                        sign_library_rel_path = prop[1]
-                    elif prop[0] == "SignUseInfixed":
-                        _get_scs_globals().sign_library_use_infixed = prop[1]
-                    elif prop[0] == "TSemProfileRelFilePath":
-                        tsem_library_rel_path = prop[1]
-                    elif prop[0] == "TSemProfileUseInfixed":
-                        _get_scs_globals().tsem_library_use_infixed = prop[1]
-                    elif prop[0] == "TrafficRulesRelFilePath":
-                        traffic_rules_library_rel_path = prop[1]
-                    elif prop[0] == "TrafficRulesUseInfixed":
-                        _get_scs_globals().traffic_rules_library_use_infixed = prop[1]
-                    elif prop[0] == "HookupRelDirPath":
-                        hookup_library_rel_path = prop[1]
-                    elif prop[0] == "MatSubsRelFilePath":
-                        matsubs_library_rel_path = prop[1]
-                    elif prop[0] == "ConvertersPath":
-                        conv_hlpr_converters_path = prop[1]
-                    else:
-                        lprint('W Unrecognised item "%s" has been found in setting file! Skipping...', (str(prop[0]),))
-            elif section.type == "Import":
-                for prop in section.props:
-                    if prop[0] in ("", "#"):
-                        pass
-                    elif prop[0] == "ImportScale":
-                        _get_scs_globals().import_scale = float(prop[1])
-                    elif prop[0] == "ImportPimFile":
-                        _get_scs_globals().import_pim_file = prop[1]
-                    elif prop[0] == "UseWelding":
-                        _get_scs_globals().use_welding = prop[1]
-                    elif prop[0] == "WeldingPrecision":
-                        _get_scs_globals().welding_precision = prop[1]
-                    elif prop[0] == "UseNormals":
-                        _get_scs_globals().use_normals = prop[1]
-                    elif prop[0] == "ImportPitFile":
-                        _get_scs_globals().import_pit_file = prop[1]
-                    elif prop[0] == "LoadTextures":
-                        _get_scs_globals().load_textures = prop[1]
-                    elif prop[0] == "ImportPicFile":
-                        _get_scs_globals().import_pic_file = prop[1]
-                    elif prop[0] == "ImportPipFile":
-                        _get_scs_globals().import_pip_file = prop[1]
-                    elif prop[0] == "ImportPisFile":
-                        _get_scs_globals().import_pis_file = prop[1]
-                    elif prop[0] == "ConnectedBones":
-                        _get_scs_globals().connected_bones = prop[1]
-                    elif prop[0] == "BoneImportScale":
-                        _get_scs_globals().bone_import_scale = float(prop[1])
-                    elif prop[0] == "ImportPiaFile":
-                        _get_scs_globals().import_pia_file = prop[1]
-                    elif prop[0] == "IncludeSubdirsForPia":
-                        _get_scs_globals().include_subdirs_for_pia = prop[1]
-            elif section.type == "Export":
-                for prop in section.props:
-                    if prop[0] in ("", "#"):
-                        pass
-                    elif prop[0] == "ExportScale":
-                        _get_scs_globals().export_scale = float(prop[1])
-                    elif prop[0] == "ApplyModifiers":
-                        _get_scs_globals().apply_modifiers = prop[1]
-                    elif prop[0] == "ExcludeEdgesplit":
-                        _get_scs_globals().exclude_edgesplit = prop[1]
-                    elif prop[0] == "IncludeEdgesplit":
-                        _get_scs_globals().include_edgesplit = prop[1]
-                    elif prop[0] == "ActiveUVOnly":
-                        _get_scs_globals().active_uv_only = prop[1]
-                    elif prop[0] == "ExportVertexGroups":
-                        _get_scs_globals().export_vertex_groups = prop[1]
-                    elif prop[0] == "ExportVertexColor":
-                        _get_scs_globals().export_vertex_color = prop[1]
-                    elif prop[0] == "ExportVertexColorType":
-                        _get_scs_globals().export_vertex_color_type = str(prop[1])
-                    elif prop[0] == "ExportVertexColorType7":
-                        _get_scs_globals().export_vertex_color_type_7 = str(prop[1])
-                    # elif prop[0] == "ExportAnimFile":
-                    # _get_scs_globals().export_anim_file = prop[1]
-                    elif prop[0] == "ExportPimFile":
-                        _get_scs_globals().export_pim_file = prop[1]
-                    elif prop[0] == "OutputType":
-                        _get_scs_globals().output_type = prop[1]
-                    elif prop[0] == "ExportPitFile":
-                        _get_scs_globals().export_pit_file = prop[1]
-                    elif prop[0] == "ExportPicFile":
-                        _get_scs_globals().export_pic_file = prop[1]
-                    elif prop[0] == "ExportPipFile":
-                        _get_scs_globals().export_pip_file = prop[1]
-                    elif prop[0] == "SignExport":
-                        _get_scs_globals().sign_export = prop[1]
-            elif section.type == "GlobalDisplay":
-                for prop in section.props:
-                    if prop[0] in ("", "#"):
-                        pass
-                    elif prop[0] == "DisplayLocators":
-                        _get_scs_globals().display_locators = prop[1]
-                    elif prop[0] == "LocatorSize":
-                        _get_scs_globals().locator_size = float(prop[1])
-                    elif prop[0] == "LocatorEmptySize":
-                        _get_scs_globals().locator_empty_size = float(prop[1])
-                    elif prop[0] == "DisplayConnections":
-                        _get_scs_globals().display_connections = prop[1]
-                    elif prop[0] == "CurveSegments":
-                        _get_scs_globals().curve_segments = prop[1]
-                    elif prop[0] == "OptimizedConnsDrawing":
-                        _get_scs_globals().optimized_connections_drawing = prop[1]
-                    elif prop[0] == "DisplayTextInfo":
-                        _get_scs_globals().display_info = prop[1]
-                    else:
-                        lprint('W Unrecognised item "%s" has been found in setting file! Skipping...', (str(prop[0]),))
-            elif section.type == "GlobalColors":
-                for prop in section.props:
-                    if prop[0] in ("", "#"):
-                        pass
-                    elif prop[0] == "PrefabLocatorsWire":
-                        _get_scs_globals().locator_prefab_wire_color = prop[1]
-                    elif prop[0] == "ModelLocatorsWire":
-                        _get_scs_globals().locator_model_wire_color = prop[1]
-                    elif prop[0] == "ColliderLocatorsWire":
-                        _get_scs_globals().locator_coll_wire_color = prop[1]
-                    elif prop[0] == "ColliderLocatorsFace":
-                        _get_scs_globals().locator_coll_face_color = prop[1]
-                    elif prop[0] == "NavigationCurveBase":
-                        _get_scs_globals().np_connection_base_color = prop[1]
-                    elif prop[0] == "MapLineBase":
-                        _get_scs_globals().mp_connection_base_color = prop[1]
-                    elif prop[0] == "TriggerLineBase":
-                        _get_scs_globals().tp_connection_base_color = prop[1]
-                    elif prop[0] == "InfoText":
-                        _get_scs_globals().info_text_color = prop[1]
-                    else:
-                        lprint('W Unrecognised item "%s" has been found in setting file! Skipping...', (str(prop[0]),))
-            elif section.type == "Various":
-                for prop in section.props:
-                    # if prop[0] == "#":
-                    if prop[0] in ("", "#"):
-                        pass
+                    if prop[0] == "FormatVersion":
+                        if prop[1] == 1:
+                            settings_file_valid += 1
+                    elif prop[0] == "Type":
+                        if prop[1] == "Configuration":
+                            settings_file_valid += 1
                     elif prop[0] == "DumpLevel":
-                        _get_scs_globals().dump_level = prop[1]
-        elif section.type == "Header":
-            for prop in section.props:
-                if prop[0] == "FormatVersion":
-                    if prop[1] == 1:
-                        settings_file_valid += 1
-                elif prop[0] == "Type":
-                    if prop[1] == "Configuration":
-                        settings_file_valid += 1
-                elif prop[0] == "DumpLevel":
-                    _get_scs_globals().dump_level = prop[1]
+                        dump_level = prop[1]
+                    elif prop[0] == "ConfigStoragePlace":
+                        scs_globals.config_storage_place = prop[1]
+
+                        # if settings are read directly from blend file,
+                        # release update lock and don't search/apply any settings further
+                        if prop[1] == "BlendFile":
+                            settings_file_valid += 1
+
+    scs_globals.dump_level = dump_level
 
     # now as last apply all of the file paths
-    _get_scs_globals().scs_project_path = scs_project_path
-    _get_scs_globals().shader_presets_filepath = shader_presets_filepath
-    _get_scs_globals().trigger_actions_rel_path = trigger_actions_rel_path
-    _get_scs_globals().sign_library_rel_path = sign_library_rel_path
-    _get_scs_globals().tsem_library_rel_path = tsem_library_rel_path
-    _get_scs_globals().traffic_rules_library_rel_path = traffic_rules_library_rel_path
-    _get_scs_globals().hookup_library_rel_path = hookup_library_rel_path
-    _get_scs_globals().matsubs_library_rel_path = matsubs_library_rel_path
-    _get_scs_globals().conv_hlpr_converters_path = conv_hlpr_converters_path
+    # NOTE: applying paths is crucial for libraries
+    # (they are reloaded/initiated in property update functions)
+    scs_globals.scs_project_path = scs_project_path
+    scs_globals.shader_presets_filepath = shader_presets_filepath
+    scs_globals.trigger_actions_rel_path = trigger_actions_rel_path
+    scs_globals.sign_library_rel_path = sign_library_rel_path
+    scs_globals.tsem_library_rel_path = tsem_library_rel_path
+    scs_globals.traffic_rules_library_rel_path = traffic_rules_library_rel_path
+    scs_globals.hookup_library_rel_path = hookup_library_rel_path
+    scs_globals.matsubs_library_rel_path = matsubs_library_rel_path
+    scs_globals.conv_hlpr_converters_path = conv_hlpr_converters_path
 
-    _get_scs_globals().config_update_lock = False
+    scs_globals.config_update_lock = False
     return True

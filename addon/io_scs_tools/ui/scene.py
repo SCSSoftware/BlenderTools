@@ -57,7 +57,7 @@ def _draw_path_settings_panel(scene, layout, scs_globals):
             emboss=False
         )
         layout_box_row.label('')
-        layout_box_col = layout_box.column()
+        layout_box_col = layout_box.column(align=True)
 
         # SCS Project Path (DIR_PATH - absolute)
         layout_box_col.label('SCS Project Base Path:', icon='FILE_FOLDER')
@@ -68,8 +68,8 @@ def _draw_path_settings_panel(scene, layout, scs_globals):
 
         # Divide labels and sub paths to columns
         sub_paths_layout = layout_box_col.row().split(percentage=0.3)
-        sub_paths_left_col = sub_paths_layout.column()
-        sub_paths_right_col = sub_paths_layout.column()
+        sub_paths_left_col = sub_paths_layout.column(align=True)
+        sub_paths_right_col = sub_paths_layout.column(align=True)
 
         # Trigger Actions File (FILE_PATH - relative)
         icon = 'SNAP_ON' if _get_scs_globals().trigger_actions_use_infixed else 'SNAP_OFF'
@@ -133,6 +133,16 @@ def _draw_path_settings_panel(scene, layout, scs_globals):
             layout_box_row.alert = True
         layout_box_row.prop(scs_globals, 'shader_presets_filepath', text='', icon='NONE')
         layout_box_row.operator('scene.select_shader_presets_filepath', text='', icon='FILESEL')
+
+        # CONVERSION TOOLS PATH
+        layout_box_col.label("Conversion Tools Path:", icon="FILE_FOLDER")
+
+        layout_box_row = layout_box_col.row(align=True)
+        valid = (os.path.isdir(scs_globals.conv_hlpr_converters_path) and
+                 os.path.isfile(os.path.join(scs_globals.conv_hlpr_converters_path, "extra_mount.txt")) and
+                 os.path.isfile(os.path.join(scs_globals.conv_hlpr_converters_path, "convert.cmd")))
+        layout_box_row.alert = not valid
+        layout_box_row.prop(scs_globals, "conv_hlpr_converters_path", text="")
 
     else:
         layout_box_row = layout_box.row()
@@ -256,7 +266,7 @@ def _draw_global_settings_panel(scene, layout, scs_globals):
         # DISPLAY SETTINGS PANEL
         _draw_display_settings_panel(scene, layout_box.row(), scs_globals)
 
-        _shared.draw_debug_settings(layout_box)
+        _shared.draw_common_settings(layout_box, draw_config_storage_place=True)
 
     else:
         layout_box_row = layout_box.row()
@@ -346,18 +356,6 @@ def _draw_conversion_panel(layout, scs_globals):
         box_row.label('')
 
         layout_box = layout_column.box()  # body
-
-        # TOOLS PATH
-        layout_col = layout_box.column(align=True)
-        row = layout_col.row()
-        row.label("Conversion Tools Path:", icon="FILE_FOLDER")
-
-        row = layout_col.row()
-        valid = os.path.isdir(scs_globals.conv_hlpr_converters_path)
-        valid = valid and os.path.isfile(os.path.join(scs_globals.conv_hlpr_converters_path, "extra_mount.txt"))
-        valid = valid and os.path.isfile(os.path.join(scs_globals.conv_hlpr_converters_path, "convert.cmd"))
-        row.alert = not valid
-        row.prop(scs_globals, "conv_hlpr_converters_path", text="")
 
         # CLEAN & CONVERT CURRENT
         row = layout_box.row(align=True)

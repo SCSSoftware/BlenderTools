@@ -21,15 +21,21 @@
 from bpy.props import EnumProperty
 
 
-def get_default(blender_property):
-    """Gets default value of Blender ID property
+def get_by_type(blender_property, from_object=None):
+    """Gets value of Blender ID property
 
     :param blender_property: any Blender ID property from "bpy.types" class
     :type blender_property: tuple
-    :return: default value of Blender ID property
-    :rtype: object
+    :param from_object: object from which property value should be read
+    :type from_object: object
+    :return: default value or value from given object of Blender ID property; if given object doesn't have given property attribute None is returned
+    :rtype: object | None
     """
-    return blender_property[1]['default']
+
+    if from_object is None:
+        return blender_property[1]['default']
+    else:
+        return getattr(from_object, blender_property[1]['attr'], None)
 
 
 def get_filebrowser_display_type(is_image=False):

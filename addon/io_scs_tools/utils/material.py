@@ -47,7 +47,11 @@ def get_texture(texture_path, texture_type, report_invalid=False):
     # CREATE ABSOLUTE FILEPATH
     abs_texture_filepath = _path.get_abs_path(texture_path)
 
-    if abs_texture_filepath and abs_texture_filepath.endswith(".tobj"):
+    # return None on non-existing texture file path
+    if not abs_texture_filepath or not os.path.isfile(abs_texture_filepath):
+        return None
+
+    if abs_texture_filepath.endswith(".tobj"):
         abs_texture_filepath = _path.get_texture_path_from_tobj(abs_texture_filepath)
 
         # if not existing or none supported file

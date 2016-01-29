@@ -296,7 +296,7 @@ def _draw_shader_texture(layout, mat, split_perc, texture, read_only):
             layout_box_row.alert = False
         else:
             layout_box_row.alert = True
-            texture_icon = 'ERROR'
+            texture_icon = 'NONE'  # info operator will have icon, so texture path should use none
 
         # MARK EMPTY SLOTS
         if shader_texture == "":
@@ -308,6 +308,12 @@ def _draw_shader_texture(layout, mat, split_perc, texture, read_only):
 
         layout_box_row = layout_box_row.row(align=True)
         layout_box_row.prop(mat.scs_props, shader_texture_id, text='', icon=texture_icon)
+
+        if layout_box_row.alert:  # add info operator when texture path is invalid
+            _shared.draw_warning_operator(layout_box_row,
+                                          title="Texture Not Found",
+                                          message="Texture with given path doesn't exists or SCS Project Base Path is not properly set!")
+
         props = layout_box_row.operator('material.scs_select_shader_texture_filepath', text='', icon='FILESEL')
         props.shader_texture = shader_texture_id  # DYNAMIC ID SAVE (FOR FILE REQUESTER)
 

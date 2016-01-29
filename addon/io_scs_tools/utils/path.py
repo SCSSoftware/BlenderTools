@@ -151,7 +151,7 @@ def is_valid_shader_texture_path(shader_texture):
 
             shader_texture_abs_path = get_abs_path(shader_texture)
 
-            if os.path.isfile(shader_texture_abs_path):
+            if shader_texture_abs_path and os.path.isfile(shader_texture_abs_path):
                 return True
 
         else:  # ABSOLUTE PATH
@@ -402,13 +402,13 @@ def get_scs_texture_str(texture_string):
     # check for relative TOBJ, TGA, PNG
     for ext in extensions:
         texture_path = get_abs_path("//" + texture_string.strip(os.sep) + ext)
-        if os.path.isfile(texture_path):
+        if texture_path and os.path.isfile(texture_path):
             return "//" + texture_string.replace(os.sep, "/").strip("/") + ext
 
     # check for absolute TOBJ, TGA, PNG
     for ext in extensions:
         texture_path = get_abs_path(texture_string + ext, skip_mod_check=True)
-        if os.path.isfile(texture_path):
+        if texture_path and os.path.isfile(texture_path):
             return texture_string.replace(os.sep, "/") + ext
 
     return orig_texture_string
@@ -435,10 +435,10 @@ def get_tobj_path_from_shader_texture(shader_texture, check_existance=True):
 
     # NOTE: if there is no existence check then we also shouldn't check for mods file system structure
     tobj_filpath = get_abs_path(tobj_filpath, skip_mod_check=not check_existance)
-    if os.path.isfile(tobj_filpath):
+    if not check_existance or (tobj_filpath and os.path.isfile(tobj_filpath)):
         return tobj_filpath
-    else:
-        return None if check_existance else tobj_filpath
+
+    return None
 
 
 def get_skeleton_relative_filepath(armature, directory, default_name):

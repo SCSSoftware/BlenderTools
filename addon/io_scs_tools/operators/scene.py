@@ -24,6 +24,7 @@ import platform
 import subprocess
 import shutil
 from bpy.props import StringProperty, CollectionProperty, EnumProperty, IntProperty, BoolProperty
+from io_scs_tools.consts import ConvHlpr as _CONV_HLPR_consts
 from io_scs_tools.utils import object as _object_utils
 from io_scs_tools.utils import view3d as _view3d_utils
 from io_scs_tools.utils import path as _path_utils
@@ -1091,17 +1092,36 @@ class ConversionHelper:
             if not mod_name.endswith(".zip"):
                 mod_filepath += ".zip"
 
-            from zipfile import ZipFile
+            # delete mod folder if previously no archive option was used
+            mod_filepath_as_dir = mod_filepath[:-4]
+            if os.path.isdir(mod_filepath_as_dir):
+                shutil.rmtree(mod_filepath_as_dir)
 
-            with ZipFile(mod_filepath, 'w') as myzip:
+            # make sure previous ZIP file is not present
+            if os.path.isfile(mod_filepath):
+                os.remove(mod_filepath)
 
-                for root, dirs, files in os.walk(rsrc_path):
+            # do copy or zipping
+            if scs_globals.conv_hlpr_mod_compression == _CONV_HLPR_consts.NoZip:
 
-                    for file in files:
+                shutil.copytree(rsrc_path, mod_filepath_as_dir)
 
-                        abs_file = os.path.join(root, file)
-                        archive_file = abs_file.replace(rsrc_path, "")
-                        myzip.write(abs_file, archive_file, compress_type=int(scs_globals.conv_hlpr_mod_compression))
+                self.report({'INFO'}, "Packing done, mod copied to: '%s'" % mod_filepath_as_dir)
 
-            self.report({'INFO'}, "Packing done, mod copied to: '%s'" % mod_filepath)
+            else:
+
+                from zipfile import ZipFile
+
+                with ZipFile(mod_filepath, 'w') as myzip:
+
+                    for root, dirs, files in os.walk(rsrc_path):
+
+                        for file in files:
+
+                            abs_file = os.path.join(root, file)
+                            archive_file = abs_file.replace(rsrc_path, "")
+                            myzip.write(abs_file, archive_file, compress_type=int(scs_globals.conv_hlpr_mod_compression))
+
+                self.report({'INFO'}, "Packing done, mod packed to: '%s'" % mod_filepath)
+
             return {'FINISHED'}

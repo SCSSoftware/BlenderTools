@@ -22,7 +22,7 @@ bl_info = {
     "name": "SCS Tools",
     "description": "Setup models, Import-Export SCS data format",
     "author": "Simon Lusenc (50keda), Milos Zajic (4museman)",
-    "version": (1, 1, "e02402c"),
+    "version": (1, 2, "bfa9481"),
     "blender": (2, 75, 0),
     "location": "File > Import-Export",
     "wiki_url": "https://github.com/SCSSoftware/BlenderTools/wiki",
@@ -180,8 +180,8 @@ class ImportSCS(bpy.types.Operator, ImportHelper):
         layout_box_row = layout_box_col.row(align=True)
         layout_box_row.prop(self, "scs_project_path_mode", toggle=True, text="Set Current Dir as Project Base", icon='SAVE_COPY')
 
-        # Debug options
-        ui.shared.draw_debug_settings(layout)
+        # Common global settings
+        ui.shared.draw_common_settings(layout)
 
 
 class ExportSCS(bpy.types.Operator, ExportHelper):
