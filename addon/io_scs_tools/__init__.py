@@ -22,7 +22,7 @@ bl_info = {
     "name": "SCS Tools",
     "description": "Setup models, Import-Export SCS data format",
     "author": "Simon Lusenc (50keda), Milos Zajic (4museman)",
-    "version": (1, 2, "4a0a4dd"),
+    "version": (1, 3, "5621931"),
     "blender": (2, 75, 0),
     "location": "File > Import-Export",
     "wiki_url": "https://github.com/SCSSoftware/BlenderTools/wiki",
