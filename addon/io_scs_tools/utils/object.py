@@ -180,16 +180,20 @@ def sort_out_game_objects_for_export(objects):
     # PRINTOUTS
     dump_level = int(_get_scs_globals().dump_level)
     if dump_level > 2:
-        lprint('\nD Rejected Objects:')
+        message = "D Rejected Objects:\n\t   "
         for obj in rejected_objects:
-            print(' - %r rejected' % obj.name)
+            message += ' - %r rejected\n\t   ' % obj.name
+
+        lprint(message)
 
     if dump_level > 2:
-        lprint("\nD 'SCS Game Objects' to export:")
+        message = "D 'SCS Game Objects' to export:\n\t   "
         for scs_root_object in game_objects_dict:
-            print(' - filename: %r' % scs_root_object.name)
+            message += ' - filename: %r\n\t   ' % scs_root_object.name
             for scs_game_object in game_objects_dict[scs_root_object]:
-                print('     %r' % scs_game_object.name)
+                message += '     %r\n\t   ' % scs_game_object.name
+
+        lprint(message)
 
     return game_objects_dict
 

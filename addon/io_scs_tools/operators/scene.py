@@ -20,9 +20,9 @@
 
 import bpy
 import os
-import platform
 import subprocess
 import shutil
+from sys import platform
 from bpy.props import StringProperty, CollectionProperty, EnumProperty, IntProperty, BoolProperty
 from io_scs_tools.consts import ConvHlpr as _CONV_HLPR_consts
 from io_scs_tools.utils import object as _object_utils
@@ -901,9 +901,7 @@ class ConversionHelper:
 
             main_path = _get_scs_globals().conv_hlpr_converters_path
 
-            system_type = platform.system()
-
-            if system_type == "Linux":
+            if platform == "linux":  # Linux
 
                 if os.system("command -v wineconsole") == 0:
                     command = ["wineconsole " + os.path.join(main_path, "convert.cmd")]
@@ -911,14 +909,33 @@ class ConversionHelper:
                     self.report({'ERROR'}, "Conversion aborted! Please install WINE, it's required to run conversion tools on Linux!")
                     return {'CANCELLED'}
 
-            elif system_type == "Windows":
+            elif platform == "darwin":  # Mac OS X
+
+                # NOTE: we are assuming that user installed wine as we did through easiest way:
+                # downloading winebottler and then just drag&drop to applications
+                wineconsole_path = "/Applications/Wine.app/Contents/Resources/bin/wineconsole"
+
+                if os.system("command -v wineconsole") == 0:
+
+                    command = ["wineconsole " + os.path.join(main_path, "convert.cmd")]
+
+                elif os.path.isfile(wineconsole_path):
+
+                    command = [wineconsole_path + " " + os.path.join(main_path, "convert.cmd")]
+
+                else:
+                    self.report({'ERROR'}, "Conversion aborted! Please install at least Wine application from WineBottler, "
+                                           "it's required to run conversion tools on Mac OS X!")
+                    return {'CANCELLED'}
+
+            elif platform == "win32":  # Windows
 
                 command = 'cmd /C ""' + os.path.join(main_path, "convert.cmd") + '""'
                 command = command.replace("\\", "/")
 
             else:
 
-                self.report({'ERROR'}, "Unsupported OS type! Make sure you are running either Linux or Windows!")
+                self.report({'ERROR'}, "Unsupported OS type! Make sure you are running either Mac OS X, Linux or Windows!")
                 return {'CANCELLED'}
 
             # try to run conversion tools
@@ -1002,21 +1019,72 @@ class ConversionHelper:
             )
         )
 
+        @staticmethod
+        def ensure_mod_folder(game_home_path):
+            """Gets game home folder, creates "mod" directory inside if not yet present and returns full path to mod folder.
+
+            :param game_home_path: path to game home folder
+            :type game_home_path: str
+            :return: full path to game mod folder
+            :rtype: str
+            """
+
+            game_mod_path = game_home_path + "/mod"
+            if not os.path.isdir(game_mod_path):
+                os.mkdir(game_mod_path)
+
+            return os.path.normpath(game_mod_path)
+
+        @staticmethod
+        def get_platform_depended_game_path():
+            """Gets platform dependent game path as root directory for storing SCS games user data.
+
+            :return: game path or empty string if OS is neither Windows, Linux or Mac OS X
+            :rtype: str
+            """
+
+            game_path = ""
+
+            if platform == "linux":  # Linux
+
+                game_path = os.path.expanduser("~/.local/share")
+
+            elif platform == "darwin":  # Mac OS X
+
+                game_path = os.path.expanduser("~/Library/Application Support")
+
+            elif platform == "win32":  # Windows
+
+                try:
+                    import winreg
+
+                    with winreg.OpenKey(winreg.HKEY_CURRENT_USER, "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders") as key:
+
+                        personal = winreg.QueryValueEx(key, "Personal")
+                        game_path = str(personal[0])
+
+                except OSError as e:
+                    import traceback
+
+                    lprint("E Error while looking for My Documents in registry: %r", type(e).__name__)
+                    traceback.print_exc()
+
+            return game_path
+
         def execute(self, context):
 
             scs_globals = _get_scs_globals()
 
-            # try Windows like installation
-            mod_dir = os.path.expanduser("~/" + self.game + "/mod")
-            if os.path.isdir(mod_dir):
-                scs_globals.conv_hlpr_mod_destination = mod_dir
-                return {'FINISHED'}
+            possible_game_homes = (
+                os.path.expanduser("~"),  # Windows like installation on Linux or Mac OS X
+                self.get_platform_depended_game_path(),
+            )
 
-            # try Linux Steam like installation
-            mod_dir = os.path.expanduser("~/.local/share/" + self.game + "/mod")
-            if os.path.isdir(mod_dir):
-                scs_globals.conv_hlpr_mod_destination = mod_dir
-                return {'FINISHED'}
+            for possible_game_home in possible_game_homes:
+                game_home_path = os.path.join(possible_game_home, self.game)
+                if os.path.isdir(game_home_path):
+                    scs_globals.conv_hlpr_mod_destination = self.ensure_mod_folder(game_home_path)
+                    return {'FINISHED'}
 
             self.report({'WARNING'}, "Could not find '" + self.game + "' mod folder")
             return {'CANCELLED'}
@@ -1124,4 +1192,36 @@ class ConversionHelper:
 
                 self.report({'INFO'}, "Packing done, mod packed to: '%s'" % mod_filepath)
 
+            return {'FINISHED'}
+
+
+class Log:
+    """
+    Wraper class for better navigation in file
+    """
+
+    class CopyLogToClipboard(bpy.types.Operator):
+        bl_label = "Copy BT Log To Clipboard"
+        bl_idname = "scene.scs_copy_log"
+        bl_description = "Copies whole Blender Tools log to clipboard (log was captured since Blender startup)."
+
+        def execute(self, context):
+            from io_scs_tools.utils.printout import get_log
+
+            text = bpy.data.texts.new("SCS BT Log")
+
+            override = {
+                'window': bpy.context.window,
+                'region': None,
+                'area': None,
+                'edit_text': text,
+            }
+            bpy.ops.text.insert(override, text=get_log())
+            bpy.ops.text.select_all(override)
+            bpy.ops.text.copy(override)
+
+            text.user_clear()
+            bpy.data.texts.remove(text)
+
+            self.report({'INFO'}, "Blender Tools log copied to clipboard!")
             return {'FINISHED'}

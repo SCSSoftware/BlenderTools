@@ -64,7 +64,7 @@ def get_texture(texture_path, texture_type, report_invalid=False):
             if abs_texture_filepath:
 
                 lprint("W Texture can't be displayed as TOBJ file: %r is referencing non texture file:\n\t   %r",
-                       (texture_path, _path.normalize(abs_texture_filepath).replace("\\", "/")))
+                       (texture_path, _path.readable_norm(abs_texture_filepath)))
 
             else:
 
@@ -152,7 +152,7 @@ def get_texture(texture_path, texture_type, report_invalid=False):
             lprint("", report_warnings=-1, report_errors=-1)
 
         lprint("W Texture can't be displayed as TOBJ file: %r is referencing non existing texture file:\n\t   %r",
-               (texture_path, _path.normalize(abs_texture_filepath).replace("\\", "/")))
+               (texture_path, _path.readable_norm(abs_texture_filepath)))
 
         if report_invalid:
             lprint("", report_warnings=1, report_errors=1)

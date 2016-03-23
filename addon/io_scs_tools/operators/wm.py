@@ -21,7 +21,6 @@
 
 import bpy
 from bpy.props import StringProperty, BoolProperty
-
 from io_scs_tools.utils import view3d as _view3d_utils
 from io_scs_tools.utils import info as _info_utils
 
@@ -172,14 +171,11 @@ class Show3DViewReport(bpy.types.Operator):
         # split message by new lines
         for line in self.message.split("\n"):
 
-            # adapt number of spaces by message type
-            space_count = 22 if line.startswith("WARNING") else 18
+            # remove tabulator simulated new lines from warnings and errors, written like: "\n\t     "
+            line = line.replace("\t     ", " " * 4)
 
-            # remove tabulator simulated new lines from warnings and errors, written like: "\n\t   "
-            line = line.replace("\t   ", " " * space_count)
-
-            # make sure to get rid of any other tabulators and change them for space eg: "INFO\t-"
-            line = line.replace("\t", " ")
+            # remove tabulator simulated empty space before warning or error line of summaries e.g "\t   > "
+            line = line.replace("\t   ", "")
 
             Show3DViewReport.__static_message_l.append(line)
 
@@ -193,7 +189,7 @@ class Show3DViewReport(bpy.types.Operator):
 
 class ShowDeveloperErrors(bpy.types.Operator):
     bl_label = ""
-    bl_description = "Show errors from stack"
+    bl_description = "Show errors from stack. This was intended to be used only from batch import/export scripts."
     bl_idname = "wm.show_dev_error_messages"
 
     def execute(self, context):

@@ -71,16 +71,16 @@ def batch_export(operator_instance, init_obj_list, menu_filepath=None):
 
             # MAKE FINAL FILEPATH
             if menu_filepath:
-                filepath = menu_filepath
+                filepath = _path_utils.readable_norm(menu_filepath)
                 filepath_message = "Export path selected in file browser:\n\t   \"" + filepath + "\""
             elif custom_filepath:
-                filepath = custom_filepath
+                filepath = _path_utils.readable_norm(custom_filepath)
                 filepath_message = "Custom export path used for \"" + root_object.name + "\" is:\n\t   \"" + filepath + "\""
             else:
-                filepath = global_filepath
+                filepath = _path_utils.readable_norm(global_filepath)
                 filepath_message = "Default export path used for \"" + root_object.name + "\":\n\t   \"" + filepath + "\""
 
-            scs_project_path = _get_scs_globals().scs_project_path
+            scs_project_path = _path_utils.readable_norm(_get_scs_globals().scs_project_path)
             if os.path.isdir(filepath) and _path_utils.startswith(filepath, scs_project_path) and scs_project_path != "":
 
                 # EXPORT ENTRY POINT
@@ -106,18 +106,22 @@ def batch_export(operator_instance, init_obj_list, menu_filepath=None):
                 return {'CANCELLED'}
 
         if not lprint("\nI Export procces completed, summaries are printed below!", report_errors=True, report_warnings=True):
-            operator_instance.report({'INFO'}, "Export successfully completed!")
+            operator_instance.report({'INFO'}, "Export successfully completed, exported %s game object(s)!" % len(scs_game_objects_exported))
             bpy.ops.wm.show_3dview_report('INVOKE_DEFAULT', abort=True)  # abort 3d view reporting operator
 
         if len(scs_game_objects_exported) > 0:
-            print("\n\nEXPORTED GAME OBJECTS (" + str(len(scs_game_objects_exported)) + "):\n" + "=" * 26)
+            message = "EXPORTED GAME OBJECTS (" + str(len(scs_game_objects_exported)) + "):\n\t   " + "=" * 26 + "\n\t   "
             for scs_game_object_export_message in scs_game_objects_exported:
-                print(scs_game_object_export_message)
+                message += scs_game_object_export_message + "\n\t   "
+            message += "=" * 26
+            lprint("I " + message)
 
         if len(scs_game_objects_rejected) > 0:
-            print("\n\nREJECTED GAME OBJECTS (" + str(len(scs_game_objects_rejected)) + "):\n" + "=" * 26)
+            message = "REJECTED GAME OBJECTS (" + str(len(scs_game_objects_rejected)) + "):\n\t   " + "=" * 26 + "\n\t   "
             for scs_game_object_export_message in scs_game_objects_rejected:
-                print(scs_game_object_export_message)
+                message += scs_game_object_export_message + "\n\t   "
+            message += "=" * 26
+            lprint("I " + message)
 
         if len(scs_game_objects_exported) + len(scs_game_objects_rejected) == 0:
             message = "Nothing to export! Please set at least one 'SCS Root Object'."

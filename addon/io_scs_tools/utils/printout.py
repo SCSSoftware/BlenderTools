@@ -19,6 +19,75 @@
 # Copyright (C) 2013-2014: SCS Software
 
 import bpy
+import atexit
+from tempfile import NamedTemporaryFile
+
+
+class _FileLogger:
+    """File logging class wrapper.
+
+    Class wrapping is needed manly for safety of log file removal
+    after Blender is shut down.
+
+    Registering fuction for atexit module makes sure than,
+    file is deleted if Blender is closed normally.
+
+    However file is not deleted if process is killed in Linux.
+    On Windows, on the other hand, file gets deleted even if Blender
+    is closed from Task Manager -> End Task/Process
+    """
+    __log_file = None
+
+    def __init__(self):
+
+        self.__log_file = NamedTemporaryFile(mode="w+", suffix=".log.txt", delete=True)
+
+        # instead of destructor we are using delete method,
+        # to close and consequentially delete log file
+        atexit.register(self.delete)
+
+    def delete(self):
+        """Closes file and consiquentally deletes it as log file was created in that fashion.
+        """
+
+        # close file only if it's still exists in class variable
+        if self.__log_file is not None:
+            self.__log_file.close()
+            self.__log_file = None
+
+    def write(self, msg_object):
+        """Writes message to the log file.
+
+        :param msg_object: message to be written to file
+        :type msg_object: object
+        """
+
+        self.__log_file.write(msg_object)
+
+    def flush(self):
+        """Flushes written content to file on disk."""
+
+        self.__log_file.flush()
+
+    def get_log(self):
+        """Gets current content of temporary SCS BT log file,
+        which was created at startup and is having log of BT session.
+
+        :return: current content of log file as string
+        :rtype: str
+        """
+
+        # firstly move to start of the file
+        self.__log_file.seek(0)
+
+        log = ""
+        for line in self.__log_file.readlines():
+            log += line.replace("\t   ", "\t\t   ")  # replace for Blender text editor to be aligned the same as in console
+
+        return log
+
+
+file_logger = _FileLogger()
 
 dev_error_messages = []
 error_messages = []
@@ -42,39 +111,44 @@ def lprint(string, values=(), report_errors=0, report_warnings=0):
 
     dump_level = int(_get_scs_globals().dump_level)
 
-    global error_messages, warning_messages
     prech = ''
     if string is not "":
         while string[0] in '\n\t':
             prech += string[0]
             string = string[1:]
+
+        message = None
         if string[0] == 'E':
             message = str(prech + 'ERROR\t-  ' + string[2:] % values)
-            print(message)
             error_messages.append(message.strip('\n'))
             # raise Exception('ERROR - ' + string[2:])
         if string[0] == 'W':
             message = str(prech + 'WARNING\t-  ' + string[2:] % values)
             warning_messages.append(message.strip('\n'))
-            if dump_level >= 1:
-                print(message)
+            if not dump_level >= 1:
+                message = None
         if dump_level >= 2:
             if string[0] == 'I':
-                print(prech + 'INFO\t-  ' + string[2:] % values)
+                message = str(prech + 'INFO\t-  ' + string[2:] % values)
         if dump_level >= 3:
             if string[0] == 'D':
-                print(prech + 'DEBUG\t-  ' + string[2:] % values)
+                message = prech + 'DEBUG\t-  ' + string[2:] % values
         if dump_level >= 4:
             if string[0] == 'S':
-                print(prech + string[2:] % values)
+                message = prech + string[2:] % values
+
+        if message is not None:
+            print(message)
+            file_logger.write(message + "\n")
+
         if string[0] not in 'EWIDS':
             print(prech + '!!! UNKNOWN MESSAGE SIGN !!! - "' + string + '"' % values)
 
     # CLEAR ERROR AND WARNING STACK IF REQUESTED
     if report_errors == -1:
-        error_messages = []
+        error_messages.clear()
     if report_warnings == -1:
-        warning_messages = []
+        warning_messages.clear()
 
     # ERROR AND WARNING REPORTS
     title = ""
@@ -82,14 +156,19 @@ def lprint(string, values=(), report_errors=0, report_warnings=0):
     if report_errors == 1 and error_messages:
 
         # print error summary
-        print('\n\nERROR SUMMARY:\n================')
-        text += '\nERROR SUMMARY:\n================\n'
+        text += '\n\t   ERROR SUMMARY:\n\t   ================\n\t   '
         printed_messages = []
         for message_i, message in enumerate(error_messages):
+
+            message = message.replace("ERROR\t-  ", "> ")
+            message = message.replace("\n\t   ", "\n\t     ")
+
+            # print out only unique error messages
             if message not in printed_messages:
                 printed_messages.append(message)
-                print(message)
-                text += message + "\n"
+                text += message + "\n\t   "
+
+        text += "================\n"
 
         # create dialog title and message
         title = "ERRORS"
@@ -97,22 +176,26 @@ def lprint(string, values=(), report_errors=0, report_warnings=0):
         if dump_level == 5:
             dev_error_messages.extend(error_messages)
 
-        error_messages = []
+        error_messages.clear()
 
     if report_warnings == 1 and warning_messages:
 
         if dump_level > 0:
 
             # print warning summary
-            print('\n\nWARNING SUMMARY:\n================')
-            text += '\nWARNING SUMMARY:\n================\n'
+            text += '\n\t   WARNING SUMMARY:\n\t   ================\n\t   '
             printed_messages = []
             for message_i, message in enumerate(warning_messages):
+
+                message = message.replace("WARNING\t-  ", "> ")
+                message = message.replace("\n\t   ", "\n\t     ")
+
                 # print only unique messages
                 if message not in printed_messages:
                     printed_messages.append(message)
-                    print(message)
-                    text += message + "\n"
+                    text += message + "\n\t   "
+
+            text += "================\n"
 
             # create dialog title and message
             if title != "":
@@ -122,13 +205,28 @@ def lprint(string, values=(), report_errors=0, report_warnings=0):
         if dump_level == 5:
             dev_warning_messages.extend(warning_messages)
 
-        warning_messages = []
+        warning_messages.clear()
+
+    file_logger.flush()
 
     if title != "":
+        print(text)
+        file_logger.write(text + "\n")
+        file_logger.flush()
         bpy.ops.wm.show_3dview_report('INVOKE_DEFAULT', title=title, message=text)
         return True
     else:
         return False
+
+
+def get_log():
+    """Gets current content of temporary SCS BT log file,
+    which was created at startup and is having log of BT session.
+
+    :return: current content of log file as string
+    :rtype: str
+    """
+    return file_logger.get_log()
 
 
 def dev_lprint():

@@ -65,11 +65,12 @@ def tokenize_name(name, default_name="default"):
     """
     Takes a string and returns it as a valid token.
     :type name: str
+    :type default_name: str
     """
     name = name.lower()  # lower case
 
     # strip of Blender naming convention of double objects .XXX
-    if re.match(".+\.\d{3}", name):
+    if re.match(".+(\.\d{3})$", name):
         name = name[:-4]
 
     new_name = ""

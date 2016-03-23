@@ -28,6 +28,7 @@ from io_scs_tools.imp import pis as _pis
 from io_scs_tools.utils.printout import lprint
 from io_scs_tools.utils import animation as _animation_utils
 from io_scs_tools.utils import convert as _convert_utils
+from io_scs_tools.utils import path as _path_utils
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
 
 
@@ -212,7 +213,7 @@ def load(root_object, pia_files, armature, pis_filepath=None, bones=None):
                 if os.path.isfile(pia_skeleton):
                     bones = _pis.load(pia_skeleton, armature, get_only=True)
                 else:
-                    lprint("\nE The filepath %r doesn't exist!", (pia_skeleton.replace("\\", "/"),))
+                    lprint("\nE The filepath %r doesn't exist!", (_path_utils.readable_norm(pia_skeleton),))
 
             else:
                 lprint(str("E Animation doesn't match the skeleton. Animation won't be loaded!\n\t   "
@@ -222,7 +223,7 @@ def load(root_object, pia_files, armature, pis_filepath=None, bones=None):
             lprint('I ++ "%s" IMPORTING animation data...', (os.path.basename(pia_filepath),))
             pia_container = _pix_container.get_data_from_file(pia_filepath, ind)
             if not pia_container:
-                lprint('\nE File "%s" is empty!', (pia_filepath.replace("\\", "/"),))
+                lprint('\nE File "%s" is empty!', (_path_utils.readable_norm(pia_filepath),))
                 continue
 
             # TEST PRINTOUTS

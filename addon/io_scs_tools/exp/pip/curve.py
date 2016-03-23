@@ -85,6 +85,9 @@ class Curve:
             msg = msg[:-2] + "]"
             lprint(msg)
 
+    def __lt__(self, other):
+        return self.__index < other.get_index()
+
     def __eq__(self, other):
         return self.__index == other.get_index()
 

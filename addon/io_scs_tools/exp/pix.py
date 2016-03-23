@@ -115,6 +115,8 @@ def export(dirpath, root_object, game_object_list):
     context = bpy.context
     context.window.cursor_modal_set('WAIT')
 
+    lprint("I Export started for: %r on: %s", (root_object.name, time.strftime("%b %d, %Y at %H:%M:%S")))
+
     # TRANSITIONAL STRUCTURES
     terrain_points = TerrainPntsTrans()
     parts = PartsTrans()
@@ -216,6 +218,6 @@ def export(dirpath, root_object, game_object_list):
     # FINAL FEEDBACK
     context.window.cursor_modal_restore()
     if export_success:
-        lprint('\nI Export completed in %.3f sec. Files were saved to folder:\n\t   %r\n', (time.time() - t, dirpath))
+        lprint("I Export completed for: %r in %.3f seconds.\n", (root_object.name, time.time() - t))
 
     return True

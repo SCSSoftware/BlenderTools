@@ -126,7 +126,7 @@ def __update_shader_texture_tobj_file__(self, context, tex_type):
             lprint("", report_warnings=-1, report_errors=-1)
             lprint("E Settings in TOBJ file not saved; content is malformed or referencing none existing textures!\n\t   "
                    "Please check TOBJ's content in your favorite text editor; file path:\n\t   %r",
-                   (os.path.normpath(tobj_file),))
+                   (_path_utils.readable_norm(tobj_file),))
             lprint("", report_warnings=1, report_errors=1)
 
 

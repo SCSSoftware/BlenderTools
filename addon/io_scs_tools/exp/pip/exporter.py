@@ -1,4 +1,5 @@
 from os import path
+from collections import OrderedDict
 from mathutils import Vector, Quaternion
 from io_scs_tools.consts import PrefabLocators as _PL_consts
 from io_scs_tools.exp.pip.curve import Curve
@@ -27,13 +28,14 @@ def __sort_locators_by_type__(locator_list):
     :rtype: tuple[dict[str, bpy.types.Object]]
     """
 
-    control_node_locs = {}
-    nav_point_locs = {}
-    sign_locs = {}
-    spawn_point_locs = {}
-    semaphore_locs = {}
-    map_point_locs = {}
-    trigger_point_locs = {}
+    # NOTE: doing all dictionaries ordered to have same export result on unchanged data
+    control_node_locs = OrderedDict()
+    nav_point_locs = OrderedDict()
+    sign_locs = OrderedDict()
+    spawn_point_locs = OrderedDict()
+    semaphore_locs = OrderedDict()
+    map_point_locs = OrderedDict()
+    trigger_point_locs = OrderedDict()
 
     for loc in locator_list:
         if loc.scs_props.locator_prefab_type == "Control Node":
@@ -148,9 +150,9 @@ def execute(dirpath, filename, prefab_locator_list, offset_matrix, used_terrain_
     pip_header = Header(2, filename)
     pip_global = Globall()
 
-    pip_nodes = {}
+    pip_nodes = OrderedDict()
     """:type: dict[int,Node]"""
-    pip_curves = {}
+    pip_curves = OrderedDict()
     """:type: dict[int, Curve]"""
     pip_signs = []
     """:type: list[Sign]"""
@@ -158,11 +160,11 @@ def execute(dirpath, filename, prefab_locator_list, offset_matrix, used_terrain_
     """:type: list[SpawnPoint]"""
     pip_semaphores = []
     """:type: list[Semaphore]"""
-    pip_map_points = {}
+    pip_map_points = OrderedDict()
     """:type: dict[str, MapPoint]"""
-    pip_trigger_points = {}
+    pip_trigger_points = OrderedDict()
     """:type: dict[str, TriggerPoint]"""
-    pip_intersections = [{}, {}, {}]
+    pip_intersections = [OrderedDict(), OrderedDict(), OrderedDict()]
     """:type: list[dict[str, list[Intersection]]]"""
 
     # nodes creation
@@ -382,8 +384,8 @@ def execute(dirpath, filename, prefab_locator_list, offset_matrix, used_terrain_
     TriggerPoint.prepare_trigger_points(pip_trigger_points.values())
 
     # intersections creation
-    for c0_i, c0 in enumerate(pip_curves.values()):
-        for c1_i, c1 in enumerate(pip_curves.values()):
+    for c0_i, c0 in enumerate(sorted(pip_curves.values())):
+        for c1_i, c1 in enumerate(sorted(pip_curves.values())):
 
             if c1_i <= c0_i:  # only search each pair of curves once
                 continue

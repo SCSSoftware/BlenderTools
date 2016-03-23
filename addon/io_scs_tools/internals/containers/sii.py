@@ -19,6 +19,7 @@
 # Copyright (C) 2013-2014: SCS Software
 
 import os
+from io_scs_tools.utils import path as _path_utils
 from io_scs_tools.utils.printout import lprint
 from io_scs_tools.internals.containers.parsers import sii as _sii
 
@@ -32,13 +33,13 @@ def get_data_from_file(filepath):
             container = _sii.parse_file(filepath)
             if container:
                 if len(container) < 1:
-                    lprint('D SII file "%s" is empty!', (str(filepath).replace("\\", "/"),))
+                    lprint('D SII file "%s" is empty!', (_path_utils.readable_norm(filepath),))
                     return None
             else:
-                lprint('D SII file "%s" is empty!', (str(filepath).replace("\\", "/"),))
+                lprint('D SII file "%s" is empty!', (_path_utils.readable_norm(filepath),))
                 return None
         else:
-            lprint('W Invalid SII file path %r!', (str(filepath).replace("\\", "/"),))
+            lprint('W Invalid SII file path %r!', (_path_utils.readable_norm(filepath),))
     else:
         lprint('I No SII file path provided!')
 

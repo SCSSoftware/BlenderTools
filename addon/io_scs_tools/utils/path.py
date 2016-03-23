@@ -590,8 +590,8 @@ def startswith(path1, path2):
     :rtype: bool
     """
 
-    norm_path1 = normalize(path1)
-    norm_path2 = normalize(path2)
+    norm_path1 = full_norm(path1)
+    norm_path2 = full_norm(path2)
 
     return norm_path1.startswith(norm_path2)
 
@@ -608,13 +608,13 @@ def is_samepath(path1, path2):
     :rtype: bool
     """
 
-    norm_path1 = normalize(path1)
-    norm_path2 = normalize(path2)
+    norm_path1 = full_norm(path1)
+    norm_path2 = full_norm(path2)
 
     return norm_path1 == norm_path2
 
 
-def normalize(path1):
+def full_norm(path1):
     """Normalize path.
     It also takes into account windows drive letter which can be big or small.
 
@@ -628,3 +628,18 @@ def normalize(path1):
     norm_path1 = os.path.normcase(norm_path1)
 
     return norm_path1
+
+
+def readable_norm(path):
+    """Normalize path in nice human readable form.
+    On windows it also converts backslashes to forward ones, to have cross platform output.
+
+    :param path: path to normalize
+    :type path: str
+    :return: normalized path
+    :rtype: str
+    """
+    norm_path = os.path.normpath(path)
+    norm_path = norm_path.replace("\\", "/")
+
+    return norm_path

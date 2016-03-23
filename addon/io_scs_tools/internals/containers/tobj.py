@@ -283,7 +283,7 @@ class TobjContainer:
             return None
 
         if not (os.path.isfile(filepath) and filepath.lower().endswith(".tobj")):
-            lprint("W Invalid TOBJ file path %r!", (str(filepath).replace("\\", "/"),))
+            lprint("W Invalid TOBJ file path %r!", (_path_utils.readable_norm(filepath),))
             return None
 
         records = _tobj.parse_file(filepath)
@@ -291,7 +291,7 @@ class TobjContainer:
         records_iter = iter(records)
 
         if records is None or records_len <= 0:
-            lprint("I TOBJ file %r is empty!", (os.path.normpath(filepath),))
+            lprint("I TOBJ file %r is empty!", (_path_utils.readable_norm(filepath),))
             return None
 
         container = cls()

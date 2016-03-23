@@ -19,6 +19,7 @@
 # Copyright (C) 2013-2014: SCS Software
 
 import os
+from io_scs_tools.utils import path as _path_utils
 from io_scs_tools.utils.printout import lprint
 from io_scs_tools.internals.containers.parsers import mat as _mat
 
@@ -97,15 +98,15 @@ def get_data_from_file(filepath):
 
             if data_dict:
                 if len(data_dict) < 1:
-                    lprint('\nI MAT file "%s" is empty!', (str(filepath).replace("\\", "/"),))
+                    lprint('\nI MAT file "%s" is empty!', (_path_utils.readable_norm(filepath),))
                     return None
 
                 container = MatContainer(data_dict, effect)
             else:
-                lprint('\nI MAT file "%s" is empty!', (str(filepath).replace("\\", "/"),))
+                lprint('\nI MAT file "%s" is empty!', (_path_utils.readable_norm(filepath),))
                 return None
         else:
-            lprint('\nW Invalid MAT file path %r!', (str(filepath).replace("\\", "/"),))
+            lprint('\nW Invalid MAT file path %r!', (_path_utils.readable_norm(filepath),))
     else:
         lprint('\nI No MAT file path provided!')
 

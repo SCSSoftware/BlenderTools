@@ -21,6 +21,7 @@
 import bpy
 import os
 from bpy.app.handlers import persistent
+from io_scs_tools import get_tools_version
 from io_scs_tools.internals import preview_models as _preview_models
 from io_scs_tools.internals.callbacks import open_gl as _open_gl_callback
 from io_scs_tools.internals.containers import config as _config_container
@@ -49,7 +50,7 @@ def initialise_scs_dict(scene):
 
     # SCREEN CHECK...
     if bpy.context.screen:
-        lprint("I Initialization of SCS scene")
+        lprint("I Initialization of SCS scene, BT version: " + get_tools_version())
 
         # NOTE: covers: start-up, reload, enable/disable and it should be immediately removed
         # from handlers as soon as it's executed for the first time

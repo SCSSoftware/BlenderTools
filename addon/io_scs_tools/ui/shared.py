@@ -168,6 +168,10 @@ def draw_common_settings(layout, draw_config_storage_place=False):
     :type draw_config_storage_place: bool
     """
     box4 = layout.box().column()
+
+    row = box4.row(align=True)
+    row.operator("scene.scs_copy_log", icon="COPYDOWN")
+
     row = box4.row(align=True)
     row.prop(_get_scs_globals(), 'dump_level', text="Log Level", icon='MOD_EXPLODE')
 

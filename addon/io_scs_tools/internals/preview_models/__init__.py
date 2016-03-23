@@ -119,10 +119,12 @@ def load(locator):
             if filepath.lower().endswith(".pim"):
                 abs_filepath = _path_utils.get_abs_path(filepath, skip_mod_check=True)
                 if not os.path.isfile(abs_filepath):
-                    lprint("W Locator %r has invalid path to Preview Model PIM file: %r", (locator.name, abs_filepath.replace("\\", "/")))
+                    lprint("W Locator %r has invalid path to Preview Model PIM file: %r",
+                           (locator.name, _path_utils.readable_norm(abs_filepath)))
                     load_model = False
             else:
-                lprint("W Locator %r has invalid path to Preview Model PIM file: %r", (locator.name, filepath.replace("\\", "/")))
+                lprint("W Locator %r has invalid path to Preview Model PIM file: %r",
+                       (locator.name, _path_utils.readable_norm(filepath)))
                 load_model = False
         else:
             load_model = False

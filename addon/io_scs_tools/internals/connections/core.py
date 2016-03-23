@@ -20,6 +20,7 @@
 
 import bpy
 import hashlib
+from collections import OrderedDict
 from io_scs_tools.consts import ConnectionsStorage as _CS_consts
 from io_scs_tools.consts import PrefabLocators as _PL_consts
 from io_scs_tools.internals.connections import collector as _collector
@@ -212,8 +213,8 @@ def gather_connections_upon_selected(data_block, loc_names):
     locators_refs = data[REFS][LOCATORS]
     conns_entries = data[REFS][CONNECTIONS][ENTRIES]
 
-    conns_to_draw = {}
-    for loc_name in loc_names:
+    conns_to_draw = OrderedDict()  # use ordered one so export with unchanged data will be the same every time
+    for loc_name in sorted(loc_names):
 
         if loc_name in locators_refs:
 
@@ -307,7 +308,7 @@ def get_connections(data_block, loc_name):
     locators_refs = data[REFS][LOCATORS]
     conns_entries = data[REFS][CONNECTIONS][ENTRIES]
 
-    connections = {}
+    connections = OrderedDict()  # use ordered one so export with unchanged data will be the same every time
     if loc_name in locators_refs:
 
         loc_refs = locators_refs[loc_name]

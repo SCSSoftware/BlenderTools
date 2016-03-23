@@ -33,6 +33,7 @@ from io_scs_tools.utils import get_scs_globals as _get_scs_globals
 from io_scs_tools.utils import material as _material_utils
 from io_scs_tools.utils import name as _name_utils
 from io_scs_tools.utils import object as _object_utils
+from io_scs_tools.utils import path as _path_utils
 from io_scs_tools.utils.printout import lprint
 
 
@@ -304,7 +305,7 @@ def load(context, filepath):
     if scs_globals.import_pim_file or scs_globals.import_pis_file:
         if filepath:
             if os.path.isfile(filepath):
-                lprint('\nD PIM filepath:\n  %s', (filepath.replace("\\", "/"),))
+                lprint('\nD PIM filepath:\n  %s', (_path_utils.readable_norm(filepath),))
                 result, objects, locators, armature, skeleton, mats_info = _pim.load(
                     context,
                     filepath,
@@ -312,7 +313,7 @@ def load(context, filepath):
                 )
                 # print('  armature:\n%s\n  skeleton:\n%s' % (str(armature), str(skeleton)))
             else:
-                lprint('\nI No file found at %r!' % (filepath.replace("\\", "/"),))
+                lprint('\nI No file found at %r!' % (_path_utils.readable_norm(filepath),))
         else:
             lprint('\nI No filepath provided!')
 

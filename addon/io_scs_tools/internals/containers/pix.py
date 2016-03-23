@@ -23,8 +23,9 @@ import re
 from mathutils import Vector
 from io_scs_tools.internals.containers.parsers import pix as _pix_parser
 from io_scs_tools.internals.containers.writers import pix as _pix_writer
-from io_scs_tools.utils.printout import lprint
 from io_scs_tools.internals.structure import SectionData as _SectionData
+from io_scs_tools.utils import path as _path_utils
+from io_scs_tools.utils.printout import lprint
 
 
 def fast_check_for_pia_skeleton(pia_filepath, skeleton):
@@ -197,7 +198,7 @@ def get_data_from_file(filepath, ind, print_info=False):
     # print('    filepath: "%s"\n' % filepath)
     container, state = _pix_parser.read_data(filepath, ind, print_info)
     if len(container) < 1:
-        lprint('\nE File "%s" is empty!', (str(filepath).replace("\\", "/"),))
+        lprint('\nE File "%s" is empty!', (_path_utils.readable_norm(filepath),))
         return None
 
     # print_container(container)  # TEST PRINTOUTS
@@ -221,10 +222,14 @@ def write_data_to_file(container, filepath, ind, print_info=False):
     :rtype: bool
     """
 
+    # convert filepath in readable form so when file writting will be logged
+    # path will be properly readable even on windows. Without mixed back and forward slashes.
+    filepath = _path_utils.readable_norm(filepath)
+
     result = _pix_writer.write_data(container, filepath, ind, print_info=print_info)
     if result != {'FINISHED'}:
-        lprint('E Unable to export data into file:\n\t   "%s"\nFor details check printouts above.', (str(filepath).replace("\\", "/"),))
+        lprint("E Unable to export data into file:\n\t   %r\n\t   For details check printouts above.", (filepath,))
         return False
     else:
-        lprint('I File created!')
+        lprint("I File created!")
         return True
