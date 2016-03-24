@@ -24,17 +24,14 @@ from io_scs_tools.consts import Material as _MAT_consts
 TSNMAP_SCALE_G = _MAT_consts.node_group_prefix + "TSNMapScaleGroup"
 
 _NMAP_TEX_SEP_NODE = "SeparateNMapTexRGB"
-_ORIG_NOR_SEP_NODE = "SeparateNorRGB"
-_MODIF_NOR_SEP_NODE = "SeparateNorRGB"
-_RED_CHANNEL_MATH_UPPER_NODE = "RedUpper"
-_RED_CHANNEL_MATH_LOWER_NODE = "RedLower"
-_GREEN_CHANNEL_MATH_UPPER_NODE = "GreenUpper"
-_GREEN_CHANNEL_MATH_LOWER_NODE = "GreenLower"
-_RED_MAX_MATH_NODE = "RedMax"
-_GREEN_MAX_MATH_NODE = "GreenMax"
-_RED_MIX_NODE = "RedMix"
-_GREEN_MIX_NODE = "GreenMix"
-_COMBINE_NORMAL_NODE = "NormalCombine"
+_RED_CHANNEL_MATH_SUB_NODE = "RedOffset"
+_RED_CHANNEL_MATH_MULT_NODE = "RedScale"
+_RED_CHANNEL_MATH_ABS_NODE = "RedAbsolute"
+_GREEN_CHANNEL_MATH_SUB_NODE = "GreenOffset"
+_GREEN_CHANNEL_MATH_MULT_NODE = "GreenScale"
+_GREEN_CHANNEL_MATH_ABS_NODE = "GreenAbsolute"
+_COMBINE_RED_NODE = "RedCombine"
+_COMBINE_GREEN_NODE = "GreenCombine"
 
 
 def get_node_group():
@@ -55,12 +52,22 @@ def get_node_group():
 def __create_nmap_scale_group__():
     """Creates tangent space normal map scale group.
 
+    Current implementation tries to mix normals instead of
+    ignoring modified normal by nmap texture if R or G is 128.
+    Mixing is done by subtracting middle point nmap texture value (128 -> 0.502)
+    and then scaling it by scale factor so for values 128 only
+    unmodified geometry normal is used and for values neear middle point
+    both normals are mixed depending on distance from 128 ( the bigger the
+    distance from 128 is more of modified normal is used).
+    And by enough big distance (currently 20) effect of mixing completely
+    fades out and only modified normal is used.
+
     Inputs: NMap Tex Color, Original Normal, Modified Normal
     Outputs: Normal
     """
 
     _NMAP_MIDDLE_VALUE = 128.0 / 255.0
-    _EPSILON = 0.0000003
+    _SCALE_FACTOR = 20.0
 
     nmap_scale_g = bpy.data.node_groups.new(type="ShaderNodeTree", name=TSNMAP_SCALE_G)
 
@@ -74,93 +81,77 @@ def __create_nmap_scale_group__():
     # outputs defining
     nmap_scale_g.outputs.new("NodeSocketVector", "Normal")
     output_n = nmap_scale_g.nodes.new("NodeGroupOutput")
-    output_n.location = (185 * 6, 0)
+    output_n.location = (185 * 7, 0)
 
     # group nodes
     separate_rgb_n = nmap_scale_g.nodes.new("ShaderNodeSeparateRGB")
     separate_rgb_n.name = separate_rgb_n.label = _NMAP_TEX_SEP_NODE
     separate_rgb_n.location = (185 * 1, 400)
 
-    sep_orig_nor_n = nmap_scale_g.nodes.new("ShaderNodeSeparateRGB")
-    sep_orig_nor_n.name = sep_orig_nor_n.label = _ORIG_NOR_SEP_NODE
-    sep_orig_nor_n.location = (185 * 1, -100)
+    red_math_sub_n = nmap_scale_g.nodes.new("ShaderNodeMath")
+    red_math_sub_n.name = red_math_sub_n.label = _RED_CHANNEL_MATH_SUB_NODE
+    red_math_sub_n.location = (185 * 2, 700)
+    red_math_sub_n.operation = "SUBTRACT"
+    red_math_sub_n.inputs[1].default_value = _NMAP_MIDDLE_VALUE
 
-    sep_modif_nor_n = nmap_scale_g.nodes.new("ShaderNodeSeparateRGB")
-    sep_modif_nor_n.name = sep_modif_nor_n.label = _MODIF_NOR_SEP_NODE
-    sep_modif_nor_n.location = (185 * 1, -300)
+    red_math_mult_n = nmap_scale_g.nodes.new("ShaderNodeMath")
+    red_math_mult_n.name = red_math_mult_n.label = _RED_CHANNEL_MATH_MULT_NODE
+    red_math_mult_n.location = (185 * 3, 700)
+    red_math_mult_n.operation = "MULTIPLY"
+    red_math_mult_n.inputs[1].default_value = _SCALE_FACTOR
 
-    red_math_upper_n = nmap_scale_g.nodes.new("ShaderNodeMath")
-    red_math_upper_n.name = red_math_upper_n.label = _RED_CHANNEL_MATH_UPPER_NODE
-    red_math_upper_n.location = (185 * 2, 700)
-    red_math_upper_n.operation = "GREATER_THAN"
-    red_math_upper_n.inputs[1].default_value = _NMAP_MIDDLE_VALUE + _EPSILON
+    red_math_abs_n = nmap_scale_g.nodes.new("ShaderNodeMath")
+    red_math_abs_n.name = red_math_abs_n.label = _RED_CHANNEL_MATH_ABS_NODE
+    red_math_abs_n.location = (185 * 4, 700)
+    red_math_abs_n.operation = "ABSOLUTE"
+    red_math_abs_n.use_clamp = True
 
-    red_math_lower_n = nmap_scale_g.nodes.new("ShaderNodeMath")
-    red_math_lower_n.name = red_math_lower_n.label = _RED_CHANNEL_MATH_LOWER_NODE
-    red_math_lower_n.location = (185 * 2, 500)
-    red_math_lower_n.operation = "LESS_THAN"
-    red_math_lower_n.inputs[1].default_value = _NMAP_MIDDLE_VALUE - _EPSILON
+    green_math_sub_n = nmap_scale_g.nodes.new("ShaderNodeMath")
+    green_math_sub_n.name = green_math_sub_n.label = _GREEN_CHANNEL_MATH_SUB_NODE
+    green_math_sub_n.location = (185 * 2, 500)
+    green_math_sub_n.operation = "SUBTRACT"
+    green_math_sub_n.inputs[1].default_value = _NMAP_MIDDLE_VALUE
 
-    green_math_upper_n = nmap_scale_g.nodes.new("ShaderNodeMath")
-    green_math_upper_n.name = green_math_upper_n.label = _GREEN_CHANNEL_MATH_UPPER_NODE
-    green_math_upper_n.location = (185 * 2, 300)
-    green_math_upper_n.operation = "GREATER_THAN"
-    green_math_upper_n.inputs[1].default_value = _NMAP_MIDDLE_VALUE + _EPSILON
+    green_math_mult_n = nmap_scale_g.nodes.new("ShaderNodeMath")
+    green_math_mult_n.name = green_math_mult_n.label = _GREEN_CHANNEL_MATH_MULT_NODE
+    green_math_mult_n.location = (185 * 3, 500)
+    green_math_mult_n.operation = "MULTIPLY"
+    green_math_mult_n.inputs[1].default_value = _SCALE_FACTOR
 
-    green_math_lower_n = nmap_scale_g.nodes.new("ShaderNodeMath")
-    green_math_lower_n.name = green_math_lower_n.label = _GREEN_CHANNEL_MATH_LOWER_NODE
-    green_math_lower_n.location = (185 * 2, 100)
-    green_math_lower_n.operation = "LESS_THAN"
-    green_math_lower_n.inputs[1].default_value = _NMAP_MIDDLE_VALUE - _EPSILON
-
-    red_max_n = nmap_scale_g.nodes.new("ShaderNodeMath")
-    red_max_n.name = red_max_n.label = _RED_MAX_MATH_NODE
-    red_max_n.location = (185 * 3, 600)
-    red_max_n.operation = "MAXIMUM"
-
-    green_max_n = nmap_scale_g.nodes.new("ShaderNodeMath")
-    green_max_n.name = green_max_n.label = _GREEN_MAX_MATH_NODE
-    green_max_n.location = (185 * 3, 200)
-    green_max_n.operation = "MAXIMUM"
+    green_math_abs_n = nmap_scale_g.nodes.new("ShaderNodeMath")
+    green_math_abs_n.name = green_math_abs_n.label = _GREEN_CHANNEL_MATH_ABS_NODE
+    green_math_abs_n.location = (185 * 4, 500)
+    green_math_abs_n.operation = "ABSOLUTE"
+    green_math_abs_n.use_clamp = True
 
     red_mix_n = nmap_scale_g.nodes.new("ShaderNodeMixRGB")
-    red_mix_n.name = red_mix_n.label = _RED_MIX_NODE
-    red_mix_n.location = (185 * 4, 100)
+    red_mix_n.name = red_mix_n.label = _COMBINE_RED_NODE
+    red_mix_n.location = (185 * 5, 100)
     red_mix_n.blend_type = "MIX"
 
     green_mix_n = nmap_scale_g.nodes.new("ShaderNodeMixRGB")
-    green_mix_n.name = green_mix_n.label = _GREEN_MIX_NODE
-    green_mix_n.location = (185 * 4, -100)
+    green_mix_n.name = green_mix_n.label = _COMBINE_GREEN_NODE
+    green_mix_n.location = (185 * 6, -100)
     green_mix_n.blend_type = "MIX"
-
-    combine_nor_n = nmap_scale_g.nodes.new("ShaderNodeCombineRGB")
-    combine_nor_n.name = combine_nor_n.label = _COMBINE_NORMAL_NODE
-    combine_nor_n.location = (185 * 5, -250)
 
     # group links
     nmap_scale_g.links.new(separate_rgb_n.inputs['Image'], input_n.outputs['NMap Tex Color'])
-    nmap_scale_g.links.new(sep_orig_nor_n.inputs['Image'], input_n.outputs['Original Normal'])
-    nmap_scale_g.links.new(sep_modif_nor_n.inputs['Image'], input_n.outputs['Modified Normal'])
 
-    nmap_scale_g.links.new(red_math_upper_n.inputs[0], separate_rgb_n.outputs['R'])
-    nmap_scale_g.links.new(red_math_lower_n.inputs[0], separate_rgb_n.outputs['R'])
-    nmap_scale_g.links.new(green_math_upper_n.inputs[0], separate_rgb_n.outputs['G'])
-    nmap_scale_g.links.new(green_math_lower_n.inputs[0], separate_rgb_n.outputs['G'])
+    nmap_scale_g.links.new(red_math_sub_n.inputs[0], separate_rgb_n.outputs['R'])
+    nmap_scale_g.links.new(green_math_sub_n.inputs[0], separate_rgb_n.outputs['G'])
 
-    nmap_scale_g.links.new(red_max_n.inputs[0], red_math_upper_n.outputs[0])
-    nmap_scale_g.links.new(red_max_n.inputs[1], red_math_lower_n.outputs[0])
-    nmap_scale_g.links.new(green_max_n.inputs[0], green_math_upper_n.outputs[0])
-    nmap_scale_g.links.new(green_max_n.inputs[1], green_math_lower_n.outputs[0])
+    nmap_scale_g.links.new(red_math_mult_n.inputs[0], red_math_sub_n.outputs[0])
+    nmap_scale_g.links.new(green_math_mult_n.inputs[0], green_math_sub_n.outputs[0])
 
-    nmap_scale_g.links.new(red_mix_n.inputs['Fac'], red_max_n.outputs[0])
-    nmap_scale_g.links.new(red_mix_n.inputs['Color1'], sep_orig_nor_n.outputs['R'])
-    nmap_scale_g.links.new(red_mix_n.inputs['Color2'], sep_modif_nor_n.outputs['R'])
-    nmap_scale_g.links.new(green_mix_n.inputs['Fac'], green_max_n.outputs[0])
-    nmap_scale_g.links.new(green_mix_n.inputs['Color1'], sep_orig_nor_n.outputs['G'])
-    nmap_scale_g.links.new(green_mix_n.inputs['Color2'], sep_modif_nor_n.outputs['G'])
+    nmap_scale_g.links.new(red_math_abs_n.inputs[0], red_math_mult_n.outputs[0])
+    nmap_scale_g.links.new(green_math_abs_n.inputs[0], green_math_mult_n.outputs[0])
 
-    nmap_scale_g.links.new(combine_nor_n.inputs['R'], red_mix_n.outputs['Color'])
-    nmap_scale_g.links.new(combine_nor_n.inputs['G'], green_mix_n.outputs['Color'])
-    nmap_scale_g.links.new(combine_nor_n.inputs['B'], sep_modif_nor_n.outputs['B'])
+    nmap_scale_g.links.new(red_mix_n.inputs['Fac'], red_math_abs_n.outputs[0])
+    nmap_scale_g.links.new(red_mix_n.inputs['Color1'], input_n.outputs['Original Normal'])
+    nmap_scale_g.links.new(red_mix_n.inputs['Color2'], input_n.outputs['Modified Normal'])
 
-    nmap_scale_g.links.new(output_n.inputs['Normal'], combine_nor_n.outputs['Image'])
+    nmap_scale_g.links.new(green_mix_n.inputs['Fac'], green_math_abs_n.outputs[0])
+    nmap_scale_g.links.new(green_mix_n.inputs['Color1'], red_mix_n.outputs['Color'])
+    nmap_scale_g.links.new(green_mix_n.inputs['Color2'], input_n.outputs['Modified Normal'])
+
+    nmap_scale_g.links.new(output_n.inputs['Normal'], green_mix_n.outputs['Color'])

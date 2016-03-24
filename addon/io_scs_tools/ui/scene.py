@@ -266,7 +266,7 @@ def _draw_global_settings_panel(scene, layout, scs_globals):
         # DISPLAY SETTINGS PANEL
         _draw_display_settings_panel(scene, layout_box.row(), scs_globals)
 
-        _shared.draw_common_settings(layout_box, draw_config_storage_place=True)
+        _shared.draw_common_settings(layout_box)
 
     else:
         layout_box_row = layout_box.row()

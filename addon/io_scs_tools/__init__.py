@@ -22,7 +22,7 @@ bl_info = {
     "name": "SCS Tools",
     "description": "Setup models, Import-Export SCS data format",
     "author": "Simon Lusenc (50keda), Milos Zajic (4museman)",
-    "version": (1, 3, "5621931"),
+    "version": (1, 3, "588c66f"),
     "blender": (2, 75, 0),
     "location": "File > Import-Export",
     "wiki_url": "https://github.com/SCSSoftware/BlenderTools/wiki",
@@ -137,14 +137,25 @@ class ImportSCS(bpy.types.Operator, ImportHelper):
 
         # importer_version = round(import_pix.version(), 2)
         layout = self.layout
+
+        # SCS Project Path
         box1 = layout.box()
+        layout_box_col = box1.column(align=True)
+        layout_box_col.label('SCS Project Base Path:', icon='FILE_FOLDER')
 
-        row = box1.row()
-        row.prop(scs_globals, "import_scale")
+        layout_box_row = layout_box_col.row(align=True)
+        layout_box_row.alert = not os.path.isdir(scs_globals.scs_project_path)
+        layout_box_row.prop(scs_globals, 'scs_project_path', text='')
 
+        layout_box_row = layout_box_col.row(align=True)
+        layout_box_row.prop(self, "scs_project_path_mode", toggle=True, text="Set Current Dir as Project Base", icon='SCREEN_BACK')
+
+        # import settings
         box2 = layout.box()
-
         col = box2.column(align=True)
+
+        col.row().prop(scs_globals, "import_scale")
+        col.row().separator()
         col.row().prop(scs_globals, "import_pim_file", toggle=True, icon="FILE_TICK" if scs_globals.import_pim_file else "X")
         if scs_globals.import_pim_file:
             col.row().prop(scs_globals, "use_normals")
@@ -155,7 +166,7 @@ class ImportSCS(bpy.types.Operator, ImportHelper):
         col.row().prop(scs_globals, "import_pit_file", toggle=True, icon="FILE_TICK" if scs_globals.import_pit_file else "X")
         if scs_globals.import_pit_file:
             col.row().prop(scs_globals, "load_textures")
-            col.row().separator()
+        col.row().separator()
         col.row().prop(scs_globals, "import_pic_file", toggle=True, icon="FILE_TICK" if scs_globals.import_pic_file else "X")
         col.row().separator()
         col.row().prop(scs_globals, "import_pip_file", toggle=True, icon="FILE_TICK" if scs_globals.import_pip_file else "X")
@@ -168,20 +179,8 @@ class ImportSCS(bpy.types.Operator, ImportHelper):
             if scs_globals.import_pia_file:
                 col.row().prop(scs_globals, "include_subdirs_for_pia")
 
-        # SCS Project Path
-        box3 = layout.box()
-        layout_box_col = box3.column(align=True)
-        layout_box_col.label('SCS Project Base Path:', icon='FILE_FOLDER')
-
-        layout_box_row = layout_box_col.row(align=True)
-        layout_box_row.alert = not os.path.isdir(scs_globals.scs_project_path)
-        layout_box_row.prop(scs_globals, 'scs_project_path', text='')
-
-        layout_box_row = layout_box_col.row(align=True)
-        layout_box_row.prop(self, "scs_project_path_mode", toggle=True, text="Set Current Dir as Project Base", icon='SAVE_COPY')
-
         # Common global settings
-        ui.shared.draw_common_settings(layout)
+        ui.shared.draw_common_settings(layout, log_level_only=True)
 
 
 class ExportSCS(bpy.types.Operator, ExportHelper):

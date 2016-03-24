@@ -159,23 +159,24 @@ def draw_export_panel(layout):
     '''
 
 
-def draw_common_settings(layout, draw_config_storage_place=False):
+def draw_common_settings(layout, log_level_only=False):
     """Draw common settings panel featuring log level and usage type of global settings if requested
 
     :param layout: Blender UI layout to draw operator to
     :type layout: UILayout
-    :param draw_config_storage_place: draw globals storage type property
-    :type draw_config_storage_place: bool
+    :param log_level_only: draw only log level option
+    :type log_level_only: bool
     """
     box4 = layout.box().column()
 
-    row = box4.row(align=True)
-    row.operator("scene.scs_copy_log", icon="COPYDOWN")
+    if not log_level_only:
+        row = box4.row(align=True)
+        row.operator("scene.scs_copy_log", icon="COPYDOWN")
 
     row = box4.row(align=True)
     row.prop(_get_scs_globals(), 'dump_level', text="Log Level", icon='MOD_EXPLODE')
 
-    if draw_config_storage_place:
+    if not log_level_only:
         row = box4.row(align=True)
         row.prop(_get_scs_globals(), 'config_storage_place', icon='NONE')
 
