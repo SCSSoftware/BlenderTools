@@ -95,6 +95,11 @@ class StdAddEnv:
         node_tree.links.new(add_env_gn.inputs['View Vector'], geometry_n.outputs['View'])
         node_tree.links.new(refl_tex_n.inputs['Vector'], geometry_n.outputs['Normal'])
 
+        # if out material node is really material node and has normal output,
+        # use it as this normal might include normal maps
+        if "Normal" in out_mat_n.outputs:
+            node_tree.links.new(refl_tex_n.inputs['Vector'], out_mat_n.outputs['Normal'])
+
         node_tree.links.new(add_env_gn.inputs['Env Factor Color'], env_col_n.outputs['Color'])
         node_tree.links.new(add_env_gn.inputs['Reflection Texture Color'], refl_tex_n.outputs['Color'])
 

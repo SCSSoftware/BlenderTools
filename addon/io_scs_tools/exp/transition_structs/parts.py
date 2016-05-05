@@ -41,6 +41,14 @@ class PartsTrans:
         """
         self.__storage[part_name] = 1
 
+    def count(self):
+        """Number of currently stored parts in transitional structure.
+
+        :return: number of currently stored parts
+        :rtype: int
+        """
+        return len(self.__storage)
+
     def is_present(self, part_name):
         """Tells if given part is present in storage.
 

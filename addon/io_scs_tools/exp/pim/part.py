@@ -29,16 +29,6 @@ class Part:
     __pieces = {}  # references to Piece classes used in this part
     __locators = {}  # references to Locator classes used in this part
 
-    __global_part_counter = 0
-
-    @staticmethod
-    def reset_counter():
-        Part.__global_part_counter = 0
-
-    @staticmethod
-    def get_global_material_count():
-        return Part.__global_part_counter
-
     def __init__(self, name):
         """Constructor for part with it's name.
         NOTE: all of the pieces and locators are added later with methods.
@@ -49,7 +39,6 @@ class Part:
         self.__locators = {}
 
         self.__name = name
-        Part.__global_part_counter += 1
 
     def add_piece(self, piece):
         """Adds piece to part.

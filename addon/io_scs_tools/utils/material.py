@@ -420,7 +420,7 @@ def set_shader_data_to_material(material, section, is_import=False, override_bac
 
     # apply used textures
     created_textures = {}
-    created_tex_uvs = {}
+    created_tex_mappings = []
     for tex_type in used_texture_types:
 
         # skip unknown texture type
@@ -470,16 +470,12 @@ def set_shader_data_to_material(material, section, is_import=False, override_bac
                     # apply uv mappings either from imported data or from old mappings of previous shader
                     if "scs_tex_aliases" in material:  # scs_tex_aliases are present only on import
                         mapping['value'] = material["scs_tex_aliases"][str(tex_coord)]
-
-                        # for now make sure to use only first coord mapping info for shader
-                        # NOTE: this may give wrong shader results upon import of "truckpaint" shader
-                        if len(texture_mappings) == 1:
-                            created_tex_uvs[tex_type] = mapping.value
+                        created_tex_mappings.append((tex_type, mapping.value, tex_coord))
 
                     elif tex_coord in old_texture_mappings:
 
                         mapping['value'] = old_texture_mappings[tex_coord]
-                        created_tex_uvs[tex_type] = old_texture_mappings[tex_coord]
+                        created_tex_mappings.append((tex_type, mapping.value, tex_coord))
 
         # set texture file to current texture
         scs_texture_str = _path.get_scs_texture_str(texture_data['Value'])
@@ -520,7 +516,15 @@ def set_shader_data_to_material(material, section, is_import=False, override_bac
         material["scs_shader_attributes"] = shader_data
 
     # setup nodes for 3D view visualization
-    _shader.setup_nodes(material, preset_effect, created_attributes, created_textures, created_tex_uvs, override_back_data)
+    _shader.setup_nodes(material, preset_effect, created_attributes, created_textures, override_back_data)
+
+    # setup uv mappings to nodes later trough dedicated function, so proper validation is made on tex coord bindings
+    for mapping_data in created_tex_mappings:
+
+        # data[0] = texture type;
+        # data[1] = uv mapping value;
+        # data[2] = tex coord value
+        _shader.set_uv(material, mapping_data[0], mapping_data[1], mapping_data[2])
 
 
 def reload_tobj_settings(material, tex_type):

@@ -24,6 +24,7 @@ from io_scs_tools.consts import Mesh as _MESH_consts
 from io_scs_tools.internals.shaders.flavors import alpha_test
 from io_scs_tools.internals.shaders.flavors import blend_over
 from io_scs_tools.internals.shaders.flavors import blend_add
+from io_scs_tools.internals.shaders.flavors import paint
 from io_scs_tools.utils import convert as _convert_utils
 
 
@@ -204,3 +205,28 @@ class UnlitTex:
             blend_add.init(node_tree, in_node.outputs['Value'], out_node.inputs['Alpha'])
         else:
             blend_add.delete(node_tree)
+
+    @staticmethod
+    def set_paint_flavor(node_tree, switch_on):
+        """Set paint flavor to this shader.
+
+        :param node_tree: node tree of current shader
+        :type node_tree: bpy.types.NodeTree
+        :param switch_on: flag indication if flavor should be switched on or off
+        :type switch_on: bool
+        """
+
+        diff_col_n = node_tree.nodes[UnlitTex.DIFF_COL_NODE]
+        diff_mult_n = node_tree.nodes[UnlitTex.TEX_MULT_NODE]
+
+        if switch_on:
+
+            for node in node_tree.nodes:
+                if node.location.x > diff_col_n.location.x:
+                    node.location.x += 185
+
+            location = (diff_mult_n.location.x - 185, diff_mult_n.location.y + 50)
+            paint.init(node_tree, location, diff_col_n.outputs["Color"], diff_mult_n.inputs["Color1"])
+
+        else:
+            paint.delete(node_tree)

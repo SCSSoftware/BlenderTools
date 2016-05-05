@@ -20,7 +20,6 @@
 
 from io_scs_tools.exp.pim.piece import Piece
 from io_scs_tools.exp.pim.material import Material
-from io_scs_tools.exp.pim.part import Part
 from io_scs_tools.exp.pim.locator import Locator
 from io_scs_tools.exp.pim.bones import Bones
 from io_scs_tools.internals.structure import SectionData as _SectionData
@@ -29,18 +28,20 @@ from io_scs_tools.internals.structure import SectionData as _SectionData
 class Globall:
     __skeleton = ""
 
-    def __init__(self, skeleton):
+    def __init__(self, part_count, skeleton):
         """Constructs global for PIM
+        :param part_count: parts counter for current game object (including any parts from PIC and PIT
+        :type part_count: int
         :param skeleton: file name of the skeleton file
         :type skeleton: str
         """
 
         Piece.reset_counters()
         Material.reset_counter()
-        Part.reset_counter()
         Locator.reset_counter()
         Bones.reset_counter()
 
+        self.__part_count = part_count
         self.__skeleton = skeleton.replace("\\", "/")  # make sure to replace backslashes for windows paths
 
     def get_as_section(self):
@@ -52,9 +53,9 @@ class Globall:
         section = _SectionData("Global")
         section.props.append(("VertexCount", Piece.get_global_vertex_count()))
         section.props.append(("TriangleCount", Piece.get_global_triangle_count()))
-        section.props.append(("MaterialCount", Material.get_global_part_count()))
+        section.props.append(("MaterialCount", Material.get_global_material_count()))
         section.props.append(("PieceCount", Piece.get_global_piece_count()))
-        section.props.append(("PartCount", Part.get_global_material_count()))
+        section.props.append(("PartCount", self.__part_count))
         section.props.append(("BoneCount", Bones.get_global_bones_count()))
         section.props.append(("LocatorCount", Locator.get_global_locator_count()))
         section.props.append(("Skeleton", self.__skeleton))

@@ -22,7 +22,7 @@ import bpy
 from io_scs_tools.utils.printout import lprint
 
 
-def setup_nodes(material, effect, attr_dict, tex_dict, tex_uvs, recreate):
+def setup_nodes(material, effect, attr_dict, tex_dict, recreate):
     """Setup material nodes to correctly present given shader from game engine.
 
     :param material: blender material which should be set for proper 3D view visualization
@@ -33,8 +33,6 @@ def setup_nodes(material, effect, attr_dict, tex_dict, tex_uvs, recreate):
     :type attr_dict: dict
     :param tex_dict: shader textures which should be set on given material; entry: (texture_type: texture object)
     :type tex_dict: dict
-    :param tex_uvs: shader textures uv layers which should be set on given material; entry: (texture_type: uv_lay string)
-    :type tex_uvs: dict
     :param recreate: flag indicating if shader nodes should be recreated. Should be triggered if effect name changes.
     :type recreate: bool
     """
@@ -95,7 +93,10 @@ def setup_nodes(material, effect, attr_dict, tex_dict, tex_uvs, recreate):
     if effect.endswith(".awhite") or ".awhite." in effect:
         flavors["awhite"] = True
 
-    __setup_nodes__(material, effect, attr_dict, tex_dict, tex_uvs, flavors, recreate)
+    if effect.endswith(".paint") or ".paint." in effect:
+        flavors["paint"] = True
+
+    __setup_nodes__(material, effect, attr_dict, tex_dict, {}, flavors, recreate)
 
 
 def set_attribute(material, attr_type, attr_value):
@@ -139,16 +140,25 @@ def set_uv(material, tex_type, uv_layer, tex_coord):
 
     is_valid_input = True
 
-    if tex_type == "paintjob" and ".truckpaint" in material.scs_props.mat_effect_name:
+    # special validity check for truckpaint shader
+    if ".truckpaint" in material.scs_props.mat_effect_name and tex_type in ("paintjob", "base"):
 
-        # prevent setting the uv to shader if alternative uv is used and tex_coord alias is 1
-        # otherwise prevent usage when using 2 as tex_coord alias
-        if ".altuv" in material.scs_props.mat_effect_name:
-            if tex_coord == 1:
+        if tex_type == "paintjob":
+
+            # if alternative uv is used only tex coord 2 usage is valid
+            if ".altuv" in material.scs_props.mat_effect_name:
+                if tex_coord != 2:
+                    is_valid_input = False
+
+            # if there is no alternative uv only tex coord 1 usage is valid
+            elif tex_coord != 1:
                 is_valid_input = False
 
-        elif tex_coord == 2:
-            is_valid_input = False
+        elif tex_type == "base":
+
+            # only tex coord 0 is valid for base texture anything else is there only for export
+            if tex_coord != 0:
+                is_valid_input = False
 
     if is_valid_input:
         __setup_nodes__(material, material.scs_props.mat_effect_name, {}, {}, {tex_type: uv_layer}, {}, False)

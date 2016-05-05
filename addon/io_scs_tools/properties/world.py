@@ -611,6 +611,48 @@ class GlobalSCSProps(bpy.types.PropertyGroup):
         _config_container.update_item_in_file('GlobalColors.InfoText', tuple(self.info_text_color))
         return None
 
+    def drawing_mode_update(self, context):
+        from io_scs_tools.internals.callbacks import open_gl as _open_gl_callback
+
+        _open_gl_callback.enable(self.drawing_mode)
+
+    def show_preview_models_update(self, context):
+        """
+        :param context:
+        :return:
+        """
+        for obj in bpy.data.objects:
+            if obj.type == 'EMPTY':
+                if self.show_preview_models:
+                    if not _preview_models.load(obj):
+                        _preview_models.unload(obj)
+                else:
+                    _preview_models.unload(obj)
+        return None
+
+    def base_paint_color_update(self, context):
+        from io_scs_tools.internals.shaders import set_base_paint_color
+
+        for mat in bpy.data.materials:
+
+            # ignore none-node based shaders
+            if not mat.use_nodes or not mat.node_tree:
+                continue
+
+            set_base_paint_color(mat.node_tree, self.base_paint_color)
+
+        _config_container.update_item_in_file('GlobalColors.BasePaint', tuple(self.base_paint_color))
+
+    drawing_mode = EnumProperty(
+        name="Custom Drawing Mode",
+        description="Drawing mode for custom elements (Locators and Connections)",
+        items=(
+            ('Normal', "Normal", "Use normal depth testing drawing"),
+            ('X-ray', "X-ray", "Use X-ray drawing"),
+        ),
+        update=drawing_mode_update
+    )
+
     display_locators = BoolProperty(
         name="Display Locators",
         description="Display locators in 3D views",
@@ -749,40 +791,22 @@ class GlobalSCSProps(bpy.types.PropertyGroup):
         update=info_text_color_update,
     )
 
-    def drawing_mode_update(self, context):
-        from io_scs_tools.internals.callbacks import open_gl as _open_gl_callback
-
-        _open_gl_callback.enable(self.drawing_mode)
-
-    drawing_mode = EnumProperty(
-        name="Custom Drawing Mode",
-        description="Drawing mode for custom elements (Locators and Connections)",
-        items=(
-            ('Normal', "Normal", "Use normal depth testing drawing"),
-            ('X-ray', "X-ray", "Use X-ray drawing"),
-        ),
-        update=drawing_mode_update
-    )
-
-    def show_preview_models_update(self, context):
-        """
-        :param context:
-        :return:
-        """
-        for obj in bpy.data.objects:
-            if obj.type == 'EMPTY':
-                if self.show_preview_models:
-                    if not _preview_models.load(obj):
-                        _preview_models.unload(obj)
-                else:
-                    _preview_models.unload(obj)
-        return None
-
     show_preview_models = BoolProperty(
         name="Show Preview Models",
         description="Show preview models for locators",
         default=True,
         update=show_preview_models_update
+    )
+
+    base_paint_color = FloatVectorProperty(
+        name="Base Paint Color",
+        description="Color used on shaders using paint flavor.\n"
+                    "This color is mixed in any shader using base paint color from game e.g. paint flavored and truckpaint shader",
+        options={'HIDDEN'},
+        subtype='COLOR',
+        min=0, max=1,
+        default=(0.5, 0.0, 0.0),
+        update=base_paint_color_update,
     )
 
     # IMPORT & EXPORT SETTINGS SAVED IN CONFIG

@@ -227,6 +227,8 @@ def _draw_display_settings_panel(scene, layout, scs_globals):
         else:
             icon = "X_VEC"
         layout_box_row.prop(scs_globals, 'show_preview_models', icon=icon, toggle=True)
+        layout_box_row = layout_box.row()
+        layout_box_row.prop(scs_globals, 'base_paint_color', icon='NONE')
     else:
         layout_box_row = layout_box.row()
         layout_box_row.prop(

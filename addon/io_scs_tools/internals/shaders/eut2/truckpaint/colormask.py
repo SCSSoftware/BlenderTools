@@ -37,6 +37,7 @@ class TruckpaintColormask(Truckpaint):
 
         # init parent
         Truckpaint.init(node_tree)
+        Truckpaint.init_colormask_or_airbrush(node_tree)
 
         blend_mix_n = node_tree.nodes[Truckpaint.BLEND_MIX_NODE]
         blend_mix_n.inputs['Fac'].default_value = 1.0

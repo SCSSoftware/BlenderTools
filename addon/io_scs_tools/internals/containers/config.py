@@ -543,6 +543,7 @@ def gather_default():
         section.props.append(("MapLineBase", tuple(_property_utils.get_by_type(bpy.types.GlobalSCSProps.mp_connection_base_color))))
         section.props.append(("TriggerLineBase", tuple(_property_utils.get_by_type(bpy.types.GlobalSCSProps.tp_connection_base_color))))
         section.props.append(("InfoText", tuple(_property_utils.get_by_type(bpy.types.GlobalSCSProps.info_text_color))))
+        section.props.append(("BasePaint", tuple(_property_utils.get_by_type(bpy.types.GlobalSCSProps.base_paint_color))))
         return section
 
     '''
@@ -788,6 +789,8 @@ def apply_settings():
                             scs_globals.tp_connection_base_color = prop[1]
                         elif prop[0] == "InfoText":
                             scs_globals.info_text_color = prop[1]
+                        elif prop[0] == "BasePaint":
+                            scs_globals.base_paint_color = prop[1]
                         else:
                             lprint('W Unrecognised item "%s" has been found in setting file! Skipping...', (str(prop[0]),))
             elif section.type == "Header":

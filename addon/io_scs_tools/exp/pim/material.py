@@ -35,7 +35,7 @@ class Material:
         Material.__global_material_counter = 0
 
     @staticmethod
-    def get_global_part_count():
+    def get_global_material_count():
         return Material.__global_material_counter
 
     def __init__(self, index, alias, effect, blend_mat):

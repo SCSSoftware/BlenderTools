@@ -89,7 +89,7 @@ def execute(dirpath, root_object, armature_object, skeleton_filepath, mesh_objec
     is_skin_used = (armature_object and root_object.scs_props.scs_root_animated == "anim")
 
     pim_header = Header(format_type, format_version, root_object.name)
-    pim_global = Globall(skeleton_filepath)
+    pim_global = Globall(used_parts.count(), skeleton_filepath)
 
     pim_materials = collections.OrderedDict()  # dict of Material class instances representing used materials
     """:type: dict[str, Material]"""
@@ -382,6 +382,7 @@ def execute(dirpath, root_object, armature_object, skeleton_filepath, mesh_objec
         # create part if it doesn't exists yet
         part_name = loc_obj.scs_props.scs_part
         if part_name not in pim_parts:
+            assert used_parts.is_present(part_name)
             pim_parts[part_name] = Part(part_name)
 
         # add locator to part

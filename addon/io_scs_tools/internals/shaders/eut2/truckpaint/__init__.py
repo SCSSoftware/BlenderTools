@@ -22,6 +22,7 @@
 from io_scs_tools.consts import Mesh as _MESH_consts
 from io_scs_tools.internals.shaders.eut2.dif_spec_add_env import DifSpecAddEnv
 from io_scs_tools.utils import convert as _convert_utils
+from io_scs_tools.utils import get_scs_globals as _get_scs_globals
 
 
 class Truckpaint(DifSpecAddEnv):
@@ -42,6 +43,8 @@ class Truckpaint(DifSpecAddEnv):
     COL_MASK_B_MIX_NODE = "ColormaskBCol"
     COL_MASK_G_MIX_NODE = "ColormaskGCol"
     COL_MASK_R_MIX_NODE = "ColormaskRCol"
+
+    BASE_PAINT_MULT_NODE = "BasePaintMult"
 
     BLEND_MIX_NODE = "BlendMode"
 
@@ -81,14 +84,96 @@ class Truckpaint(DifSpecAddEnv):
         output_n = node_tree.nodes[DifSpecAddEnv.OUTPUT_NODE]
 
         # move existing
-        add_refl_gn.location.x += pos_x_shift * 2
-        spec_mult_n.location.x += pos_x_shift * 2
-        out_mat_n.location.x += pos_x_shift
-        out_add_refl_n.location.x += pos_x_shift
-        output_n.location.x += pos_x_shift
+        add_refl_gn.location.x += pos_x_shift * 3
+        spec_mult_n.location.x += pos_x_shift * 3
+        out_mat_n.location.x += pos_x_shift * 2
+        out_add_refl_n.location.x += pos_x_shift * 2
+        output_n.location.x += pos_x_shift * 2
 
         # set fresnel factor to 0
         node_tree.nodes[DifSpecAddEnv.ADD_ENV_GROUP_NODE].inputs['Apply Fresnel'].default_value = 0.0
+
+        # node creation - level 3
+        env_vcol_mix_n = node_tree.nodes.new("ShaderNodeMixRGB")
+        env_vcol_mix_n.name = Truckpaint.ENV_VCOL_MULT_NODE
+        env_vcol_mix_n.label = Truckpaint.ENV_VCOL_MULT_NODE
+        env_vcol_mix_n.location = (start_pos_x + pos_x_shift * 4, start_pos_y + 2000)
+        env_vcol_mix_n.blend_type = "MULTIPLY"
+        env_vcol_mix_n.inputs['Fac'].default_value = 1
+
+        spec_vcol_mix_n = node_tree.nodes.new("ShaderNodeMixRGB")
+        spec_vcol_mix_n.name = Truckpaint.SPEC_VCOL_MULT_NODE
+        spec_vcol_mix_n.label = Truckpaint.SPEC_VCOL_MULT_NODE
+        spec_vcol_mix_n.location = (start_pos_x + pos_x_shift * 4, start_pos_y + 1750)
+        spec_vcol_mix_n.blend_type = "MULTIPLY"
+        spec_vcol_mix_n.inputs['Fac'].default_value = 1
+
+        opacity_vcol_n = node_tree.nodes.new("ShaderNodeMath")
+        opacity_vcol_n.name = Truckpaint.OPACITY_VCOL_MULT_NODE
+        opacity_vcol_n.label = Truckpaint.OPACITY_VCOL_MULT_NODE
+        opacity_vcol_n.location = (start_pos_x + pos_x_shift * 4, start_pos_y + 1300)
+        opacity_vcol_n.operation = "MULTIPLY"
+
+        # node creation - level 5
+        base_paint_mult_n = node_tree.nodes.new("ShaderNodeMixRGB")
+        base_paint_mult_n.name = Truckpaint.BASE_PAINT_MULT_NODE
+        base_paint_mult_n.label = Truckpaint.BASE_PAINT_MULT_NODE
+        base_paint_mult_n.location = (start_pos_x + pos_x_shift * 6, start_pos_y + 1500)
+        base_paint_mult_n.blend_type = "MULTIPLY"
+        base_paint_mult_n.inputs['Fac'].default_value = 1
+        base_paint_mult_n.inputs['Color2'].default_value = _convert_utils.to_node_color(_get_scs_globals().base_paint_color)
+
+        # node creation - level 6
+        paint_mult_n = node_tree.nodes.new("ShaderNodeMixRGB")
+        paint_mult_n.name = Truckpaint.PAINT_MULT_NODE
+        paint_mult_n.label = Truckpaint.PAINT_MULT_NODE
+        paint_mult_n.location = (start_pos_x + pos_x_shift * 7, start_pos_y + 1400)
+        paint_mult_n.blend_type = "MULTIPLY"
+        paint_mult_n.inputs['Fac'].default_value = 0
+
+        # make links - level 2
+        node_tree.links.new(env_vcol_mix_n.inputs['Color1'], env_color_n.outputs['Color'])
+        node_tree.links.new(env_vcol_mix_n.inputs['Color2'], vcol_scale_n.outputs['Color'])
+
+        node_tree.links.new(spec_vcol_mix_n.inputs['Color1'], base_tex_n.outputs['Value'])
+        node_tree.links.new(spec_vcol_mix_n.inputs['Color2'], vcol_scale_n.outputs['Color'])
+
+        # make links - level 3
+        node_tree.links.new(add_refl_gn.inputs['Env Factor Color'], env_vcol_mix_n.outputs['Color'])
+
+        node_tree.links.new(spec_mult_n.inputs['Color1'], spec_color_n.outputs['Color'])
+        node_tree.links.new(spec_mult_n.inputs['Color2'], spec_vcol_mix_n.outputs['Color'])
+
+        node_tree.links.new(opacity_vcol_n.inputs[0], vcol_scale_n.outputs['Color'])
+        node_tree.links.new(opacity_vcol_n.inputs[1], opacity_n.outputs[0])
+
+        # make links - level 4
+        node_tree.links.new(base_paint_mult_n.inputs['Color1'], diff_mult_n.outputs['Color'])
+
+        # make links - level 5
+        node_tree.links.new(paint_mult_n.inputs['Color1'], base_paint_mult_n.outputs['Color'])
+
+        # make links - output
+        node_tree.links.new(out_mat_n.inputs['Color'], paint_mult_n.outputs['Color'])
+
+    @staticmethod
+    def init_colormask_or_airbrush(node_tree):
+        """Initialize extended node tree for colormask or airbrush flavors with links for this shader.
+
+        :param node_tree: node tree on which this shader should be created
+        :type node_tree: bpy.types.NodeTree
+        """
+
+        start_pos_x = 0
+        start_pos_y = 0
+
+        pos_x_shift = 185
+
+        # disable base paint color
+        if Truckpaint.BASE_PAINT_MULT_NODE in node_tree.nodes:
+            node_tree.nodes[Truckpaint.BASE_PAINT_MULT_NODE].inputs["Fac"].default_value = 0
+
+        paint_mult_n = node_tree.nodes[Truckpaint.PAINT_MULT_NODE]
 
         # node creation - level 0
         paint_geom_n = node_tree.nodes.new("ShaderNodeGeometry")
@@ -130,26 +215,6 @@ class Truckpaint(DifSpecAddEnv):
         paint_tex_sep.location = (start_pos_x + pos_x_shift * 3, start_pos_y + 650)
 
         # node creation - level 3
-        env_vcol_mix_n = node_tree.nodes.new("ShaderNodeMixRGB")
-        env_vcol_mix_n.name = Truckpaint.ENV_VCOL_MULT_NODE
-        env_vcol_mix_n.label = Truckpaint.ENV_VCOL_MULT_NODE
-        env_vcol_mix_n.location = (start_pos_x + pos_x_shift * 4, start_pos_y + 2000)
-        env_vcol_mix_n.blend_type = "MULTIPLY"
-        env_vcol_mix_n.inputs['Fac'].default_value = 1
-
-        spec_vcol_mix_n = node_tree.nodes.new("ShaderNodeMixRGB")
-        spec_vcol_mix_n.name = Truckpaint.SPEC_VCOL_MULT_NODE
-        spec_vcol_mix_n.label = Truckpaint.SPEC_VCOL_MULT_NODE
-        spec_vcol_mix_n.location = (start_pos_x + pos_x_shift * 4, start_pos_y + 1750)
-        spec_vcol_mix_n.blend_type = "MULTIPLY"
-        spec_vcol_mix_n.inputs['Fac'].default_value = 1
-
-        opacity_vcol_n = node_tree.nodes.new("ShaderNodeMath")
-        opacity_vcol_n.name = Truckpaint.OPACITY_VCOL_MULT_NODE
-        opacity_vcol_n.label = Truckpaint.OPACITY_VCOL_MULT_NODE
-        opacity_vcol_n.location = (start_pos_x + pos_x_shift * 4, start_pos_y + 1300)
-        opacity_vcol_n.operation = "MULTIPLY"
-
         airbrush_mix_n = node_tree.nodes.new("ShaderNodeMixRGB")
         airbrush_mix_n.name = Truckpaint.AIRBRUSH_MIX_NODE
         airbrush_mix_n.label = Truckpaint.AIRBRUSH_MIX_NODE
@@ -182,14 +247,6 @@ class Truckpaint(DifSpecAddEnv):
         blend_mix_n.inputs['Fac'].default_value = 1.0
         blend_mix_n.blend_type = "MIX"
 
-        # node creation - level 5
-        paint_mult_n = node_tree.nodes.new("ShaderNodeMixRGB")
-        paint_mult_n.name = Truckpaint.PAINT_MULT_NODE
-        paint_mult_n.label = Truckpaint.PAINT_MULT_NODE
-        paint_mult_n.location = (start_pos_x + pos_x_shift * 6, start_pos_y + 1400)
-        paint_mult_n.blend_type = "MULTIPLY"
-        paint_mult_n.inputs['Fac'].default_value = 0
-
         # make links - level 0
         node_tree.links.new(paint_tex_n.inputs['Vector'], paint_geom_n.outputs['UV'])
 
@@ -197,12 +254,6 @@ class Truckpaint(DifSpecAddEnv):
         node_tree.links.new(paint_tex_sep.inputs['Image'], paint_tex_n.outputs['Color'])
 
         # make links - level 2
-        node_tree.links.new(env_vcol_mix_n.inputs['Color1'], env_color_n.outputs['Color'])
-        node_tree.links.new(env_vcol_mix_n.inputs['Color2'], vcol_scale_n.outputs['Color'])
-
-        node_tree.links.new(spec_vcol_mix_n.inputs['Color1'], base_tex_n.outputs['Value'])
-        node_tree.links.new(spec_vcol_mix_n.inputs['Color2'], vcol_scale_n.outputs['Color'])
-
         node_tree.links.new(airbrush_mix_n.inputs['Fac'], paint_tex_n.outputs['Value'])
         node_tree.links.new(airbrush_mix_n.inputs['Color1'], paint_base_col_n.outputs['Color'])
         node_tree.links.new(airbrush_mix_n.inputs['Color2'], paint_tex_n.outputs['Color'])
@@ -220,23 +271,27 @@ class Truckpaint(DifSpecAddEnv):
         node_tree.links.new(col_mask_r_mix_n.inputs['Color2'], paint_r_col_n.outputs['Color'])
 
         # make links - level 3
-        node_tree.links.new(add_refl_gn.inputs['Env Factor Color'], env_vcol_mix_n.outputs['Color'])
-
-        node_tree.links.new(spec_mult_n.inputs['Color1'], spec_color_n.outputs['Color'])
-        node_tree.links.new(spec_mult_n.inputs['Color2'], spec_vcol_mix_n.outputs['Color'])
-
-        node_tree.links.new(opacity_vcol_n.inputs[0], vcol_scale_n.outputs['Color'])
-        node_tree.links.new(opacity_vcol_n.inputs[1], opacity_n.outputs[0])
-
         node_tree.links.new(blend_mix_n.inputs['Color1'], airbrush_mix_n.outputs['Color'])
         node_tree.links.new(blend_mix_n.inputs['Color2'], col_mask_r_mix_n.outputs['Color'])
 
-        # make links - level 4
-        node_tree.links.new(paint_mult_n.inputs['Color1'], diff_mult_n.outputs['Color'])
+        # make links - level 5
         node_tree.links.new(paint_mult_n.inputs['Color2'], blend_mix_n.outputs['Color'])
 
-        # make links - output
-        node_tree.links.new(out_mat_n.inputs['Color'], paint_mult_n.outputs['Color'])
+    @staticmethod
+    def set_base_paint_color(node_tree, color):
+        """Set paint color to this node tree if basic truckpaint shader is used (no colormask or airbrush or altuv)
+
+        :param node_tree: node tree to which paint color should be applied
+        :type node_tree: bpy.types.NodeTree
+        :param color: new color value
+        :type color: mathutils.Color
+        """
+
+        if Truckpaint.BASE_PAINT_MULT_NODE not in node_tree.nodes:
+            return
+
+        color = _convert_utils.to_node_color(color)
+        node_tree.nodes[Truckpaint.BASE_PAINT_MULT_NODE].inputs["Color2"].default_value = color
 
     @staticmethod
     def set_paintjob_texture(node_tree, texture):
@@ -247,6 +302,11 @@ class Truckpaint(DifSpecAddEnv):
         :param texture: texture which should be assigned to paint texture node
         :type texture: bpy.types.Texture
         """
+
+        # as this functions should be called from airbrush or colormask derivatives
+        # make sure to skip execution if for some historical reasons this is called from stock truckpaint
+        if Truckpaint.PAINT_TEX_NODE not in node_tree.nodes:
+            return
 
         node_tree.nodes[Truckpaint.PAINT_TEX_NODE].texture = texture
 
@@ -275,6 +335,11 @@ class Truckpaint(DifSpecAddEnv):
         :type color: bpy.types.IDPropertyGroup
         """
 
+        # as this functions should be called from airbrush or colormask derivatives
+        # make sure to skip execution if for some historical reasons this is called from stock truckpaint
+        if Truckpaint.PAINT_BASE_COL_NODE not in node_tree.nodes:
+            return
+
         node_tree.nodes[Truckpaint.PAINT_BASE_COL_NODE].outputs['Color'].default_value = _convert_utils.aux_to_node_color(color)
 
     @staticmethod
@@ -286,6 +351,11 @@ class Truckpaint(DifSpecAddEnv):
         :param color: paintjob blue component color represented with property group
         :type color: bpy.types.IDPropertyGroup
         """
+
+        # as this functions should be called from airbrush or colormask derivatives
+        # make sure to skip execution if for some historical reasons this is called from stock truckpaint
+        if Truckpaint.PAINT_B_COL_NODE not in node_tree.nodes:
+            return
 
         node_tree.nodes[Truckpaint.PAINT_B_COL_NODE].outputs['Color'].default_value = _convert_utils.aux_to_node_color(color)
 
@@ -299,6 +369,11 @@ class Truckpaint(DifSpecAddEnv):
         :type color: bpy.types.IDPropertyGroup
         """
 
+        # as this functions should be called from airbrush or colormask derivatives
+        # make sure to skip execution if for some historical reasons this is called from stock truckpaint
+        if Truckpaint.PAINT_G_COL_NODE not in node_tree.nodes:
+            return
+
         node_tree.nodes[Truckpaint.PAINT_G_COL_NODE].outputs['Color'].default_value = _convert_utils.aux_to_node_color(color)
 
     @staticmethod
@@ -310,5 +385,10 @@ class Truckpaint(DifSpecAddEnv):
         :param color: paintjob green component color represented with property group
         :type color: bpy.types.IDPropertyGroup
         """
+
+        # as this functions should be called from airbrush or colormask derivatives
+        # make sure to skip execution if for some historical reasons this is called from stock truckpaint
+        if Truckpaint.PAINT_R_COL_NODE not in node_tree.nodes:
+            return
 
         node_tree.nodes[Truckpaint.PAINT_R_COL_NODE].outputs['Color'].default_value = _convert_utils.aux_to_node_color(color)

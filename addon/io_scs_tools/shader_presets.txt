@@ -1425,18 +1425,12 @@ Shader {
     Texture {
         Tag: "texture[X]:texture_base"
         Value: ""
-        TexCoord: ( 0 )
+        TexCoord: ( 0 1 2 )
     }
     Texture {
         Tag: "texture[X]:texture_reflection"
         Value: "/material/environment/vehicle_reflection"
-        Lock: "True"
         TexCoord: ( -1 )
-    }
-    Texture {
-        Tag: "texture[X]:texture_paintjob"
-        Value: "/vehicle/truck/upgrade/paintjob/empty"
-        TexCoord: ( 1 )
     }
 }
 Shader {
@@ -1653,7 +1647,7 @@ Flavor {
     Texture {
         Tag: "texture[X]:texture_paintjob"
         Value: "/vehicle/truck/upgrade/paintjob/empty"
-        TexCoord: ( 1 )
+        TexCoord: ( 1 2 )
     }
 }
 Flavor {
@@ -1663,11 +1657,6 @@ Flavor {
 Flavor {
     Type: "ALTUV"
     Name: "altuv"
-    Texture {
-        Tag: "texture[X]:texture_paintjob"
-        Value: "/vehicle/truck/upgrade/paintjob/empty"
-        TexCoord: ( 1 2 )
-    }
 }
 Flavor {
     Type: "AWHITE"
@@ -1715,7 +1704,7 @@ Flavor {
     Texture {
         Tag: "texture[X]:texture_paintjob"
         Value: "/vehicle/truck/upgrade/paintjob/empty"
-        TexCoord: ( 1 )
+        TexCoord: ( 1 2 )
     }
 }
 Flavor {
