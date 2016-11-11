@@ -849,6 +849,7 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
         (_PL_consts.PSP.UNLOAD_HARD_POS, (str(_PL_consts.PSP.UNLOAD_HARD_POS), "Unload (Hard)", "")),
         (_PL_consts.PSP.UNLOAD_RIGID_POS, (str(_PL_consts.PSP.UNLOAD_RIGID_POS), "Unload (Rigid)", "")),
         (_PL_consts.PSP.WEIGHT_POS, (str(_PL_consts.PSP.WEIGHT_POS), "Weight Station", "")),
+        (_PL_consts.PSP.WEIGHT_CAT_POS, (str(_PL_consts.PSP.WEIGHT_CAT_POS), "Weight Station CAT", "")),
     ])
     # LOCATORS - PREFAB - SPAWN POINTS
     locator_prefab_spawn_type = EnumProperty(
@@ -881,10 +882,12 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
         # (_PL_consts.TST.TRAFFIC_LIGHT, (str(_PL_consts.TST.TRAFFIC_LIGHT), "Traffic Light", "")),
         (_PL_consts.TST.TRAFFIC_LIGHT_MINOR, (str(_PL_consts.TST.TRAFFIC_LIGHT_MINOR), "Traffic Light (minor road)", "")),
         (_PL_consts.TST.TRAFFIC_LIGHT_MAJOR, (str(_PL_consts.TST.TRAFFIC_LIGHT_MAJOR), "Traffic Light (major road)", "")),
+        (_PL_consts.TST.TRAFFIC_LIGHT_VIRTUAL, (str(_PL_consts.TST.TRAFFIC_LIGHT_VIRTUAL), "Traffic Light (virtual)", "")),
         (_PL_consts.TST.TRAFFIC_LIGHT_BLOCKABLE, (str(_PL_consts.TST.TRAFFIC_LIGHT_BLOCKABLE), "Blockable Traffic Light", "")),
-        (_PL_consts.TST.BARRIER_MANUAL_TIMED, (str(_PL_consts.TST.BARRIER_MANUAL_TIMED), "Barrier - Manual Timed", "")),
+        (_PL_consts.TST.BARRIER_MANUAL_TIMED, (str(_PL_consts.TST.BARRIER_MANUAL_TIMED), "Barrier - Manual", "")),
         (_PL_consts.TST.BARRIER_GAS, (str(_PL_consts.TST.BARRIER_GAS), "Barrier - Gas", "")),
         (_PL_consts.TST.BARRIER_DISTANCE, (str(_PL_consts.TST.BARRIER_DISTANCE), "Barrier - Distance Activated", "")),
+        (_PL_consts.TST.BARRIER_AUTOMATIC, (str(_PL_consts.TST.BARRIER_AUTOMATIC), "Barrier - Automatic", "")),
     ])
     locator_prefab_tsem_type = EnumProperty(
         name="Type",
@@ -1058,20 +1061,50 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
         default=False,
     )
     enum_mp_road_size_items = OrderedDict([
-        (_PL_consts.MPVF.ROAD_SIZE_AUTO, (str(_PL_consts.MPVF.ROAD_SIZE_AUTO),
-                                          "Auto", "The road size is automatically determmined based on connected roads")),
-        (_PL_consts.MPVF.ROAD_SIZE_ONE_WAY, (str(_PL_consts.MPVF.ROAD_SIZE_ONE_WAY),
-                                             "One Way", "Narrow road (one direction with one lane)")),
-        (_PL_consts.MPVF.ROAD_SIZE_1_LANE, (str(_PL_consts.MPVF.ROAD_SIZE_1_LANE),
-                                            "1 - Lane", "One lane in both directions")),
-        (_PL_consts.MPVF.ROAD_SIZE_2_LANE, (str(_PL_consts.MPVF.ROAD_SIZE_2_LANE),
-                                            "2 - Lane", "Two lanes in both directions")),
-        (_PL_consts.MPVF.ROAD_SIZE_3_LANE, (str(_PL_consts.MPVF.ROAD_SIZE_3_LANE),
-                                            "3 - Lane", "Three lanes in both directions")),
-        (_PL_consts.MPVF.ROAD_SIZE_4_LANE, (str(_PL_consts.MPVF.ROAD_SIZE_4_LANE),
-                                            "4 - Lane", "Four lanes in both directions")),
-        (_PL_consts.MPVF.ROAD_SIZE_MANUAL, (str(_PL_consts.MPVF.ROAD_SIZE_MANUAL),
-                                            "Polygon", "The map point is used to draw a polygon instead of a road")),
+        (_PL_consts.MPVF.ROAD_SIZE_AUTO, (
+            str(_PL_consts.MPVF.ROAD_SIZE_AUTO),
+            "Auto", "The road size is automatically determmined based on connected roads."
+        )),
+        (_PL_consts.MPVF.ROAD_SIZE_ONE_WAY, (
+            str(_PL_consts.MPVF.ROAD_SIZE_ONE_WAY),
+            "One Way", "Narrow road (one direction with one lane)."
+        )),
+        (_PL_consts.MPVF.ROAD_SIZE_1_LANE, (
+            str(_PL_consts.MPVF.ROAD_SIZE_1_LANE),
+            "1 + 1 (2 + 0) Lane", "One lane in both directions. Or one way road with 2 lanes."
+        )),
+        (_PL_consts.MPVF.ROAD_SIZE_3_LANE_ONE_WAY, (
+            str(_PL_consts.MPVF.ROAD_SIZE_3_LANE_ONE_WAY),
+            "2 + 1 (3 + 0) Lane", "Two lanes in one direction and one lane in second direction. Or one way with 3 lanes."
+        )),
+        (_PL_consts.MPVF.ROAD_SIZE_2_LANE, (
+            str(_PL_consts.MPVF.ROAD_SIZE_2_LANE),
+            "2 + 2 (4 + 0) Lane", "Two lanes in both directions. Or one way road with 4 lanes."
+        )),
+        (_PL_consts.MPVF.ROAD_SIZE_2_LANE_SPLIT, (
+            str(_PL_consts.MPVF.ROAD_SIZE_2_LANE_SPLIT),
+            "2 + 1 + 2 Lane", "Two lanes in both directions + one turning lane."
+        )),
+        (_PL_consts.MPVF.ROAD_SIZE_3_LANE, (
+            str(_PL_consts.MPVF.ROAD_SIZE_3_LANE),
+            "3 + 3 Lane", "Three lanes in both directions."
+        )),
+        (_PL_consts.MPVF.ROAD_SIZE_3_LANE_SPLIT, (
+            str(_PL_consts.MPVF.ROAD_SIZE_3_LANE_SPLIT),
+            "3 + 1 + 3 Lane", "Three lanes in both directions + one turning lane."
+        )),
+        (_PL_consts.MPVF.ROAD_SIZE_4_LANE, (
+            str(_PL_consts.MPVF.ROAD_SIZE_4_LANE),
+            "4 + 4 Lane", "Four lanes in both directions."
+        )),
+        # (_PL_consts.MPVF.ROAD_SIZE_4_LANE_SPLIT, (
+        #     str(_PL_consts.MPVF.ROAD_SIZE_4_LANE_SPLIT),
+        #     "4 + 1 + 4 Lane", ""
+        # )),
+        (_PL_consts.MPVF.ROAD_SIZE_MANUAL, (
+            str(_PL_consts.MPVF.ROAD_SIZE_MANUAL),
+            "Polygon", "The map point is used to draw a polygon instead of a road."
+        )),
     ])
     locator_prefab_mp_road_size = EnumProperty(
         name="Road Size",
@@ -1088,6 +1121,7 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
         (_PL_consts.MPVF.ROAD_OFFSET_15, (str(_PL_consts.MPVF.ROAD_OFFSET_15), "15 m", "")),
         (_PL_consts.MPVF.ROAD_OFFSET_20, (str(_PL_consts.MPVF.ROAD_OFFSET_20), "20 m", "")),
         (_PL_consts.MPVF.ROAD_OFFSET_25, (str(_PL_consts.MPVF.ROAD_OFFSET_25), "25 m", "")),
+        # (_PL_consts.MPVF.ROAD_OFFSET_LANE, (str(_PL_consts.MPVF.ROAD_OFFSET_LANE), "", "")),
     ])
     locator_prefab_mp_road_offset = EnumProperty(
         name="Road Offset",

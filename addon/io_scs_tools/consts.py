@@ -22,6 +22,7 @@
 Constants for data group of map and navigation curves
 """
 
+from math import pi
 from enum import Enum
 from zipfile import ZIP_STORED, ZIP_DEFLATED, ZIP_BZIP2
 
@@ -63,6 +64,31 @@ class Operators:
         vg_name_regex = "^" + vg_name_prefix.replace(".", "\\.") + "\d$"
         """Regex for matching terrain points vertex groups names on export."""
 
+    class View3DReport:
+        """Constants related to 3D view report operator.
+        """
+        # constants defining BT logo image and texts/positions of close/hide controls
+        BT_LOGO_IMG_NAME = ".scs_bt_logo.png"
+        BT_LOGO_AREA = (20, 217, 30, 50)
+        CLOSE_BTN_AREA = (230, 370, 26, 54)
+        CLOSE_BTN_TEXT = (
+            "[Click] Close",  # used when report text is shown
+            "[Click/ESC] Close"  # used when report text is hidden (aka condensed mode)
+        )
+        CLOSE_BTN_TEXT_POS = (
+            (260, 45),  # used when report text is shown
+            (240, 45)  # used when report text is hidden (aka condensed mode)
+        )
+        HIDE_BTN_AREA = (385, 530, 26, 54)
+        HIDE_BTN_TEXT = (
+            "[Click/ESC] Hide",  # used when report text is shown
+            "[Click] Show"  # used when report text is hidden (aka condensed mode)
+        )
+        HIDE_BTN_TEXT_POS = (
+            (400, 45),  # used when report text is shown
+            (415, 45)  # used when report text is hidden (aka condensed mode)
+        )
+
 
 class Icons:
     """Constants related to loading of custom icons.
@@ -93,6 +119,7 @@ class Icons:
         loc_collider_convex = ".20_collider_convex.png"
         scs_root = ".21_scs_root_object.png"
         scs_logo = ".icon_scs_bt_logo.png"
+        scs_logo_orange = ".icon_scs_bt_logo_orange.png"
 
         @staticmethod
         def as_list():
@@ -105,7 +132,8 @@ class Icons:
                     Icons.Types.loc_prefab_node, Icons.Types.loc_prefab_sign, Icons.Types.loc_prefab_spawn, Icons.Types.loc_prefab_semaphore,
                     Icons.Types.loc_prefab_navigation, Icons.Types.loc_prefab_map, Icons.Types.loc_prefab_trigger,
                     Icons.Types.loc_collider_box, Icons.Types.loc_collider_sphere, Icons.Types.loc_collider_capsule,
-                    Icons.Types.loc_collider_cylinder, Icons.Types.loc_collider_convex, Icons.Types.scs_root, Icons.Types.scs_logo]
+                    Icons.Types.loc_collider_cylinder, Icons.Types.loc_collider_convex, Icons.Types.scs_root,
+                    Icons.Types.scs_logo_orange, Icons.Types.scs_logo]
 
 
 class Part:
@@ -301,6 +329,7 @@ class PrefabLocators:
         UNLOAD_MEDIUM_POS = 19
         UNLOAD_HARD_POS = 20
         UNLOAD_RIGID_POS = 21
+        WEIGHT_CAT_POS = 22
 
     class TST:
         """Constants representing type of traffic semaphores.        
@@ -314,6 +343,8 @@ class PrefabLocators:
         BARRIER_DISTANCE = 6
         TRAFFIC_LIGHT_BLOCKABLE = 7
         BARRIER_GAS = 8
+        TRAFFIC_LIGHT_VIRTUAL = 9
+        BARRIER_AUTOMATIC = 10
 
     class MPVF:
         """Constants represeting map point visual flags.
@@ -323,6 +354,10 @@ class PrefabLocators:
         ROAD_SIZE_2_LANE = 0x00000200
         ROAD_SIZE_3_LANE = 0x00000300
         ROAD_SIZE_4_LANE = 0x00000400
+        ROAD_SIZE_2_LANE_SPLIT = 0x00000500
+        ROAD_SIZE_3_LANE_SPLIT = 0x00000600
+        ROAD_SIZE_4_LANE_SPLIT = 0x00000700
+        ROAD_SIZE_3_LANE_ONE_WAY = 0x00000800
         ROAD_SIZE_MANUAL = 0x00000D00
         ROAD_SIZE_AUTO = 0x00000E00
         ROAD_SIZE_MASK = 0x00000F00
@@ -334,6 +369,7 @@ class PrefabLocators:
         ROAD_OFFSET_15 = 0x00005000
         ROAD_OFFSET_20 = 0x00006000
         ROAD_OFFSET_25 = 0x00007000
+        ROAD_OFFSET_LANE = 0x00008000
         ROAD_OFFSET_MASK = 0x0000F000
         ROAD_EXT_VALUE_MASK = 0x000000FF
         ROAD_OVER = 0x00010000
@@ -389,3 +425,21 @@ class ConvHlpr:
     StoredZip = str(ZIP_STORED)
     DeflatedZip = str(ZIP_DEFLATED)
     Bzip2Zip = str(ZIP_BZIP2)
+
+
+class SCSLigthing:
+    """Constants for scs lighting scene. Lighting scene is created from sun profile loaded from SII file.
+    """
+    scene_name = ".scs_lighting"
+    """Name of lighting scene. It should be prefixed with dot to be partially hidden in scene selection theme."""
+
+    ambient_lamps = (
+        (".scs_ambient_z+", (pi, 0, 0), 0.5),
+        (".scs_ambient_z-", (0, 0, 0), 1.1)
+    )
+    """Ambient lamps definitions. Each lamp is defined as (name, direction, energy_factor).
+    There has to be 6 hemi lamps to point in each direction, which should reassemble ambient lights.
+    Energy factor in each of lamps tells percent of given light by that ambient lamp."""
+
+    diffuse_lamp_name = ".scs_diffuse"
+    specular_lamp_name = ".scs_specular"

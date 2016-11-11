@@ -27,7 +27,6 @@ class StdAddEnv:
     REFL_TEX_NODE = "ReflectionTex"
     ENV_COLOR_NODE = "EnvFactorColor"
     ADD_ENV_GROUP_NODE = "AddEnvGroup"
-    OUT_ADD_REFL_NODE = "OutputAddRefl"
 
     @staticmethod
     def get_name():
@@ -35,7 +34,7 @@ class StdAddEnv:
         return __name__
 
     @staticmethod
-    def add(node_tree, geom_n_name, spec_col_n_name, base_tex_n_name, out_mat_n_name, output_n_name):
+    def add(node_tree, geom_n_name, spec_col_n_name, base_tex_n_name, out_mat_n_name, output_n_name, output_n_socket_name="Env Color"):
         """Add add env pass to node tree with links.
 
         :param node_tree: node tree on which this shader should be created
@@ -63,9 +62,6 @@ class StdAddEnv:
         out_mat_n = node_tree.nodes[out_mat_n_name]
         output_n = node_tree.nodes[output_n_name]
 
-        # move existing
-        output_n.location.x += pos_x_shift
-
         # node creation
         refl_tex_n = node_tree.nodes.new("ShaderNodeTexture")
         refl_tex_n.name = refl_tex_n.label = StdAddEnv.REFL_TEX_NODE
@@ -84,12 +80,6 @@ class StdAddEnv:
         add_env_gn.inputs['Fresnel Bias'].default_value = 0.2
         add_env_gn.inputs['Base Texture Alpha'].default_value = 0.5
 
-        out_add_refl_n = node_tree.nodes.new("ShaderNodeMixRGB")
-        out_add_refl_n.name = out_add_refl_n.label = StdAddEnv.OUT_ADD_REFL_NODE
-        out_add_refl_n.location = (output_n.location.x - pos_x_shift, start_pos_y + 1950)
-        out_add_refl_n.blend_type = "ADD"
-        out_add_refl_n.inputs['Fac'].default_value = 1
-
         # geometry links
         node_tree.links.new(add_env_gn.inputs['Normal Vector'], geometry_n.outputs['Normal'])
         node_tree.links.new(add_env_gn.inputs['View Vector'], geometry_n.outputs['View'])
@@ -107,15 +97,7 @@ class StdAddEnv:
         if add_env_gn and base_tex_n:
             node_tree.links.new(add_env_gn.inputs['Base Texture Alpha'], base_tex_n.outputs['Value'])
 
-        # output pass
-        node_tree.links.new(out_add_refl_n.inputs['Color1'], add_env_gn.outputs['Environment Addition Color'])
-        node_tree.links.new(out_add_refl_n.inputs['Color2'], out_mat_n.outputs['Color'])
-
-        # try to find first color in output node
-        if "Color" in output_n.inputs:
-            node_tree.links.new(output_n.inputs['Color'], out_add_refl_n.outputs['Color'])
-        elif "Color1" in output_n.inputs:
-            node_tree.links.new(output_n.inputs['Color1'], out_add_refl_n.outputs['Color'])
+        node_tree.links.new(output_n.inputs[output_n_socket_name], add_env_gn.outputs['Environment Addition Color'])
 
     @staticmethod
     def set_reflection_texture(node_tree, texture):

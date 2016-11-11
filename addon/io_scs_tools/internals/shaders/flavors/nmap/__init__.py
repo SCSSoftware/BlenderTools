@@ -19,19 +19,18 @@
 # Copyright (C) 2015: SCS Software
 
 import bpy
-
 from io_scs_tools.consts import Mesh as _MESH_consts
 from io_scs_tools.internals.shaders.flavors.nmap import scale_ng
 
 NMAP_FLAVOR_FRAME_NODE = "TSNMap Flavor"
-NMAP_MAT_NODE = "NormalMapMat"
+NMAP_NODE = "NormalMapMat"
 NMAP_GEOM_NODE = "NMapGeom"
 NMAP_TEX_NODE = "NMapTex"
 NMAP_SCALE_GNODE = "NMapScaleGroup"
 
 
 def __create_nodes__(node_tree, location=None, normal_to=None):
-    """Create node for alpha test.
+    """Create node for normal maps.
 
     :param node_tree: node tree on which normal map will be used
     :type node_tree: bpy.types.NodeTree
@@ -39,14 +38,14 @@ def __create_nodes__(node_tree, location=None, normal_to=None):
 
     # try to recover location
     if not location:
-        if NMAP_MAT_NODE in node_tree.nodes:
-            location = node_tree.nodes[NMAP_MAT_NODE].location
+        if NMAP_NODE in node_tree.nodes:
+            location = node_tree.nodes[NMAP_NODE].location
 
     # try to recover normal to link node socket
     if not normal_to:
-        if NMAP_MAT_NODE in node_tree.nodes:
+        if NMAP_NODE in node_tree.nodes:
             for link in node_tree.links:
-                if link.from_node == node_tree.nodes[NMAP_MAT_NODE] and link.from_socket.name == "Normal":
+                if link.from_node == node_tree.nodes[NMAP_NODE] and link.from_socket.name == "Normal":
                     normal_to = link.to_socket
 
     frame = node_tree.nodes.new("NodeFrame")
@@ -61,11 +60,11 @@ def __create_nodes__(node_tree, location=None, normal_to=None):
     nmap_tex_n.parent = frame
     nmap_tex_n.name = nmap_tex_n.label = NMAP_TEX_NODE
 
-    nmap_mat_n = node_tree.nodes.new("ShaderNodeMaterial")
-    nmap_mat_n.parent = frame
-    nmap_mat_n.name = nmap_mat_n.label = NMAP_MAT_NODE
-    nmap_mat_n.use_diffuse = False
-    nmap_mat_n.use_specular = False
+    nmap_n = node_tree.nodes.new("ShaderNodeNormalMap")
+    nmap_n.parent = frame
+    nmap_n.name = nmap_n.label = NMAP_NODE
+    nmap_n.space = "TANGENT"
+    nmap_n.inputs["Strength"].default_value = 1
 
     nmap_scale_gn = node_tree.nodes.new("ShaderNodeGroup")
     nmap_scale_gn.parent = frame
@@ -76,7 +75,7 @@ def __create_nodes__(node_tree, location=None, normal_to=None):
     if location:
         nmap_geom_n.location = (location[0] - 185 * 3, location[1])
         nmap_tex_n.location = (location[0] - 185 * 2, location[1])
-        nmap_mat_n.location = (location[0] - 185, location[1] - 200)
+        nmap_n.location = (location[0] - 185, location[1] - 200)
         nmap_scale_gn.location = (location[0], location[1])
 
     # links creation
@@ -84,9 +83,11 @@ def __create_nodes__(node_tree, location=None, normal_to=None):
 
     node_tree.links.new(nodes[NMAP_TEX_NODE].inputs["Vector"], nodes[NMAP_GEOM_NODE].outputs["UV"])
 
+    node_tree.links.new(nodes[NMAP_NODE].inputs["Color"], nodes[NMAP_TEX_NODE].outputs["Color"])
+
     node_tree.links.new(nodes[NMAP_SCALE_GNODE].inputs["NMap Tex Color"], nodes[NMAP_TEX_NODE].outputs["Color"])
     node_tree.links.new(nodes[NMAP_SCALE_GNODE].inputs["Original Normal"], nodes[NMAP_GEOM_NODE].outputs["Normal"])
-    node_tree.links.new(nodes[NMAP_SCALE_GNODE].inputs["Modified Normal"], nodes[NMAP_MAT_NODE].outputs["Normal"])
+    node_tree.links.new(nodes[NMAP_SCALE_GNODE].inputs["Modified Normal"], nodes[NMAP_NODE].outputs["Normal"])
 
     node_tree.links.new(normal_to, nodes[NMAP_SCALE_GNODE].outputs["Normal"])
 
@@ -131,41 +132,6 @@ def set_texture(node_tree, texture):
     # assign texture to texture node first
     node_tree.nodes[NMAP_TEX_NODE].texture = texture
 
-    # search possible existing materials and use it
-    material = None
-    i = 1
-    while ".scs_nmap_" + str(i) in bpy.data.materials:
-
-        curr_mat = bpy.data.materials[".scs_nmap_" + str(i)]
-
-        # grab only material without any users and clear all texture slots
-        if curr_mat.users == 0:
-            material = curr_mat
-
-            for j in range(0, len(material.texture_slots)):
-                material.texture_slots.clear(j)
-
-        i += 1
-
-    # if none is found create new one
-    if not material:
-        material = bpy.data.materials.new(".scs_nmap_" + str(i))
-
-    # finally set texture and it's properties to material
-    tex_slot = material.texture_slots.add()
-    tex_slot.texture_coords = "UV"
-    tex_slot.use_map_color_diffuse = False
-    tex_slot.use_map_normal = True
-    tex_slot.texture = texture
-    tex_slot.normal_map_space = "TANGENT"
-
-    node_tree.nodes[NMAP_MAT_NODE].material = material
-
-    # if uv_layer property is set use it
-    if "uv_layer" in node_tree.nodes[NMAP_MAT_NODE]:
-
-        set_uv(node_tree, node_tree.nodes[NMAP_MAT_NODE]["uv_layer"])
-
     node_tree.nodes.active = old_active
 
 
@@ -185,14 +151,9 @@ def set_uv(node_tree, uv_layer):
     if NMAP_FLAVOR_FRAME_NODE not in node_tree.nodes:
         __create_nodes__(node_tree)
 
-    # set uv layer also to texture node
+    # set uv layer to texture node and normal map node
     node_tree.nodes[NMAP_GEOM_NODE].uv_layer = uv_layer
-
-    # backup uv layer for usage on texture set
-    node_tree.nodes[NMAP_MAT_NODE]["uv_layer"] = uv_layer
-
-    if node_tree.nodes[NMAP_MAT_NODE].material:
-        node_tree.nodes[NMAP_MAT_NODE].material.texture_slots[0].uv_layer = uv_layer
+    node_tree.nodes[NMAP_NODE].uv_map = uv_layer
 
 
 def delete(node_tree, preserve_node=False):
@@ -204,34 +165,9 @@ def delete(node_tree, preserve_node=False):
     :type preserve_node: bool
     """
 
-    if NMAP_MAT_NODE in node_tree.nodes:
-        nmap_mat_n = node_tree.nodes[NMAP_MAT_NODE]
-        material = nmap_mat_n.material
-
-        # remove and clear if possible
-        if material and material.users == 1:
-
-            textures = {}
-            # gather all used textures in this material
-            for i, tex_slot in enumerate(material.texture_slots):
-                if tex_slot and tex_slot.texture:
-                    textures[i] = tex_slot.texture
-
-            # remove textures from texture slots first and check if texture can be cleared
-            for slot_i in textures.keys():
-                material.texture_slots.clear(slot_i)
-
-                if textures[slot_i].users <= 1:
-                    textures[slot_i].user_clear()
-
-            # as last delete actually nmap material
-            node_tree.nodes[NMAP_MAT_NODE].material = None
-            material.user_clear()
-            bpy.data.materials.remove(material)
-
-        if not preserve_node:
-            node_tree.nodes.remove(node_tree.nodes[NMAP_GEOM_NODE])
-            node_tree.nodes.remove(node_tree.nodes[NMAP_TEX_NODE])
-            node_tree.nodes.remove(node_tree.nodes[NMAP_MAT_NODE])
-            node_tree.nodes.remove(node_tree.nodes[NMAP_SCALE_GNODE])
-            node_tree.nodes.remove(node_tree.nodes[NMAP_FLAVOR_FRAME_NODE])
+    if NMAP_NODE in node_tree.nodes and not preserve_node:
+        node_tree.nodes.remove(node_tree.nodes[NMAP_GEOM_NODE])
+        node_tree.nodes.remove(node_tree.nodes[NMAP_TEX_NODE])
+        node_tree.nodes.remove(node_tree.nodes[NMAP_NODE])
+        node_tree.nodes.remove(node_tree.nodes[NMAP_SCALE_GNODE])
+        node_tree.nodes.remove(node_tree.nodes[NMAP_FLAVOR_FRAME_NODE])

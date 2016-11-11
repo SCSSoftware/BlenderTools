@@ -30,6 +30,8 @@ ENV_SPEC_MULT_NODE = "EnvSpecMultiplier"
 REFL_TEX_MULT_NODE = "ReflectionTexMultiplier"
 REFL_TEX_COL_MULT_NODE = "ReflTexColorMultiplier"
 TEX_FRESNEL_MULT_NODE = "TextureFresnelMultiplier"
+GLOBAL_ENV_FACTOR_NODE = "GlobalEnvFactor"
+GLOBAL_ENV_MULT_NODE = "GlobalEnvMultiplier"
 FRESNEL_GNODE = "FresnelGroup"
 REFL_NORMAL_GNODE = "ReflNormalGroup"
 
@@ -41,10 +43,39 @@ def get_node_group():
     :rtype: bpy.types.NodeGroup
     """
 
-    if ADD_ENV_G not in bpy.data.node_groups:
+    if __group_needs_recreation__():
         __create_node_group__()
 
     return bpy.data.node_groups[ADD_ENV_G]
+
+
+def set_global_env_factor(value):
+    """Sets global environment factor multiplication to the node group.
+
+    NOTE: We are using global factor as we can not determinate if texture is generated one or static one and
+    based on that decide how much of envirnoment should be applied to result.
+    So for closest result to game this factor should be "env_static_mod" variable from "sun_profile" multiplied
+    with "env" variable from "sun_profile".
+    This way static cubemaps will be used as in game, however even generated cubemaps well mostl work well,
+    becuase expected values of that multiplication is from 0 to 1.0.
+
+    :param value: global enironment factor (should come from sun profile)
+    :type value: float
+    """
+
+    get_node_group().nodes[GLOBAL_ENV_FACTOR_NODE].outputs[0].default_value = value
+
+
+def __group_needs_recreation__():
+    """Tells if group needs recreation.
+
+    :return: True group isn't up to date and has to be (re)created; False if group doesn't need to be (re)created
+    :rtype: bool
+    """
+    # current checks:
+    # 1. group existence in blender data block
+    # 2. existence of GLOBAL_ENV_FACTOR_NODE which was added in BT version 1.5
+    return ADD_ENV_G not in bpy.data.node_groups or GLOBAL_ENV_FACTOR_NODE not in bpy.data.node_groups[ADD_ENV_G].nodes
 
 
 def __create_node_group__():
@@ -60,27 +91,38 @@ def __create_node_group__():
 
     pos_x_shift = 185
 
-    add_env_g = bpy.data.node_groups.new(type="ShaderNodeTree", name=ADD_ENV_G)
+    if ADD_ENV_G not in bpy.data.node_groups:  # creation
 
-    # inputs defining
-    add_env_g.inputs.new("NodeSocketFloat", "Fresnel Scale")
-    add_env_g.inputs.new("NodeSocketFloat", "Fresnel Bias")
-    add_env_g.inputs.new("NodeSocketVector", "Normal Vector")
-    add_env_g.inputs.new("NodeSocketVector", "View Vector")
-    add_env_g.inputs.new("NodeSocketFloat", "Apply Fresnel")
-    add_env_g.inputs.new("NodeSocketColor", "Reflection Texture Color")
-    add_env_g.inputs.new("NodeSocketFloat", "Base Texture Alpha")
-    add_env_g.inputs.new("NodeSocketColor", "Env Factor Color")
-    add_env_g.inputs.new("NodeSocketColor", "Specular Color")
+        add_env_g = bpy.data.node_groups.new(type="ShaderNodeTree", name=ADD_ENV_G)
+
+        # inputs defining
+        add_env_g.inputs.new("NodeSocketFloat", "Fresnel Scale")
+        add_env_g.inputs.new("NodeSocketFloat", "Fresnel Bias")
+        add_env_g.inputs.new("NodeSocketVector", "Normal Vector")
+        add_env_g.inputs.new("NodeSocketVector", "View Vector")
+        add_env_g.inputs.new("NodeSocketFloat", "Apply Fresnel")
+        add_env_g.inputs.new("NodeSocketColor", "Reflection Texture Color")
+        add_env_g.inputs.new("NodeSocketFloat", "Base Texture Alpha")
+        add_env_g.inputs.new("NodeSocketColor", "Env Factor Color")
+        add_env_g.inputs.new("NodeSocketColor", "Specular Color")
+
+        # outputs defining
+        add_env_g.outputs.new("NodeSocketColor", "Environment Addition Color")
+
+    else:  # recreation
+
+        add_env_g = bpy.data.node_groups[ADD_ENV_G]
+
+        # delete all old nodes and links as they will be recreated now with actual version
+        add_env_g.nodes.clear()
+
+    # node creation
     input_n = add_env_g.nodes.new("NodeGroupInput")
     input_n.location = (start_pos_x - pos_x_shift, start_pos_y)
 
-    # outputs defining
-    add_env_g.outputs.new("NodeSocketColor", "Environment Addition Color")
     output_n = add_env_g.nodes.new("NodeGroupOutput")
-    output_n.location = (start_pos_x + pos_x_shift * 5, start_pos_y)
+    output_n.location = (start_pos_x + pos_x_shift * 6, start_pos_y)
 
-    # node creation
     refl_normal_gn = add_env_g.nodes.new("ShaderNodeGroup")
     refl_normal_gn.name = REFL_NORMAL_GNODE
     refl_normal_gn.label = REFL_NORMAL_GNODE
@@ -128,6 +170,18 @@ def __create_node_group__():
     tex_fresnel_mult_n.blend_type = "MULTIPLY"
     tex_fresnel_mult_n.inputs['Fac'].default_value = 1
 
+    global_env_factor_n = add_env_g.nodes.new("ShaderNodeValue")
+    global_env_factor_n.name = GLOBAL_ENV_FACTOR_NODE
+    global_env_factor_n.label = GLOBAL_ENV_FACTOR_NODE
+    global_env_factor_n.location = (start_pos_x + pos_x_shift * 4, start_pos_y - 200)
+
+    global_env_mult_n = add_env_g.nodes.new("ShaderNodeMixRGB")
+    global_env_mult_n.name = GLOBAL_ENV_MULT_NODE
+    global_env_mult_n.label = GLOBAL_ENV_MULT_NODE
+    global_env_mult_n.location = (start_pos_x + pos_x_shift * 5, start_pos_y)
+    global_env_mult_n.blend_type = "MULTIPLY"
+    global_env_mult_n.inputs['Fac'].default_value = 1
+
     # geometry links
     add_env_g.links.new(refl_normal_gn.inputs['View Vector'], input_n.outputs['View Vector'])
     add_env_g.links.new(refl_normal_gn.inputs['Normal Vector'], input_n.outputs['Normal Vector'])
@@ -157,5 +211,9 @@ def __create_node_group__():
     add_env_g.links.new(tex_fresnel_mult_n.inputs['Color1'], refl_tex_col_mult_n.outputs['Color'])
     add_env_g.links.new(tex_fresnel_mult_n.inputs['Color2'], fresnel_gn.outputs['Fresnel Factor'])
 
+    # pass 4
+    add_env_g.links.new(global_env_mult_n.inputs['Color1'], tex_fresnel_mult_n.outputs['Color'])
+    add_env_g.links.new(global_env_mult_n.inputs['Color2'], global_env_factor_n.outputs['Value'])
+
     # output pass
-    add_env_g.links.new(output_n.inputs['Environment Addition Color'], tex_fresnel_mult_n.outputs['Color'])
+    add_env_g.links.new(output_n.inputs['Environment Addition Color'], global_env_mult_n.outputs['Color'])

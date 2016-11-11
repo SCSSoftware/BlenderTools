@@ -21,6 +21,7 @@
 
 from mathutils import Color
 from io_scs_tools.consts import Mesh as _MESH_consts
+from io_scs_tools.internals.shaders.eut2.std_node_groups import compose_lighting
 from io_scs_tools.internals.shaders.eut2.std_node_groups import vcolor_input
 from io_scs_tools.internals.shaders.flavors import alpha_test
 from io_scs_tools.internals.shaders.flavors import blend_over
@@ -42,6 +43,7 @@ class Dif:
     VCOLOR_MULT_NODE = "VertexColorMultiplier"
     VCOLOR_SCALE_NODE = "VertexColorScale"
     OUT_MAT_NODE = "InputMaterial"
+    COMPOSE_LIGHTING_NODE = "ComposeLighting"
     OUTPUT_NODE = "Output"
 
     @staticmethod
@@ -128,10 +130,16 @@ class Dif:
             out_mat_n.inputs['Reflectivity'].default_value = 1.0
         out_mat_n.location = (start_pos_x + pos_x_shift * 7, start_pos_y + 1800)
 
+        compose_lighting_n = node_tree.nodes.new("ShaderNodeGroup")
+        compose_lighting_n.name = Dif.COMPOSE_LIGHTING_NODE
+        compose_lighting_n.label = Dif.COMPOSE_LIGHTING_NODE
+        compose_lighting_n.location = (start_pos_x + pos_x_shift * 8, start_pos_y + 2000)
+        compose_lighting_n.node_tree = compose_lighting.get_node_group()
+
         output_n = node_tree.nodes.new("ShaderNodeOutput")
         output_n.name = Dif.OUTPUT_NODE
         output_n.label = Dif.OUTPUT_NODE
-        output_n.location = (start_pos_x + + pos_x_shift * 8, start_pos_y + 1800)
+        output_n.location = (start_pos_x + pos_x_shift * 9, start_pos_y + 1800)
 
         # links creation
         node_tree.links.new(base_tex_n.inputs['Vector'], geometry_n.outputs['UV'])
@@ -148,7 +156,10 @@ class Dif:
         node_tree.links.new(out_mat_n.inputs['Color'], diff_mult_n.outputs['Color'])
         node_tree.links.new(out_mat_n.inputs['Spec'], spec_col_n.outputs['Color'])
 
-        node_tree.links.new(output_n.inputs['Color'], out_mat_n.outputs['Color'])
+        node_tree.links.new(compose_lighting_n.inputs['Diffuse Color'], diff_mult_n.outputs['Color'])
+        node_tree.links.new(compose_lighting_n.inputs['Material Color'], out_mat_n.outputs['Color'])
+
+        node_tree.links.new(output_n.inputs['Color'], compose_lighting_n.outputs['Composed Color'])
         node_tree.links.new(output_n.inputs['Alpha'], out_mat_n.outputs['Alpha'])
 
     @staticmethod
@@ -166,8 +177,6 @@ class Dif:
         # make sure to reset to lambert always as flat flavor might use fresnel diffuse shader
         material.diffuse_shader = "LAMBERT"
 
-        material.emit = 0.02
-
     @staticmethod
     def set_add_ambient(node_tree, factor):
         """Set ambient factor to shader.
@@ -178,12 +187,7 @@ class Dif:
         :type factor: float
         """
 
-        if factor == 0:
-            factor = 0.1
-
-        diffuse_col = Color(node_tree.nodes[Dif.DIFF_COL_NODE].outputs['Color'].default_value[:3])
-        # NOTE: because emit works upon diffuse light we need to fake factors if diffuse drops
-        node_tree.nodes[Dif.OUT_MAT_NODE].material.emit = (factor / 10) * (1 / diffuse_col.v)
+        node_tree.nodes[Dif.COMPOSE_LIGHTING_NODE].inputs["AddAmbient"].default_value = factor
 
     @staticmethod
     def set_diffuse(node_tree, color):
@@ -198,18 +202,8 @@ class Dif:
         color = _convert_utils.to_node_color(color)
 
         node_tree.nodes[Dif.DIFF_COL_NODE].outputs['Color'].default_value = color
-
-        # in the case of flat flavor (diffuse shader is set to FRESNEL)
-        # intensity of diffuse has to be 1 for correct results
-        if node_tree.nodes[Dif.OUT_MAT_NODE].material.diffuse_shader == "FRESNEL":
-            node_tree.nodes[Dif.OUT_MAT_NODE].material.diffuse_intensity = 1
-        else:
-            node_tree.nodes[Dif.OUT_MAT_NODE].material.diffuse_intensity = Color(color[:3]).v * 0.7
-
-        # fix emit color representing ambient.
-        # NOTE: because emit works upon diffuse light we need to fake factors if diffuse drops
-        ambient = node_tree.nodes[Dif.OUT_MAT_NODE].material.scs_props.shader_attribute_add_ambient
-        node_tree.nodes[Dif.OUT_MAT_NODE].material.emit = (ambient / 10) * (1 / Color(color[:3]).v)
+        # fix intensity each time if user might changed it by hand directly on material
+        node_tree.nodes[Dif.OUT_MAT_NODE].material.diffuse_intensity = 0.7
 
     @staticmethod
     def set_specular(node_tree, color):
@@ -453,6 +447,7 @@ class Dif:
         _FLAT_FAC_MULT_NODE = "FlatFlavorMult"
 
         out_mat_n = node_tree.nodes[Dif.OUT_MAT_NODE]
+        compose_lighting_n = node_tree.nodes[Dif.COMPOSE_LIGHTING_NODE]
         output_n = node_tree.nodes[Dif.OUTPUT_NODE]
         diff_mult_n = node_tree.nodes[Dif.DIFF_MULT_NODE]
 
@@ -474,6 +469,7 @@ class Dif:
 
             node_tree.links.new(flat_mult_n.inputs['Color1'], diff_mult_n.outputs['Color'])
             node_tree.links.new(out_mat_n.inputs['Color'], flat_mult_n.outputs['Color'])
+            node_tree.links.new(compose_lighting_n.inputs['Material Color'], flat_mult_n.outputs['Color'])
 
         else:
 
@@ -487,6 +483,7 @@ class Dif:
                 node_tree.nodes.remove(node_tree.nodes[_FLAT_FAC_MULT_NODE])
 
             node_tree.links.new(out_mat_n.inputs['Color'], diff_mult_n.outputs['Color'])
+            node_tree.links.new(compose_lighting_n.inputs['Material Color'], diff_mult_n.outputs['Color'])
 
     @staticmethod
     def set_paint_flavor(node_tree, switch_on):

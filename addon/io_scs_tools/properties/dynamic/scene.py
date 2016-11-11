@@ -39,7 +39,14 @@ def _set_num_objects(self, value):
 
 def _get_active_scs_root(self):
     if "scs_cached_active_scs_root" not in self:
-        _set_active_scs_root(self, self.objects.active.name)
+
+        # if there is no active object set empty string
+        if self.objects.active:
+            name = self.objects.active.name
+        else:
+            name = ""
+
+        _set_active_scs_root(self, name)
 
     return self["scs_cached_active_scs_root"]
 

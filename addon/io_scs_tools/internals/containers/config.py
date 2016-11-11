@@ -20,6 +20,7 @@
 
 import bpy
 import os
+import pickle
 from io_scs_tools.utils.printout import lprint
 from io_scs_tools.utils import path as _path_utils
 from io_scs_tools.utils import property as _property_utils
@@ -29,6 +30,7 @@ from io_scs_tools.internals.containers import pix as _pix
 from io_scs_tools.internals.containers import sii as _sii
 from io_scs_tools.internals.shader_presets import cache as _shader_presets_cache
 from io_scs_tools.internals.structure import SectionData as _SectionData
+from io_scs_tools.operators.world import SCSPathsInitialization as _SCSPathsInitialization
 
 
 def update_item_in_file(item_pointer, new_value):
@@ -83,11 +85,11 @@ def update_shader_presets_path(scs_shader_presets_inventory, shader_presets_file
     :param shader_presets_filepath: Absolute or relative path to the file with Shader Presets
     :type shader_presets_filepath: str
     """
-    # print('shader_presets_filepath: %r' % shader_presets_filepath)
-    if shader_presets_filepath.startswith("//"):  # RELATIVE PATH
-        shader_presets_abs_path = _path_utils.get_abs_path(shader_presets_filepath)
-    else:
-        shader_presets_abs_path = shader_presets_filepath
+    shader_presets_abs_path = _path_utils.get_abs_path(shader_presets_filepath)
+
+    if _shader_presets_cache.is_initilized(shader_presets_abs_path):
+        lprint("I Shader presets cache is up-to date, no update will happen!")
+        return
 
     # CLEAR INVENTORY AND CACHE
     scs_shader_presets_inventory.clear()
@@ -102,6 +104,23 @@ def update_shader_presets_path(scs_shader_presets_inventory, shader_presets_file
 
         # ADD ALL SHADER PRESET ITEMS FROM FILE INTO INVENTORY
         if presets_container:
+
+            # load all supported effects from dump file of python set or dictionary, where keys represent supported effects
+            # If file is not found then generate all combinations as before.
+            supported_effects_dict = None
+            supported_effects_path = os.path.join(_path_utils.get_addon_installation_paths()[0], "supported_effects.bin")
+            if os.path.isfile(supported_effects_path):
+                try:
+                    supported_effects_dict = pickle.load(open(supported_effects_path, "rb"))
+                except PermissionError:
+                    lprint("W Can't load supported effects file (persmission denied), please ensure read/write permissions for:\n\t   %r\n\t   "
+                           "Without supported effects file invalid combinations of shader and flavors can be created!",
+                           (os.path.dirname(supported_effects_path),),
+                           report_warnings=1)
+            else:
+                lprint("W Supported effects file is missing! Make sure latest SCS Blender Tools is installed.\n\t   "
+                       "Without supported effects file invalid combinations of shader and flavors can be created!",
+                       report_warnings=1)
 
             # sort sections to shaders and flavors
             shaders = []
@@ -138,13 +157,23 @@ def update_shader_presets_path(scs_shader_presets_inventory, shader_presets_file
                                 lprint("D Flavor used by shader preset, but not defined: %s", (flavor_type,))
                                 continue
 
-                            # create new flavor variant item
+                            # create new flavor variant item (when flavor has more variants eg. "BLEND_ADD|BLEND_OVER")
                             flavor_variant = flavor_item.variants.add()
                             flavor_variant.name = flavors[flavor_type].get_prop_value("Name")
                             flavor_variant.preset_name = new_shader_preset.name
 
                             # modify and save section as string into cache
                             for unique_name in unique_names:
+
+                                new_unique_str = unique_name + "." + flavors[flavor_type].get_prop_value("Name")
+                                full_effect_name = new_shader_preset.effect + new_unique_str
+
+                                # check if this shader-flavor combination can exists, if not skip it
+                                if supported_effects_dict and full_effect_name not in supported_effects_dict:
+                                    lprint("S Marking none existing effect as dirty: %r", (full_effect_name,))
+                                    is_dirty = True
+                                else:
+                                    is_dirty = False
 
                                 section = _shader_presets_cache.get_section(new_shader_preset, unique_name)
 
@@ -165,11 +194,15 @@ def update_shader_presets_path(scs_shader_presets_inventory, shader_presets_file
                                     else:
                                         section.sections.append(flavor_section)
 
-                                new_unique_names.append(unique_name + "." + flavors[flavor_type].get_prop_value("Name"))
-                                assert section.set_prop_value("Effect", new_shader_preset.effect + new_unique_names[-1])
-                                _shader_presets_cache.add_section(new_shader_preset, new_unique_names[-1], section)
+                                new_unique_names.append(new_unique_str)
+                                assert section.set_prop_value("Effect", new_shader_preset.effect + new_unique_str)
+                                _shader_presets_cache.add_section(new_shader_preset, new_unique_str, section, is_dirty=is_dirty)
 
                         unique_names.extend(new_unique_names)
+
+            # now as we built cache it's time to clean it up of dirty items (eg. none existing effect combinations) and
+            # set path from which this cache was initialized
+            _shader_presets_cache.set_initialized(shader_presets_abs_path)
 
     update_item_in_file('Paths.ShaderPresetsFilePath', shader_presets_filepath)
 
@@ -180,34 +213,32 @@ def update_trigger_actions_rel_path(scs_trigger_actions_inventory, trigger_actio
     :param trigger_actions_rel_path: Relative path to the directory with Trigger Action files
     :type trigger_actions_rel_path: str
     """
-    trig_actions_path = _path_utils.get_abs_path(trigger_actions_rel_path)
-    if trig_actions_path:
 
-        if _get_scs_globals().trigger_actions_use_infixed:
-            trig_actions_paths = _path_utils.get_all_infixed_file_paths(trig_actions_path)
-        else:
-            trig_actions_paths = [trig_actions_path]
+    gathered_library_filepaths = _path_utils.get_abs_paths(trigger_actions_rel_path,
+                                                           use_infixed_search=_get_scs_globals().trigger_actions_use_infixed)
 
-        # CLEAR INVENTORY
-        scs_trigger_actions_inventory.clear()
+    # CLEAR INVENTORY
+    scs_trigger_actions_inventory.clear()
 
-        for trig_actions_path in trig_actions_paths:
+    for trig_actions_path in gathered_library_filepaths:
 
-            trig_actions_container = _sii.get_data_from_file(trig_actions_path)
-            if trig_actions_container:
+        lprint("D Going to parse trigger actions file:\n\t   %r", (trig_actions_path,))
 
-                # ADD ALL ITEMS FROM CONTAINER INTO INVENTORY
-                for item in trig_actions_container:
-                    if item.type == 'trigger_action':
-                        if item.id.startswith('trig_action.'):
-                            if 'name' in item.props:
-                                trg_action_name = item.props['name']
-                            else:
-                                continue
+        trig_actions_container = _sii.get_data_from_file(trig_actions_path)
+        if trig_actions_container:
 
-                            trig_item = scs_trigger_actions_inventory.add()
-                            trig_item.name = trg_action_name + " : " + item.id[12:]
-                            trig_item.item_id = item.id[12:]
+            # ADD ALL ITEMS FROM CONTAINER INTO INVENTORY
+            for item in trig_actions_container:
+                if item.type == 'trigger_action':
+                    if item.id.startswith('trig_action.'):
+                        if 'name' in item.props:
+                            trg_action_name = item.props['name']
+                        else:
+                            continue
+
+                        trig_item = scs_trigger_actions_inventory.add()
+                        trig_item.name = trg_action_name + " : " + item.id[12:]
+                        trig_item.item_id = item.id[12:]
 
     if not readonly:
         update_item_in_file('Paths.TriggerActionsRelFilePath', trigger_actions_rel_path)
@@ -219,47 +250,45 @@ def update_sign_library_rel_path(scs_sign_model_inventory, sign_library_rel_path
     :param sign_library_rel_path: Relative path to the directory with Sign files
     :type sign_library_rel_path: str
     """
-    sign_library_filepath = _path_utils.get_abs_path(sign_library_rel_path)
-    if sign_library_filepath:
 
-        if _get_scs_globals().sign_library_use_infixed:
-            sign_library_filepaths = _path_utils.get_all_infixed_file_paths(sign_library_filepath)
-        else:
-            sign_library_filepaths = [sign_library_filepath]
+    gathered_library_filepaths = _path_utils.get_abs_paths(sign_library_rel_path,
+                                                           use_infixed_search=_get_scs_globals().sign_library_use_infixed)
 
-        # CLEAR INVENTORY
-        scs_sign_model_inventory.clear()
+    # CLEAR INVENTORY
+    scs_sign_model_inventory.clear()
 
-        for sign_library_filepath in sign_library_filepaths:
+    for sign_library_filepath in gathered_library_filepaths:
 
-            sign_container = _sii.get_data_from_file(sign_library_filepath)
-            if sign_container:
+        lprint("D Going to parse sign library file:\n\t   %r", (sign_library_filepath,))
 
-                # ADD ALL ITEMS FROM CONTAINER INTO INVENTORY
-                for item in sign_container:
-                    if item.type == 'sign_model':
-                        if item.id.startswith('sign.'):
-                            if 'sign_name' in item.props:
-                                sign_name = item.props['sign_name']
-                            else:
-                                continue
+        sign_container = _sii.get_data_from_file(sign_library_filepath)
+        if sign_container:
 
-                            sign_item = scs_sign_model_inventory.add()
-                            sign_item.name = sign_name + " : " + item.id[5:]
-                            sign_item.item_id = item.id[5:]
+            # ADD ALL ITEMS FROM CONTAINER INTO INVENTORY
+            for item in sign_container:
+                if item.type == 'sign_model':
+                    if item.id.startswith('sign.'):
+                        if 'sign_name' in item.props:
+                            sign_name = item.props['sign_name']
+                        else:
+                            continue
 
-                            if 'model_desc' in item.props:
-                                sign_item.model_desc = item.props['model_desc']
+                        sign_item = scs_sign_model_inventory.add()
+                        sign_item.name = sign_name + " : " + item.id[5:]
+                        sign_item.item_id = item.id[5:]
 
-                            if 'look_name' in item.props:
-                                sign_item.look_name = item.props['look_name']
+                        if 'model_desc' in item.props:
+                            sign_item.model_desc = item.props['model_desc']
 
-                            if 'category' in item.props:
-                                sign_item.category = item.props['category']
+                        if 'look_name' in item.props:
+                            sign_item.look_name = item.props['look_name']
 
-                            if 'dynamic' in item.props:
-                                if item.props['dynamic'] == 'true':
-                                    sign_item.dynamic = True
+                        if 'category' in item.props:
+                            sign_item.category = item.props['category']
+
+                        if 'dynamic' in item.props:
+                            if item.props['dynamic'] == 'true':
+                                sign_item.dynamic = True
 
     if not readonly:
         update_item_in_file('Paths.SignRelFilePath', sign_library_rel_path)
@@ -272,37 +301,35 @@ def update_tsem_library_rel_path(scs_tsem_profile_inventory, tsem_library_rel_pa
     :param tsem_library_rel_path: Relative path to the directory with Traffic Semaphore Profile files
     :type tsem_library_rel_path: str
     """
-    tsem_library_filepath = _path_utils.get_abs_path(tsem_library_rel_path)
-    if tsem_library_filepath:
 
-        if _get_scs_globals().tsem_library_use_infixed:
-            tsem_library_filepaths = _path_utils.get_all_infixed_file_paths(tsem_library_filepath)
-        else:
-            tsem_library_filepaths = [tsem_library_filepath]
+    gathered_library_filepaths = _path_utils.get_abs_paths(tsem_library_rel_path,
+                                                           use_infixed_search=_get_scs_globals().tsem_library_use_infixed)
 
-        # CLEAR INVENTORY
-        scs_tsem_profile_inventory.clear()
+    # CLEAR INVENTORY
+    scs_tsem_profile_inventory.clear()
 
-        for tsem_library_filepath in tsem_library_filepaths:
+    for tsem_library_filepath in gathered_library_filepaths:
 
-            tsem_container = _sii.get_data_from_file(tsem_library_filepath)
-            if tsem_container:
+        lprint("D Going to parse tsem library file:\n\t   %r", (tsem_library_filepath,))
 
-                # ADD ALL ITEMS FROM CONTAINER INTO INVENTORY
-                for item in tsem_container:
-                    if item.type == 'tr_semaphore_profile':
-                        if item.id.startswith('tr_sem_prof.'):
-                            if 'name' in item.props:
-                                tsem_name = item.props['name']
-                            else:
-                                continue
+        tsem_container = _sii.get_data_from_file(tsem_library_filepath)
+        if tsem_container:
 
-                            tsem_item = scs_tsem_profile_inventory.add()
-                            tsem_item.name = tsem_name + " : " + item.id[12:]
-                            tsem_item.item_id = item.id[12:]
+            # ADD ALL ITEMS FROM CONTAINER INTO INVENTORY
+            for item in tsem_container:
+                if item.type == 'tr_semaphore_profile':
+                    if item.id.startswith('tr_sem_prof.'):
+                        if 'name' in item.props:
+                            tsem_name = item.props['name']
+                        else:
+                            continue
 
-                            if 'model' in item.props:
-                                tsem_item.model = item.props['model'][0]
+                        tsem_item = scs_tsem_profile_inventory.add()
+                        tsem_item.name = tsem_name + " : " + item.id[12:]
+                        tsem_item.item_id = item.id[12:]
+
+                        if 'model' in item.props:
+                            tsem_item.model = item.props['model'][0]
 
     if not readonly:
         update_item_in_file('Paths.TSemProfileRelFilePath', tsem_library_rel_path)
@@ -314,35 +341,33 @@ def update_traffic_rules_library_rel_path(scs_traffic_rules_inventory, traffic_r
     :param traffic_rules_library_rel_path: Relative path to the directory with Traffic Rules files
     :type traffic_rules_library_rel_path: str
     """
-    traffic_rules_library_filepath = _path_utils.get_abs_path(traffic_rules_library_rel_path)
-    if traffic_rules_library_filepath:
 
-        if _get_scs_globals().traffic_rules_library_use_infixed:
-            traffic_rules_library_filepaths = _path_utils.get_all_infixed_file_paths(traffic_rules_library_filepath)
-        else:
-            traffic_rules_library_filepaths = [traffic_rules_library_filepath]
+    gathered_library_filepaths = _path_utils.get_abs_paths(traffic_rules_library_rel_path,
+                                                           use_infixed_search=_get_scs_globals().traffic_rules_library_use_infixed)
 
-        # CLEAR INVENTORY
-        scs_traffic_rules_inventory.clear()
+    # CLEAR INVENTORY
+    scs_traffic_rules_inventory.clear()
 
-        for traffic_rules_library_filepath in traffic_rules_library_filepaths:
+    for traffic_rules_library_filepath in gathered_library_filepaths:
 
-            trul_container = _sii.get_data_from_file(traffic_rules_library_filepath)
-            if trul_container:
+        lprint("D Going to parse traffic rules file:\n\t   %r", (traffic_rules_library_filepath,))
 
-                # ADD ALL ITEMS FROM CONTAINER INTO INVENTORY
-                for item in trul_container:
-                    if item.type == 'traffic_rule_data':
-                        if item.id.startswith('traffic_rule.'):
-                            traffic_rule_item = scs_traffic_rules_inventory.add()
-                            traffic_rule_item.name = item.id[13:]
-                            # traffic_rule_item.item_id = item.id[13:]
+        trul_container = _sii.get_data_from_file(traffic_rules_library_filepath)
+        if trul_container:
 
-                            if 'rule' in item.props:
-                                traffic_rule_item.rule = item.props['rule']
+            # ADD ALL ITEMS FROM CONTAINER INTO INVENTORY
+            for item in trul_container:
+                if item.type == 'traffic_rule_data':
+                    if item.id.startswith('traffic_rule.'):
+                        traffic_rule_item = scs_traffic_rules_inventory.add()
+                        traffic_rule_item.name = item.id[13:]
+                        # traffic_rule_item.item_id = item.id[13:]
 
-                            if 'num_params' in item.props:
-                                traffic_rule_item.num_params = str(item.props['num_params'])
+                        if 'rule' in item.props:
+                            traffic_rule_item.rule = item.props['rule']
+
+                        if 'num_params' in item.props:
+                            traffic_rule_item.num_params = str(item.props['num_params'])
 
     if not readonly:
         update_item_in_file('Paths.TrafficRulesRelFilePath', traffic_rules_library_rel_path)
@@ -354,55 +379,69 @@ def update_hookup_library_rel_path(scs_hookup_inventory, hookup_library_rel_path
     :param hookup_library_rel_path: Relative path to the directory with Hookup files
     :type hookup_library_rel_path: str
     """
-    abs_path = _path_utils.get_abs_path(hookup_library_rel_path, is_dir=True)
-    if abs_path:
 
-        # CLEAR INVENTORY
-        scs_hookup_inventory.clear()
+    # CLEAR INVENTORY
+    scs_hookup_inventory.clear()
 
-        # READ ALL "SII" FILES IN INVENTORY FOLDER
-        for root, dirs, files in os.walk(abs_path):
-            # print('   root: "%s"\n  dirs: "%s"\n files: "%s"' % (root, dirs, files))
-            for file in files:
-                if file.endswith(".sii"):
-                    filepath = os.path.join(root, file)
-                    # print('   filepath: "%s"' % str(filepath))
-                    hookup_container = _sii.get_data_from_file(filepath)
+    taken_hoookup_ids = {}  # temp dict for identifying unique hookups and preventing creation of duplicates (same type and id)
+    for abs_path in _path_utils.get_abs_paths(hookup_library_rel_path, is_dir=True):
 
-                    # ADD ALL ITEMS FROM CONTAINER INTO INVENTORY
-                    if hookup_container:
-                        for item in hookup_container:
-                            # if item.type == 'sign_model':
-                            if item.id.startswith('_'):
-                                continue
-                            else:
-                                hookup_file = scs_hookup_inventory.add()
-                                hookup_file.name = str(item.type + " : " + item.id)
-                                hookup_file.item_id = item.id
+        if abs_path:
 
-                                if 'model' in item.props:
-                                    # if model is defined as array ( appears if additional lod models are defined )
-                                    # then use first none lod model
-                                    if isinstance(item.props['model'], type(list())):
-                                        hookup_file.model = item.props['model'][0]
+            # READ ALL "SII" FILES IN INVENTORY FOLDER
+            for root, dirs, files in os.walk(abs_path):
+
+                lprint("D Going to parse hookup directory:\n\t   %r", (root,))
+
+                # print('   root: "%s"\n  dirs: "%s"\n files: "%s"' % (root, dirs, files))
+                for file in files:
+                    if file.endswith(".sii"):
+                        filepath = os.path.join(root, file)
+                        # print('   filepath: "%s"' % str(filepath))
+                        hookup_container = _sii.get_data_from_file(filepath)
+
+                        # ADD ALL ITEMS FROM CONTAINER INTO INVENTORY
+                        if hookup_container:
+                            for item in hookup_container:
+                                # if item.type == 'sign_model':
+                                if item.id.startswith('_'):
+                                    continue
+                                else:
+                                    typeid = str(item.type + " : " + item.id)
+
+                                    # ignore taken type&ids
+                                    if typeid in taken_hoookup_ids:
+                                        continue
                                     else:
-                                        hookup_file.model = item.props['model']
+                                        taken_hoookup_ids[typeid] = True
 
-                                if 'brand_idx' in item.props:
-                                    try:
-                                        hookup_file.brand_idx = int(item.props['brand_idx'])
-                                    except:
-                                        pass
+                                    hookup_file = scs_hookup_inventory.add()
+                                    hookup_file.name = typeid
+                                    hookup_file.item_id = item.id
 
-                                if 'dir_type' in item.props:
-                                    hookup_file.dir_type = item.props['dir_type']
+                                    if 'model' in item.props:
+                                        # if model is defined as array ( appears if additional lod models are defined )
+                                        # then use first none lod model
+                                        if isinstance(item.props['model'], type(list())):
+                                            hookup_file.model = item.props['model'][0]
+                                        else:
+                                            hookup_file.model = item.props['model']
 
-                                if 'low_poly_only' in item.props:
-                                    if item.props['low_poly_only'] == 'true':
-                                        hookup_file.low_poly_only = True
+                                    if 'brand_idx' in item.props:
+                                        try:
+                                            hookup_file.brand_idx = int(item.props['brand_idx'])
+                                        except:
+                                            pass
 
-            if '.svn' in dirs:
-                dirs.remove('.svn')  # ignore SVN
+                                    if 'dir_type' in item.props:
+                                        hookup_file.dir_type = item.props['dir_type']
+
+                                    if 'low_poly_only' in item.props:
+                                        if item.props['low_poly_only'] == 'true':
+                                            hookup_file.low_poly_only = True
+
+                if '.svn' in dirs:
+                    dirs.remove('.svn')  # ignore SVN
 
     if not readonly:
         update_item_in_file('Paths.HookupRelDirPath', hookup_library_rel_path)
@@ -445,6 +484,60 @@ def update_matsubs_inventory(scs_matsubs_inventory, matsubs_library_rel_path, re
         update_item_in_file('Paths.MatSubsRelFilePath', matsubs_library_rel_path)
 
 
+def update_sun_profiles_library_path(scs_sun_profiles_inventory, sun_profiles_library_path, readonly=False):
+    """The function deletes and populates again a list of sun profiles used for scs ligthning inside Blednder.
+    It also updates corresponding record in config file.
+
+    :param scs_sun_profiles_inventory: sun profiles inventory from scs globals
+    :type scs_sun_profiles_inventory: bpy.types.CollectionProperty
+    :param sun_profiles_library_path: sun profiles library path (relative to SCS Project Base Path or absolute)
+    :type sun_profiles_library_path: str
+    :param readonly: flag indicating if path should be updated in config file or not
+    :type readonly: bool
+    """
+    sun_profiles_lib_filepath = _path_utils.get_abs_path(sun_profiles_library_path)
+
+    # CLEAR INVENTORY
+    scs_sun_profiles_inventory.clear()
+
+    if sun_profiles_lib_filepath:
+        sun_profiles_container = _sii.get_data_from_file(sun_profiles_lib_filepath)
+        if sun_profiles_container:
+
+            for item in sun_profiles_container:
+                if item.type == 'sun_profile':
+
+                    sun_profile_item = scs_sun_profiles_inventory.add()
+                    sun_profile_item.name = item.id
+
+                    number_props = ("low_elevation", "high_elevation", "sun_direction", "ambient_hdr_coef", "diffuse_hdr_coef",
+                                    "specular_hdr_coef", "sun_color_hdr_coef", "env", "env_static_mod")
+                    color_props = ("ambient", "diffuse", "specular", "sun_color")
+
+                    # fill in numeric sun profile props
+                    for number_prop in number_props:
+
+                        item_value = item.get_prop_as_number(number_prop)
+
+                        if item_value is not None:
+                            setattr(sun_profile_item, number_prop, item_value)
+                        else:
+                            lprint("E Property: %r could not be parsed! Sun profile loading is incomplete." % number_prop)
+
+                    # fill in color sun profile props
+                    for color_prop in color_props:
+
+                        item_value = item.get_prop_as_color(color_prop)
+
+                        if item_value is not None:
+                            setattr(sun_profile_item, color_prop, item_value)
+                        else:
+                            lprint("E Property: %r could not be parsed! Sun profile loading is incomplete." % color_prop)
+
+    if not readonly:
+        update_item_in_file('Paths.SunProfilesFilePath', sun_profiles_library_path)
+
+
 def gather_default():
     """Creates a new setting container for saving to the file."""
 
@@ -479,6 +572,7 @@ def gather_default():
         section.props.append(("HookupRelDirPath", _property_utils.get_by_type(bpy.types.GlobalSCSProps.hookup_library_rel_path)))
         section.props.append(("MatSubsRelFilePath", _property_utils.get_by_type(bpy.types.GlobalSCSProps.matsubs_library_rel_path)))
         section.props.append(("ConvertersPath", _property_utils.get_by_type(bpy.types.GlobalSCSProps.conv_hlpr_converters_path)))
+        section.props.append(("UseAlternativeBases", int(_property_utils.get_by_type(bpy.types.GlobalSCSProps.use_alternative_bases))))
         return section
 
     def fill_import_section():
@@ -613,6 +707,32 @@ def get_config_filepath():
     return scs_config_file
 
 
+def engage_config_lock():
+    """Engages configuration lock to prevent writing to config.txt.
+
+    Should be always used in pair with release_config_lock.
+
+    Should be used when applying multiple properties to scs globals at once,
+    as many of those propreties will try to update config file inside their update function.
+    But we don't want another config update as we are just applying properties from the config.
+    """
+    _get_scs_globals().config_update_lock = True
+
+
+def release_config_lock(use_paths_init_callback=False):
+    """Release configuration lock.
+
+    Should be always used in pair with engage_config_lock.
+
+    :param use_paths_init_callback: True if paths initialization is in progress and lock should be release when done; False release lock immidiately
+    :type use_paths_init_callback: bool
+    """
+    if use_paths_init_callback:
+        _SCSPathsInitialization.append_callback(release_config_lock)
+    else:
+        _get_scs_globals().config_update_lock = False
+
+
 def apply_settings():
     """Applies all the settings to the active scene."""
 
@@ -634,6 +754,7 @@ def apply_settings():
     traffic_rules_library_rel_path = _property_utils.get_by_type(bpy.types.GlobalSCSProps.traffic_rules_library_rel_path, scs_globals)
     hookup_library_rel_path = _property_utils.get_by_type(bpy.types.GlobalSCSProps.hookup_library_rel_path, scs_globals)
     matsubs_library_rel_path = _property_utils.get_by_type(bpy.types.GlobalSCSProps.matsubs_library_rel_path, scs_globals)
+    sun_profiles_library_path = _property_utils.get_by_type(bpy.types.GlobalSCSProps.sun_profiles_lib_path, scs_globals)
     conv_hlpr_converters_path = _property_utils.get_by_type(bpy.types.GlobalSCSProps.conv_hlpr_converters_path, scs_globals)
 
     # NOTE: as dump level is written in same section as config type
@@ -641,7 +762,9 @@ def apply_settings():
     # so it has to be saved into variable and applied only if global settings are loaded from config file
     dump_level = scs_globals.dump_level
 
-    scs_globals.config_update_lock = True
+    # lock update now, as we don't want any properties update functions to trigger rewrite of config file
+    # which would lead to unwanted recursion
+    engage_config_lock()
 
     config_container = _pix.get_data_from_file(get_config_filepath(), "    ")
 
@@ -679,8 +802,12 @@ def apply_settings():
                             hookup_library_rel_path = prop[1]
                         elif prop[0] == "MatSubsRelFilePath":
                             matsubs_library_rel_path = prop[1]
+                        elif prop[0] == "SunProfilesFilePath":
+                            sun_profiles_library_path = prop[1]
                         elif prop[0] == "ConvertersPath":
                             conv_hlpr_converters_path = prop[1]
+                        elif prop[0] == "UseAlternativeBases":
+                            scs_globals.use_alternative_bases = prop[1]
                         else:
                             lprint('W Unrecognised item "%s" has been found in setting file! Skipping...', (str(prop[0]),))
                 elif section.type == "Import":
@@ -815,16 +942,36 @@ def apply_settings():
 
     # now as last apply all of the file paths
     # NOTE: applying paths is crucial for libraries
-    # (they are reloaded/initiated in property update functions)
-    scs_globals.scs_project_path = scs_project_path
-    scs_globals.shader_presets_filepath = shader_presets_filepath
-    scs_globals.trigger_actions_rel_path = trigger_actions_rel_path
-    scs_globals.sign_library_rel_path = sign_library_rel_path
-    scs_globals.tsem_library_rel_path = tsem_library_rel_path
-    scs_globals.traffic_rules_library_rel_path = traffic_rules_library_rel_path
-    scs_globals.hookup_library_rel_path = hookup_library_rel_path
-    scs_globals.matsubs_library_rel_path = matsubs_library_rel_path
-    scs_globals.conv_hlpr_converters_path = conv_hlpr_converters_path
+    # (they are reloaded/initiated in property update functions).
+    if bpy.app.background:  # if blender runs without UI then apply libraries directly as async operator is UI depended
 
-    scs_globals.config_update_lock = False
+        scs_globals.scs_project_path = scs_project_path
+        scs_globals.shader_presets_filepath = shader_presets_filepath
+        scs_globals.trigger_actions_rel_path = trigger_actions_rel_path
+        scs_globals.sign_library_rel_path = sign_library_rel_path
+        scs_globals.tsem_library_rel_path = tsem_library_rel_path
+        scs_globals.traffic_rules_library_rel_path = traffic_rules_library_rel_path
+        scs_globals.hookup_library_rel_path = hookup_library_rel_path
+        scs_globals.matsubs_library_rel_path = matsubs_library_rel_path
+        scs_globals.sun_profiles_lib_path = sun_profiles_library_path
+        scs_globals.conv_hlpr_converters_path = conv_hlpr_converters_path
+
+    else:  # if blender is started normally use asynchronous operator to reload libraries
+
+        bpy.ops.world.scs_paths_initialization('INVOKE_DEFAULT', paths_list=[
+            {"name": "project base path", "attr": "scs_project_path", "path": scs_project_path},
+            {"name": "shader presets", "attr": "shader_presets_filepath", "path": shader_presets_filepath},
+            {"name": "trigger actions library", "attr": "trigger_actions_rel_path", "path": trigger_actions_rel_path},
+            {"name": "sign library", "attr": "sign_library_rel_path", "path": sign_library_rel_path},
+            {"name": "traffic semaphore library", "attr": "tsem_library_rel_path", "path": tsem_library_rel_path},
+            {"name": "traffic rules library", "attr": "traffic_rules_library_rel_path", "path": traffic_rules_library_rel_path},
+            {"name": "hookups library", "attr": "hookup_library_rel_path", "path": hookup_library_rel_path},
+            {"name": "material substance library", "attr": "matsubs_library_rel_path", "path": matsubs_library_rel_path},
+            {"name": "sun profiles library", "attr": "sun_profiles_lib_path", "path": sun_profiles_library_path},
+            {"name": "converters file path", "attr": "conv_hlpr_converters_path", "path": conv_hlpr_converters_path},
+        ])
+
+    # release lock as properties are applied
+    release_config_lock(use_paths_init_callback=not bpy.app.background)
+
     return True

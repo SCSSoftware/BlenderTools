@@ -31,6 +31,7 @@ class Water(Dif, StdAddEnv):
     MIX_FACTOR_GNODE = "WaterMixFactor"
     NEAR_MIX_NODE = "NearMix"
     HORIZON_MIX_NODE = "HorizonMix"
+    ADD_REFL_MIX_NODE = "AddRefl"
     NEAR_HORIZON_MIX_NODE = "NearHorizonLerpMix"
 
     LAYER0_MAT_NODE = "Layer0Tex"
@@ -67,6 +68,7 @@ class Water(Dif, StdAddEnv):
         output_n = node_tree.nodes[Dif.OUTPUT_NODE]
 
         # delete existing
+        node_tree.nodes.remove(node_tree.nodes[Dif.COMPOSE_LIGHTING_NODE])
         node_tree.nodes.remove(node_tree.nodes[Dif.BASE_TEX_NODE])
         node_tree.nodes.remove(node_tree.nodes[Dif.OPACITY_NODE])
         node_tree.nodes.remove(node_tree.nodes[Dif.DIFF_MULT_NODE])
@@ -126,9 +128,15 @@ class Water(Dif, StdAddEnv):
         horizon_mix_n.blend_type = "MULTIPLY"
         horizon_mix_n.inputs['Fac'].default_value = 1.0
 
+        add_refl_mix_n = node_tree.nodes.new("ShaderNodeMixRGB")
+        add_refl_mix_n.name = add_refl_mix_n.label = Water.ADD_REFL_MIX_NODE
+        add_refl_mix_n.location = (start_pos_x + pos_x_shift * 6, start_pos_y + 2000)
+        add_refl_mix_n.blend_type = "ADD"
+        add_refl_mix_n.inputs['Fac'].default_value = 1.0
+
         near_horizon_mix_n = node_tree.nodes.new("ShaderNodeMixRGB")
         near_horizon_mix_n.name = near_horizon_mix_n.label = Water.NEAR_HORIZON_MIX_NODE
-        near_horizon_mix_n.location = (start_pos_x + pos_x_shift * 6, start_pos_y + 1700)
+        near_horizon_mix_n.location = (start_pos_x + pos_x_shift * 7, start_pos_y + 1700)
         near_horizon_mix_n.blend_type = "MIX"
 
         # add environment pass and normal maps
@@ -137,7 +145,8 @@ class Water(Dif, StdAddEnv):
                       Dif.SPEC_COL_NODE,
                       "",
                       Water.NEAR_MIX_NODE,
-                      Water.NEAR_HORIZON_MIX_NODE)
+                      Water.ADD_REFL_MIX_NODE,
+                      "Color1")
 
         # links creation
         # pass 1
@@ -146,6 +155,7 @@ class Water(Dif, StdAddEnv):
 
         # pass 2
         node_tree.links.new(normal_normalize_n.inputs[0], lay0_lay1_normal_mix_n.outputs['Color'])
+        node_tree.links.new(vcol_mult_n.inputs['Color2'], diff_col_n.outputs['Color'])
 
         # pass 3
         node_tree.links.new(near_mix_n.inputs['Color1'], vcol_mult_n.outputs['Color'])
@@ -155,15 +165,19 @@ class Water(Dif, StdAddEnv):
         node_tree.links.new(horizon_mix_n.inputs['Color2'], horizon_col_n.outputs['Color'])
 
         # pass 4
-        node_tree.links.new(vcol_mult_n.inputs['Color2'], diff_col_n.outputs['Color'])
+        node_tree.links.new(add_refl_mix_n.inputs['Color2'], near_mix_n.outputs['Color'])
 
         # pass 5
         node_tree.links.new(near_horizon_mix_n.inputs['Fac'], mix_factor_gn.outputs['Mix Factor'])
+        node_tree.links.new(near_horizon_mix_n.inputs['Color1'], add_refl_mix_n.outputs['Color'])
         node_tree.links.new(near_horizon_mix_n.inputs['Color2'], horizon_mix_n.outputs['Color'])
 
         # material pass
         node_tree.links.new(out_mat_n.inputs['Color'], near_horizon_mix_n.outputs['Color'])
         node_tree.links.new(out_mat_n.inputs['Normal'], normal_normalize_n.outputs['Vector'])
+
+        # output pass
+        node_tree.links.new(output_n.inputs['Color'], out_mat_n.outputs['Color'])
 
     @staticmethod
     def set_aux0(node_tree, aux_property):

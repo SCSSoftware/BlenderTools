@@ -21,12 +21,12 @@
 import bpy
 import os
 from bpy.app.handlers import persistent
-from io_scs_tools import get_tools_version
 from io_scs_tools.internals import preview_models as _preview_models
 from io_scs_tools.internals.callbacks import open_gl as _open_gl_callback
 from io_scs_tools.internals.containers import config as _config_container
 from io_scs_tools.internals.connections.wrappers import group as _connections_group_wrapper
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
+from io_scs_tools.utils import info as _info_utils
 from io_scs_tools.utils.printout import lprint
 
 
@@ -50,7 +50,7 @@ def initialise_scs_dict(scene):
 
     # SCREEN CHECK...
     if bpy.context.screen:
-        lprint("I Initialization of SCS scene, BT version: " + get_tools_version())
+        lprint("I Initialization of SCS scene, BT version: " + _info_utils.get_tools_version())
 
         # NOTE: covers: start-up, reload, enable/disable and it should be immediately removed
         # from handlers as soon as it's executed for the first time
@@ -59,6 +59,11 @@ def initialise_scs_dict(scene):
 
         # INITIALIZE CUSTOM CONNECTIONS DRAWING SYSTEM
         _connections_group_wrapper.init()
+
+        # release lock as user might saved blender file during engaged lock.
+        # If that happens config lock property gets saved to blend file and if user opens that file again,
+        # lock will be still engaged and no settings could be applied without releasing lock here.
+        _config_container.release_config_lock()
 
         # USE SETTINGS FROM CONFIG...
         # NOTE: Reapplying the settings from config file to the currently opened Blender file datablock.
@@ -78,3 +83,29 @@ def initialise_scs_dict(scene):
 
         # ADD DRAW HANDLERS
         _open_gl_callback.enable(mode=_get_scs_globals().drawing_mode)
+
+        # as last notify user if his Blender version is outdated
+        if not _info_utils.is_blender_able_to_run_tools():
+
+            message = "Your Blender version %s is outdated, all SCS Blender Tools functionalities were internally disabled.\n\t   " \
+                      "Please update Blender before continue, minimal required version for SCS Blender Tools is: %s!"
+            message = message % (_info_utils.get_blender_version()[0], _info_utils.get_required_blender_version())
+
+            # first report error with blender tools printing system
+            lprint("E " + message)
+
+            # then disable add-on as it's not usable in the case Blender is out-dated
+            bpy.ops.wm.addon_disable('INVOKE_DEFAULT', module="io_scs_tools")
+
+            # and as last show warning message in the form of popup menu for user to see info about outdated Blender
+            # As we don't have access to our 3D view report operator anymore,
+            # we have to register our ShowWarningMessage class back and invoke it.
+            from io_scs_tools.operators.wm import ShowWarningMessage
+            bpy.utils.register_class(ShowWarningMessage)
+
+            bpy.ops.wm.show_warning_message('INVOKE_DEFAULT',
+                                            is_modal=True,
+                                            title="SCS Blender Tools Initialization Problem",
+                                            message="\n\n" + message.replace("\t   ", "") + "\n\n",  # some nasty formatting for better visibility
+                                            width=580,  # this is minimal width to properly fit in given message
+                                            height=bpy.context.window.height if bpy.context and bpy.context.window else 200)

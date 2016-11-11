@@ -47,12 +47,14 @@ class DifSpecWeight(DifSpec):
         DifSpec.init(node_tree)
 
         out_mat_n = node_tree.nodes[DifSpec.OUT_MAT_NODE]
+        compose_lighting_n = node_tree.nodes[DifSpec.COMPOSE_LIGHTING_NODE]
         output_n = node_tree.nodes[DifSpec.OUTPUT_NODE]
         vcol_mult_n = node_tree.nodes[DifSpec.VCOLOR_MULT_NODE]
         spec_mult_n = node_tree.nodes[DifSpec.SPEC_MULT_NODE]
 
         # move existing
         out_mat_n.location.x += pos_x_shift
+        compose_lighting_n.location.x += pos_x_shift
         output_n.location.x += pos_x_shift
 
         # node creation

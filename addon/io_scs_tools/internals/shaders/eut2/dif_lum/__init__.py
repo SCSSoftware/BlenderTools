@@ -47,7 +47,7 @@ class DifLum(Dif):
         Dif.init(node_tree)
 
         output_n = node_tree.nodes[Dif.OUTPUT_NODE]
-        out_mat_n = node_tree.nodes[Dif.OUT_MAT_NODE]
+        compose_lighting_n = node_tree.nodes[Dif.COMPOSE_LIGHTING_NODE]
         base_tex_n = node_tree.nodes[Dif.BASE_TEX_NODE]
 
         # move existing
@@ -57,12 +57,12 @@ class DifLum(Dif):
         lum_mix_n = node_tree.nodes.new("ShaderNodeMixRGB")
         lum_mix_n.name = DifLum.LUM_MIX_NODE
         lum_mix_n.label = DifLum.LUM_MIX_NODE
-        lum_mix_n.location = (out_mat_n.location.x + pos_x_shift, out_mat_n.location.y + 200)
+        lum_mix_n.location = (compose_lighting_n.location.x + pos_x_shift, compose_lighting_n.location.y - 100)
         lum_mix_n.blend_type = "MIX"
 
         # links creation
         node_tree.links.new(lum_mix_n.inputs['Fac'], base_tex_n.outputs['Value'])
-        node_tree.links.new(lum_mix_n.inputs['Color1'], out_mat_n.outputs['Color'])
+        node_tree.links.new(lum_mix_n.inputs['Color1'], compose_lighting_n.outputs['Composed Color'])
         node_tree.links.new(lum_mix_n.inputs['Color2'], base_tex_n.outputs['Color'])
 
         node_tree.links.new(output_n.inputs['Color'], lum_mix_n.outputs['Color'])

@@ -34,14 +34,19 @@ def pre_save(scene):
     scs_globals.scs_traffic_rules_inventory.clear()
     scs_globals.scs_tsem_profile_inventory.clear()
     scs_globals.scs_trigger_actions_inventory.clear()
+    scs_globals.sun_profiles_inventory.clear()
 
-    # clear unused materials, this has to be done because of usage of same material inside nodes
+    # clear unused materials with user count 1, this has to be done because of usage of same material inside nodes
+    materials_to_remove = set()
     for material in bpy.data.materials:
         if material.node_tree and material.users == 1:
             for node in material.node_tree.nodes:
                 if node.type in ("MATERIAL_EXT", "MATERIAL"):
                     if node.material == material:
-                        material.user_clear()
+                        materials_to_remove.add(material.name)
+
+    for mat_name in materials_to_remove:
+        bpy.data.materials.remove(bpy.data.materials[mat_name], do_unlink=True)
 
     # make sure to save actions used in at least one scs game object
     for obj in bpy.data.objects:
@@ -84,5 +89,10 @@ def post_save(scene):
     _config_container.update_trigger_actions_rel_path(
         scs_globals.scs_trigger_actions_inventory,
         scs_globals.trigger_actions_rel_path,
+        readonly
+    )
+    _config_container.update_sun_profiles_library_path(
+        scs_globals.sun_profiles_inventory,
+        scs_globals.sun_profiles_lib_path,
         readonly
     )

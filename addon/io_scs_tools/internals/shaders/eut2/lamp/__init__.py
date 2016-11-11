@@ -49,6 +49,8 @@ class Lamp(DifSpec):
 
         :param node_tree: node tree on which this shader should be created
         :type node_tree: bpy.types.NodeTree
+        :param init_dif_spec should dif spec be initilized, True by default
+        :type init_dif_spec bool
         :param start_pos_x: x start position
         :type start_pos_x: int
         :param start_pos_y: y start position
@@ -61,7 +63,7 @@ class Lamp(DifSpec):
         if init_dif_spec:
             DifSpec.init(node_tree)
 
-        out_mat_n = node_tree.nodes[DifSpec.OUT_MAT_NODE]
+        compose_lighting_n = node_tree.nodes[DifSpec.COMPOSE_LIGHTING_NODE]
         output_n = node_tree.nodes[DifSpec.OUTPUT_NODE]
 
         # move existing
@@ -100,7 +102,7 @@ class Lamp(DifSpec):
         node_tree.links.new(lampmask_mixr_gn.inputs["UV Vector"], sec_geom_n.outputs["UV"])
 
         node_tree.links.new(out_add_lampmask_n.inputs["Color1"], lampmask_mixr_gn.outputs["Lampmask Addition Color"])
-        node_tree.links.new(out_add_lampmask_n.inputs["Color2"], out_mat_n.outputs["Color"])
+        node_tree.links.new(out_add_lampmask_n.inputs["Color2"], compose_lighting_n.outputs["Composed Color"])
 
         node_tree.links.new(output_n.inputs["Color"], out_add_lampmask_n.outputs["Color"])
 

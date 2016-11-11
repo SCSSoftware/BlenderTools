@@ -57,7 +57,7 @@ class WindowNight(DifSpecAddEnv):
         base_tex_n = node_tree.nodes[DifSpecAddEnv.BASE_TEX_NODE]
         diff_mult_n = node_tree.nodes[DifSpecAddEnv.DIFF_MULT_NODE]
         out_mat_n = node_tree.nodes[DifSpecAddEnv.OUT_MAT_NODE]
-        out_add_refl_n = node_tree.nodes[DifSpecAddEnv.OUT_ADD_REFL_NODE]
+        compose_lighting_n = node_tree.nodes[DifSpecAddEnv.COMPOSE_LIGHTING_NODE]
         output_n = node_tree.nodes[DifSpecAddEnv.OUTPUT_NODE]
 
         # move existing
@@ -132,10 +132,11 @@ class WindowNight(DifSpecAddEnv):
         node_tree.links.new(out_mat_n.inputs["Spec"], spec_col_n.outputs["Color"])
 
         # post pass 1
-        node_tree.links.new(out_add_refl_n.inputs["Color2"], diff_mult_n.outputs["Color"])
+        node_tree.links.new(compose_lighting_n.inputs["Diffuse Color"], diff_mult_n.outputs["Color"])
+        node_tree.links.new(compose_lighting_n.inputs["Material Color"], diff_mult_n.outputs["Color"])
 
         # post pass 2
-        node_tree.links.new(out_add_spec_n.inputs["Color1"], out_add_refl_n.outputs["Color"])
+        node_tree.links.new(out_add_spec_n.inputs["Color1"], compose_lighting_n.outputs["Composed Color"])
         node_tree.links.new(out_add_spec_n.inputs["Color2"], out_mat_n.outputs["Spec"])
 
         # output pass

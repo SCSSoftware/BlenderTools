@@ -31,7 +31,7 @@ _VCOL_GAMMA_CORR_N = "VertexColorGamma"
 _VCOL_GAMMA_CORR_A_N = "VertexColorAGamma"
 _VCOL_SATURATE_N = "VertexColorSaturation"
 _ALPHA_TO_BW_N = "VertexColAToBW"
-_VCOL_NORM_N = "VertexColorNormalize"
+_VCOL_NORM_N = "VertexColorNormalize"  # some kind of HDR compensation
 _VCOL_NORM_A_N = "VertexColorAlphaNormalize"
 
 

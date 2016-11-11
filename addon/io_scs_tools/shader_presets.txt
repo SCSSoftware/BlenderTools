@@ -1182,7 +1182,7 @@ Shader {
 Shader {
     PresetName: "lamp"
     Effect: "eut2.lamp"
-    Flavors: ( "NMAP|NMAPUV|NMAP_16|NMAPUV_16" "ENVMAP" "SHADOW" )
+    Flavors: ( "NMAP|NMAPUV|NMAP_16|NMAPUV_16" "SHADOW" "ENVMAP" )
     Flags: 0
     Attribute {
         Format: FLOAT3
@@ -1482,42 +1482,42 @@ Shader {
     Attribute {
         Format: FLOAT
         Tag: "shininess"
-        Value: ( 90.0 )
+        Value: ( 10.0 )
     }
     Attribute {
         Format: FLOAT3
         Tag: "env_factor"
-        Value: ( 0.5 0.5 0.5 )
+        Value: ( 1.0 1.0 1.0 )
     }
     Attribute {
         Format: FLOAT3
         Tag: "aux[0]"
         FriendlyTag: "Distances (Near, Far, Scramble)"
-        Value: ( 700.0 1650.0 10.0 )
+        Value: ( 100.0 200.0 2.0 )
     }
     Attribute {
         Format: FLOAT3
         Tag: "aux[1]"
         FriendlyTag: "Near Color"
-        Value: ( 0.012, 0.022, 0.045 )
+        Value: ( 0.188, 0.302, 0.400 )
     }
     Attribute {
         Format: FLOAT3
         Tag: "aux[2]"
         FriendlyTag: "Horizon Color"
-        Value: ( 0.100, 0.19, 0.42 )
+        Value: ( 0.188, 0.302, 0.400 )
     }
     Attribute {
         Format: FLOAT4
         Tag: "aux[3]"
         FriendlyTag: "Layer0 (Yaw, Speed, ScaleX, ScaleY)"
-        Value: ( -8.0, 0.8, 70, 40 )
+        Value: ( 0.0, 0.1, 1.0, 1.0 )
     }
     Attribute {
         Format: FLOAT4
         Tag: "aux[4]"
         FriendlyTag: "Layer1 (Yaw, Speed, ScaleX, ScaleY)"
-        Value: ( 5.0, 0.5, 50, 17 )
+        Value: ( 20.0, 0.05, 2.0, 2.0 )
     }
     Texture {
         Tag: "texture[X]:texture_layer0"

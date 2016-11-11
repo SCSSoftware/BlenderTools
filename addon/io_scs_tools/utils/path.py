@@ -110,6 +110,10 @@ def get_abs_path(path_in, subdir_path='', is_dir=False, skip_mod_check=False):
     :return: Absolute path or None
     :rtype: str
     """
+
+    # correct skip mod check switch if usage of alternative bases is switched off by user
+    skip_mod_check |= not _get_scs_globals().use_alternative_bases
+
     root_path = _get_scs_globals().scs_project_path
     if subdir_path != '':
         root_path = os.path.join(root_path, subdir_path)
@@ -135,6 +139,59 @@ def get_abs_path(path_in, subdir_path='', is_dir=False, skip_mod_check=False):
         result = get_abs_path(path_in, subdir_path=subdir_path, is_dir=is_dir, skip_mod_check=True)
 
     return result
+
+
+def get_abs_paths(filepath, is_dir=False, include_nonexist_alternative_bases=False, use_infixed_search=False):
+    """Gets existing absolute paths to the "SCS Project Base Path" including searching for "base" folder
+    one and two levels higher in filesystem hierachy.
+
+    :param filepath: relative or absolute filepath
+    :type filepath: str
+    :param is_dir: flag specifying if given path should be directory
+    :type is_dir: bool
+    :param include_nonexist_alternative_bases: flag specifying if none existing absolute filepaths from alternative bases should be included in result
+    :type include_nonexist_alternative_bases: bool
+    :param use_infixed_search: search also for infixed filepaths? Meant for infixed library SII file searching eg. sign.dlc_north.sii
+    :type use_infixed_search: bool
+    :return: list of absolute paths or empty list if path not found
+    :rtype: list[str]
+    """
+
+    abs_paths = {}
+    """
+    Store paths in dictionary to easily filter out duplicated paths.
+    So make sure to use normalized paths as keys and actual paths as values which should be returned as result.
+    """
+
+    existance_check = os.path.isdir if is_dir else os.path.isfile
+
+    for i, sub_dir in enumerate(("", "../base", "../../base")):
+
+        # only search for additional absolute paths if usage of alternative bases isn't switched off by user
+        if i > 0 and not _get_scs_globals().use_alternative_bases:
+            continue
+
+        # additionally search for infixed files (eg. sign.dlc_north.sii)
+        if use_infixed_search:
+            infixed_files = get_all_infixed_file_paths(get_abs_path(filepath, subdir_path=sub_dir, is_dir=is_dir, skip_mod_check=True))
+        else:
+            infixed_files = [get_abs_path(filepath, subdir_path=sub_dir, is_dir=is_dir, skip_mod_check=True)]
+
+        for resulted_path in infixed_files:
+
+            # ignore not found paths
+            if resulted_path is None:
+                continue
+
+            # create normalized path to properly gather only unique paths
+            normalized_resulted_path = full_norm(resulted_path)
+            if (include_nonexist_alternative_bases or existance_check(resulted_path)) and normalized_resulted_path not in abs_paths:
+                abs_paths[normalized_resulted_path] = resulted_path
+
+    # we are returning de-normalized paths, as they might be used in printout and precious information
+    # about origin of the path can be lost. (Eg. library was found in parent "base" directory,
+    # but if we return normalized path this information will be lost)
+    return abs_paths.values()
 
 
 def is_valid_shader_texture_path(shader_texture):
@@ -251,6 +308,20 @@ def is_valid_matsubs_library_rel_path():
     # print(' matsubs_library_abs_path: %r' % str(matsubs_library_abs_path))
     if matsubs_library_abs_path:
         if os.path.isfile(matsubs_library_abs_path):
+            return True
+        else:
+            return False
+    else:
+        return False
+
+
+def is_valid_sun_profiles_library_path():
+    """It returns True if there is valid "*.sii" file in
+    the Sun Profiles Library directory, otherwise False."""
+    sun_profiles_lib_path = get_abs_path(_get_scs_globals().sun_profiles_lib_path)
+
+    if sun_profiles_lib_path:
+        if os.path.isfile(sun_profiles_lib_path):
             return True
         else:
             return False
@@ -552,6 +623,10 @@ def get_all_infixed_file_paths(filepath, include_given_path=True):
     :return: list of all infixed files; optionally given filepath can be added to result list too
     :rtype: list[str]
     """
+
+    # in-fixed file paths can not be searched upon none, so return empty list
+    if filepath is None:
+        return []
 
     infixed_filepaths = [filepath] if include_given_path else []
 

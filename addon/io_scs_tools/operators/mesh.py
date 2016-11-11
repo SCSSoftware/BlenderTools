@@ -21,7 +21,6 @@
 import bmesh
 import bpy
 from bpy.props import StringProperty, FloatProperty
-
 from io_scs_tools.consts import Mesh as _MESH_consts
 from io_scs_tools.consts import LampTools as _LT_consts
 from io_scs_tools.consts import VertexColorTools as _VCT_consts
@@ -312,69 +311,5 @@ class VertexColorTools:
                         # setting neutral value (0.5) to all colors
                         for vertex_col_data in obj.data.vertex_colors[curr_lay_name].data:
                             vertex_col_data.color = (0.5,) * 3
-
-            return {'FINISHED'}
-
-
-class NormalMap:
-    """
-    Wrapper class for better navigation in file
-    """
-
-    class EnsureActiveUV(bpy.types.Operator):
-        bl_label = "Ensure Active UV"
-        bl_idname = "mesh.scs_ensure_active_uv"
-        bl_description = "Sets Nmap texture mapping as active on all meshes using this material." \
-                         "(Needed because Blender calculates tangents upon active UV)"
-
-        mat_name = StringProperty(
-            default="",
-            options={'HIDDEN'},
-        )
-
-        uv_layer = StringProperty(
-            default="",
-            options={'HIDDEN'},
-        )
-
-        def execute(self, context):
-
-            if self.mat_name != "" and self.uv_layer != "":
-
-                changed_count = 0
-                unchanged_count = 0
-                recognized_count = 0
-                for obj in bpy.data.objects:
-
-                    if obj.type == "MESH" and obj.data:
-
-                        for mat_slot in obj.material_slots:
-                            if mat_slot.material and mat_slot.material.name == self.mat_name:
-
-                                # find uv layer which is used for normal map and mark it as active
-                                for i, uv_tex in enumerate(obj.data.uv_textures):
-                                    if uv_tex.name == self.uv_layer:
-
-                                        if obj.data.uv_textures.active_index != i:
-                                            obj.data.uv_textures.active_index = i
-                                            changed_count += 1
-                                        else:
-                                            unchanged_count += 1
-
-                                        break
-
-                                recognized_count += 1
-                                break
-
-                if recognized_count > 0:
-                    if recognized_count == unchanged_count:
-                        self.report({"INFO"}, "All meshes already have proper active UV.")
-                    elif recognized_count == unchanged_count + changed_count:
-                        self.report({"INFO"}, "Active UV changed on %i objects." % changed_count)
-                    else:
-                        self.report({"ERROR"}, "UV layers out of sync on some objects. Active UVs changed on %i from %i objects!" %
-                                    (changed_count, recognized_count))
-                else:
-                    self.report({"INFO"}, "None object is using this material. No changes made.")
 
             return {'FINISHED'}

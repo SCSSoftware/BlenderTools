@@ -21,7 +21,7 @@
 import bpy
 from io_scs_tools.internals.shaders.flavors import nmap
 
-DET_NMAP_MAT_NODE = "DetailNormalMapMat"
+DET_NMAP_NODE = "DetailNormalMapMat"
 DET_NMAP_TEX_NODE = "DetailNMapTex"
 DET_NMAP_SCALE_GNODE = "DetailNMapScaleGroup"
 DET_NMAP_UV_SCALE_NODE = "DetailNMapUVScale"
@@ -59,12 +59,12 @@ def __create_nodes__(node_tree, location, uv_scale_from, det_nmap_strength_from,
     det_nmap_tex_n.name = det_nmap_tex_n.label = DET_NMAP_TEX_NODE
     det_nmap_tex_n.location = (location[0] - 185, location[1] - 600)
 
-    det_nmap_mat_n = node_tree.nodes.new("ShaderNodeMaterial")
-    det_nmap_mat_n.parent = frame
-    det_nmap_mat_n.name = det_nmap_mat_n.label = DET_NMAP_MAT_NODE
-    det_nmap_mat_n.location = (location[0], location[1] - 800)
-    det_nmap_mat_n.use_diffuse = False
-    det_nmap_mat_n.use_specular = False
+    det_nmap_n = node_tree.nodes.new("ShaderNodeNormalMap")
+    det_nmap_n.parent = frame
+    det_nmap_n.name = det_nmap_n.label = DET_NMAP_NODE
+    det_nmap_n.location = (location[0], location[1] - 800)
+    det_nmap_n.space = "TANGENT"
+    det_nmap_n.inputs["Strength"].default_value = 1
 
     det_nmap_scale_gn = node_tree.nodes.new("ShaderNodeGroup")
     det_nmap_scale_gn.parent = frame
@@ -118,29 +118,32 @@ def __create_nodes__(node_tree, location, uv_scale_from, det_nmap_strength_from,
     node_tree.links.new(det_nmap_tex_n.inputs['Vector'], det_nmap_uv_scale_n.outputs['Color'])
 
     # pass 3
-    node_tree.links.new(det_nmap_scale_gn.inputs['NMap Tex Color'], det_nmap_tex_n.outputs['Color'])
-    node_tree.links.new(det_nmap_scale_gn.inputs['Original Normal'], nodes[nmap.NMAP_GEOM_NODE].outputs['Normal'])
-    node_tree.links.new(det_nmap_scale_gn.inputs['Modified Normal'], det_nmap_mat_n.outputs['Normal'])
+    node_tree.links.new(det_nmap_n.inputs['Color'], det_nmap_tex_n.outputs['Color'])
 
     # pass 4
+    node_tree.links.new(det_nmap_scale_gn.inputs['NMap Tex Color'], det_nmap_tex_n.outputs['Color'])
+    node_tree.links.new(det_nmap_scale_gn.inputs['Original Normal'], nodes[nmap.NMAP_GEOM_NODE].outputs['Normal'])
+    node_tree.links.new(det_nmap_scale_gn.inputs['Modified Normal'], det_nmap_n.outputs['Normal'])
+
+    # pass 5
     node_tree.links.new(det_nmap_strength_n.inputs['Color1'], det_nmap_strength_from)
     node_tree.links.new(det_nmap_strength_n.inputs['Color2'], det_nmap_scale_gn.outputs['Normal'])
 
-    # pass 5
+    # pass 6
     node_tree.links.new(det_nmap_mix_n.inputs['Color1'], nodes[nmap.NMAP_SCALE_GNODE].outputs['Normal'])
     node_tree.links.new(det_nmap_mix_n.inputs['Color2'], det_nmap_strength_n.outputs['Color'])
 
-    # pass 6
+    # pass 7
     node_tree.links.new(det_nmap_sep_n.inputs['Image'], det_nmap_mix_n.outputs['Color'])
 
     node_tree.links.new(nmap_sep_n.inputs['Image'], nodes[nmap.NMAP_SCALE_GNODE].outputs['Normal'])
 
-    # pass 7
+    # pass 8
     node_tree.links.new(nmap_det_nmap_combine_n.inputs['R'], det_nmap_sep_n.outputs['R'])
     node_tree.links.new(nmap_det_nmap_combine_n.inputs['G'], det_nmap_sep_n.outputs['G'])
     node_tree.links.new(nmap_det_nmap_combine_n.inputs['B'], nmap_sep_n.outputs['B'])
 
-    # pass 8
+    # pass 9
     node_tree.links.new(nmap_normalize_n.inputs[0], nmap_det_nmap_combine_n.outputs['Image'])
 
     node_tree.links.new(normal_to, nmap_normalize_n.outputs['Vector'])
@@ -202,41 +205,6 @@ def set_detail_texture(node_tree, texture):
     # assign texture to texture node first
     node_tree.nodes[DET_NMAP_TEX_NODE].texture = texture
 
-    # search possible existing materials and use it
-    material = None
-    i = 1
-    while ".scs_nmap_" + str(i) in bpy.data.materials:
-
-        curr_mat = bpy.data.materials[".scs_nmap_" + str(i)]
-
-        # grab only material without any users and clear all texture slots
-        if curr_mat.users == 0:
-            material = curr_mat
-
-            for i in range(0, len(material.texture_slots)):
-                material.texture_slots.clear(i)
-
-        i += 1
-
-    # if none is found create new one
-    if not material:
-        material = bpy.data.materials.new(".scs_nmap_" + str(i))
-
-    # finally set texture and it's properties to material
-    tex_slot = material.texture_slots.add()
-    tex_slot.texture_coords = "UV"
-    tex_slot.use_map_color_diffuse = False
-    tex_slot.use_map_normal = True
-    tex_slot.texture = texture
-    tex_slot.normal_map_space = "TANGENT"
-
-    node_tree.nodes[DET_NMAP_MAT_NODE].material = material
-
-    # if uv_layer property is set use it
-    if "uv_layer" in node_tree.nodes[DET_NMAP_MAT_NODE]:
-
-        set_detail_uv(node_tree, node_tree.nodes[DET_NMAP_MAT_NODE]["uv_layer"])
-
     node_tree.nodes.active = old_active
 
 
@@ -249,6 +217,7 @@ def set_uv(node_tree, uv_layer):
     :type uv_layer: str
     """
     nmap.set_uv(node_tree, uv_layer)
+    node_tree.nodes[DET_NMAP_NODE].uv_map = uv_layer
 
 
 def set_detail_uv(node_tree, uv_layer):
@@ -272,41 +241,16 @@ def delete(node_tree, preserve_node=False):
     :type preserve_node: bool
     """
 
-    if DET_NMAP_MAT_NODE in node_tree.nodes:
-        nmap_mat_n = node_tree.nodes[DET_NMAP_MAT_NODE]
-        material = nmap_mat_n.material
-
-        # remove and clear if possible
-        if material and material.users == 1:
-
-            textures = {}
-            # gather all used textures in this material
-            for i, tex_slot in enumerate(material.texture_slots):
-                if tex_slot and tex_slot.texture:
-                    textures[i] = tex_slot.texture
-
-            # remove textures from texture slots first and check if texture can be cleared
-            for slot_i in textures.keys():
-                material.texture_slots.clear(slot_i)
-
-                if textures[slot_i].users <= 1:
-                    textures[slot_i].user_clear()
-
-            # as last delete actually nmap material
-            node_tree.nodes[DET_NMAP_MAT_NODE].material = None
-            material.user_clear()
-            bpy.data.materials.remove(material)
-
-        if not preserve_node:
-            node_tree.nodes.remove(node_tree.nodes[DET_NMAP_UV_SCALE_NODE])
-            node_tree.nodes.remove(node_tree.nodes[DET_NMAP_TEX_NODE])
-            node_tree.nodes.remove(node_tree.nodes[DET_NMAP_MAT_NODE])
-            node_tree.nodes.remove(node_tree.nodes[DET_NMAP_SCALE_GNODE])
-            node_tree.nodes.remove(node_tree.nodes[DET_NMAP_STRENGTH_NODE])
-            node_tree.nodes.remove(node_tree.nodes[DET_NMAP_MIX_NODE])
-            node_tree.nodes.remove(node_tree.nodes[DET_NMAP_SEPARATE_NODE])
-            node_tree.nodes.remove(node_tree.nodes[NMAP_SEPARATE_NODE])
-            node_tree.nodes.remove(node_tree.nodes[NMAP_DET_NMAP_COMBINE_NODE])
-            node_tree.nodes.remove(node_tree.nodes[NMAP_NORMALIZE_NODE])
+    if DET_NMAP_NODE in node_tree.nodes and not preserve_node:
+        node_tree.nodes.remove(node_tree.nodes[DET_NMAP_UV_SCALE_NODE])
+        node_tree.nodes.remove(node_tree.nodes[DET_NMAP_TEX_NODE])
+        node_tree.nodes.remove(node_tree.nodes[DET_NMAP_NODE])
+        node_tree.nodes.remove(node_tree.nodes[DET_NMAP_SCALE_GNODE])
+        node_tree.nodes.remove(node_tree.nodes[DET_NMAP_STRENGTH_NODE])
+        node_tree.nodes.remove(node_tree.nodes[DET_NMAP_MIX_NODE])
+        node_tree.nodes.remove(node_tree.nodes[DET_NMAP_SEPARATE_NODE])
+        node_tree.nodes.remove(node_tree.nodes[NMAP_SEPARATE_NODE])
+        node_tree.nodes.remove(node_tree.nodes[NMAP_DET_NMAP_COMBINE_NODE])
+        node_tree.nodes.remove(node_tree.nodes[NMAP_NORMALIZE_NODE])
 
     nmap.delete(node_tree, preserve_node=preserve_node)

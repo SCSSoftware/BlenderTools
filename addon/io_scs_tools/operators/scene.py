@@ -214,9 +214,9 @@ class Export:
 
                 import traceback
 
-                traceback.print_exc()
-                lprint("E Unexpected %r accured during batch export, see stack trace above.",
-                       (type(e).__name__,),
+                trace_str = traceback.format_exc().replace("\n", "\n\t   ")
+                lprint("E Unexpected %r accured during batch export:\n\t   %s",
+                       (type(e).__name__, trace_str),
                        report_errors=1,
                        report_warnings=1)
 
@@ -591,6 +591,38 @@ class Paths:
             context.window_manager.fileselect_add(self)
             return {'RUNNING_MODAL'}
 
+    class SunProfilesLibraryPath(bpy.types.Operator):
+        """Operator for setting relative path to Material Substance shader files."""
+        bl_label = "Select Sun Profiles Library File"
+        bl_idname = "scene.select_sun_profiles_lib_path"
+        bl_description = "Open a file browser"
+
+        # always set default display type so blender won't be using "last used"
+        display_type = get_filebrowser_display_type()
+
+        filepath = StringProperty(
+            name="Sun Profiles Library File",
+            description="Sun Profiles library relative/absolute file path",
+            subtype='FILE_PATH',
+        )
+        filter_glob = StringProperty(default="*.sii", options={'HIDDEN'})
+
+        def execute(self, context):
+            """Set Material Substance library filepath."""
+            scs_globals = _get_scs_globals()
+
+            if _path_utils.startswith(self.filepath, scs_globals.scs_project_path):
+                self.filepath = _path_utils.relative_path(scs_globals.scs_project_path, self.filepath)
+
+            scs_globals.sun_profiles_lib_path = self.filepath
+            return {'FINISHED'}
+
+        def invoke(self, context, event):
+            """Invoke a file path selector."""
+            self.filepath = _path_utils.get_abs_path(_get_scs_globals().sun_profiles_lib_path)
+            context.window_manager.fileselect_add(self)
+            return {'RUNNING_MODAL'}
+
     class DirSelectorInsideBase(bpy.types.Operator):
         """Operator for setting relative or absolute path to Global Export file."""
         bl_label = "Select Directory"
@@ -651,6 +683,27 @@ class Paths:
             self.directory = _get_scs_globals().scs_project_path
             context.window_manager.fileselect_add(self)
             return {'RUNNING_MODAL'}
+
+    class ReloadLibraryPath(bpy.types.Operator):
+        """Operator for reloading given library."""
+        bl_label = "Reload"
+        bl_idname = "scene.scs_reload_library"
+        bl_description = "Reloads library and updates it with any possible new entries."
+
+        library_path_attr = StringProperty()
+
+        def execute(self, context):
+            scs_globals = _get_scs_globals()
+
+            # if given library path attribute exists in globals then just rewrite it,
+            # as this will trigger property update function which will take care of reloading library
+            if hasattr(scs_globals, self.library_path_attr):
+                setattr(scs_globals, self.library_path_attr, getattr(scs_globals, self.library_path_attr))
+                self.report({'INFO'}, "Library updated!")
+            else:
+                self.report({'ERROR'}, "Unknown library, update aborted!")
+
+            return {'FINISHED'}
 
 
 class Animation:
@@ -1063,11 +1116,14 @@ class ConversionHelper:
                         personal = winreg.QueryValueEx(key, "Personal")
                         game_path = str(personal[0])
 
-                except OSError as e:
+                except OSError:
                     import traceback
 
-                    lprint("E Error while looking for My Documents in registry: %r", type(e).__name__)
-                    traceback.print_exc()
+                    trace_str = traceback.format_exc().replace("\n", "\n\t   ")
+                    lprint("E Error while looking for My Documents in registry:\n\t   %s",
+                           (trace_str,),
+                           report_errors=1,
+                           report_warnings=1)
 
             return game_path
 
@@ -1220,8 +1276,7 @@ class Log:
             bpy.ops.text.select_all(override)
             bpy.ops.text.copy(override)
 
-            text.user_clear()
-            bpy.data.texts.remove(text)
+            bpy.data.texts.remove(text, do_unlink=True)
 
             self.report({'INFO'}, "Blender Tools log copied to clipboard!")
             return {'FINISHED'}

@@ -84,3 +84,19 @@ def tokenize_name(name, default_name="default"):
         new_name = default_name
 
     return new_name
+
+
+def is_valid_scs_root_object_name(name):
+    """Checks name of the SCS Root Objects for invalid charachters and
+    returns True if name is valid.
+
+    :param name: SCS Root Object name
+    :type name: str
+    :return: True if valid, False otherwise
+    :rtype: bool
+    """
+    for letter in name:
+        if not re.match("[A-Za-z0-9\.\-_]", letter):
+            return False
+
+    return True

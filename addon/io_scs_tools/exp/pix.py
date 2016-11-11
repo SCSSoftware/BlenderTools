@@ -140,15 +140,15 @@ def export(dirpath, root_object, game_object_list):
 
         if len(mesh_objects) == 0:
             context.window.cursor_modal_restore()
-            lprint("E Animated SCS Game Object has to have at least one mesh object!\n\t   " +
-                   "SCS Game Object %r won't be exported!",
+            lprint("E Rejecting animated Game Object with SCS Root Object name %r.\n\t   "
+                   "Animated Game Object has to have at least one mesh object!",
                    (root_object.name,))
             return False
 
     if len(mesh_objects) == 0 and len(model_locators) == 0:
         context.window.cursor_modal_restore()
-        lprint("E SCS Game Object has to have at least one mesh object or model locator!\n\t   " +
-               "SCS Game Object %r won't be exported!",
+        lprint("E Rejecting empty Game Object with SCS Root Object name: %r\n\t   " +
+               "Game Object has to have at least one mesh object or model locator!",
                (root_object.name,))
         return False
 
@@ -200,12 +200,29 @@ def export(dirpath, root_object, game_object_list):
                 # make sure to get relative path from PIA to PIS (animations may use custom export path)
                 skeleton_filepath = _path_utils.get_skeleton_relative_filepath(armature_object, anim_dirpath, root_object.name)
 
+                exported_anims_names = {}  # store exported animations paths, so we can report duplicates and overwrites
+
                 for scs_anim in root_object.scs_object_animation_inventory:
 
                     if scs_anim.export:  # check if export is disabled on animation itself
 
                         # TODO: use bones transitional variable for safety checks
-                        _pia.export(root_object, armature_object, scs_anim, anim_dirpath, skeleton_filepath)
+                        export_success = _pia.export(root_object, armature_object, scs_anim, anim_dirpath, skeleton_filepath)
+
+                        if export_success:
+
+                            if scs_anim.name not in exported_anims_names:
+                                exported_anims_names[scs_anim.name] = 1
+                            else:
+                                exported_anims_names[scs_anim.name] += 1
+
+                for anim_name, export_count in exported_anims_names.items():
+
+                    if export_count > 1:
+
+                        lprint("W Detected %s animation instances on SCS Root Object: %r with same name: %r.\n\t   "
+                               "Only last one stayed exported as it overwrote previous ones!",
+                               (export_count, root_object.name, anim_name))
 
             else:
                 lprint("E Custom animations export path is not relative to SCS Project Base Path.\n\t   " +

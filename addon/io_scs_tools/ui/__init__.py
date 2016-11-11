@@ -24,3 +24,4 @@ from io_scs_tools.ui import scene
 from io_scs_tools.ui import object
 from io_scs_tools.ui import material
 from io_scs_tools.ui import mesh
+from io_scs_tools.ui import world

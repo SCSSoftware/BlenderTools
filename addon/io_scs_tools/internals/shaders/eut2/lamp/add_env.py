@@ -42,7 +42,7 @@ class LampAddEnv(Lamp, DifSpecAddEnv):
 
         out_add_lampmask_n = node_tree.nodes[Lamp.OUT_ADD_LAMPMASK_NODE]
         out_add_lampmask_n.location.y -= 300
-        out_add_refl_n = node_tree.nodes[DifSpecAddEnv.OUT_ADD_REFL_NODE]
+        compose_lighting_n = node_tree.nodes[DifSpecAddEnv.COMPOSE_LIGHTING_NODE]
 
         # links fixing
-        node_tree.links.new(out_add_lampmask_n.inputs["Color2"], out_add_refl_n.outputs["Color"])
+        node_tree.links.new(out_add_lampmask_n.inputs["Color2"], compose_lighting_n.outputs["Composed Color"])

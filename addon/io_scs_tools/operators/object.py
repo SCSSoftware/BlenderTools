@@ -27,12 +27,15 @@ from io_scs_tools.consts import Look as _LOOK_consts
 from io_scs_tools.consts import Part as _PART_consts
 from io_scs_tools.consts import Variant as _VARIANT_consts
 from io_scs_tools.consts import Operators as _OP_consts
+from io_scs_tools.consts import Icons as _ICONS_consts
 from io_scs_tools.internals import inventory as _inventory
 from io_scs_tools.internals import looks as _looks
+from io_scs_tools.internals.icons import get_icon as _get_icon
 from io_scs_tools.internals.connections.wrappers import group as _connection_group_wrapper
 from io_scs_tools.internals.open_gl.storage import terrain_points as _terrain_points_storage
 from io_scs_tools.operators.bases.selection import Selection as _BaseSelectionOperator
 from io_scs_tools.operators.bases.view import View as _BaseViewOperator
+from io_scs_tools.properties.object import ObjectSCSTools as _ObjectSCSTools
 from io_scs_tools.utils.printout import lprint
 from io_scs_tools.utils import object as _object_utils
 from io_scs_tools.utils import name as _name_utils
@@ -2075,6 +2078,115 @@ class Animation:
             else:
                 lprint("W No active 'SCS Animation' to remove!")
             return {'FINISHED'}
+
+
+class AddObject(bpy.types.Operator):
+    """Creates and links locator or SCS Root to the scenes."""
+    bl_label = "Add SCS Object"
+    bl_idname = "object.scs_add_object"
+    bl_description = "Create SCS object of choosen type at 3D coursor position \n" \
+                     "(when locator is created it will also be parented to SCS Root, if currently active)."
+
+    # create function for retrieving items so custom icons can be used
+    def new_object_type_items(self, context):
+        return [
+            (
+                'Root Object', "Root Object", "Creates SCS Root Object add parents any selected objects to it.",
+                _get_icon(_ICONS_consts.Types.scs_root), 0
+            ),
+            (
+                'Prefab Locator', "Prefab Locator", "Creates prefab locator + creates parent to SCS Root if currently active.",
+                _get_icon(_ICONS_consts.Types.loc_prefab), 1
+            ),
+            (
+                'Model Locator', "Model Locator", "Creates model locator + creates parent to SCS Root if currently active.",
+                _get_icon(_ICONS_consts.Types.loc_model), 2
+            ),
+            (
+                'Collision Locator', "Collision Locator", "Creates collision locator + creates parent to SCS Root if currently active.",
+                _get_icon(_ICONS_consts.Types.loc_collider), 3
+            ),
+        ]
+
+    new_object_type = bpy.props.EnumProperty(
+        items=new_object_type_items
+    )
+
+    prefab_type = bpy.props.EnumProperty(
+        name="Prefab Locator Type",
+        description="Defines type of new prefab locator.",
+        items=_ObjectSCSTools.locator_prefab_type_items
+    )
+
+    collider_type = bpy.props.EnumProperty(
+        name="Collision Locator Type",
+        description="Defines type of new collision locator.",
+        items=_ObjectSCSTools.locator_collider_type_items
+    )
+
+    def draw(self, context):
+        col = self.layout.column()
+
+        # draw invoke props dialog depending on which type of locator user selected
+        if self.new_object_type == "Prefab Locator":
+
+            col.label(text="Prefab Locator Type:")
+            col.prop(self, "prefab_type", text="")
+
+        elif self.new_object_type == "Collision Locator":
+
+            col.label(text="Collision Locator Type:")
+            col.prop(self, "collider_type", text="")
+
+        return
+
+    def execute(self, context):
+        lprint("D " + self.bl_label + "...")
+
+        # save active object for later parenting of locator
+        active_obj = context.active_object
+
+        if self.new_object_type == "Root Object":
+
+            bpy.ops.object.create_scs_root_object()
+
+        else:
+
+            if self.new_object_type == "Prefab Locator":
+                new_loc = _object_utils.create_locator_empty("pl", context.scene.cursor_location, data_type="Prefab", blend_coords=True)
+                new_loc.scs_props.locator_prefab_type = self.prefab_type
+            elif self.new_object_type == "Model Locator":
+                new_loc = _object_utils.create_locator_empty("ml", context.scene.cursor_location, data_type="Model", blend_coords=True)
+            else:
+                new_loc = _object_utils.create_locator_empty("cl", context.scene.cursor_location, data_type="Collision", blend_coords=True)
+                new_loc.scs_props.locator_collider_type = self.collider_type
+
+            # if previous active object was SCS root then automatically parent new locator to it
+            if active_obj and _object_utils.get_scs_root(active_obj) == active_obj:
+
+                # 1. deselect all
+                bpy.ops.object.select_all(action='DESELECT')
+
+                # 2. prepare selection for parenting: select new locator, scs root and set scs root as active object
+                new_loc.select = True
+                active_obj.select = True
+                context.scene.objects.active = active_obj
+
+                # 3. execute parenting (selected -> active)
+                bpy.ops.object.parent_set(type='OBJECT', keep_transform=True)
+
+                # 4. switch active to new locator so user can continue working on it
+                context.scene.objects.active = new_loc
+
+        return {'FINISHED'}
+
+    def invoke(self, context, event):
+
+        # get extra input from user to decide which type of prefab or collision locator should be created
+        if self.new_object_type in ("Prefab Locator", "Collision Locator"):
+            return context.window_manager.invoke_props_dialog(self, width=150)
+
+        return self.execute(context)
 
 
 class BlankOperator(bpy.types.Operator):

@@ -49,7 +49,7 @@ class DifLumSpec(DifSpec):
         DifSpec.init(node_tree)
 
         output_n = node_tree.nodes[DifSpec.OUTPUT_NODE]
-        out_mat_n = node_tree.nodes[DifSpec.OUT_MAT_NODE]
+        compose_lighting_n = node_tree.nodes[DifSpec.COMPOSE_LIGHTING_NODE]
         base_tex_n = node_tree.nodes[DifSpec.BASE_TEX_NODE]
         spec_col_n = node_tree.nodes[DifSpec.SPEC_COL_NODE]
 
@@ -63,13 +63,13 @@ class DifLumSpec(DifSpec):
 
         lum_boost_mix_n = node_tree.nodes.new("ShaderNodeMixRGB")
         lum_boost_mix_n.name = lum_boost_mix_n.label = DifLumSpec.LUM_BOOST_MIX_NODE
-        lum_boost_mix_n.location = (out_mat_n.location.x, out_mat_n.location.y + 300)
+        lum_boost_mix_n.location = (compose_lighting_n.location.x, compose_lighting_n.location.y + 200)
         lum_boost_mix_n.blend_type = "MULTIPLY"
         lum_boost_mix_n.inputs["Fac"].default_value = 1.0
 
         lum_mix_n = node_tree.nodes.new("ShaderNodeMixRGB")
         lum_mix_n.name = lum_mix_n.label = DifLumSpec.LUM_MIX_NODE
-        lum_mix_n.location = (out_mat_n.location.x + pos_x_shift, out_mat_n.location.y + 200)
+        lum_mix_n.location = (compose_lighting_n.location.x + pos_x_shift, compose_lighting_n.location.y + 100)
         lum_mix_n.blend_type = "MIX"
 
         # links creation
@@ -77,7 +77,7 @@ class DifLumSpec(DifSpec):
         node_tree.links.new(lum_boost_mix_n.inputs['Color2'], base_tex_n.outputs['Color'])
 
         node_tree.links.new(lum_mix_n.inputs['Fac'], base_tex_n.outputs['Color'])
-        node_tree.links.new(lum_mix_n.inputs['Color1'], out_mat_n.outputs['Color'])
+        node_tree.links.new(lum_mix_n.inputs['Color1'], compose_lighting_n.outputs['Composed Color'])
         node_tree.links.new(lum_mix_n.inputs['Color2'], lum_boost_mix_n.outputs['Color'])
 
         node_tree.links.new(output_n.inputs['Color'], lum_mix_n.outputs['Color'])

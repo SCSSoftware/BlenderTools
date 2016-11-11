@@ -135,10 +135,12 @@ def get_texture(texture_path, texture_type, report_invalid=False):
         # set proper color space depending on texture type
         if texture_type == "nmap":
             # For TGA normal maps texture use Non-Color color space as it should be,
-            # but for 16-bits PNG normal maps texture sRGB has to be used
+            # but for 16-bits PNG normal maps texture Linear has to be used
             # otherwise Blender completely messes up normals calculation
             if texture.image.filepath.endswith(".tga"):
                 texture.image.colorspace_settings.name = "Non-Color"
+            elif texture.image.filepath.endswith(".png") and texture.image.is_float:
+                texture.image.colorspace_settings.name = "Linear"
             else:
                 texture.image.colorspace_settings.name = "sRGB"
         else:
@@ -469,6 +471,14 @@ def set_shader_data_to_material(material, section, is_import=False, override_bac
 
                     # apply uv mappings either from imported data or from old mappings of previous shader
                     if "scs_tex_aliases" in material:  # scs_tex_aliases are present only on import
+
+                        # if mesh is corrupted then tex aliases won't be filled in properly in material from PIM importer,
+                        # so report error and skip creation of texture mapping for current tex_coord.
+                        if str(tex_coord) not in material["scs_tex_aliases"]:
+                            lprint("E Material %r is missing texture coordinate aliases, some UV mappings in Material Textures will remain empty!",
+                                   (material.name,))
+                            continue
+
                         mapping['value'] = material["scs_tex_aliases"][str(tex_coord)]
                         created_tex_mappings.append((tex_type, mapping.value, tex_coord))
 

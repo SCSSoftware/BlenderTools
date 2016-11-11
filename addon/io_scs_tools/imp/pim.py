@@ -588,7 +588,7 @@ def _create_5_piece(
     context.window_manager.progress_update(0.6)
 
     # Add the mesh as an object into the scene with this utility module.
-    obj = bpy_object_utils.object_data_add(context, mesh).object
+    obj = bpy_object_utils.object_data_add(context, mesh, use_active_layer=False).object
     obj.scs_props.object_identity = obj.name
     obj.location = (0.0, 0.0, 0.0)
 

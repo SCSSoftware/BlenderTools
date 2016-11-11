@@ -21,6 +21,7 @@
 import bpy
 import os
 from io_scs_tools.consts import Mesh as _MESH_consts
+from io_scs_tools.internals.shader_presets import cache as _shader_presets_cache
 from io_scs_tools.utils import object as _object_utils
 from io_scs_tools.utils import path as _path_utils
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
@@ -85,27 +86,69 @@ def _draw_shader_flavors(layout, mat):
     for preset in _get_shader_presets_inventory():
         if preset.name == mat.scs_props.active_shader_preset_name:
 
+            # if there is no flavors in found preset,
+            # then we don't have to draw anything so exit drawing shader flavors right away
+            if len(preset.flavors) <= 0:
+                return
+
             # strip of base effect name, to avoid any flavor matching in base effect name
             effect_flavor_part = mat.scs_props.mat_effect_name[len(preset.effect):]
 
-            if len(preset.flavors) > 0:
+            column = layout.column(align=True)
+            column.alignment = "LEFT"
 
-                column = layout.box().column(align=True)
-                column.alignment = "LEFT"
-
-            for flavor in preset.flavors:
+            # draw switching operator for each flavor (if there is more variants draw operator for each variant)
+            enabled_flavors = {}  # store enabled flavors, for later analyzing which rows should be disabled
+            flavor_rows = []  # store row UI layout of flavor operators, for later analyzing which rows should be disabled
+            for i, flavor in enumerate(preset.flavors):
 
                 row = column.row(align=True)
+                flavor_rows.append(row)
 
                 for flavor_variant in flavor.variants:
 
                     is_in_middle = "." + flavor_variant.name + "." in effect_flavor_part
                     is_on_end = effect_flavor_part.endswith("." + flavor_variant.name)
+                    flavor_enabled = is_in_middle or is_on_end
 
-                    icon = "FILE_TICK" if is_in_middle or is_on_end else "X"
+                    icon = "FILE_TICK" if flavor_enabled else "X"
                     props = row.operator("material.scs_switch_flavor", text=flavor_variant.name, icon=icon)
                     props.flavor_name = flavor_variant.name
-                    props.flavor_enabled = is_in_middle or is_on_end
+                    props.flavor_enabled = flavor_enabled
+
+                    if flavor_enabled:
+                        enabled_flavors[i] = flavor_variant
+
+            # now as we drawn the flavors and we know which ones are enabled,
+            # search the ones that are not compatible with currently enabled flavors and disable them in UI!
+            for i, flavor in enumerate(preset.flavors):
+
+                # enabled flavors have to stay enabled so skip them
+                if i in enabled_flavors:
+                    continue
+
+                for flavor_variant in flavor.variants:
+
+                    # 1. construct proposed new flavor string:
+                    # combine strings of enabled flavors and current flavor variant
+                    new_flavor_str = ""
+                    curr_flavor_added = False
+                    for enabled_i in enabled_flavors.keys():
+
+                        if i < enabled_i and not curr_flavor_added:
+                            new_flavor_str += "." + flavor_variant.name
+                            curr_flavor_added = True
+
+                        new_flavor_str += "." + enabled_flavors[enabled_i].name
+
+                    if not curr_flavor_added:
+                        new_flavor_str += "." + flavor_variant.name
+
+                    # 2. check if proposed new flavor combination exists in cache:
+                    # if not then row on current flavor index has to be disabled
+                    if not _shader_presets_cache.has_section(preset, new_flavor_str):
+                        flavor_rows[i].enabled = False
+                        break
 
             # once preset was found just use return to skip other presets
             return
@@ -322,29 +365,28 @@ def _draw_shader_texture(layout, mat, split_perc, texture, read_only):
 
             tobj_filepath = _path_utils.get_tobj_path_from_shader_texture(shader_texture)
 
+            tobj_settings_row = layout_box_col.row(align=True)
+            tobj_settings_row = tobj_settings_row.split(percentage=1 / (1 - split_perc + 0.000001) * 0.1, align=True)
+
             if not tobj_filepath:
-                layout_box_inner_col = layout_box_col.row(align=True)
-                item_space = layout_box_inner_col.column(align=True)
-                props = item_space.operator("material.scs_create_tobj", icon="NEW", text="")
+                props = tobj_settings_row.operator("material.scs_create_tobj", icon="NEW", text="")
                 props.texture_type = texture_type
                 # creating extra column->row so it can be properly disabled as tobj doesn't exists
-                item_space = layout_box_inner_col.column(align=True).row(align=True)
-            else:
-                item_space = layout_box_col.row(align=True)
+                tobj_settings_row = tobj_settings_row.column(align=True).row(align=True)
 
             # enable settings only if tobj exists and map type of the tobj is 2d
-            item_space.enabled = tobj_filepath is not None and getattr(mat.scs_props, shader_texture_id + "_map_type", "") == "2d"
+            tobj_settings_row.enabled = tobj_filepath is not None and getattr(mat.scs_props, shader_texture_id + "_map_type", "") == "2d"
 
             if tobj_filepath:
                 mtime = str(os.path.getmtime(tobj_filepath))
-                item_space.alert = (mtime != getattr(mat.scs_props, shader_texture_id + "_tobj_load_time", "NOT FOUND"))
+                tobj_settings_row.alert = (mtime != getattr(mat.scs_props, shader_texture_id + "_tobj_load_time", "NOT FOUND"))
             else:
-                item_space.alert = True
+                tobj_settings_row.alert = True
 
-            props = item_space.operator("material.scs_reload_tobj", icon="LOAD_FACTORY", text="")
+            props = tobj_settings_row.operator("material.scs_reload_tobj", icon="LOAD_FACTORY", text="")
             props.texture_type = texture_type
 
-            item_space.prop_menu_enum(
+            tobj_settings_row.prop_menu_enum(
                 mat.scs_props,
                 str('shader_' + tag_id_string + '_settings'),
                 icon='SETTINGS',
@@ -373,12 +415,6 @@ def _draw_shader_texture(layout, mat, split_perc, texture, read_only):
                                            "also used for defining uv map layer for tangent calculations!\n"
                                            "If the uv map is not provided first entry from Mappings list above will be used!")
                     _shared.draw_warning_operator(item_space_row, "Mapping Info", preview_nmap_msg, icon="INFO")
-
-                # add ensuring operator for norma map uv mapping
-                if tag_id_string == "texture_nmap":
-                    props = item_space_row.operator("mesh.scs_ensure_active_uv", text="", icon="FILE_REFRESH")
-                    props.mat_name = mat.name
-                    props.uv_layer = uv_mappings[0].value
 
                 if mapping.value and mapping.value != "" and mapping.value in bpy.context.active_object.data.uv_layers:
                     icon = "GROUP_UVS"
@@ -439,7 +475,7 @@ def _draw_shader_parameters(layout, mat, scs_props, scs_globals, read_only=False
             col.operator("mesh.scs_add_vcolors_to_active")
             col.operator("mesh.scs_add_vcolors_to_all")
 
-        global_mat_attr = layout.column(align=True)
+        global_mat_attr = layout.column(align=False)
 
         # UI SPLIT PERCENTAGE PROPERTY
         global_mat_attr.row().prop(scs_props, "shader_item_split_percentage", slider=True)
@@ -651,6 +687,9 @@ class SCSMaterialSpecials(_MaterialPanelBlDefs, bpy.types.Panel):
         scene = bpy.context.scene
         mat = context.material
         scs_globals = _get_scs_globals()
+
+        # disable pane if config is being updated
+        layout.enabled = not scs_globals.config_update_lock
 
         if mat:
             # PROVISIONAL SHADER PRESET PANEL

@@ -85,6 +85,8 @@ def _draw_locator_panel(layout, context, scene, obj, enabled=True):
     :type enabled: bool
     """
 
+    loc_set_split_percentage = 0.33  # the best value to match the rest of the layout in locators panel
+
     layout_box = layout.box()
     if scene.scs_props.locator_settings_expand:
         loc_header = layout_box.row()
@@ -96,10 +98,20 @@ def _draw_locator_panel(layout, context, scene, obj, enabled=True):
 
         # MODEL LOCATORS
         if obj.scs_props.locator_type == 'Model':
-            col = layout_box.column()
-            col.prop(obj, 'name')
-            # col.prop(obj.scs_props, 'locator_model_hookup', icon='NONE')
-            col.prop_search(obj.scs_props, 'locator_model_hookup', _get_scs_globals(), 'scs_hookup_inventory', icon='NONE')
+            row = layout_box.row().split(percentage=loc_set_split_percentage)
+            col1 = row.column()
+            col2 = row.column()
+
+            # locator name
+            col1.label("Name:")
+            col2.prop(obj, 'name', text="")
+
+            # locator hookup
+            col1.label("Hookup:")
+            row = col2.row(align=True)
+            props = row.operator('scene.scs_reload_library', icon='FILE_REFRESH', text="")
+            props.library_path_attr = "hookup_library_rel_path"
+            row.prop_search(obj.scs_props, 'locator_model_hookup', _get_scs_globals(), 'scs_hookup_inventory', text="")
             # (MODEL) LOCATOR PREVIEW PANEL
             _draw_locator_preview_panel(layout_box, obj)
 
@@ -193,20 +205,37 @@ def _draw_locator_panel(layout, context, scene, obj, enabled=True):
                 loc_set.operator('object.abort_preview_terrain_points', text="Abort")
 
             if obj.scs_props.locator_prefab_type == 'Sign':
-                loc_set = box_row_box.column()
-                loc_set.prop_search(obj.scs_props, 'locator_prefab_sign_model', _get_scs_globals(), 'scs_sign_model_inventory',
-                                    icon='NONE')
+                loc_set = box_row_box.row().split(percentage=loc_set_split_percentage)
+                loc_set.label("Sign Model:")
+                row = loc_set.row(align=True)
+                props = row.operator('scene.scs_reload_library', icon='FILE_REFRESH', text="")
+                props.library_path_attr = "sign_library_rel_path"
+                row.prop_search(obj.scs_props, 'locator_prefab_sign_model', _get_scs_globals(), 'scs_sign_model_inventory', icon='NONE', text="")
             if obj.scs_props.locator_prefab_type == 'Spawn Point':
                 loc_set = box_row_box.row()
                 loc_set.prop(obj.scs_props, 'locator_prefab_spawn_type', icon='NONE')
             if obj.scs_props.locator_prefab_type == 'Traffic Semaphore':
                 loc_set = box_row_box.column()
-                loc_set.prop(obj.scs_props, 'locator_prefab_tsem_id', icon='NONE')
-                # loc_set.prop(obj.scs_props, 'locator_prefab_tsem_model', icon='NONE')
-                # loc_set.prop(obj.scs_props, 'locator_prefab_tsem_profile', icon='NONE')
-                loc_set.prop_search(obj.scs_props, 'locator_prefab_tsem_profile', _get_scs_globals(), 'scs_tsem_profile_inventory',
-                                    icon='NONE')
-                loc_set.prop(obj.scs_props, 'locator_prefab_tsem_type', icon='NONE')
+                row = loc_set.row(align=True).split(percentage=loc_set_split_percentage)
+                col1 = row.column()
+                col2 = row.column()
+
+                # id
+                col1.label("ID:")
+                col2.prop(obj.scs_props, 'locator_prefab_tsem_id', icon='NONE', text="")
+
+                # profile
+                col1.label("Profile:")
+                row = col2.row(align=True)
+                props = row.operator('scene.scs_reload_library', icon='FILE_REFRESH', text="")
+                props.library_path_attr = "tsem_library_rel_path"
+                row.prop_search(obj.scs_props, 'locator_prefab_tsem_profile', _get_scs_globals(), 'scs_tsem_profile_inventory', icon='NONE', text="")
+
+                # type
+                col1.label("Type:")
+                col2.prop(obj.scs_props, 'locator_prefab_tsem_type', icon='NONE', text="")
+
+                # interval distances and cycle delay
                 loc_set_col = loc_set.column()
                 if obj.scs_props.locator_prefab_tsem_type in ('0', '1'):
                     loc_set_col.enabled = False
@@ -237,13 +266,35 @@ def _draw_locator_panel(layout, context, scene, obj, enabled=True):
                 loc_set.prop(obj.scs_props, 'locator_prefab_np_allowed_veh', icon='NONE')
                 loc_set = box_row_box.row()
                 loc_set.prop(obj.scs_props, 'locator_prefab_np_blinker', icon='NONE', expand=True)
-                loc_set = box_row_box.column()
-                loc_set.prop(obj.scs_props, 'locator_prefab_np_priority_modifier', icon='NONE')
-                loc_set.prop(obj.scs_props, 'locator_prefab_np_traffic_semaphore', icon='NONE')
-                loc_set.prop_search(obj.scs_props, 'locator_prefab_np_traffic_rule', _get_scs_globals(),
-                                    'scs_traffic_rules_inventory', icon='NONE')
-                loc_set.prop(obj.scs_props, 'locator_prefab_np_boundary', icon='NONE')
-                loc_set.prop(obj.scs_props, 'locator_prefab_np_boundary_node', icon='NONE')
+
+                loc_set = box_row_box.row().split(percentage=loc_set_split_percentage)
+                col1 = loc_set.column()
+                col2 = loc_set.column()
+
+                # priority modifier
+                col1.label("Priority Modifier:")
+                col2.prop(obj.scs_props, 'locator_prefab_np_priority_modifier', icon='NONE', text="")
+
+                # traffic semaphore
+                col1.label("Traffic Semaphore:")
+                col2.prop(obj.scs_props, 'locator_prefab_np_traffic_semaphore', icon='NONE', text="")
+
+                # traffic rule
+                col1.label("Traffic Rule:")
+                row = col2.row(align=True)
+                props = row.operator('scene.scs_reload_library', icon='FILE_REFRESH', text="")
+                props.library_path_attr = "traffic_rules_library_rel_path"
+                row.prop_search(obj.scs_props, 'locator_prefab_np_traffic_rule',
+                                _get_scs_globals(), 'scs_traffic_rules_inventory',
+                                icon='NONE', text="")
+
+                # boundary
+                col1.label("Boundary:")
+                col2.prop(obj.scs_props, 'locator_prefab_np_boundary', icon='NONE', text="")
+
+                # boundary node
+                col1.label("Boundary Node:")
+                col2.prop(obj.scs_props, 'locator_prefab_np_boundary_node', icon='NONE', text="")
 
                 loc_set = box_row_box.row()
                 if len(context.selected_objects) == 2:
@@ -322,10 +373,12 @@ def _draw_locator_panel(layout, context, scene, obj, enabled=True):
                     loc_set.operator('object.connect_prefab_locators', text="Connect / Disconnect Map Points", icon='LINKED')
 
             if obj.scs_props.locator_prefab_type == 'Trigger Point':
-                loc_set = box_row_box.row()
-                loc_set.prop_search(obj.scs_props, 'locator_prefab_tp_action',
-                                    _get_scs_globals(), 'scs_trigger_actions_inventory',
-                                    icon='NONE')
+                loc_set = box_row_box.row().split(percentage=loc_set_split_percentage)
+                loc_set.label("Action:")
+                row = loc_set.row(align=True)
+                props = row.operator('scene.scs_reload_library', icon='FILE_REFRESH', text="")
+                props.library_path_attr = "trigger_actions_rel_path"
+                row.prop_search(obj.scs_props, 'locator_prefab_tp_action', _get_scs_globals(), 'scs_trigger_actions_inventory', icon='NONE', text="")
                 loc_set = box_row_box.column(align=True)
                 loc_set.prop(obj.scs_props, 'locator_prefab_tp_range', icon='NONE')
                 loc_set.prop(obj.scs_props, 'locator_prefab_tp_reset_delay', icon='NONE')

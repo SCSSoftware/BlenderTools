@@ -19,6 +19,39 @@
 # Copyright (C) 2013-2014: SCS Software
 
 import bpy
+from io_scs_tools import bl_info
+
+
+def __get_bl_info_version__(key):
+    """Gets version string from bl_info dictonary for given key.
+
+    :param key: key in bl_info contaning version tuple (X, X, X, ..) where X is int number
+    :type key: str
+    :return: string representation of bl_info dictionary value for given key
+    :rtype: str
+    """
+    ver = ""
+    for ver_num in bl_info[key]:
+        ver += str(ver_num) + "."
+    return ver[:-1]
+
+
+def get_tools_version():
+    """Returns Blender Tools version as string from bl_info["version"] dictonary value.
+
+    :return: string representation of bl_info["version"] tuple
+    :rtype: str
+    """
+    return __get_bl_info_version__("version")
+
+
+def get_required_blender_version():
+    """Returns required Blender version as string from bl_info["blender"] dictonary value.
+
+    :return: string representation of bl_info["blender"] tuple
+    :rtype: str
+    """
+    return __get_bl_info_version__("blender")
 
 
 def get_blender_version():
@@ -36,15 +69,28 @@ def get_blender_version():
     return b_ver_str, build_str
 
 
-def get_combined_ver_str():
+def get_combined_ver_str(only_version_numbers=False):
     """Returns combined version string from Blender version and Blender Tools version.
+
+    :param only_version_numbers: True to return only versions without "Blender" and "SCS Blender Tools" strings
+    :type only_version_numbers: bool
     :return: combined version string
     :rtype: str
     """
-    from io_scs_tools import get_tools_version
-
     (version, build) = get_blender_version()
-    return "Blender " + version + build + ", SCS Blender Tools: " + get_tools_version()
+    if only_version_numbers:
+        return version + build + ", " + get_tools_version()
+    else:
+        return "Blender " + version + build + ", SCS Blender Tools: " + get_tools_version()
+
+
+def is_blender_able_to_run_tools():
+    """Tells if Blender version is good enough to run Blender Tools.
+
+    :return: True if current blender version meets required version for Blender Tools; False otherwise
+    :rtype: bool
+    """
+    return cmp_ver_str(bpy.app.version_string, get_required_blender_version()) > -1
 
 
 def cmp_ver_str(version_str, version_str2):
@@ -52,6 +98,8 @@ def cmp_ver_str(version_str, version_str2):
 
     :param version_str: version string to check (should be in format: "X.Y" where X and Y are version numbers)
     :type version_str: str
+    :param version_str2: version string to check (should be in format: "X.Y" where X and Y are version numbers)
+    :type version_str2: str
     :return: -1 if first is greater; 0 if equal; 1 if second is greater;
     :rtype: int
     """

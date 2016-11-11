@@ -73,6 +73,10 @@ def make_scs_root_object(context, dialog=False):
             if not obj.parent.select:
                 scs_game_object_content.append(obj)
 
+    # UN-PARENT OBJECTS - un-parent and keep transformations, so objects stays on same place when re-parenting to new root
+    if context.active_object and len(context.selected_objects) > 0:
+        bpy.ops.object.parent_clear(type='CLEAR_KEEP_TRANSFORM')
+
     # ADD SCS ROOT OBJECT (EMPTY OBJECT)
     bpy.ops.object.empty_add(
         view_align=False,
@@ -147,13 +151,12 @@ def sort_out_game_objects_for_export(objects):
     game_objects_dict = {}
 
     # PRE-SORTING
-    scs_root_objects = []
     data_objects = []
     rejected_objects = []
     for obj in objects:
         if obj.type == 'EMPTY':
             if obj.scs_props.empty_object_type == 'SCS_Root':
-                scs_root_objects.append(obj)
+                game_objects_dict[obj] = []
             elif obj.scs_props.empty_object_type == 'Locator':
                 data_objects.append(obj)
         elif obj.type == 'MESH':
@@ -364,7 +367,9 @@ def make_objects_selected(objects):
     bpy.ops.object.select_all(action='DESELECT')
     if len(objects) > 0:
         for obj in objects:
-            obj.select = True
+            # select only real objects
+            if obj:
+                obj.select = True
 
 
 def pick_objects_from_selection(operator_object, needs_active_obj=True, obj_type='MESH'):
@@ -477,7 +482,11 @@ def create_convex_data(objects, convex_props={}, create_hull=False):
     except RuntimeError:
         import traceback
 
-        traceback.print_exc()
+        trace_str = traceback.format_exc().replace("\n", "\n\t   ")
+        lprint("E Problem creating convex hull:\n\t   %s",
+               (trace_str,),
+               report_errors=1,
+               report_warnings=1)
 
     # RETRIEVE CONVEX DATA
     # print(' > hull: %s' % str(hull))
@@ -830,7 +839,7 @@ def get_vertex_group(layer, vert_index):
     return vg_weight
 
 
-def create_locator_empty(name, loc, rot=(0, 0, 0), scale=(1, 1, 1), size=1.0, data_type='Prefab', hookup=None):
+def create_locator_empty(name, loc, rot=(0, 0, 0), scale=(1, 1, 1), size=1.0, data_type='Prefab', hookup=None, blend_coords=False):
     """
     Creates an empty object for a Locator.
     :param name:
@@ -840,6 +849,7 @@ def create_locator_empty(name, loc, rot=(0, 0, 0), scale=(1, 1, 1), size=1.0, da
     :param size:
     :param data_type:
     :param hookup:
+    :param blend_coords:
     :return:
     """
     rot_quaternion = None
@@ -847,10 +857,15 @@ def create_locator_empty(name, loc, rot=(0, 0, 0), scale=(1, 1, 1), size=1.0, da
         rot_quaternion = rot
         rot = (0, 0, 0)
 
+    if blend_coords:
+        location = loc
+    else:
+        location = _convert.change_to_scs_xyz_coordinates(loc, _get_scs_globals().import_scale)
+
     bpy.ops.object.empty_add(
         type='PLAIN_AXES',
         view_align=False,
-        location=_convert.change_to_scs_xyz_coordinates(loc, _get_scs_globals().import_scale),
+        location=location,
         rotation=rot,
     )
 
@@ -860,7 +875,10 @@ def create_locator_empty(name, loc, rot=(0, 0, 0), scale=(1, 1, 1), size=1.0, da
 
     if rot_quaternion:
         locator.rotation_mode = 'QUATERNION'
-        locator.rotation_quaternion = _convert.change_to_blender_quaternion_coordinates(rot_quaternion)
+        if blend_coords:
+            locator.rotation_quaternion = rot_quaternion
+        else:
+            locator.rotation_quaternion = _convert.change_to_blender_quaternion_coordinates(rot_quaternion)
 
     locator.scale = scale
     locator.scs_props.empty_object_type = 'Locator'

@@ -132,7 +132,10 @@ class Reflective:
         node_tree.nodes[Reflective.OUT_MAT_NODE].use_specular = False
         material.use_transparency = True
         material.transparency_method = "MASK"
-        material.emit = 0.02
+
+        # make sure diffuse intensity and emit factors are properly set on material
+        material.diffuse_intensity = 0.7
+        material.emit = 0
 
     @staticmethod
     def set_base_texture(node_tree, texture):

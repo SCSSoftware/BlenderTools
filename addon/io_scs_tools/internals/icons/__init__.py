@@ -34,38 +34,34 @@ def init():
     """Initialization function for getting hold of preview collection variable with already created custom icon objects.
     """
 
+    # create new preview only once.
+    # NOTE: We removed previews cleanup from code
+    # because it was crashing Blender when rapidly enabling/disabling BT addon.
+    # So instead of always creating new preview collection we rather reuse existing and
+    # only load icons again with force reload flag, to ensure icons are always reloaded when init is called.
     if CUSTOM_ICONS not in _preview_collections:
 
         pcoll = previews.new()
-
-        # load icons
-        tools_paths = _path.get_addon_installation_paths()
-        if len(tools_paths) > 0:
-
-            for icon_type in _ICON_consts.Types.as_list():
-
-                # create path to current icon "ui/icons/icon_type"
-                icon_path = os.path.join(tools_paths[0], 'ui' + os.sep + 'icons' + os.sep + icon_type)
-                if os.path.isfile(icon_path):
-                    if icon_type not in pcoll:
-                        pcoll.load(icon_type, icon_path, 'IMAGE')
-                else:
-                    lprint("W Icon %r is missing. Please try to install addon again!", (icon_type,))
-
         _preview_collections[CUSTOM_ICONS] = pcoll
 
+    else:
 
-def cleanup():
-    """Release custom icons internal data. This results in deleting of preview collections entries
-    and preview collections dictionary itself.
-    """
+        pcoll = _preview_collections[CUSTOM_ICONS]
+        print("INFO\t - Icon collection is already in python memory, re-using it!")
 
-    if CUSTOM_ICONS in _preview_collections:
+    # load icons
+    tools_paths = _path.get_addon_installation_paths()
+    if len(tools_paths) > 0:
 
-        for pcoll in _preview_collections.values():
-            previews.remove(pcoll)
+        for icon_type in _ICON_consts.Types.as_list():
 
-        _preview_collections.clear()
+            # create path to current icon "ui/icons/icon_type"
+            icon_path = os.path.join(tools_paths[0], 'ui' + os.sep + 'icons' + os.sep + icon_type)
+            if os.path.isfile(icon_path):
+                if icon_type not in pcoll:
+                    pcoll.load(icon_type, icon_path, 'IMAGE', force_reload=True)
+            else:
+                lprint("W Icon %r is missing. Please try to install addon again!", (icon_type,))
 
 
 def get_icon(icon_type):

@@ -44,4 +44,4 @@ class DifSpecMultDifSpecAddEnv(DifSpecMultDifSpec, StdAddEnv):
                       DifSpecMultDifSpec.SPEC_COL_NODE,
                       DifSpecMultDifSpec.BASE_TEX_NODE,
                       DifSpecMultDifSpec.OUT_MAT_NODE,
-                      DifSpecMultDifSpec.OUTPUT_NODE)
+                      DifSpecMultDifSpec.COMPOSE_LIGHTING_NODE)

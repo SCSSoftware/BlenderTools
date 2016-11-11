@@ -178,8 +178,15 @@ def execute(dirpath, root_object, armature_object, skeleton_filepath, mesh_objec
                 mesh_pieces[pim_mat_name] = Piece(len(pim_pieces) + len(mesh_pieces), pim_materials[pim_mat_name])
 
                 nmap_uv_layer = pim_materials[pim_mat_name].get_nmap_uv_name()
-                if nmap_uv_layer:  # if there is uv layer used for normal maps then calculate tangents on it
-                    mesh.calc_tangents(uvmap=nmap_uv_layer)
+                # if there is uv layer used for normal maps and that uv layer exists on mesh then calculate tangents on it otherwise report warning
+                if nmap_uv_layer:
+
+                    if nmap_uv_layer in mesh.uv_layers:
+                        mesh.calc_tangents(uvmap=nmap_uv_layer)
+                    else:
+                        lprint("W Unable to calculate normal map tangents for object %r,\n\t   "
+                               "as it's missing UV layer with name: %r, expect problems!",
+                               (mesh_obj.name, nmap_uv_layer))
 
             mesh_piece = mesh_pieces[pim_mat_name]
             """:type: Piece"""
@@ -281,6 +288,12 @@ def execute(dirpath, root_object, armature_object, skeleton_filepath, mesh_objec
 
                 # save to terrain points storage if present in correct vertex group
                 for group in mesh.vertices[vert_i].groups:
+
+                    # if current object doesn't have vertex group found in mesh data, then ignore that group
+                    # This can happen if multiple objects are using same mesh and
+                    # some of them have vertex groups, but others not.
+                    if group.group >= len(mesh_obj.vertex_groups):
+                        continue
 
                     curr_vg_name = mesh_obj.vertex_groups[group.group].name
 

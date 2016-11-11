@@ -18,6 +18,8 @@
 
 # Copyright (C) 2013-2014: SCS Software
 
+from io_scs_tools.utils import convert as _convert_utils
+
 
 class SectionData(object):
     """SCS Section data structure (PIX files):
@@ -107,3 +109,56 @@ class UnitData(object):
         self.type = data_type
         self.id = data_id
         self.props = {}
+
+    def get_prop_as_number(self, prop_name):
+        """Gets given property as float value. If property is there
+        it tries to conver it's value to float.
+
+        :param prop_name: name of property that should hold float value
+        :type prop_name: str
+        :return: float or int if property exists and can be parsed, none otherwise
+        :rtype: float | int | None
+        """
+
+        if prop_name not in self.props:
+            return None
+
+        prop_value = self.props[prop_name]
+
+        if isinstance(prop_value, list):  # if property is array take first item
+            prop_value = prop_value[0]
+
+        if not isinstance(prop_value, str):
+            return None
+
+        return _convert_utils.string_to_number(prop_value)
+
+    def get_prop_as_color(self, prop_name):
+        """Gets given property as color. If property is there
+        it tries to convert it's value of float vector array of length 3.
+
+        :param prop_name: name of the property that should hold color values
+        :type prop_name: str
+        :return: list of 3 floats if property exists and can be parsed, none otherwise
+        :rtype: list[float] | None
+        """
+
+        if prop_name not in self.props:
+            return None
+
+        prop_value = self.props[prop_name]
+
+        if isinstance(prop_value, list):  # if property is array take first item
+            prop_value = prop_value[0]
+
+        if not isinstance(prop_value, list):
+            return None
+
+        if not len(prop_value) == 3:
+            return None
+
+        for i, key in enumerate(prop_value):
+            convert_res = _convert_utils.string_to_number(key)
+            prop_value[i] = convert_res
+
+        return prop_value

@@ -44,7 +44,7 @@ class DifSpecAddEnv(DifSpec, StdAddEnv):
                       DifSpec.SPEC_COL_NODE,
                       DifSpec.BASE_TEX_NODE,
                       DifSpec.OUT_MAT_NODE,
-                      DifSpec.OUTPUT_NODE)
+                      DifSpec.COMPOSE_LIGHTING_NODE)
 
     @staticmethod
     def set_indenv_flavor(node_tree, switch_on):

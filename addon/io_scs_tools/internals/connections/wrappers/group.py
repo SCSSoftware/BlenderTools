@@ -63,7 +63,7 @@ def init():
     """
 
     # create proper group if needed
-    if not _GROUP_NAME in bpy.data.groups:
+    if _GROUP_NAME not in bpy.data.groups:
         bpy.data.groups.new(_GROUP_NAME)
 
     # just make sure that data block won't get deleted after several savings of blend file
@@ -267,6 +267,10 @@ def switch_to_stall():
     if they are not yet up to date.
     NOTE: this will effect drawing only if optimized drawing is switched on
     """
+
+    # if initialization wasn't triggered yet, then skip switching to stall and wait until it gets initialised
+    if _GROUP_NAME not in bpy.data.groups:
+        return
 
     # if data was marked as updated
     if not _CACHE[_DATA_UP_TO_DATE]:

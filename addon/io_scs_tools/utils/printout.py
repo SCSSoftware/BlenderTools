@@ -171,7 +171,7 @@ def lprint(string, values=(), report_errors=0, report_warnings=0):
         text += "================\n"
 
         # create dialog title and message
-        title = "ERRORS"
+        title = "Errors"
 
         if dump_level == 5:
             dev_error_messages.extend(error_messages)
@@ -199,8 +199,8 @@ def lprint(string, values=(), report_errors=0, report_warnings=0):
 
             # create dialog title and message
             if title != "":
-                title += " AND "
-            title += "WARNINGS DURING PROCESS"
+                title += " and "
+            title += "Warnings encountered during export!"
 
         if dump_level == 5:
             dev_warning_messages.extend(warning_messages)
@@ -214,6 +214,11 @@ def lprint(string, values=(), report_errors=0, report_warnings=0):
         file_logger.write(text + "\n")
         file_logger.flush()
         bpy.ops.wm.show_3dview_report('INVOKE_DEFAULT', title=title, message=text)
+
+        # make sure to tag any 3D view for redraw so errors OpenGL drawing is triggered
+        from io_scs_tools.utils.view3d import tag_redraw_all_view3d
+        tag_redraw_all_view3d()
+
         return True
     else:
         return False

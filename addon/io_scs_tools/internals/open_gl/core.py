@@ -20,16 +20,18 @@
 
 import bpy
 import blf
-from bgl import (glColor3f, glPointSize, glLineWidth, glEnable, glDisable, glClear, glBegin, glEnd, glVertex3f,
-                 GL_DEPTH_TEST, GL_DEPTH_BUFFER_BIT, GL_POLYGON)
+from bgl import (glColor3f, glPointSize, glLineWidth, glEnable, glDisable, glClear, glBegin, glEnd, glVertex3f, glBindTexture, glTexCoord2f,
+                 GL_DEPTH_TEST, GL_DEPTH_BUFFER_BIT, GL_POLYGON, GL_TEXTURE_2D, GL_BLEND, glBlendFunc, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 from mathutils import Vector
 from io_scs_tools.consts import PrefabLocators as _PL_consts
+from io_scs_tools.consts import Operators as _OP_consts
 from io_scs_tools.internals import preview_models as _preview_models
 from io_scs_tools.internals.open_gl import locators as _locators
 from io_scs_tools.internals.open_gl import primitive as _primitive
 from io_scs_tools.internals.open_gl.storage import terrain_points as _terrain_points_storage
 from io_scs_tools.internals.connections.wrappers import group as _connections_group_wrapper
 from io_scs_tools.operators.wm import Show3DViewReport as _Show3DViewReportOperator
+from io_scs_tools.utils import info as _info_utils
 from io_scs_tools.utils import math as _math_utils
 from io_scs_tools.utils import object as _object_utils
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
@@ -414,42 +416,50 @@ def _draw_3dview_report(region):
     :param region: region of 3D viewport
     :type region: bpy.types.Region
     """
+    pos = region.height - 65
+
     if _Show3DViewReportOperator.has_lines():
 
-        blf.size(0, 15, 72)
-        pos = region.height - 40
+        glEnable(GL_TEXTURE_2D)
+        glEnable(GL_BLEND)
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+        glBindTexture(GL_TEXTURE_2D, _Show3DViewReportOperator.get_scs_logo_img_bindcode())
 
-        # draw Close control
-        glColor3f(.2, .2, .2)
+        # draw BT logo
         glBegin(GL_POLYGON)
-        glVertex3f(20, pos + 2, 0)
-        glVertex3f(94, pos + 2, 0)
-        glVertex3f(94, pos - 22, 0)
-        glVertex3f(20, pos - 22, 0)
+        glColor3f(1, 1, 1)
+        glTexCoord2f(0, 1)
+        glVertex3f(_OP_consts.View3DReport.BT_LOGO_AREA[0], region.height - _OP_consts.View3DReport.BT_LOGO_AREA[2], 0)
+        glTexCoord2f(1, 1)
+        glVertex3f(_OP_consts.View3DReport.BT_LOGO_AREA[1], region.height - _OP_consts.View3DReport.BT_LOGO_AREA[2], 0)
+        glTexCoord2f(1, 0)
+        glVertex3f(_OP_consts.View3DReport.BT_LOGO_AREA[1], region.height - _OP_consts.View3DReport.BT_LOGO_AREA[3], 0)
+        glTexCoord2f(0, 0)
+        glVertex3f(_OP_consts.View3DReport.BT_LOGO_AREA[0], region.height - _OP_consts.View3DReport.BT_LOGO_AREA[3], 0)
         glEnd()
 
-        glColor3f(1, 1, 1)
-        blf.position(0, 25, pos - 15, 0)
-        blf.draw(0, "[X] Close")
+        glDisable(GL_TEXTURE_2D)
 
-        glColor3f(.2, .2, .2)
-        glBegin(GL_POLYGON)
-        glVertex3f(100, pos + 2, 0)
-        glVertex3f(250, pos + 2, 0)
-        glVertex3f(250, pos - 22, 0)
-        glVertex3f(100, pos - 22, 0)
-        glEnd()
+        # draw version string
+        blf.size(0, 11, 72)
+        glColor3f(.952, .635, .062)
+        blf.position(0, 20, pos, 0)
+        blf.draw(0, _info_utils.get_combined_ver_str(only_version_numbers=True))
+        pos -= 20
 
-        # draw Show/Hide control and actual reports if exists
-        glColor3f(1, 1, 1)
-        blf.position(0, 105, pos - 15, 0)
+        # draw actual operator title and message if shown
         if _Show3DViewReportOperator.is_shown():
-            blf.draw(0, "[+] Show | [  ] Hide")
 
-            blf.enable(0, blf.SHADOW)
             blf.size(0, 12, 72)
             glColor3f(1, 1, 1)
-            pos -= 40
+            blf.shadow(0, 5, 0, 0, 0, 1)
+
+            if _Show3DViewReportOperator.get_title() != "":
+                blf.position(0, 20, pos, 0)
+                blf.draw(0, _Show3DViewReportOperator.get_title())
+                pos -= 15
+
+            blf.enable(0, blf.SHADOW)
             for line in _Show3DViewReportOperator.get_lines():
 
                 # finish printing if running out of space
@@ -466,6 +476,43 @@ def _draw_3dview_report(region):
 
                 blf.draw(0, line)
                 pos -= 15
+
             blf.disable(0, blf.SHADOW)
-        else:
-            blf.draw(0, "[  ] Show | [+] Hide")
+
+        # draw control buttons if controls are enabled
+        if _Show3DViewReportOperator.has_controls():
+
+            # draw close button
+            glColor3f(.4, .4, .4)
+            glBegin(GL_POLYGON)
+            glVertex3f(_OP_consts.View3DReport.CLOSE_BTN_AREA[0], region.height - _OP_consts.View3DReport.CLOSE_BTN_AREA[2], 0)
+            glVertex3f(_OP_consts.View3DReport.CLOSE_BTN_AREA[1], region.height - _OP_consts.View3DReport.CLOSE_BTN_AREA[2], 0)
+            glVertex3f(_OP_consts.View3DReport.CLOSE_BTN_AREA[1], region.height - _OP_consts.View3DReport.CLOSE_BTN_AREA[3], 0)
+            glVertex3f(_OP_consts.View3DReport.CLOSE_BTN_AREA[0], region.height - _OP_consts.View3DReport.CLOSE_BTN_AREA[3], 0)
+            glEnd()
+
+            # draw hide button
+            glBegin(GL_POLYGON)
+            glVertex3f(_OP_consts.View3DReport.HIDE_BTN_AREA[0], region.height - _OP_consts.View3DReport.HIDE_BTN_AREA[2], 0)
+            glVertex3f(_OP_consts.View3DReport.HIDE_BTN_AREA[1], region.height - _OP_consts.View3DReport.HIDE_BTN_AREA[2], 0)
+            glVertex3f(_OP_consts.View3DReport.HIDE_BTN_AREA[1], region.height - _OP_consts.View3DReport.HIDE_BTN_AREA[3], 0)
+            glVertex3f(_OP_consts.View3DReport.HIDE_BTN_AREA[0], region.height - _OP_consts.View3DReport.HIDE_BTN_AREA[3], 0)
+            glEnd()
+
+            # gather texts and positions
+            close_btn_text_pos = _OP_consts.View3DReport.CLOSE_BTN_TEXT_POS[int(not _Show3DViewReportOperator.is_shown())]
+            close_btn_text = _OP_consts.View3DReport.CLOSE_BTN_TEXT[int(not _Show3DViewReportOperator.is_shown())]
+
+            hide_btn_text_pos = _OP_consts.View3DReport.HIDE_BTN_TEXT_POS[int(not _Show3DViewReportOperator.is_shown())]
+            hide_btn_text = _OP_consts.View3DReport.HIDE_BTN_TEXT[int(not _Show3DViewReportOperator.is_shown())]
+
+            blf.size(0, 15, 72)
+
+            # draw close button text
+            glColor3f(1, 1, 1)
+            blf.position(0, close_btn_text_pos[0], region.height - close_btn_text_pos[1], 0)
+            blf.draw(0, close_btn_text)
+
+            # draw hide button text
+            blf.position(0, hide_btn_text_pos[0], region.height - hide_btn_text_pos[1], 0)
+            blf.draw(0, hide_btn_text)

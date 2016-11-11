@@ -60,10 +60,12 @@ def _draw_path_settings_panel(scene, layout, scs_globals):
         layout_box_col = layout_box.column(align=True)
 
         # SCS Project Path (DIR_PATH - absolute)
+        icon = 'SNAP_ON' if _get_scs_globals().use_alternative_bases else 'SNAP_OFF'
         layout_box_col.label('SCS Project Base Path:', icon='FILE_FOLDER')
         layout_box_row = layout_box_col.row(align=True)
         layout_box_row.alert = not os.path.isdir(scs_globals.scs_project_path)
         layout_box_row.prop(scs_globals, 'scs_project_path', text='', icon='PACKAGE')
+        layout_box_row.prop(scs_globals, 'use_alternative_bases', icon=icon, icon_only=True)
         layout_box_row.operator('scene.select_scs_project_path', text='', icon='FILESEL')
 
         # Divide labels and sub paths to columns
@@ -452,6 +454,9 @@ class SCSTools(_ScenePanelBlDefs, Panel):
         layout = self.layout
         scene = context.scene
         scs_globals = _get_scs_globals()
+
+        # scs tools main panel if config is being updated
+        layout.enabled = not scs_globals.config_update_lock
 
         if scene:
 

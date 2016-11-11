@@ -27,6 +27,35 @@ from io_scs_tools.utils import math as _math_utils
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
 
 
+def linear_to_srgb(value):
+    """Converts linear color to srgb colorspace. Function can convert single float or list of floats.
+    NOTE: taken from game code
+
+    :param value: list of floats or float
+    :type value: float | list[float]
+    :return: converted color
+    :rtype: float | list[float]
+    """
+
+    is_float = isinstance(value, float)
+    if is_float:
+        vals = [value]
+    else:
+        vals = list(value)
+
+    for i, v in enumerate(vals):
+        if v <= 0.0031308:
+            vals[i] = 12.92 * v
+        else:
+            a = 0.055
+            vals[i] = (v ** (1.0 / 2.4) * (1.0 + a)) - a
+
+    if is_float:
+        return vals[0]
+    else:
+        return vals
+
+
 def pre_gamma_corrected_col(color):
     """Pre applys gamma decoding to color.
     Usefull for preparation of color for Blender color pickers/nodes,
@@ -114,6 +143,26 @@ def float_to_hex_string(value):
         return binary_float
     lprint('E float_to_hex_string: Wrong input data type! "%s" is not a float.', (str(value),))
     return "Value Error"
+
+
+def string_to_number(string):
+    """Converts string to number. It accepts hex interpretation or decimal.
+    NOTE: no safety checks if string is really a number string
+
+    :param string: hex or decimal string carrying number
+    :type string: str
+    :return: float or int depending on passed string. It will result in int in case if input string will be decimal value without dot
+    :rtype: float | int
+    """
+
+    if string[0] == '&':
+        val = hex_string_to_float(string)
+    elif "." in string:
+        val = float(string)
+    else:
+        val = int(string)
+
+    return val
 
 
 def hex_string_to_float(string):

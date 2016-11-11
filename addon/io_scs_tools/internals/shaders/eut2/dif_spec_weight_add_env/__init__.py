@@ -44,7 +44,7 @@ class DifSpecWeightAddEnv(DifSpecWeight, StdAddEnv):
                       DifSpecWeight.SPEC_COL_NODE,
                       DifSpecWeight.BASE_TEX_NODE,
                       DifSpecWeight.OUT_MAT_NODE,
-                      DifSpecWeight.OUTPUT_NODE)
+                      DifSpecWeight.COMPOSE_LIGHTING_NODE)
 
     @staticmethod
     def set_reflection_texture(node_tree, texture):

@@ -78,6 +78,25 @@ def get_all_spaces():
     return spaces
 
 
+def has_view3d_space(screen):
+    """Tells if given blender screen has 3D view or not.
+
+    :param screen: blender screen
+    :type screen: bpy.types.Screen
+    :return: True if at leas one 3d view is present; False otherwise
+    :rtype: bool
+    """
+
+    if screen is None:
+        return False
+
+    for area in screen.areas:
+        if area.type == 'VIEW_3D':
+            return True
+
+    return False
+
+
 def switch_layers_visibility(storage_list, show):
     """Switches visibility of layers in Blender. If show is True all layers on current scene
         and local layers of current 3D spaces are shown. If storage_list is provided it tries
@@ -132,3 +151,11 @@ def tag_redraw_all_view3d_and_props():
                 for region in area.regions:
                     if region.type == 'WINDOW':
                         region.tag_redraw()
+
+
+def tag_redraw_all_regions():
+    # NOTE: Py can't access notifiers!
+    for window in bpy.context.window_manager.windows:
+        for area in window.screen.areas:
+            for region in area.regions:
+                region.tag_redraw()

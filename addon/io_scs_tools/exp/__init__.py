@@ -25,6 +25,7 @@ from io_scs_tools.exp import pic
 from io_scs_tools.exp import pip
 from io_scs_tools.exp import pis
 from io_scs_tools.exp import pix
+from io_scs_tools.utils import name as _name_utils
 from io_scs_tools.utils import object as _object_utils
 from io_scs_tools.utils import path as _path_utils
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
@@ -57,14 +58,26 @@ def batch_export(operator_instance, init_obj_list, menu_filepath=None):
 
         for root_object in game_objects_dict:
 
+            if not _name_utils.is_valid_scs_root_object_name(root_object.name):
+                lprint("E Rejecting Game Object with invalid SCS Root Object name: %r.\n\t   "
+                       "Only a-z, A-Z, 0-9 and \"._-\" characters can be used." % root_object.name)
+                scs_game_objects_rejected.append("> \"" + root_object.name + "\"")
+                continue
+
+            game_object_list = game_objects_dict[root_object]
+            if len(game_object_list) == 0:
+                lprint("E Rejecting empty Game Object with SCS Root Object name: %r\n\t   " +
+                       "Game Object has to have at least one mesh object or model locator!",
+                       (root_object.name,))
+                scs_game_objects_rejected.append("> \"" + root_object.name + "\"")
+                continue
+
             # update root object location to invoke update tagging on it and
             # then update scene to make sure all children objects will have all transforms up to date
             # NOTE: needed because Blender doesn't update objects on invisible layers on it's own
             root_object.location = root_object.location
             for scene in bpy.data.scenes:
                 scene.update()
-
-            game_object_list = game_objects_dict[root_object]
 
             # GET CUSTOM FILE PATH
             custom_filepath = _path_utils.get_custom_scs_root_export_path(root_object)
@@ -100,7 +113,7 @@ def batch_export(operator_instance, init_obj_list, menu_filepath=None):
                         filepath_message
                     )
                 else:
-                    message = "No valid export path found! Please check \"SCS Project Base Path\" first."
+                    message = "No valid export path found! Please check 'SCS Project Base Path' first."
                 lprint('E ' + message)
                 operator_instance.report({'ERROR'}, message.replace("\t", "").replace("   ", ""))
                 return {'CANCELLED'}
@@ -124,13 +137,15 @@ def batch_export(operator_instance, init_obj_list, menu_filepath=None):
             lprint("I " + message)
 
         if len(scs_game_objects_exported) + len(scs_game_objects_rejected) == 0:
-            message = "Nothing to export! Please set at least one 'SCS Root Object'."
+            message = "Nothing to export! Please setup at least one SCS Root Object."
             lprint('E ' + message)
             operator_instance.report({'ERROR'}, message)
             return {'CANCELLED'}
     else:
-        message = "No 'SCS Root Object' present or all of them were manually exluded from export in their settings.\n\t   " \
-                  "(For more information, please refer to 'SCS Blender Tools' documentation.)"
+        message = "No Game Objects to export because:\n\t   " \
+                  "1. Selection export is used and none of selected objects belongs to any SCS Game Object or\n\t   " \
+                  "2. all of the SCS Root Objects were manually exluded from export or\n\t   " \
+                  "3. there is no SCS Root Objects in the scene."
         lprint('E ' + message)
         operator_instance.report({'ERROR'}, message.replace("\n\t   ", "\n"))
         return {'CANCELLED'}

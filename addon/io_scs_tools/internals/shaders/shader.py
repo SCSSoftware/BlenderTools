@@ -232,33 +232,16 @@ def __setup_nodes__(material, effect, attr_dict, tex_dict, uvs_dict, flavors_dic
 
 
 def __clean_node_tree__(node_tree):
-    """Cleans material node tree of any nodes, custom properties and even cleanup any unused dummy normal map materials.
+    """Cleans material node tree of any nodes, custom properties.
 
     :param node_tree: node tree on which any shader nodes should be deleted
     :type node_tree: bpy.types.NodeTree
     """
 
-    mats_to_remove = []
-    for node in node_tree.nodes:
-        if node.type == "MATERIAL" and node.material and node.material.name.startswith(".scs_nmap_"):
-            mats_to_remove.append(node.material.name)
-
     # clean nodes and custom props
     node_tree.nodes.clear()
     for key in node_tree.keys():
         del node_tree[key]
-
-    # clean unused dummy normal map materials
-    mat_i = 0
-    while mat_i < len(mats_to_remove):
-
-        mat_name = mats_to_remove[mat_i]
-
-        if mat_name in bpy.data.materials and bpy.data.materials[mat_name].users == 0:
-            lprint("D Removing unused nmap material: %s", (mat_name,))
-            bpy.data.materials.remove(bpy.data.materials[mat_name])
-
-        mat_i += 1
 
 
 def __get_shader__(effect, report_not_found, mat_name):

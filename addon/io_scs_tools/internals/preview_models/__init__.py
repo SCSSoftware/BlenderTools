@@ -94,7 +94,7 @@ def unlink(preview_model):
     _cache.delete_entry(preview_model.name)
 
     bpy.context.scene.objects.unlink(preview_model)
-    bpy.data.objects.remove(preview_model)
+    bpy.data.objects.remove(preview_model, do_unlink=True)
 
     bpy.context.scene.scs_cached_num_objects = len(bpy.context.scene.objects)
 
@@ -166,7 +166,7 @@ def unload(locator):
                 _cache.delete_entry(child.name)
 
                 bpy.context.scene.objects.unlink(child)
-                bpy.data.objects.remove(child)
+                bpy.data.objects.remove(child, do_unlink=True)
 
                 # update scene children count to prevent delete to be triggered
                 bpy.context.scene.scs_cached_num_objects = len(bpy.context.scene.objects)

@@ -80,18 +80,18 @@ class Truckpaint(DifSpecAddEnv):
         vcol_scale_n = node_tree.nodes[DifSpecAddEnv.VCOLOR_SCALE_NODE]
         opacity_n = node_tree.nodes[DifSpecAddEnv.OPACITY_NODE]
         out_mat_n = node_tree.nodes[DifSpecAddEnv.OUT_MAT_NODE]
-        out_add_refl_n = node_tree.nodes[DifSpecAddEnv.OUT_ADD_REFL_NODE]
+        compose_lighting_n = node_tree.nodes[DifSpecAddEnv.COMPOSE_LIGHTING_NODE]
         output_n = node_tree.nodes[DifSpecAddEnv.OUTPUT_NODE]
 
         # move existing
         add_refl_gn.location.x += pos_x_shift * 3
         spec_mult_n.location.x += pos_x_shift * 3
         out_mat_n.location.x += pos_x_shift * 2
-        out_add_refl_n.location.x += pos_x_shift * 2
+        compose_lighting_n.location.x += pos_x_shift * 2
         output_n.location.x += pos_x_shift * 2
 
-        # set fresnel factor to 0
-        node_tree.nodes[DifSpecAddEnv.ADD_ENV_GROUP_NODE].inputs['Apply Fresnel'].default_value = 0.0
+        # set fresnel factor to 1
+        node_tree.nodes[DifSpecAddEnv.ADD_ENV_GROUP_NODE].inputs['Apply Fresnel'].default_value = 1.0
 
         # node creation - level 3
         env_vcol_mix_n = node_tree.nodes.new("ShaderNodeMixRGB")
@@ -155,6 +155,7 @@ class Truckpaint(DifSpecAddEnv):
 
         # make links - output
         node_tree.links.new(out_mat_n.inputs['Color'], paint_mult_n.outputs['Color'])
+        node_tree.links.new(compose_lighting_n.inputs['Diffuse Color'], paint_mult_n.outputs['Color'])
 
     @staticmethod
     def init_colormask_or_airbrush(node_tree):
@@ -319,6 +320,11 @@ class Truckpaint(DifSpecAddEnv):
         :param uv_layer: uv layer string used for paint texture
         :type uv_layer: str
         """
+
+        # as this functions should be called from airbrush or colormask derivatives
+        # make sure to skip execution if for some historical reasons this is called from stock truckpaint
+        if Truckpaint.PAINT_TEX_NODE not in node_tree.nodes:
+            return
 
         if uv_layer is None or uv_layer == "":
             uv_layer = _MESH_consts.none_uv

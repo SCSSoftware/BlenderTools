@@ -1,0 +1,2073 @@
+SiiNunit
+{
+sun_profile : default.nice.01 {
+ low_elevation: &c11ffffe
+ high_elevation: &c11ffffe
+ sun_direction: 0
+ temperature: 2
+ temperature[0]: 15
+ temperature[1]: 15
+ skybox_texture: 2
+ skybox_texture[0]: "/model/skybox/nice0/nice0_23-24_g.tobj"
+ skybox_texture[1]: "/model/skybox/nice1/nice1_23-24_g.tobj"
+ skycloud_texture: 2
+ skycloud_texture[0]: "/model/skybox/nice0/nice0_23-24_c.tobj"
+ skycloud_texture[1]: "/model/skybox/nice1/nice1_23-24_c.tobj"
+ skycloud_part: 2
+ skycloud_part[0]: night
+ skycloud_part[1]: night
+ ambient: 2
+ ambient[0]: (&3f2fca9d, &3f2fca9d, &3f2fca9c)
+ ambient[1]: (&3f06f105, &3f469c4a, &3f5cf7e0)
+ ambient_hdr_coef: 2
+ ambient_hdr_coef[0]: &3ba3d70a
+ ambient_hdr_coef[1]: &3ba3d70a
+ diffuse: 2
+ diffuse[0]: (&3ee9aeb4, &3f26c286, &3f54ad57)
+ diffuse[1]: (&3ee9aeb4, &3f26c286, &3f54ad57)
+ diffuse_hdr_coef: 2
+ diffuse_hdr_coef[0]: &3d4ccccd
+ diffuse_hdr_coef[1]: &3d4ccccd
+ specular: 2
+ specular[0]: (&3ec5da14, &3f21794e, &3f5099ca)
+ specular[1]: (&3ec5da14, &3f21794e, &3f5099ca)
+ specular_hdr_coef: 2
+ specular_hdr_coef[0]: &3d0f5c29
+ specular_hdr_coef[1]: &3d0f5c29
+ env: 2
+ env[0]: 1
+ env[1]: 1
+ env_static_mod: 2
+ env_static_mod[0]: &3dcccccd
+ env_static_mod[1]: &3dcccccd
+ sky_color: 2
+ sky_color[0]: (1, 1, 1)
+ sky_color[1]: (1, 1, 1)
+ sky_color_hdr_coef: 2
+ sky_color_hdr_coef[0]: 1
+ sky_color_hdr_coef[1]: 1
+ sun_color: 2
+ sun_color[0]: (&3f70f0f2, &3f27a7a8, &3f048485)
+ sun_color[1]: (&3f70f0f2, &3f27a7a8, &3f048485)
+ sun_color_hdr_coef: 2
+ sun_color_hdr_coef[0]: 1
+ sun_color_hdr_coef[1]: 1
+ sun_shadow_strength: 2
+ sun_shadow_strength[0]: 1
+ sun_shadow_strength[1]: 1
+ fog_color: 2
+ fog_color[0]: (&3b70f18c, &3c3391f6, &3ca63432)
+ fog_color[1]: (&3b1f22b4, &3bd5635e, &3c293e69)
+ fog_color2: 2
+ fog_color2[0]: (&3b70f18c, &3c3391f6, &3ca63432)
+ fog_color2[1]: (&3b1f22b4, &3bd5635e, &3c293e69)
+ fog_vgradient: 2
+ fog_vgradient[0]: &3c03126f
+ fog_vgradient[1]: &3c03126f
+ fog_offset: 2
+ fog_offset[0]: 180
+ fog_offset[1]: 120
+ fog_density: 2
+ fog_density[0]: &3ad1b717
+ fog_density[1]: &3b03126f
+ fog_speed: 2
+ fog_speed[0]: &3f000000
+ fog_speed[1]: &3f000000
+ transition_fog_speed: 2
+ transition_fog_speed[0]: 5
+ transition_fog_speed[1]: 5
+ speed_coef: 2
+ speed_coef[0]: &3e75c2a2
+ speed_coef[1]: &3e75c2a2
+ cloud_shadow_weight: 2
+ cloud_shadow_weight[0]: 0
+ cloud_shadow_weight[1]: 0
+ cloud_shadow_texture: 2
+ cloud_shadow_texture[0]: "null"
+ cloud_shadow_texture[1]: "null"
+ cloud_shadow_area_size: 2
+ cloud_shadow_area_size[0]: (500, 500)
+ cloud_shadow_area_size[1]: (0, 0)
+ cloud_shadow_speed: 2
+ cloud_shadow_speed[0]: (0, 0)
+ cloud_shadow_speed[1]: (0, 0)
+ rain_intensity: 2
+ rain_intensity[0]: 0
+ rain_intensity[1]: 0
+ rain_max_wetness: 2
+ rain_max_wetness[0]: 1
+ rain_max_wetness[1]: 1
+ rain_additional_ambient: 2
+ rain_additional_ambient[0]: 5
+ rain_additional_ambient[1]: 5
+ leaves_back_color: 2
+ leaves_back_color[0]: (1, 1, 1)
+ leaves_back_color[1]: (1, 1, 1)
+ wind_type: 2
+ wind_type[0]: 1
+ wind_type[1]: 1
+ dof_start: 2
+ dof_start[0]: 120
+ dof_start[1]: 120
+ dof_transition: 2
+ dof_transition[0]: 700
+ dof_transition[1]: 700
+ dof_filter_size: 2
+ dof_filter_size[0]: 1
+ dof_filter_size[1]: 1
+ color_balance: 2
+ color_balance[0]: (0, 0, 0)
+ color_balance[1]: (0, 0, 0)
+ color_saturation: 2
+ color_saturation[0]: 1
+ color_saturation[1]: 1
+ sunshaft_color: 2
+ sunshaft_color[0]: (&3e949495, &3e78f8fa, &3e5cdcde)
+ sunshaft_color[1]: (&3e949495, &3e78f8fa, &3e5cdcde)
+ sunshaft_strength: 2
+ sunshaft_strength[0]: 0
+ sunshaft_strength[1]: 0
+ sunshaft_size: 2
+ sunshaft_size[0]: 2
+ sunshaft_size[1]: 2
+ hdr_parameters: 2
+ hdr_parameters[0]: hdr.12
+ hdr_parameters[1]: hdr.12
+ weight: 2
+ weight[0]: 1
+ weight[1]: 1
+}
+
+sun_profile : default.nice.02 {
+ low_elevation: -90
+ high_elevation: -15
+ sun_direction: 0
+ temperature: 2
+ temperature[0]: 15
+ temperature[1]: 15
+ skybox_texture: 2
+ skybox_texture[0]: "/model/skybox/nice0/nice0_1-4_g.tobj"
+ skybox_texture[1]: "/model/skybox/nice1/nice1_1-4_g.tobj"
+ skycloud_texture: 2
+ skycloud_texture[0]: "/model/skybox/nice0/nice0_1-4_c.tobj"
+ skycloud_texture[1]: "/model/skybox/nice1/nice1_1-4_c.tobj"
+ skycloud_part: 2
+ skycloud_part[0]: night
+ skycloud_part[1]: night
+ ambient: 2
+ ambient[0]: (&3f06f105, &3f469c4a, &3f5cf7e0)
+ ambient[1]: (&3f2fca9d, &3f2fca9d, &3f2fca9c)
+ ambient_hdr_coef: 2
+ ambient_hdr_coef[0]: &3b03126f
+ ambient_hdr_coef[1]: &3b03126f
+ diffuse: 2
+ diffuse[0]: (&3ee9aeb4, &3f26c286, &3f54ad57)
+ diffuse[1]: (&3ec0c0c2, &3f26a6a7, &3f72f2f4)
+ diffuse_hdr_coef: 2
+ diffuse_hdr_coef[0]: &3ca3d70a
+ diffuse_hdr_coef[1]: &3ca3d70a
+ specular: 2
+ specular[0]: (&3ec5da14, &3f21794e, &3f5099ca)
+ specular[1]: (&3ec5da14, &3f21794e, &3f5099ca)
+ specular_hdr_coef: 2
+ specular_hdr_coef[0]: &3c23d70a
+ specular_hdr_coef[1]: &3c23d70a
+ env: 2
+ env[0]: 1
+ env[1]: 0
+ env_static_mod: 2
+ env_static_mod[0]: &3dcccccd
+ env_static_mod[1]: &3dcccccd
+ sky_color: 2
+ sky_color[0]: (1, 1, 1)
+ sky_color[1]: (1, 1, 1)
+ sky_color_hdr_coef: 2
+ sky_color_hdr_coef[0]: 1
+ sky_color_hdr_coef[1]: 1
+ sun_color: 2
+ sun_color[0]: (&3f70f0f2, &3f27a7a8, &3f048485)
+ sun_color[1]: (&3f70f0f2, &3f27a7a8, &3f048485)
+ sun_color_hdr_coef: 2
+ sun_color_hdr_coef[0]: 1
+ sun_color_hdr_coef[1]: 0
+ sun_shadow_strength: 2
+ sun_shadow_strength[0]: 1
+ sun_shadow_strength[1]: 1
+ fog_color: 2
+ fog_color[0]: (&3a6eb40f, &3b83e1c4, &3be539be)
+ fog_color[1]: (&3a6eb40f, &3b70f18c, &3b9c87fb)
+ fog_color2: 2
+ fog_color2[0]: (&3a6eb40f, &3b83e1c4, &3be539be)
+ fog_color2[1]: (&3a6eb40f, &3b70f18c, &3b9c87fb)
+ fog_vgradient: 2
+ fog_vgradient[0]: &3c03126f
+ fog_vgradient[1]: &3c03126f
+ fog_offset: 2
+ fog_offset[0]: 180
+ fog_offset[1]: 120
+ fog_density: 2
+ fog_density[0]: &3ad1b717
+ fog_density[1]: &3b03126f
+ fog_speed: 2
+ fog_speed[0]: &3f000000
+ fog_speed[1]: &3f000000
+ transition_fog_speed: 2
+ transition_fog_speed[0]: 5
+ transition_fog_speed[1]: 5
+ speed_coef: 2
+ speed_coef[0]: &3e75c2a2
+ speed_coef[1]: &3e75c2a2
+ cloud_shadow_weight: 2
+ cloud_shadow_weight[0]: 0
+ cloud_shadow_weight[1]: 0
+ cloud_shadow_texture: 2
+ cloud_shadow_texture[0]: "null"
+ cloud_shadow_texture[1]: "null"
+ cloud_shadow_area_size: 2
+ cloud_shadow_area_size[0]: (500, 500)
+ cloud_shadow_area_size[1]: (0, 0)
+ cloud_shadow_speed: 2
+ cloud_shadow_speed[0]: (0, 0)
+ cloud_shadow_speed[1]: (0, 0)
+ rain_intensity: 2
+ rain_intensity[0]: 0
+ rain_intensity[1]: 0
+ rain_max_wetness: 2
+ rain_max_wetness[0]: 1
+ rain_max_wetness[1]: 1
+ rain_additional_ambient: 2
+ rain_additional_ambient[0]: 5
+ rain_additional_ambient[1]: 5
+ leaves_back_color: 2
+ leaves_back_color[0]: (1, 1, 1)
+ leaves_back_color[1]: (1, 1, 1)
+ wind_type: 2
+ wind_type[0]: 1
+ wind_type[1]: 1
+ dof_start: 2
+ dof_start[0]: 120
+ dof_start[1]: 120
+ dof_transition: 2
+ dof_transition[0]: 700
+ dof_transition[1]: 700
+ dof_filter_size: 2
+ dof_filter_size[0]: 1
+ dof_filter_size[1]: 1
+ color_balance: 2
+ color_balance[0]: (0, 0, 0)
+ color_balance[1]: (0, 0, 0)
+ color_saturation: 2
+ color_saturation[0]: 1
+ color_saturation[1]: 1
+ sunshaft_color: 2
+ sunshaft_color[0]: (&3e949495, &3e78f8fa, &3e5cdcde)
+ sunshaft_color[1]: (&3e949495, &3e78f8fa, &3e5cdcde)
+ sunshaft_strength: 2
+ sunshaft_strength[0]: 0
+ sunshaft_strength[1]: 0
+ sunshaft_size: 2
+ sunshaft_size[0]: 2
+ sunshaft_size[1]: 2
+ hdr_parameters: 2
+ hdr_parameters[0]: hdr.12
+ hdr_parameters[1]: hdr.12
+ weight: 2
+ weight[0]: 1
+ weight[1]: 1
+}
+
+sun_profile : default.nice.03 {
+ low_elevation: &c09ffffe
+ high_elevation: &c09ffffe
+ sun_direction: 1
+ temperature: 2
+ temperature[0]: 17
+ temperature[1]: 17
+ skybox_texture: 2
+ skybox_texture[0]: "/model/skybox/nice0/nice0_5-5_g.tobj"
+ skybox_texture[1]: "/model/skybox/nice1/nice1_5-5_g.tobj"
+ skycloud_texture: 2
+ skycloud_texture[0]: "/model/skybox/nice0/nice0_5-5_c.tobj"
+ skycloud_texture[1]: "/model/skybox/nice1/nice1_5-5_c.tobj"
+ skycloud_part: 2
+ skycloud_part[0]: night
+ skycloud_part[1]: night
+ ambient: 2
+ ambient[0]: (&3f068687, &3f45c5c7, &3f5ddddf)
+ ambient[1]: (&3f068687, &3f45c5c7, &3f5ddddf)
+ ambient_hdr_coef: 2
+ ambient_hdr_coef[0]: &3c23d70a
+ ambient_hdr_coef[1]: &3c23d70a
+ diffuse: 2
+ diffuse[0]: (&3f5adadc, &3f30b0b1, &3ef0f0f2)
+ diffuse[1]: (&3f5adadc, &3f30b0b1, &3ef0f0f2)
+ diffuse_hdr_coef: 2
+ diffuse_hdr_coef[0]: &3dcccccd
+ diffuse_hdr_coef[1]: &3dcccccd
+ specular: 2
+ specular[0]: (1, 1, 1)
+ specular[1]: (1, 1, 1)
+ specular_hdr_coef: 2
+ specular_hdr_coef[0]: &3e4ccccd
+ specular_hdr_coef[1]: &3e4ccccd
+ env: 2
+ env[0]: 1
+ env[1]: 1
+ env_static_mod: 2
+ env_static_mod[0]: &3dcccccd
+ env_static_mod[1]: &3dcccccd
+ sky_color: 2
+ sky_color[0]: (1, 1, 1)
+ sky_color[1]: (1, 1, 1)
+ sky_color_hdr_coef: 2
+ sky_color_hdr_coef[0]: 1
+ sky_color_hdr_coef[1]: 1
+ sun_color: 2
+ sun_color[0]: (&3daccd6e, &3d97fd48, &3d21fb3c)
+ sun_color[1]: (&3daccd6e, &3d97fd48, &3d21fb3c)
+ sun_color_hdr_coef: 2
+ sun_color_hdr_coef[0]: 1
+ sun_color_hdr_coef[1]: 1
+ sun_shadow_strength: 2
+ sun_shadow_strength[0]: 1
+ sun_shadow_strength[1]: 1
+ fog_color: 2
+ fog_color[0]: (&3bb7ad6c, &3c792d20, &3cf2212b)
+ fog_color[1]: (&3b33070b, &3c9ec7c0, &3d0ca7e5)
+ fog_color2: 2
+ fog_color2[0]: (&3bb7ad6c, &3c792d20, &3cf2212b)
+ fog_color2[1]: (&3b33070b, &3c9ec7c0, &3d0ca7e5)
+ fog_vgradient: 2
+ fog_vgradient[0]: &3ba3d70a
+ fog_vgradient[1]: &3ba3d70a
+ fog_offset: 2
+ fog_offset[0]: 180
+ fog_offset[1]: 120
+ fog_density: 2
+ fog_density[0]: &3ad1b717
+ fog_density[1]: &3b03126f
+ fog_speed: 2
+ fog_speed[0]: &3f000000
+ fog_speed[1]: &3f000000
+ transition_fog_speed: 2
+ transition_fog_speed[0]: 3
+ transition_fog_speed[1]: 3
+ speed_coef: 2
+ speed_coef[0]: &3e75c2a2
+ speed_coef[1]: &3e75c2a2
+ cloud_shadow_weight: 2
+ cloud_shadow_weight[0]: 1
+ cloud_shadow_weight[1]: 0
+ cloud_shadow_texture: 2
+ cloud_shadow_texture[0]: "null"
+ cloud_shadow_texture[1]: "null"
+ cloud_shadow_area_size: 2
+ cloud_shadow_area_size[0]: (1000, 1000)
+ cloud_shadow_area_size[1]: (0, 0)
+ cloud_shadow_speed: 2
+ cloud_shadow_speed[0]: (50, 50)
+ cloud_shadow_speed[1]: (0, 0)
+ rain_intensity: 2
+ rain_intensity[0]: 0
+ rain_intensity[1]: 0
+ rain_max_wetness: 2
+ rain_max_wetness[0]: 1
+ rain_max_wetness[1]: 1
+ rain_additional_ambient: 2
+ rain_additional_ambient[0]: 5
+ rain_additional_ambient[1]: 5
+ leaves_back_color: 2
+ leaves_back_color[0]: (1, 1, 1)
+ leaves_back_color[1]: (1, 1, 1)
+ wind_type: 2
+ wind_type[0]: 1
+ wind_type[1]: 1
+ dof_start: 2
+ dof_start[0]: 120
+ dof_start[1]: 120
+ dof_transition: 2
+ dof_transition[0]: 700
+ dof_transition[1]: 700
+ dof_filter_size: 2
+ dof_filter_size[0]: 1
+ dof_filter_size[1]: 1
+ color_balance: 2
+ color_balance[0]: (0, 0, 0)
+ color_balance[1]: (0, 0, 0)
+ color_saturation: 2
+ color_saturation[0]: 1
+ color_saturation[1]: 1
+ sunshaft_color: 2
+ sunshaft_color[0]: (&3ec5da14, &3e4749e4, &3dea5d16)
+ sunshaft_color[1]: (&3ec5da14, &3e4749e4, &3dea5d16)
+ sunshaft_strength: 2
+ sunshaft_strength[0]: 0
+ sunshaft_strength[1]: 0
+ sunshaft_size: 2
+ sunshaft_size[0]: 0
+ sunshaft_size[1]: 0
+ hdr_parameters: 2
+ hdr_parameters[0]: hdr.12
+ hdr_parameters[1]: hdr.12
+ weight: 2
+ weight[0]: 2
+ weight[1]: 1
+}
+
+sun_profile : default.nice.04 {
+ low_elevation: 0
+ high_elevation: &411ffffe
+ sun_direction: 1
+ temperature: 2
+ temperature[0]: 18
+ temperature[1]: 18
+ skybox_texture: 2
+ skybox_texture[0]: "/model/skybox/nice0/nice0_6-7_g.tobj"
+ skybox_texture[1]: "/model/skybox/nice1/nice1_6-7_g.tobj"
+ skycloud_texture: 2
+ skycloud_texture[0]: "/model/skybox/nice0/nice0_6-7_c.tobj"
+ skycloud_texture[1]: "/model/skybox/nice1/nice1_6-7_c.tobj"
+ skycloud_part: 2
+ skycloud_part[0]: night
+ skycloud_part[1]: night
+ ambient: 2
+ ambient[0]: (&3ee11abe, &3f2fca9d, &3f7db8df)
+ ambient[1]: (&3f068687, &3f45c5c7, &3f5ddddf)
+ ambient_hdr_coef: 2
+ ambient_hdr_coef[0]: &3c9374bc
+ ambient_hdr_coef[1]: &3c9374bc
+ diffuse: 2
+ diffuse[0]: (&3f704db6, &3f337b6b, &3ed5f509)
+ diffuse[1]: (&3f5adadc, &3f30b0b1, &3ef0f0f2)
+ diffuse_hdr_coef: 2
+ diffuse_hdr_coef[0]: &3e4ccccd
+ diffuse_hdr_coef[1]: &3e4ccccd
+ specular: 2
+ specular[0]: (1, 1, 1)
+ specular[1]: (1, 1, 1)
+ specular_hdr_coef: 2
+ specular_hdr_coef[0]: &3e4ccccd
+ specular_hdr_coef[1]: &3e4ccccd
+ env: 2
+ env[0]: 1
+ env[1]: 1
+ env_static_mod: 2
+ env_static_mod[0]: &3dcccccd
+ env_static_mod[1]: &3dcccccd
+ sky_color: 2
+ sky_color[0]: (1, 1, 1)
+ sky_color[1]: (1, 1, 1)
+ sky_color_hdr_coef: 2
+ sky_color_hdr_coef[0]: 1
+ sky_color_hdr_coef[1]: 1
+ sun_color: 2
+ sun_color[0]: (&3f69c0d7, &3f56bb89, &3f0eef66)
+ sun_color[1]: (&3f69c0d7, &3f56bb89, &3f0eef66)
+ sun_color_hdr_coef: 2
+ sun_color_hdr_coef[0]: 1
+ sun_color_hdr_coef[1]: 1
+ sun_shadow_strength: 2
+ sun_shadow_strength[0]: 1
+ sun_shadow_strength[1]: 1
+ fog_color: 2
+ fog_color[0]: (&3c6ca5dd, &3d21fb3b, &3d7add24)
+ fog_color[1]: (&3c54b6c7, &3d1c7c2f, &3d84b793)
+ fog_color2: 2
+ fog_color2[0]: (&3c6ca5dd, &3d21fb3b, &3d7add24)
+ fog_color2[1]: (&3c54b6c7, &3d1c7c2f, &3d84b793)
+ fog_vgradient: 2
+ fog_vgradient[0]: &3ba3d70a
+ fog_vgradient[1]: &3ba3d70a
+ fog_offset: 2
+ fog_offset[0]: 180
+ fog_offset[1]: 120
+ fog_density: 2
+ fog_density[0]: &3ad1b717
+ fog_density[1]: &3b03126f
+ fog_speed: 2
+ fog_speed[0]: &3f000000
+ fog_speed[1]: &3f000000
+ transition_fog_speed: 2
+ transition_fog_speed[0]: 5
+ transition_fog_speed[1]: 5
+ speed_coef: 2
+ speed_coef[0]: &3e75c2a2
+ speed_coef[1]: &3e75c2a2
+ cloud_shadow_weight: 2
+ cloud_shadow_weight[0]: &3e99999a
+ cloud_shadow_weight[1]: &3e99999a
+ cloud_shadow_texture: 2
+ cloud_shadow_texture[0]: "/model/skybox/clouds_shadows1.tobj"
+ cloud_shadow_texture[1]: "/model/skybox/clouds_shadows1.tobj"
+ cloud_shadow_area_size: 2
+ cloud_shadow_area_size[0]: (1000, 1000)
+ cloud_shadow_area_size[1]: (1000, 1000)
+ cloud_shadow_speed: 2
+ cloud_shadow_speed[0]: (5, 5)
+ cloud_shadow_speed[1]: (5, 5)
+ rain_intensity: 2
+ rain_intensity[0]: 0
+ rain_intensity[1]: 0
+ rain_max_wetness: 2
+ rain_max_wetness[0]: 1
+ rain_max_wetness[1]: 1
+ rain_additional_ambient: 2
+ rain_additional_ambient[0]: 5
+ rain_additional_ambient[1]: 5
+ leaves_back_color: 2
+ leaves_back_color[0]: (1, 1, 1)
+ leaves_back_color[1]: (1, 1, 1)
+ wind_type: 2
+ wind_type[0]: 1
+ wind_type[1]: 1
+ dof_start: 2
+ dof_start[0]: 120
+ dof_start[1]: 120
+ dof_transition: 2
+ dof_transition[0]: 700
+ dof_transition[1]: 700
+ dof_filter_size: 2
+ dof_filter_size[0]: 1
+ dof_filter_size[1]: 1
+ color_balance: 2
+ color_balance[0]: (0, 0, 0)
+ color_balance[1]: (0, 0, 0)
+ color_saturation: 2
+ color_saturation[0]: 1
+ color_saturation[1]: 1
+ sunshaft_color: 2
+ sunshaft_color[0]: (&3f7fffff, &3f0eef67, &3e90f8df)
+ sunshaft_color[1]: (&3f7fffff, &3f0eef67, &3e90f8df)
+ sunshaft_strength: 2
+ sunshaft_strength[0]: &3f000000
+ sunshaft_strength[1]: &3f000000
+ sunshaft_size: 2
+ sunshaft_size[0]: &3fc00000
+ sunshaft_size[1]: &3fc00000
+ hdr_parameters: 2
+ hdr_parameters[0]: hdr.12
+ hdr_parameters[1]: hdr.12
+ weight: 2
+ weight[0]: 2
+ weight[1]: 1
+}
+
+sun_profile : default.nice.05a {
+ low_elevation: 15
+ high_elevation: &41c7fffe
+ sun_direction: 1
+ temperature: 2
+ temperature[0]: 22
+ temperature[1]: 22
+ skybox_texture: 2
+ skybox_texture[0]: "/model/skybox/nice0/nice0_8-10_g.tobj"
+ skybox_texture[1]: "/model/skybox/nice1/nice1_8-10_g.tobj"
+ skycloud_texture: 2
+ skycloud_texture[0]: "/model/skybox/nice0/nice0_8-10_c.tobj"
+ skycloud_texture[1]: "/model/skybox/nice1/nice1_8-10_c.tobj"
+ skycloud_part: 2
+ skycloud_part[0]: day
+ skycloud_part[1]: day
+ ambient: 2
+ ambient[0]: (&3f068687, &3f45c5c7, &3f5ddddf)
+ ambient[1]: (&3f068687, &3f45c5c7, &3f5ddddf)
+ ambient_hdr_coef: 2
+ ambient_hdr_coef[0]: &3dcccccd
+ ambient_hdr_coef[1]: &3dcccccd
+ diffuse: 2
+ diffuse[0]: (&3f6797e1, &3f2fca9d, &3ede4963)
+ diffuse[1]: (&3f5099ca, &3f2c253d, &3f00bd2b)
+ diffuse_hdr_coef: 2
+ diffuse_hdr_coef[0]: &3f4ccccd
+ diffuse_hdr_coef[1]: &3f4ccccd
+ specular: 2
+ specular[0]: (1, 1, 1)
+ specular[1]: (1, 1, 1)
+ specular_hdr_coef: 2
+ specular_hdr_coef[0]: 1
+ specular_hdr_coef[1]: 1
+ env: 2
+ env[0]: 1
+ env[1]: 1
+ env_static_mod: 2
+ env_static_mod[0]: &3e99999a
+ env_static_mod[1]: &3e99999a
+ sky_color: 2
+ sky_color[0]: (1, 1, 1)
+ sky_color[1]: (1, 1, 1)
+ sky_color_hdr_coef: 2
+ sky_color_hdr_coef[0]: 1
+ sky_color_hdr_coef[1]: 1
+ sun_color: 2
+ sun_color[0]: (&3f69c0d7, &3f56bb89, &3f0eef66)
+ sun_color[1]: (&3f69c0d7, &3f56bb89, &3f0eef66)
+ sun_color_hdr_coef: 2
+ sun_color_hdr_coef[0]: &3fcccccd
+ sun_color_hdr_coef[1]: &3fa66666
+ sun_shadow_strength: 2
+ sun_shadow_strength[0]: 1
+ sun_shadow_strength[1]: 1
+ fog_color: 2
+ fog_color[0]: (&3dc7dbdf, &3e43ca60, &3e78188b)
+ fog_color[1]: (&3d11d2af, &3d9018f3, &3def8e51)
+ fog_color2: 2
+ fog_color2[0]: (&3e168e51, &3e90f8df, &3eaa3717)
+ fog_color2[1]: (&3d5f26b5, &3dba0b37, &3e027f06)
+ fog_vgradient: 2
+ fog_vgradient[0]: &3ba3d70a
+ fog_vgradient[1]: &3ba3d70a
+ fog_offset: 2
+ fog_offset[0]: 250
+ fog_offset[1]: 150
+ fog_density: 2
+ fog_density[0]: &3aaa64c3
+ fog_density[1]: &3b03126f
+ fog_speed: 2
+ fog_speed[0]: &3f000000
+ fog_speed[1]: &3f000000
+ transition_fog_speed: 2
+ transition_fog_speed[0]: 5
+ transition_fog_speed[1]: 5
+ speed_coef: 2
+ speed_coef[0]: &3e75c2a2
+ speed_coef[1]: &3e75c2a2
+ cloud_shadow_weight: 2
+ cloud_shadow_weight[0]: &3f333333
+ cloud_shadow_weight[1]: &3f333333
+ cloud_shadow_texture: 2
+ cloud_shadow_texture[0]: "/model/skybox/clouds_shadows1.tobj"
+ cloud_shadow_texture[1]: "/model/skybox/clouds_shadows1.tobj"
+ cloud_shadow_area_size: 2
+ cloud_shadow_area_size[0]: (1000, 1000)
+ cloud_shadow_area_size[1]: (1000, 1000)
+ cloud_shadow_speed: 2
+ cloud_shadow_speed[0]: (5, 5)
+ cloud_shadow_speed[1]: (5, 5)
+ rain_intensity: 2
+ rain_intensity[0]: 0
+ rain_intensity[1]: 0
+ rain_max_wetness: 2
+ rain_max_wetness[0]: 1
+ rain_max_wetness[1]: 1
+ rain_additional_ambient: 2
+ rain_additional_ambient[0]: 5
+ rain_additional_ambient[1]: 5
+ leaves_back_color: 2
+ leaves_back_color[0]: (1, 1, 1)
+ leaves_back_color[1]: (1, 1, 1)
+ wind_type: 2
+ wind_type[0]: 1
+ wind_type[1]: 1
+ dof_start: 2
+ dof_start[0]: 120
+ dof_start[1]: 120
+ dof_transition: 2
+ dof_transition[0]: 700
+ dof_transition[1]: 700
+ dof_filter_size: 2
+ dof_filter_size[0]: 1
+ dof_filter_size[1]: 1
+ color_balance: 2
+ color_balance[0]: (0, 0, 0)
+ color_balance[1]: (0, 0, 0)
+ color_saturation: 2
+ color_saturation[0]: 1
+ color_saturation[1]: 1
+ sunshaft_color: 2
+ sunshaft_color[0]: (&3f634eef, &3f23398e, &3e6c471f)
+ sunshaft_color[1]: (&3f634eef, &3f23398e, &3e6c471f)
+ sunshaft_strength: 2
+ sunshaft_strength[0]: &3f333333
+ sunshaft_strength[1]: &3f000000
+ sunshaft_size: 2
+ sunshaft_size[0]: 2
+ sunshaft_size[1]: 2
+ hdr_parameters: 2
+ hdr_parameters[0]: hdr.15
+ hdr_parameters[1]: hdr.15
+ weight: 2
+ weight[0]: 1
+ weight[1]: 1
+}
+
+sun_profile : default.nice.05b {
+ low_elevation: 30
+ high_elevation: &420bffff
+ sun_direction: 1
+ temperature: 2
+ temperature[0]: 22
+ temperature[1]: 22
+ skybox_texture: 2
+ skybox_texture[0]: "/model/skybox/nice0/nice0_8-10_g.tobj"
+ skybox_texture[1]: "/model/skybox/nice1/nice1_8-10_g.tobj"
+ skycloud_texture: 2
+ skycloud_texture[0]: "/model/skybox/nice0/nice0_8-10_c.tobj"
+ skycloud_texture[1]: "/model/skybox/nice1/nice1_8-10_c.tobj"
+ skycloud_part: 2
+ skycloud_part[0]: day
+ skycloud_part[1]: day
+ ambient: 2
+ ambient[0]: (&3f068687, &3f45c5c7, &3f5ddddf)
+ ambient[1]: (&3f068687, &3f45c5c7, &3f5ddddf)
+ ambient_hdr_coef: 2
+ ambient_hdr_coef[0]: &3e19999a
+ ambient_hdr_coef[1]: &3e19999a
+ diffuse: 2
+ diffuse[0]: (&3f6797e1, &3f2fca9d, &3ede4963)
+ diffuse[1]: (&3f5099ca, &3f2c253d, &3f00bd2b)
+ diffuse_hdr_coef: 2
+ diffuse_hdr_coef[0]: &3f8ccccd
+ diffuse_hdr_coef[1]: &3f8ccccd
+ specular: 2
+ specular[0]: (1, 1, 1)
+ specular[1]: (1, 1, 1)
+ specular_hdr_coef: 2
+ specular_hdr_coef[0]: 1
+ specular_hdr_coef[1]: 1
+ env: 2
+ env[0]: 1
+ env[1]: 1
+ env_static_mod: 2
+ env_static_mod[0]: &3e99999a
+ env_static_mod[1]: &3e99999a
+ sky_color: 2
+ sky_color[0]: (1, 1, 1)
+ sky_color[1]: (1, 1, 1)
+ sky_color_hdr_coef: 2
+ sky_color_hdr_coef[0]: 1
+ sky_color_hdr_coef[1]: 1
+ sun_color: 2
+ sun_color[0]: (&3f69c0d7, &3f56bb89, &3f0eef66)
+ sun_color[1]: (&3f69c0d7, &3f56bb89, &3f0eef66)
+ sun_color_hdr_coef: 2
+ sun_color_hdr_coef[0]: 1
+ sun_color_hdr_coef[1]: 1
+ sun_shadow_strength: 2
+ sun_shadow_strength[0]: &3f666666
+ sun_shadow_strength[1]: &3f666666
+ fog_color: 2
+ fog_color[0]: (&3dc7dbdf, &3e43ca60, &3e78188b)
+ fog_color[1]: (&3cf2212c, &3d8c3e48, &3e05427f)
+ fog_color2: 2
+ fog_color2[0]: (&3e168e51, &3e90f8df, &3eaa3717)
+ fog_color2[1]: (&3d5f26b5, &3dc7dbdf, &3e080ea2)
+ fog_vgradient: 2
+ fog_vgradient[0]: &3ba3d70a
+ fog_vgradient[1]: &3ba3d70a
+ fog_offset: 2
+ fog_offset[0]: 250
+ fog_offset[1]: 150
+ fog_density: 2
+ fog_density[0]: &3aaa64c3
+ fog_density[1]: &3b03126f
+ fog_speed: 2
+ fog_speed[0]: &3f000000
+ fog_speed[1]: &3f000000
+ transition_fog_speed: 2
+ transition_fog_speed[0]: 5
+ transition_fog_speed[1]: 5
+ speed_coef: 2
+ speed_coef[0]: &3e75c2a2
+ speed_coef[1]: &3e75c2a2
+ cloud_shadow_weight: 2
+ cloud_shadow_weight[0]: &3f333333
+ cloud_shadow_weight[1]: &3f333333
+ cloud_shadow_texture: 2
+ cloud_shadow_texture[0]: "/model/skybox/clouds_shadows1.tobj"
+ cloud_shadow_texture[1]: "/model/skybox/clouds_shadows1.tobj"
+ cloud_shadow_area_size: 2
+ cloud_shadow_area_size[0]: (1000, 1000)
+ cloud_shadow_area_size[1]: (1000, 1000)
+ cloud_shadow_speed: 2
+ cloud_shadow_speed[0]: (5, 5)
+ cloud_shadow_speed[1]: (5, 5)
+ rain_intensity: 2
+ rain_intensity[0]: 0
+ rain_intensity[1]: 0
+ rain_max_wetness: 2
+ rain_max_wetness[0]: 1
+ rain_max_wetness[1]: 1
+ rain_additional_ambient: 2
+ rain_additional_ambient[0]: 5
+ rain_additional_ambient[1]: 5
+ leaves_back_color: 2
+ leaves_back_color[0]: (1, 1, 1)
+ leaves_back_color[1]: (1, 1, 1)
+ wind_type: 2
+ wind_type[0]: 1
+ wind_type[1]: 1
+ dof_start: 2
+ dof_start[0]: 120
+ dof_start[1]: 120
+ dof_transition: 2
+ dof_transition[0]: 700
+ dof_transition[1]: 700
+ dof_filter_size: 2
+ dof_filter_size[0]: 1
+ dof_filter_size[1]: 1
+ color_balance: 2
+ color_balance[0]: (0, 0, 0)
+ color_balance[1]: (0, 0, 0)
+ color_saturation: 2
+ color_saturation[0]: 1
+ color_saturation[1]: 1
+ sunshaft_color: 2
+ sunshaft_color[0]: (&3f634eef, &3f23398e, &3e6c471f)
+ sunshaft_color[1]: (&3f634eef, &3f23398e, &3e6c471f)
+ sunshaft_strength: 2
+ sunshaft_strength[0]: &3f333333
+ sunshaft_strength[1]: &3f000000
+ sunshaft_size: 2
+ sunshaft_size[0]: 2
+ sunshaft_size[1]: 2
+ hdr_parameters: 2
+ hdr_parameters[0]: hdr.15
+ hdr_parameters[1]: hdr.15
+ weight: 2
+ weight[0]: 1
+ weight[1]: 1
+}
+
+sun_profile : default.nice.06a {
+ low_elevation: &421ffffe
+ high_elevation: 45
+ sun_direction: 1
+ temperature: 2
+ temperature[0]: 25
+ temperature[1]: 25
+ skybox_texture: 2
+ skybox_texture[0]: "/model/skybox/nice0/nice0_11-15_g.tobj"
+ skybox_texture[1]: "/model/skybox/nice1/nice1_11-15_g.tobj"
+ skycloud_texture: 2
+ skycloud_texture[0]: "/model/skybox/nice0/nice0_11-15_c.tobj"
+ skycloud_texture[1]: "/model/skybox/nice1/nice1_11-15_c.tobj"
+ skycloud_part: 2
+ skycloud_part[0]: day
+ skycloud_part[1]: day
+ ambient: 2
+ ambient[0]: (&3f068687, &3f45c5c7, &3f5ddddf)
+ ambient[1]: (&3f068687, &3f45c5c7, &3f5ddddf)
+ ambient_hdr_coef: 2
+ ambient_hdr_coef[0]: &3e19999a
+ ambient_hdr_coef[1]: &3e19999a
+ diffuse: 2
+ diffuse[0]: (&3f7282b0, &3f24fca0, &3ed338ca)
+ diffuse[1]: (&3f5adadc, &3f30b0b1, &3ef0f0f2)
+ diffuse_hdr_coef: 2
+ diffuse_hdr_coef[0]: &3f933333
+ diffuse_hdr_coef[1]: 1
+ specular: 2
+ specular[0]: (1, 1, 1)
+ specular[1]: (1, 1, 1)
+ specular_hdr_coef: 2
+ specular_hdr_coef[0]: 1
+ specular_hdr_coef[1]: 1
+ env: 2
+ env[0]: 1
+ env[1]: 1
+ env_static_mod: 2
+ env_static_mod[0]: &3f000000
+ env_static_mod[1]: &3f000000
+ sky_color: 2
+ sky_color[0]: (1, 1, 1)
+ sky_color[1]: (1, 1, 1)
+ sky_color_hdr_coef: 2
+ sky_color_hdr_coef[0]: 1
+ sky_color_hdr_coef[1]: 1
+ sun_color: 2
+ sun_color[0]: (&3f7282b0, &3f2fca9d, &3e822039)
+ sun_color[1]: (&3f7db8df, &3f5ae0cd, &3f3aff7a)
+ sun_color_hdr_coef: 2
+ sun_color_hdr_coef[0]: 1
+ sun_color_hdr_coef[1]: 1
+ sun_shadow_strength: 2
+ sun_shadow_strength[0]: &3f666666
+ sun_shadow_strength[1]: &3f666666
+ fog_color: 2
+ fog_color[0]: (&3ddb2eec, &3e702e07, &3e979f70)
+ fog_color[1]: (&3db5910e, &3e198f0f, &3e4749e6)
+ fog_color2: 2
+ fog_color2[0]: (&3e3ce704, &3ec5da14, &3ede4963)
+ fog_color2[1]: (&3de53cd3, &3e4e64c3, &3e7c1c34)
+ fog_vgradient: 2
+ fog_vgradient[0]: &3ba3d70a
+ fog_vgradient[1]: &3ba3d70a
+ fog_offset: 2
+ fog_offset[0]: 250
+ fog_offset[1]: 150
+ fog_density: 2
+ fog_density[0]: &3aaa64c3
+ fog_density[1]: &3aaa64c3
+ fog_speed: 2
+ fog_speed[0]: &3f000000
+ fog_speed[1]: &3f000000
+ transition_fog_speed: 2
+ transition_fog_speed[0]: 3
+ transition_fog_speed[1]: 3
+ speed_coef: 2
+ speed_coef[0]: &3e75c2a2
+ speed_coef[1]: &3e75c2a2
+ cloud_shadow_weight: 2
+ cloud_shadow_weight[0]: &3f333333
+ cloud_shadow_weight[1]: &3f333333
+ cloud_shadow_texture: 2
+ cloud_shadow_texture[0]: "/model/skybox/clouds_shadows1.tobj"
+ cloud_shadow_texture[1]: "/model/skybox/clouds_shadows1.tobj"
+ cloud_shadow_area_size: 2
+ cloud_shadow_area_size[0]: (1000, 1000)
+ cloud_shadow_area_size[1]: (1000, 1000)
+ cloud_shadow_speed: 2
+ cloud_shadow_speed[0]: (5, 5)
+ cloud_shadow_speed[1]: (5, 5)
+ rain_intensity: 2
+ rain_intensity[0]: 0
+ rain_intensity[1]: 0
+ rain_max_wetness: 2
+ rain_max_wetness[0]: 1
+ rain_max_wetness[1]: 1
+ rain_additional_ambient: 2
+ rain_additional_ambient[0]: 5
+ rain_additional_ambient[1]: 5
+ leaves_back_color: 2
+ leaves_back_color[0]: (&3f7db8e0, &3f6e1bc2, &3eaf0f69)
+ leaves_back_color[1]: (&3f7db8e0, &3f6e1bc2, &3eaf0f69)
+ wind_type: 2
+ wind_type[0]: 1
+ wind_type[1]: 1
+ dof_start: 2
+ dof_start[0]: 120
+ dof_start[1]: 120
+ dof_transition: 2
+ dof_transition[0]: 700
+ dof_transition[1]: 700
+ dof_filter_size: 2
+ dof_filter_size[0]: 1
+ dof_filter_size[1]: 1
+ color_balance: 2
+ color_balance[0]: (0, 0, 0)
+ color_balance[1]: (0, 0, 0)
+ color_saturation: 2
+ color_saturation[0]: 1
+ color_saturation[1]: 1
+ sunshaft_color: 2
+ sunshaft_color[0]: (&3ec87c30, &3e932b72, &3e22c6a1)
+ sunshaft_color[1]: (&3eaca0b5, &3e741e7e, &3da020ba)
+ sunshaft_strength: 2
+ sunshaft_strength[0]: 1
+ sunshaft_strength[1]: 1
+ sunshaft_size: 2
+ sunshaft_size[0]: 3
+ sunshaft_size[1]: 3
+ hdr_parameters: 2
+ hdr_parameters[0]: hdr.18
+ hdr_parameters[1]: hdr.18
+ weight: 2
+ weight[0]: 1
+ weight[1]: 1
+}
+
+sun_profile : default.nice.06b {
+ low_elevation: &4247fffe
+ high_elevation: &425bfffe
+ sun_direction: 1
+ temperature: 2
+ temperature[0]: 25
+ temperature[1]: 25
+ skybox_texture: 2
+ skybox_texture[0]: "/model/skybox/nice0/nice0_11-15_g.tobj"
+ skybox_texture[1]: "/model/skybox/nice1/nice1_11-15_g.tobj"
+ skycloud_texture: 2
+ skycloud_texture[0]: "/model/skybox/nice0/nice0_11-15_c.tobj"
+ skycloud_texture[1]: "/model/skybox/nice1/nice1_11-15_c.tobj"
+ skycloud_part: 2
+ skycloud_part[0]: day
+ skycloud_part[1]: day
+ ambient: 2
+ ambient[0]: (&3f068687, &3f45c5c7, &3f5ddddf)
+ ambient[1]: (&3f068687, &3f45c5c7, &3f5ddddf)
+ ambient_hdr_coef: 2
+ ambient_hdr_coef[0]: &3e4ccccd
+ ambient_hdr_coef[1]: &3e4ccccd
+ diffuse: 2
+ diffuse[0]: (&3f7282b0, &3f24fca0, &3ed338ca)
+ diffuse[1]: (&3f5adadc, &3f30b0b1, &3ef0f0f2)
+ diffuse_hdr_coef: 2
+ diffuse_hdr_coef[0]: &3fa66666
+ diffuse_hdr_coef[1]: &3f99999a
+ specular: 2
+ specular[0]: (1, 1, 1)
+ specular[1]: (1, 1, 1)
+ specular_hdr_coef: 2
+ specular_hdr_coef[0]: 1
+ specular_hdr_coef[1]: 1
+ env: 2
+ env[0]: 1
+ env[1]: 1
+ env_static_mod: 2
+ env_static_mod[0]: &3f000000
+ env_static_mod[1]: &3f000000
+ sky_color: 2
+ sky_color[0]: (1, 1, 1)
+ sky_color[1]: (1, 1, 1)
+ sky_color_hdr_coef: 2
+ sky_color_hdr_coef[0]: 1
+ sky_color_hdr_coef[1]: 1
+ sun_color: 2
+ sun_color[0]: (&3f7282b0, &3f2fca9d, &3e822039)
+ sun_color[1]: (&3f7db8df, &3f5ae0cd, &3f3aff7a)
+ sun_color_hdr_coef: 2
+ sun_color_hdr_coef[0]: 1
+ sun_color_hdr_coef[1]: 1
+ sun_shadow_strength: 2
+ sun_shadow_strength[0]: &3f666666
+ sun_shadow_strength[1]: &3f666666
+ fog_color: 2
+ fog_color[0]: (&3ddb2eec, &3e702e07, &3e979f70)
+ fog_color[1]: (&3db5910e, &3e198f0f, &3e4749e6)
+ fog_color2: 2
+ fog_color2[0]: (&3e3ce704, &3ec5da14, &3ede4963)
+ fog_color2[1]: (&3de53cd3, &3e4e64c3, &3e7c1c34)
+ fog_vgradient: 2
+ fog_vgradient[0]: &3ba3d70a
+ fog_vgradient[1]: &3ba3d70a
+ fog_offset: 2
+ fog_offset[0]: 250
+ fog_offset[1]: 150
+ fog_density: 2
+ fog_density[0]: &3aaa64c3
+ fog_density[1]: &3aaa64c3
+ fog_speed: 2
+ fog_speed[0]: &3f000000
+ fog_speed[1]: &3f000000
+ transition_fog_speed: 2
+ transition_fog_speed[0]: 3
+ transition_fog_speed[1]: 3
+ speed_coef: 2
+ speed_coef[0]: &3e75c2a2
+ speed_coef[1]: &3e75c2a2
+ cloud_shadow_weight: 2
+ cloud_shadow_weight[0]: &3f333333
+ cloud_shadow_weight[1]: &3f333333
+ cloud_shadow_texture: 2
+ cloud_shadow_texture[0]: "/model/skybox/clouds_shadows1.tobj"
+ cloud_shadow_texture[1]: "/model/skybox/clouds_shadows1.tobj"
+ cloud_shadow_area_size: 2
+ cloud_shadow_area_size[0]: (1000, 1000)
+ cloud_shadow_area_size[1]: (1000, 1000)
+ cloud_shadow_speed: 2
+ cloud_shadow_speed[0]: (5, 5)
+ cloud_shadow_speed[1]: (5, 5)
+ rain_intensity: 2
+ rain_intensity[0]: 0
+ rain_intensity[1]: 0
+ rain_max_wetness: 2
+ rain_max_wetness[0]: 1
+ rain_max_wetness[1]: 1
+ rain_additional_ambient: 2
+ rain_additional_ambient[0]: 5
+ rain_additional_ambient[1]: 5
+ leaves_back_color: 2
+ leaves_back_color[0]: (&3f7db8e0, &3f6e1bc2, &3eaf0f69)
+ leaves_back_color[1]: (&3f7db8e0, &3f6e1bc2, &3eaf0f69)
+ wind_type: 2
+ wind_type[0]: 1
+ wind_type[1]: 1
+ dof_start: 2
+ dof_start[0]: 120
+ dof_start[1]: 120
+ dof_transition: 2
+ dof_transition[0]: 700
+ dof_transition[1]: 700
+ dof_filter_size: 2
+ dof_filter_size[0]: 1
+ dof_filter_size[1]: 1
+ color_balance: 2
+ color_balance[0]: (0, 0, 0)
+ color_balance[1]: (0, 0, 0)
+ color_saturation: 2
+ color_saturation[0]: 1
+ color_saturation[1]: 1
+ sunshaft_color: 2
+ sunshaft_color[0]: (&3ec87c30, &3e932b72, &3e22c6a1)
+ sunshaft_color[1]: (&3eaca0b5, &3e741e7e, &3da020ba)
+ sunshaft_strength: 2
+ sunshaft_strength[0]: 1
+ sunshaft_strength[1]: 1
+ sunshaft_size: 2
+ sunshaft_size[0]: 3
+ sunshaft_size[1]: 3
+ hdr_parameters: 2
+ hdr_parameters[0]: hdr.18
+ hdr_parameters[1]: hdr.18
+ weight: 2
+ weight[0]: 1
+ weight[1]: 1
+}
+
+sun_profile : default.nice.06c {
+ low_elevation: 60
+ high_elevation: 90
+ sun_direction: 0
+ temperature: 2
+ temperature[0]: 25
+ temperature[1]: 25
+ skybox_texture: 2
+ skybox_texture[0]: "/model/skybox/nice0/nice0_high1_g.tobj"
+ skybox_texture[1]: "/model/skybox/nice1/nice1_high1_g.tobj"
+ skycloud_texture: 2
+ skycloud_texture[0]: "/model/skybox/nice0/nice0_high1_c.tobj"
+ skycloud_texture[1]: "/model/skybox/nice1/nice1_high1_c.tobj"
+ skycloud_part: 2
+ skycloud_part[0]: day
+ skycloud_part[1]: day
+ ambient: 2
+ ambient[0]: (&3f068687, &3f45c5c7, &3f5ddddf)
+ ambient[1]: (&3f068687, &3f45c5c7, &3f5ddddf)
+ ambient_hdr_coef: 2
+ ambient_hdr_coef[0]: &3e4ccccd
+ ambient_hdr_coef[1]: &3e4ccccd
+ diffuse: 2
+ diffuse[0]: (&3f7282b0, &3f24fca0, &3ed338ca)
+ diffuse[1]: (&3f5adadc, &3f30b0b1, &3ef0f0f2)
+ diffuse_hdr_coef: 2
+ diffuse_hdr_coef[0]: &3fa66666
+ diffuse_hdr_coef[1]: &3f99999a
+ specular: 2
+ specular[0]: (1, 1, 1)
+ specular[1]: (1, 1, 1)
+ specular_hdr_coef: 2
+ specular_hdr_coef[0]: 1
+ specular_hdr_coef[1]: 1
+ env: 2
+ env[0]: 1
+ env[1]: 1
+ env_static_mod: 2
+ env_static_mod[0]: &3f000000
+ env_static_mod[1]: &3f000000
+ sky_color: 2
+ sky_color[0]: (1, 1, 1)
+ sky_color[1]: (1, 1, 1)
+ sky_color_hdr_coef: 2
+ sky_color_hdr_coef[0]: 1
+ sky_color_hdr_coef[1]: 1
+ sun_color: 2
+ sun_color[0]: (&3f7282b0, &3f2fca9d, &3e822039)
+ sun_color[1]: (&3f7db8df, &3f5ae0cd, &3f3aff7a)
+ sun_color_hdr_coef: 2
+ sun_color_hdr_coef[0]: 1
+ sun_color_hdr_coef[1]: 1
+ sun_shadow_strength: 2
+ sun_shadow_strength[0]: &3f666666
+ sun_shadow_strength[1]: &3f666666
+ fog_color: 2
+ fog_color[0]: (&3ddb2eec, &3e702e07, &3e979f70)
+ fog_color[1]: (&3db5910e, &3e198f0f, &3e4749e6)
+ fog_color2: 2
+ fog_color2[0]: (&3e3ce704, &3ec5da14, &3ede4963)
+ fog_color2[1]: (&3de53cd3, &3e4e64c3, &3e7c1c34)
+ fog_vgradient: 2
+ fog_vgradient[0]: &3ba3d70a
+ fog_vgradient[1]: &3ba3d70a
+ fog_offset: 2
+ fog_offset[0]: 250
+ fog_offset[1]: 150
+ fog_density: 2
+ fog_density[0]: &3aaa64c3
+ fog_density[1]: &3aaa64c3
+ fog_speed: 2
+ fog_speed[0]: &3f000000
+ fog_speed[1]: &3f000000
+ transition_fog_speed: 2
+ transition_fog_speed[0]: 3
+ transition_fog_speed[1]: 3
+ speed_coef: 2
+ speed_coef[0]: &3e75c2a2
+ speed_coef[1]: &3e75c2a2
+ cloud_shadow_weight: 2
+ cloud_shadow_weight[0]: &3f333333
+ cloud_shadow_weight[1]: &3f333333
+ cloud_shadow_texture: 2
+ cloud_shadow_texture[0]: "/model/skybox/clouds_shadows1.tobj"
+ cloud_shadow_texture[1]: "/model/skybox/clouds_shadows1.tobj"
+ cloud_shadow_area_size: 2
+ cloud_shadow_area_size[0]: (1000, 1000)
+ cloud_shadow_area_size[1]: (1000, 1000)
+ cloud_shadow_speed: 2
+ cloud_shadow_speed[0]: (5, 5)
+ cloud_shadow_speed[1]: (5, 5)
+ rain_intensity: 2
+ rain_intensity[0]: 0
+ rain_intensity[1]: 0
+ rain_max_wetness: 2
+ rain_max_wetness[0]: 1
+ rain_max_wetness[1]: 1
+ rain_additional_ambient: 2
+ rain_additional_ambient[0]: 5
+ rain_additional_ambient[1]: 5
+ leaves_back_color: 2
+ leaves_back_color[0]: (&3f7db8e0, &3f6e1bc2, &3eaf0f69)
+ leaves_back_color[1]: (&3f7db8e0, &3f6e1bc2, &3eaf0f69)
+ wind_type: 2
+ wind_type[0]: 1
+ wind_type[1]: 1
+ dof_start: 2
+ dof_start[0]: 120
+ dof_start[1]: 120
+ dof_transition: 2
+ dof_transition[0]: 700
+ dof_transition[1]: 700
+ dof_filter_size: 2
+ dof_filter_size[0]: 1
+ dof_filter_size[1]: 1
+ color_balance: 2
+ color_balance[0]: (0, 0, 0)
+ color_balance[1]: (0, 0, 0)
+ color_saturation: 2
+ color_saturation[0]: 1
+ color_saturation[1]: 1
+ sunshaft_color: 2
+ sunshaft_color[0]: (&3ec87c30, &3e932b72, &3e22c6a1)
+ sunshaft_color[1]: (&3eaca0b5, &3e741e7e, &3da020ba)
+ sunshaft_strength: 2
+ sunshaft_strength[0]: 1
+ sunshaft_strength[1]: 1
+ sunshaft_size: 2
+ sunshaft_size[0]: 3
+ sunshaft_size[1]: 3
+ hdr_parameters: 2
+ hdr_parameters[0]: hdr.18
+ hdr_parameters[1]: hdr.18
+ weight: 2
+ weight[0]: 1
+ weight[1]: 1
+}
+
+sun_profile : default.nice.06d {
+ low_elevation: &4247fffe
+ high_elevation: &425bfffe
+ sun_direction: -1
+ temperature: 2
+ temperature[0]: 25
+ temperature[1]: 25
+ skybox_texture: 2
+ skybox_texture[0]: "/model/skybox/nice0/nice0_11-15_g.tobj"
+ skybox_texture[1]: "/model/skybox/nice1/nice1_11-15_g.tobj"
+ skycloud_texture: 2
+ skycloud_texture[0]: "/model/skybox/nice0/nice0_11-15_c.tobj"
+ skycloud_texture[1]: "/model/skybox/nice1/nice1_11-15_c.tobj"
+ skycloud_part: 2
+ skycloud_part[0]: day
+ skycloud_part[1]: day
+ ambient: 2
+ ambient[0]: (&3f068687, &3f45c5c7, &3f5ddddf)
+ ambient[1]: (&3f068687, &3f45c5c7, &3f5ddddf)
+ ambient_hdr_coef: 2
+ ambient_hdr_coef[0]: &3e4ccccd
+ ambient_hdr_coef[1]: &3e4ccccd
+ diffuse: 2
+ diffuse[0]: (&3f7282b0, &3f24fca0, &3ed338ca)
+ diffuse[1]: (&3f5adadc, &3f30b0b1, &3ef0f0f2)
+ diffuse_hdr_coef: 2
+ diffuse_hdr_coef[0]: &3fa66666
+ diffuse_hdr_coef[1]: &3f99999a
+ specular: 2
+ specular[0]: (1, 1, 1)
+ specular[1]: (1, 1, 1)
+ specular_hdr_coef: 2
+ specular_hdr_coef[0]: 1
+ specular_hdr_coef[1]: 1
+ env: 2
+ env[0]: 1
+ env[1]: 1
+ env_static_mod: 2
+ env_static_mod[0]: &3f000000
+ env_static_mod[1]: &3f000000
+ sky_color: 2
+ sky_color[0]: (1, 1, 1)
+ sky_color[1]: (1, 1, 1)
+ sky_color_hdr_coef: 2
+ sky_color_hdr_coef[0]: 1
+ sky_color_hdr_coef[1]: 1
+ sun_color: 2
+ sun_color[0]: (&3f7282b0, &3f2fca9d, &3e822039)
+ sun_color[1]: (&3f7db8df, &3f5ae0cd, &3f3aff7a)
+ sun_color_hdr_coef: 2
+ sun_color_hdr_coef[0]: 1
+ sun_color_hdr_coef[1]: 1
+ sun_shadow_strength: 2
+ sun_shadow_strength[0]: &3f666666
+ sun_shadow_strength[1]: &3f666666
+ fog_color: 2
+ fog_color[0]: (&3ddb2eec, &3e702e07, &3e979f70)
+ fog_color[1]: (&3db5910e, &3e198f0f, &3e4749e6)
+ fog_color2: 2
+ fog_color2[0]: (&3e3ce704, &3ec5da14, &3ede4963)
+ fog_color2[1]: (&3de53cd3, &3e4e64c3, &3e7c1c34)
+ fog_vgradient: 2
+ fog_vgradient[0]: &3ba3d70a
+ fog_vgradient[1]: &3ba3d70a
+ fog_offset: 2
+ fog_offset[0]: 250
+ fog_offset[1]: 150
+ fog_density: 2
+ fog_density[0]: &3aaa64c3
+ fog_density[1]: &3aaa64c3
+ fog_speed: 2
+ fog_speed[0]: &3f000000
+ fog_speed[1]: &3f000000
+ transition_fog_speed: 2
+ transition_fog_speed[0]: 3
+ transition_fog_speed[1]: 3
+ speed_coef: 2
+ speed_coef[0]: &3e75c2a2
+ speed_coef[1]: &3e75c2a2
+ cloud_shadow_weight: 2
+ cloud_shadow_weight[0]: &3f333333
+ cloud_shadow_weight[1]: &3f333333
+ cloud_shadow_texture: 2
+ cloud_shadow_texture[0]: "/model/skybox/clouds_shadows1.tobj"
+ cloud_shadow_texture[1]: "/model/skybox/clouds_shadows1.tobj"
+ cloud_shadow_area_size: 2
+ cloud_shadow_area_size[0]: (1000, 1000)
+ cloud_shadow_area_size[1]: (1000, 1000)
+ cloud_shadow_speed: 2
+ cloud_shadow_speed[0]: (5, 5)
+ cloud_shadow_speed[1]: (5, 5)
+ rain_intensity: 2
+ rain_intensity[0]: 0
+ rain_intensity[1]: 0
+ rain_max_wetness: 2
+ rain_max_wetness[0]: 1
+ rain_max_wetness[1]: 1
+ rain_additional_ambient: 2
+ rain_additional_ambient[0]: 5
+ rain_additional_ambient[1]: 5
+ leaves_back_color: 2
+ leaves_back_color[0]: (&3f7db8e0, &3f6e1bc2, &3eaf0f69)
+ leaves_back_color[1]: (&3f7db8e0, &3f6e1bc2, &3eaf0f69)
+ wind_type: 2
+ wind_type[0]: 1
+ wind_type[1]: 1
+ dof_start: 2
+ dof_start[0]: 120
+ dof_start[1]: 120
+ dof_transition: 2
+ dof_transition[0]: 700
+ dof_transition[1]: 700
+ dof_filter_size: 2
+ dof_filter_size[0]: 1
+ dof_filter_size[1]: 1
+ color_balance: 2
+ color_balance[0]: (0, 0, 0)
+ color_balance[1]: (0, 0, 0)
+ color_saturation: 2
+ color_saturation[0]: 1
+ color_saturation[1]: 1
+ sunshaft_color: 2
+ sunshaft_color[0]: (&3ec87c30, &3e932b72, &3e22c6a1)
+ sunshaft_color[1]: (&3eaca0b5, &3e741e7e, &3da020ba)
+ sunshaft_strength: 2
+ sunshaft_strength[0]: 1
+ sunshaft_strength[1]: 1
+ sunshaft_size: 2
+ sunshaft_size[0]: 3
+ sunshaft_size[1]: 3
+ hdr_parameters: 2
+ hdr_parameters[0]: hdr.18
+ hdr_parameters[1]: hdr.18
+ weight: 2
+ weight[0]: 1
+ weight[1]: 1
+}
+
+sun_profile : default.nice.06e {
+ low_elevation: &421ffffe
+ high_elevation: 45
+ sun_direction: -1
+ temperature: 2
+ temperature[0]: 25
+ temperature[1]: 25
+ skybox_texture: 2
+ skybox_texture[0]: "/model/skybox/nice0/nice0_11-15_g.tobj"
+ skybox_texture[1]: "/model/skybox/nice1/nice1_11-15_g.tobj"
+ skycloud_texture: 2
+ skycloud_texture[0]: "/model/skybox/nice0/nice0_11-15_c.tobj"
+ skycloud_texture[1]: "/model/skybox/nice1/nice1_11-15_c.tobj"
+ skycloud_part: 2
+ skycloud_part[0]: day
+ skycloud_part[1]: day
+ ambient: 2
+ ambient[0]: (&3f068687, &3f45c5c7, &3f5ddddf)
+ ambient[1]: (&3f068687, &3f45c5c7, &3f5ddddf)
+ ambient_hdr_coef: 2
+ ambient_hdr_coef[0]: &3e19999a
+ ambient_hdr_coef[1]: &3e19999a
+ diffuse: 2
+ diffuse[0]: (&3f7282b0, &3f24fca0, &3ed338ca)
+ diffuse[1]: (&3f5adadc, &3f30b0b1, &3ef0f0f2)
+ diffuse_hdr_coef: 2
+ diffuse_hdr_coef[0]: &3f933333
+ diffuse_hdr_coef[1]: 1
+ specular: 2
+ specular[0]: (1, 1, 1)
+ specular[1]: (1, 1, 1)
+ specular_hdr_coef: 2
+ specular_hdr_coef[0]: 1
+ specular_hdr_coef[1]: 1
+ env: 2
+ env[0]: 1
+ env[1]: 1
+ env_static_mod: 2
+ env_static_mod[0]: &3f000000
+ env_static_mod[1]: &3f000000
+ sky_color: 2
+ sky_color[0]: (1, 1, 1)
+ sky_color[1]: (1, 1, 1)
+ sky_color_hdr_coef: 2
+ sky_color_hdr_coef[0]: 1
+ sky_color_hdr_coef[1]: 1
+ sun_color: 2
+ sun_color[0]: (&3f7282b0, &3f2fca9d, &3e822039)
+ sun_color[1]: (&3f7db8df, &3f5ae0cd, &3f3aff7a)
+ sun_color_hdr_coef: 2
+ sun_color_hdr_coef[0]: 1
+ sun_color_hdr_coef[1]: 1
+ sun_shadow_strength: 2
+ sun_shadow_strength[0]: &3f666666
+ sun_shadow_strength[1]: &3f666666
+ fog_color: 2
+ fog_color[0]: (&3ddb2eec, &3e702e07, &3e979f70)
+ fog_color[1]: (&3db5910e, &3e198f0f, &3e4749e6)
+ fog_color2: 2
+ fog_color2[0]: (&3e3ce704, &3ec5da14, &3ede4963)
+ fog_color2[1]: (&3de53cd3, &3e4e64c3, &3e7c1c34)
+ fog_vgradient: 2
+ fog_vgradient[0]: &3ba3d70a
+ fog_vgradient[1]: &3ba3d70a
+ fog_offset: 2
+ fog_offset[0]: 250
+ fog_offset[1]: 150
+ fog_density: 2
+ fog_density[0]: &3aaa64c3
+ fog_density[1]: &3aaa64c3
+ fog_speed: 2
+ fog_speed[0]: &3f000000
+ fog_speed[1]: &3f000000
+ transition_fog_speed: 2
+ transition_fog_speed[0]: 3
+ transition_fog_speed[1]: 3
+ speed_coef: 2
+ speed_coef[0]: &3e75c2a2
+ speed_coef[1]: &3e75c2a2
+ cloud_shadow_weight: 2
+ cloud_shadow_weight[0]: &3f333333
+ cloud_shadow_weight[1]: &3f333333
+ cloud_shadow_texture: 2
+ cloud_shadow_texture[0]: "/model/skybox/clouds_shadows1.tobj"
+ cloud_shadow_texture[1]: "/model/skybox/clouds_shadows1.tobj"
+ cloud_shadow_area_size: 2
+ cloud_shadow_area_size[0]: (1000, 1000)
+ cloud_shadow_area_size[1]: (1000, 1000)
+ cloud_shadow_speed: 2
+ cloud_shadow_speed[0]: (5, 5)
+ cloud_shadow_speed[1]: (5, 5)
+ rain_intensity: 2
+ rain_intensity[0]: 0
+ rain_intensity[1]: 0
+ rain_max_wetness: 2
+ rain_max_wetness[0]: 1
+ rain_max_wetness[1]: 1
+ rain_additional_ambient: 2
+ rain_additional_ambient[0]: 5
+ rain_additional_ambient[1]: 5
+ leaves_back_color: 2
+ leaves_back_color[0]: (&3f7db8e0, &3f6e1bc2, &3eaf0f69)
+ leaves_back_color[1]: (&3f7db8e0, &3f6e1bc2, &3eaf0f69)
+ wind_type: 2
+ wind_type[0]: 1
+ wind_type[1]: 1
+ dof_start: 2
+ dof_start[0]: 120
+ dof_start[1]: 120
+ dof_transition: 2
+ dof_transition[0]: 700
+ dof_transition[1]: 700
+ dof_filter_size: 2
+ dof_filter_size[0]: 1
+ dof_filter_size[1]: 1
+ color_balance: 2
+ color_balance[0]: (0, 0, 0)
+ color_balance[1]: (0, 0, 0)
+ color_saturation: 2
+ color_saturation[0]: 1
+ color_saturation[1]: 1
+ sunshaft_color: 2
+ sunshaft_color[0]: (&3ec87c30, &3e932b72, &3e22c6a1)
+ sunshaft_color[1]: (&3eaca0b5, &3e741e7e, &3da020ba)
+ sunshaft_strength: 2
+ sunshaft_strength[0]: 1
+ sunshaft_strength[1]: 1
+ sunshaft_size: 2
+ sunshaft_size[0]: 3
+ sunshaft_size[1]: 3
+ hdr_parameters: 2
+ hdr_parameters[0]: hdr.18
+ hdr_parameters[1]: hdr.18
+ weight: 2
+ weight[0]: 1
+ weight[1]: 1
+}
+
+sun_profile : default.nice.07a {
+ low_elevation: 30
+ high_elevation: &420bffff
+ sun_direction: -1
+ temperature: 2
+ temperature[0]: 22
+ temperature[1]: 22
+ skybox_texture: 2
+ skybox_texture[0]: "/model/skybox/nice0/nice0_16-18_g.tobj"
+ skybox_texture[1]: "/model/skybox/nice1/nice1_16-18_g.tobj"
+ skycloud_texture: 2
+ skycloud_texture[0]: "/model/skybox/nice0/nice0_16-18_c.tobj"
+ skycloud_texture[1]: "/model/skybox/nice1/nice1_16-18_c.tobj"
+ skycloud_part: 2
+ skycloud_part[0]: day
+ skycloud_part[1]: day
+ ambient: 2
+ ambient[0]: (&3f31b1b2, &3f31b1b2, &3f31b1b2)
+ ambient[1]: (&3f31b1b2, &3f31b1b2, &3f31b1b2)
+ ambient_hdr_coef: 2
+ ambient_hdr_coef[0]: &3df5c28f
+ ambient_hdr_coef[1]: &3df5c28f
+ diffuse: 2
+ diffuse[0]: (&3f75f5f7, &3f25a5a6, &3eb8b8b9)
+ diffuse[1]: (&3f76f5af, &3f24fca0, &3eb8fd34)
+ diffuse_hdr_coef: 2
+ diffuse_hdr_coef[0]: &3f666666
+ diffuse_hdr_coef[1]: &3f666666
+ specular: 2
+ specular[0]: (1, 1, 1)
+ specular[1]: (1, 1, 1)
+ specular_hdr_coef: 2
+ specular_hdr_coef[0]: 1
+ specular_hdr_coef[1]: 1
+ env: 2
+ env[0]: 1
+ env[1]: 1
+ env_static_mod: 2
+ env_static_mod[0]: &3e99999a
+ env_static_mod[1]: &3e99999a
+ sky_color: 2
+ sky_color[0]: (1, 1, 1)
+ sky_color[1]: (1, 1, 1)
+ sky_color_hdr_coef: 2
+ sky_color_hdr_coef[0]: 1
+ sky_color_hdr_coef[1]: 1
+ sun_color: 2
+ sun_color[0]: (&3f7282b0, &3f40c0d3, &3f24fc9f)
+ sun_color[1]: (&3f2fca9d, &3f2fca9d, &3f2fca9c)
+ sun_color_hdr_coef: 2
+ sun_color_hdr_coef[0]: 1
+ sun_color_hdr_coef[1]: 1
+ sun_shadow_strength: 2
+ sun_shadow_strength[0]: &3f666666
+ sun_shadow_strength[1]: &3f666666
+ fog_color: 2
+ fog_color[0]: (&3d3f23e3, &3dd1641c, &3e168e51)
+ fog_color[1]: (&3d810b65, &3ddb2eec, &3e0ae377)
+ fog_color2: 2
+ fog_color2[0]: (&3da44a49, &3e29186a, &3e702e07)
+ fog_color2[1]: (&3da883d5, &3e0dc105, &3e362861)
+ fog_vgradient: 2
+ fog_vgradient[0]: &3ba3d70a
+ fog_vgradient[1]: &3ba3d70a
+ fog_offset: 2
+ fog_offset[0]: 250
+ fog_offset[1]: 150
+ fog_density: 2
+ fog_density[0]: &3aaa64c3
+ fog_density[1]: &3aaa64c3
+ fog_speed: 2
+ fog_speed[0]: &3f000000
+ fog_speed[1]: &3f000000
+ transition_fog_speed: 2
+ transition_fog_speed[0]: 3
+ transition_fog_speed[1]: 3
+ speed_coef: 2
+ speed_coef[0]: &3e75c2a2
+ speed_coef[1]: &3e75c2a2
+ cloud_shadow_weight: 2
+ cloud_shadow_weight[0]: &3f333333
+ cloud_shadow_weight[1]: &3f333333
+ cloud_shadow_texture: 2
+ cloud_shadow_texture[0]: "/model/skybox/clouds_shadows1.tobj"
+ cloud_shadow_texture[1]: "/model/skybox/clouds_shadows1.tobj"
+ cloud_shadow_area_size: 2
+ cloud_shadow_area_size[0]: (1000, 1000)
+ cloud_shadow_area_size[1]: (1000, 1000)
+ cloud_shadow_speed: 2
+ cloud_shadow_speed[0]: (5, 5)
+ cloud_shadow_speed[1]: (5, 5)
+ rain_intensity: 2
+ rain_intensity[0]: 0
+ rain_intensity[1]: 0
+ rain_max_wetness: 2
+ rain_max_wetness[0]: 1
+ rain_max_wetness[1]: 1
+ rain_additional_ambient: 2
+ rain_additional_ambient[0]: 5
+ rain_additional_ambient[1]: 5
+ leaves_back_color: 2
+ leaves_back_color[0]: (&3f7db8e0, &3f6e1bc2, &3eaf0f69)
+ leaves_back_color[1]: (&3f7db8e0, &3f6e1bc2, &3eaf0f69)
+ wind_type: 2
+ wind_type[0]: 1
+ wind_type[1]: 1
+ dof_start: 2
+ dof_start[0]: 120
+ dof_start[1]: 120
+ dof_transition: 2
+ dof_transition[0]: 700
+ dof_transition[1]: 700
+ dof_filter_size: 2
+ dof_filter_size[0]: 1
+ dof_filter_size[1]: 1
+ color_balance: 2
+ color_balance[0]: (&3d4ccccd, 0, &bd4ccccd)
+ color_balance[1]: (0, 0, 0)
+ color_saturation: 2
+ color_saturation[0]: 1
+ color_saturation[1]: 1
+ sunshaft_color: 2
+ sunshaft_color[0]: (&3f3aff7b, &3f00bd2a, &3e168e51)
+ sunshaft_color[1]: (&3f5ae0cd, &3f3ed2d1, &3f0884ce)
+ sunshaft_strength: 2
+ sunshaft_strength[0]: &3f000000
+ sunshaft_strength[1]: &3ecccccd
+ sunshaft_size: 2
+ sunshaft_size[0]: 3
+ sunshaft_size[1]: 2
+ hdr_parameters: 2
+ hdr_parameters[0]: hdr.18
+ hdr_parameters[1]: hdr.18
+ weight: 2
+ weight[0]: 1
+ weight[1]: 1
+}
+
+sun_profile : default.nice.07b {
+ low_elevation: 15
+ high_elevation: &41c7fffe
+ sun_direction: -1
+ temperature: 2
+ temperature[0]: 22
+ temperature[1]: 22
+ skybox_texture: 2
+ skybox_texture[0]: "/model/skybox/nice0/nice0_16-18_g.tobj"
+ skybox_texture[1]: "/model/skybox/nice1/nice1_16-18_g.tobj"
+ skycloud_texture: 2
+ skycloud_texture[0]: "/model/skybox/nice0/nice0_16-18_c.tobj"
+ skycloud_texture[1]: "/model/skybox/nice1/nice1_16-18_c.tobj"
+ skycloud_part: 2
+ skycloud_part[0]: day
+ skycloud_part[1]: day
+ ambient: 2
+ ambient[0]: (&3f31b1b2, &3f31b1b2, &3f31b1b2)
+ ambient[1]: (&3f31b1b2, &3f31b1b2, &3f31b1b2)
+ ambient_hdr_coef: 2
+ ambient_hdr_coef[0]: &3da3d70a
+ ambient_hdr_coef[1]: &3da3d70a
+ diffuse: 2
+ diffuse[0]: (&3f75f5f7, &3f25a5a6, &3eb8b8b9)
+ diffuse[1]: (&3f76f5af, &3f24fca0, &3eb8fd34)
+ diffuse_hdr_coef: 2
+ diffuse_hdr_coef[0]: &3f333333
+ diffuse_hdr_coef[1]: &3f333333
+ specular: 2
+ specular[0]: (1, 1, 1)
+ specular[1]: (1, 1, 1)
+ specular_hdr_coef: 2
+ specular_hdr_coef[0]: 1
+ specular_hdr_coef[1]: 1
+ env: 2
+ env[0]: 1
+ env[1]: 1
+ env_static_mod: 2
+ env_static_mod[0]: &3e99999a
+ env_static_mod[1]: &3e99999a
+ sky_color: 2
+ sky_color[0]: (1, 1, 1)
+ sky_color[1]: (1, 1, 1)
+ sky_color_hdr_coef: 2
+ sky_color_hdr_coef[0]: 1
+ sky_color_hdr_coef[1]: 1
+ sun_color: 2
+ sun_color[0]: (&3f7282b0, &3f40c0d3, &3f24fc9f)
+ sun_color[1]: (&3f2fca9d, &3f2fca9d, &3f2fca9c)
+ sun_color_hdr_coef: 2
+ sun_color_hdr_coef[0]: 1
+ sun_color_hdr_coef[1]: 1
+ sun_shadow_strength: 2
+ sun_shadow_strength[0]: &3f666666
+ sun_shadow_strength[1]: &3f666666
+ fog_color: 2
+ fog_color[0]: (&3d3f23e3, &3dd1641c, &3e168e51)
+ fog_color[1]: (&3d810b65, &3ddb2eec, &3e0ae377)
+ fog_color2: 2
+ fog_color2[0]: (&3da44a49, &3e29186a, &3e702e07)
+ fog_color2[1]: (&3da883d5, &3e0dc105, &3e362861)
+ fog_vgradient: 2
+ fog_vgradient[0]: &3ba3d70a
+ fog_vgradient[1]: &3ba3d70a
+ fog_offset: 2
+ fog_offset[0]: 250
+ fog_offset[1]: 150
+ fog_density: 2
+ fog_density[0]: &3aaa64c3
+ fog_density[1]: &3aaa64c3
+ fog_speed: 2
+ fog_speed[0]: &3f000000
+ fog_speed[1]: &3f000000
+ transition_fog_speed: 2
+ transition_fog_speed[0]: 3
+ transition_fog_speed[1]: 3
+ speed_coef: 2
+ speed_coef[0]: &3e75c2a2
+ speed_coef[1]: &3e75c2a2
+ cloud_shadow_weight: 2
+ cloud_shadow_weight[0]: &3f333333
+ cloud_shadow_weight[1]: &3f333333
+ cloud_shadow_texture: 2
+ cloud_shadow_texture[0]: "/model/skybox/clouds_shadows1.tobj"
+ cloud_shadow_texture[1]: "/model/skybox/clouds_shadows1.tobj"
+ cloud_shadow_area_size: 2
+ cloud_shadow_area_size[0]: (1000, 1000)
+ cloud_shadow_area_size[1]: (1000, 1000)
+ cloud_shadow_speed: 2
+ cloud_shadow_speed[0]: (5, 5)
+ cloud_shadow_speed[1]: (5, 5)
+ rain_intensity: 2
+ rain_intensity[0]: 0
+ rain_intensity[1]: 0
+ rain_max_wetness: 2
+ rain_max_wetness[0]: 1
+ rain_max_wetness[1]: 1
+ rain_additional_ambient: 2
+ rain_additional_ambient[0]: 5
+ rain_additional_ambient[1]: 5
+ leaves_back_color: 2
+ leaves_back_color[0]: (&3f7db8e0, &3f6e1bc2, &3eaf0f69)
+ leaves_back_color[1]: (&3f7db8e0, &3f6e1bc2, &3eaf0f69)
+ wind_type: 2
+ wind_type[0]: 1
+ wind_type[1]: 1
+ dof_start: 2
+ dof_start[0]: 120
+ dof_start[1]: 120
+ dof_transition: 2
+ dof_transition[0]: 700
+ dof_transition[1]: 700
+ dof_filter_size: 2
+ dof_filter_size[0]: 1
+ dof_filter_size[1]: 1
+ color_balance: 2
+ color_balance[0]: (&3d4ccccd, 0, &bd4ccccd)
+ color_balance[1]: (0, 0, 0)
+ color_saturation: 2
+ color_saturation[0]: 1
+ color_saturation[1]: 1
+ sunshaft_color: 2
+ sunshaft_color[0]: (&3f3aff7b, &3f00bd2a, &3e168e51)
+ sunshaft_color[1]: (&3f5ae0cd, &3f3ed2d1, &3f0884ce)
+ sunshaft_strength: 2
+ sunshaft_strength[0]: &3f000000
+ sunshaft_strength[1]: &3ecccccd
+ sunshaft_size: 2
+ sunshaft_size[0]: 3
+ sunshaft_size[1]: 2
+ hdr_parameters: 2
+ hdr_parameters[0]: hdr.15
+ hdr_parameters[1]: hdr.15
+ weight: 2
+ weight[0]: 1
+ weight[1]: 1
+}
+
+sun_profile : default.nice.08 {
+ low_elevation: &409ffffe
+ high_elevation: &411ffffe
+ sun_direction: -1
+ temperature: 2
+ temperature[0]: 20
+ temperature[1]: 20
+ skybox_texture: 2
+ skybox_texture[0]: "/model/skybox/nice0/nice0_19-20_g.tobj"
+ skybox_texture[1]: "/model/skybox/nice1/nice1_19-20_g.tobj"
+ skycloud_texture: 2
+ skycloud_texture[0]: "/model/skybox/nice0/nice0_19-20_c.tobj"
+ skycloud_texture[1]: "/model/skybox/nice1/nice1_19-20_c.tobj"
+ skycloud_part: 2
+ skycloud_part[0]: day
+ skycloud_part[1]: day
+ ambient: 2
+ ambient[0]: (&3f31b1b2, &3f31b1b2, &3f31b1b2)
+ ambient[1]: (&3f31b1b2, &3f31b1b2, &3f31b1b2)
+ ambient_hdr_coef: 2
+ ambient_hdr_coef[0]: &3d4ccccd
+ ambient_hdr_coef[1]: &3d4ccccd
+ diffuse: 2
+ diffuse[0]: (&3f75f5f7, &3f25a5a6, &3eb8b8b9)
+ diffuse[1]: (&3f75f5f7, &3f25a5a6, &3eb8b8b9)
+ diffuse_hdr_coef: 2
+ diffuse_hdr_coef[0]: &3f19999a
+ diffuse_hdr_coef[1]: &3f19999a
+ specular: 2
+ specular[0]: (1, 1, 1)
+ specular[1]: (1, 1, 1)
+ specular_hdr_coef: 2
+ specular_hdr_coef[0]: &3f000000
+ specular_hdr_coef[1]: &3f000000
+ env: 2
+ env[0]: 1
+ env[1]: 1
+ env_static_mod: 2
+ env_static_mod[0]: &3e4ccccd
+ env_static_mod[1]: &3e4ccccd
+ sky_color: 2
+ sky_color[0]: (1, 1, 1)
+ sky_color[1]: (1, 1, 1)
+ sky_color_hdr_coef: 2
+ sky_color_hdr_coef[0]: 1
+ sky_color_hdr_coef[1]: 1
+ sun_color: 2
+ sun_color[0]: (&3f74baad, &3f391a25, &3f18e238)
+ sun_color[1]: (&3f7933b7, &3f3ce7b4, &3f1c4971)
+ sun_color_hdr_coef: 2
+ sun_color_hdr_coef[0]: 1
+ sun_color_hdr_coef[1]: &3fc00000
+ sun_shadow_strength: 2
+ sun_shadow_strength[0]: 1
+ sun_shadow_strength[1]: 1
+ fog_color: 2
+ fog_color[0]: (&3d8c3e48, &3d454fd1, &3d65e6fc)
+ fog_color[1]: (&3d97fd48, &3dd64129, &3dd6412a)
+ fog_color2: 2
+ fog_color2[0]: (&3e027f06, &3da020b9, &3daccd6f)
+ fog_color2[1]: (&3dd1641c, &3e25eb08, &3e25eb07)
+ fog_vgradient: 2
+ fog_vgradient[0]: &3ba3d70a
+ fog_vgradient[1]: &3ba3d70a
+ fog_offset: 2
+ fog_offset[0]: 180
+ fog_offset[1]: 120
+ fog_density: 2
+ fog_density[0]: &3aaa64c3
+ fog_density[1]: &3b03126f
+ fog_speed: 2
+ fog_speed[0]: 1
+ fog_speed[1]: 2
+ transition_fog_speed: 2
+ transition_fog_speed[0]: 5
+ transition_fog_speed[1]: 5
+ speed_coef: 2
+ speed_coef[0]: &3e75c2a2
+ speed_coef[1]: &3e75c2a2
+ cloud_shadow_weight: 2
+ cloud_shadow_weight[0]: &3f000000
+ cloud_shadow_weight[1]: &3f333333
+ cloud_shadow_texture: 2
+ cloud_shadow_texture[0]: "/model/skybox/clouds_shadows1.tobj"
+ cloud_shadow_texture[1]: "/model/skybox/clouds_shadows1.tobj"
+ cloud_shadow_area_size: 2
+ cloud_shadow_area_size[0]: (1000, 1000)
+ cloud_shadow_area_size[1]: (1000, 1000)
+ cloud_shadow_speed: 2
+ cloud_shadow_speed[0]: (5, 5)
+ cloud_shadow_speed[1]: (5, 5)
+ rain_intensity: 2
+ rain_intensity[0]: 0
+ rain_intensity[1]: 0
+ rain_max_wetness: 2
+ rain_max_wetness[0]: 1
+ rain_max_wetness[1]: 1
+ rain_additional_ambient: 2
+ rain_additional_ambient[0]: 5
+ rain_additional_ambient[1]: 5
+ leaves_back_color: 2
+ leaves_back_color[0]: (1, 1, 1)
+ leaves_back_color[1]: (1, 1, 1)
+ wind_type: 2
+ wind_type[0]: 1
+ wind_type[1]: 1
+ dof_start: 2
+ dof_start[0]: 120
+ dof_start[1]: 120
+ dof_transition: 2
+ dof_transition[0]: 700
+ dof_transition[1]: 700
+ dof_filter_size: 2
+ dof_filter_size[0]: 1
+ dof_filter_size[1]: 1
+ color_balance: 2
+ color_balance[0]: (&3d4ccccd, 0, &bd75c28f)
+ color_balance[1]: (0, 0, 0)
+ color_saturation: 2
+ color_saturation[0]: 1
+ color_saturation[1]: 1
+ sunshaft_color: 2
+ sunshaft_color[0]: (&3f5099ca, &3e8a7eb0, &3dc7dbe0)
+ sunshaft_color[1]: (&3f4a9282, &3f03d1a5, &3e9e72b6)
+ sunshaft_strength: 2
+ sunshaft_strength[0]: &3f000000
+ sunshaft_strength[1]: &3f000000
+ sunshaft_size: 2
+ sunshaft_size[0]: 3
+ sunshaft_size[1]: 2
+ hdr_parameters: 2
+ hdr_parameters[0]: hdr.12
+ hdr_parameters[1]: hdr.12
+ weight: 2
+ weight[0]: 1
+ weight[1]: 1
+}
+
+sun_profile : default.nice.09 {
+ low_elevation: &c09ffffe
+ high_elevation: 0
+ sun_direction: -1
+ temperature: 2
+ temperature[0]: 17
+ temperature[1]: 17
+ skybox_texture: 2
+ skybox_texture[0]: "/model/skybox/nice0/nice0_21-22_g.tobj"
+ skybox_texture[1]: "/model/skybox/nice1/nice1_21-22_g.tobj"
+ skycloud_texture: 2
+ skycloud_texture[0]: "/model/skybox/nice0/nice0_21-22_c.tobj"
+ skycloud_texture[1]: "/model/skybox/nice1/nice1_21-22_c.tobj"
+ skycloud_part: 2
+ skycloud_part[0]: night
+ skycloud_part[1]: night
+ ambient: 2
+ ambient[0]: (&3f06f105, &3f469c4a, &3f5cf7e0)
+ ambient[1]: (&3ee6cd64, &3f42b1bd, &3f800001)
+ ambient_hdr_coef: 2
+ ambient_hdr_coef[0]: &3c23d70a
+ ambient_hdr_coef[1]: &3c23d70a
+ diffuse: 2
+ diffuse[0]: (&3f6571ea, &3f0884cf, &3ecb2381)
+ diffuse[1]: (&3f40c0d3, &3f13dc51, &3efe6e01)
+ diffuse_hdr_coef: 2
+ diffuse_hdr_coef[0]: &3e4ccccd
+ diffuse_hdr_coef[1]: &3e4ccccd
+ specular: 2
+ specular[0]: (1, 1, 1)
+ specular[1]: (1, 1, 1)
+ specular_hdr_coef: 2
+ specular_hdr_coef[0]: &3d8f5c29
+ specular_hdr_coef[1]: &3d8f5c29
+ env: 2
+ env[0]: 1
+ env[1]: 1
+ env_static_mod: 2
+ env_static_mod[0]: &3e4ccccd
+ env_static_mod[1]: &3e4ccccd
+ sky_color: 2
+ sky_color[0]: (1, 1, 1)
+ sky_color[1]: (1, 1, 1)
+ sky_color_hdr_coef: 2
+ sky_color_hdr_coef[0]: 1
+ sky_color_hdr_coef[1]: 1
+ sun_color: 2
+ sun_color[0]: (&3f3aff7b, &3ec87c30, &3e9c274c)
+ sun_color[1]: (&3c830aa7, &3d11d2af, &3d8c3e48)
+ sun_color_hdr_coef: 2
+ sun_color_hdr_coef[0]: 1
+ sun_color_hdr_coef[1]: 1
+ sun_shadow_strength: 2
+ sun_shadow_strength[0]: 1
+ sun_shadow_strength[1]: 1
+ fog_color: 2
+ fog_color[0]: (&3cc5e638, &3ca63432, &3d02a569)
+ fog_color[1]: (&3b8fe614, &3c6ca5dd, &3d0ca7e5)
+ fog_color2: 2
+ fog_color2[0]: (&3d84b793, &3d39152b, &3d588467)
+ fog_color2[1]: (&3bb7ad6c, &3c9ec7c0, &3d454fd1)
+ fog_vgradient: 2
+ fog_vgradient[0]: &3ba3d70a
+ fog_vgradient[1]: &3ba3d70a
+ fog_offset: 2
+ fog_offset[0]: 180
+ fog_offset[1]: 120
+ fog_density: 2
+ fog_density[0]: &3ad1b717
+ fog_density[1]: &3b03126f
+ fog_speed: 2
+ fog_speed[0]: &3f000000
+ fog_speed[1]: &3f000000
+ transition_fog_speed: 2
+ transition_fog_speed[0]: 5
+ transition_fog_speed[1]: 5
+ speed_coef: 2
+ speed_coef[0]: &3e75c2a2
+ speed_coef[1]: &3e75c2a2
+ cloud_shadow_weight: 2
+ cloud_shadow_weight[0]: 0
+ cloud_shadow_weight[1]: 0
+ cloud_shadow_texture: 2
+ cloud_shadow_texture[0]: "null"
+ cloud_shadow_texture[1]: "null"
+ cloud_shadow_area_size: 2
+ cloud_shadow_area_size[0]: (0, 0)
+ cloud_shadow_area_size[1]: (0, 0)
+ cloud_shadow_speed: 2
+ cloud_shadow_speed[0]: (0, 0)
+ cloud_shadow_speed[1]: (0, 0)
+ rain_intensity: 2
+ rain_intensity[0]: 0
+ rain_intensity[1]: 0
+ rain_max_wetness: 2
+ rain_max_wetness[0]: 1
+ rain_max_wetness[1]: 1
+ rain_additional_ambient: 2
+ rain_additional_ambient[0]: 5
+ rain_additional_ambient[1]: 5
+ leaves_back_color: 2
+ leaves_back_color[0]: (1, 1, 1)
+ leaves_back_color[1]: (1, 1, 1)
+ wind_type: 2
+ wind_type[0]: 1
+ wind_type[1]: 1
+ dof_start: 2
+ dof_start[0]: 120
+ dof_start[1]: 120
+ dof_transition: 2
+ dof_transition[0]: 700
+ dof_transition[1]: 700
+ dof_filter_size: 2
+ dof_filter_size[0]: 1
+ dof_filter_size[1]: 1
+ color_balance: 2
+ color_balance[0]: (0, 0, 0)
+ color_balance[1]: (0, 0, 0)
+ color_saturation: 2
+ color_saturation[0]: 1
+ color_saturation[1]: 1
+ sunshaft_color: 2
+ sunshaft_color[0]: (&3e949495, &3e78f8fa, &3e5cdcde)
+ sunshaft_color[1]: (&3e949495, &3e78f8fa, &3e5cdcde)
+ sunshaft_strength: 2
+ sunshaft_strength[0]: 0
+ sunshaft_strength[1]: 0
+ sunshaft_size: 2
+ sunshaft_size[0]: 2
+ sunshaft_size[1]: 2
+ hdr_parameters: 2
+ hdr_parameters[0]: hdr.12
+ hdr_parameters[1]: hdr.12
+ weight: 2
+ weight[0]: 2
+ weight[1]: 1
+}
+
+}

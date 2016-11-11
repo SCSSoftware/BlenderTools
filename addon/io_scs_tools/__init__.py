@@ -22,37 +22,27 @@ bl_info = {
     "name": "SCS Tools",
     "description": "Setup models, Import-Export SCS data format",
     "author": "Simon Lusenc (50keda), Milos Zajic (4museman)",
-    "version": (1, 4, "4ae6843"),
-    "blender": (2, 75, 0),
+    "version": (1, 5, "78732b8"),
+    "blender": (2, 78, 0),
     "location": "File > Import-Export",
-    "wiki_url": "https://github.com/SCSSoftware/BlenderTools/wiki",
+    "wiki_url": "http://modding.scssoft.com/wiki/Documentation/Tools/SCS_Blender_Tools",
     "tracker_url": "http://forum.scssoft.com/viewforum.php?f=163",
     "support": "COMMUNITY",
     "category": "Import-Export"}
-
-
-def get_tools_version():
-    """Returns Blender Tools version as string from bl_info["version"] dictonary value.
-    :return: string representation of bl_info["version"] tuple
-    :rtype: str
-    """
-    ver = ""
-    for ver_num in bl_info["version"]:
-        ver += str(ver_num) + "."
-    return ver[:-1]
-
 
 import bpy
 import os
 import traceback
 from bpy.props import CollectionProperty, StringProperty, PointerProperty, BoolProperty
 from bpy_extras.io_utils import ImportHelper, ExportHelper
+from io_scs_tools.consts import Icons as _ICONS_consts
 from io_scs_tools.imp import pix as _pix_import
 from io_scs_tools.internals.callbacks import open_gl as _open_gl_callback
 from io_scs_tools.internals.callbacks import persistent as _persistent_callback
 from io_scs_tools.internals import icons as _icons
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
 from io_scs_tools.utils.view3d import switch_layers_visibility as _switch_layers_visibility
+from io_scs_tools.utils.view3d import has_view3d_space as _has_view3d_space
 from io_scs_tools.utils.printout import lprint
 # importing all SCS Tools modules which creates panels in UI
 from io_scs_tools import ui
@@ -90,6 +80,25 @@ class ImportSCS(bpy.types.Operator, ImportHelper):
         return True
 
     def execute(self, context):
+
+        # if paths are still initializing report that to user and don't execute import
+        if operators.world.SCSPathsInitialization.is_running():
+
+            self.report({'INFO'}, "Can't import yet, paths initialization is still in progress! Try again in few moments.")
+
+            # there is no way to keep current operator alive if we want to abort import sequence.
+            # That's why we call another import operator, which will end up with
+            # printing out above info and taking us back to import screen with file browser.
+            bpy.ops.import_mesh.pim('INVOKE_DEFAULT')
+
+            return {'FINISHED'}
+
+        if not _has_view3d_space(context.screen):
+            message = "Cannot import SCS Models, no 3D viewport found! Make sure you have at least one 3D view visible."
+            self.report({'ERROR'}, message)
+            lprint("E " + message)
+            return {'FINISHED'}
+
         paths = [os.path.join(self.directory, name.name) for name in self.files]
         if not paths:
             paths.append(self.path)
@@ -111,17 +120,17 @@ class ImportSCS(bpy.types.Operator, ImportHelper):
                     _get_scs_globals().import_in_progress = False
                     context.window.cursor_modal_restore()
 
-                    traceback.print_exc()
-                    lprint("E Unexpected %r accured during import, see stack trace above.", (type(e).__name__,))
+                    trace_str = traceback.format_exc().replace("\n", "\n\t   ")
+                    lprint("E Unexpected %r accured during import:\n\t   %s", (type(e).__name__, trace_str))
 
             if result is False:
                 failed_files.append(str(filepath).replace("\\", "/"))
 
         if len(failed_files) > 0:
-            err_message = "E Following files failed to load:\n"
+            err_message = "E Following files failed to load:"
 
             for _ in failed_files:
-                err_message += "-> %r\n"
+                err_message += "\n\t   -> %r\n"
 
             lprint(err_message, tuple(failed_files), report_warnings=1, report_errors=1)
 
@@ -149,6 +158,11 @@ class ImportSCS(bpy.types.Operator, ImportHelper):
 
         layout_box_row = layout_box_col.row(align=True)
         layout_box_row.prop(self, "scs_project_path_mode", toggle=True, text="Set Current Dir as Project Base", icon='SCREEN_BACK')
+
+        if operators.world.SCSPathsInitialization.is_running():  # report running path initialization operator
+            layout_box_row = layout_box_col.row(align=True)
+            layout_box_row.label("Paths initialization in progress...")
+            layout_box_row.label("", icon='TIME')
 
         # import settings
         box2 = layout.box()
@@ -256,11 +270,9 @@ class ExportSCS(bpy.types.Operator, ExportHelper):
             result = {"CANCELLED"}
             context.window.cursor_modal_restore()
 
-            import traceback
-
-            traceback.print_exc()
-            lprint("E Unexpected %r accured during batch export, see stack trace above.",
-                   (type(e).__name__,),
+            trace_str = traceback.format_exc().replace("\n", "\n\t   ")
+            lprint("E Unexpected %r accured during batch export:\n\t   %s",
+                   (type(e).__name__, trace_str),
                    report_errors=1,
                    report_warnings=1)
 
@@ -271,6 +283,20 @@ class ExportSCS(bpy.types.Operator, ExportHelper):
         row = box0.row()
         row.prop(_get_scs_globals(), 'export_scope', expand=True)
         ui.shared.draw_export_panel(self.layout)
+
+
+class SCSAddObject(bpy.types.Menu):
+    bl_idname = "INFO_MT_SCS_add_object"
+    bl_label = "SCS Object"
+    bl_description = "Creates menu for adding SCS objects."
+
+    def draw(self, context):
+        self.layout.operator_enum("object.scs_add_object", "new_object_type")
+
+
+def add_menu_func(self, context):
+    self.layout.menu("INFO_MT_SCS_add_object", text="SCS Object", icon_value=_icons.get_icon(_ICONS_consts.Types.scs_logo_orange))
+    self.layout.separator()
 
 
 def menu_func_import(self, context):
@@ -288,7 +314,7 @@ def register():
 
     bpy.utils.register_module(__name__)
 
-    # CUSTOM ICONS CLEANUP
+    # CUSTOM ICONS INITIALIZATION
     _icons.init()
 
     # PROPERTIES REGISTRATION
@@ -358,17 +384,16 @@ def register():
     # MENU REGISTRATION
     bpy.types.INFO_MT_file_import.append(menu_func_import)
     bpy.types.INFO_MT_file_export.append(menu_func_export)
+    bpy.types.INFO_MT_add.prepend(add_menu_func)
 
 
 def unregister():
     bpy.utils.unregister_module(__name__)
 
-    # CUSTOM ICONS CLEANUP
-    _icons.cleanup()
-
     # REMOVE MENU ENTRIES
     bpy.types.INFO_MT_file_export.remove(menu_func_export)
     bpy.types.INFO_MT_file_import.remove(menu_func_import)
+    bpy.types.INFO_MT_add.remove(add_menu_func)
 
     # REMOVE OPENGL HANDLERS
     _open_gl_callback.disable()

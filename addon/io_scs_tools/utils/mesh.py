@@ -482,4 +482,4 @@ def cleanup_mesh(mesh):
 
     mesh.free_normals_split()
     if mesh.users == 0:
-        bpy.data.meshes.remove(mesh)
+        bpy.data.meshes.remove(mesh, do_unlink=True)

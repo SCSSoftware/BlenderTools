@@ -50,4 +50,4 @@ class DifSpecOcluAddEnv(DifSpecOclu, StdAddEnv):
                       DifSpecOclu.SPEC_COL_NODE,
                       DifSpecOclu.BASE_TEX_NODE,
                       DifSpecOclu.OUT_MAT_NODE,
-                      DifSpecOclu.OUTPUT_NODE)
+                      DifSpecOclu.COMPOSE_LIGHTING_NODE)

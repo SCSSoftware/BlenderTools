@@ -357,23 +357,35 @@ class GlobalSCSProps(bpy.types.PropertyGroup):
     def scs_project_path_update(self, context):
         # Update all related paths so their libraries gets reloaded from new "SCS Project Path" location.
         if not _get_scs_globals().config_update_lock:
-            _config_container.update_sign_library_rel_path(_get_scs_globals().scs_sign_model_inventory,
-                                                           _get_scs_globals().sign_library_rel_path)
-
-            _config_container.update_tsem_library_rel_path(_get_scs_globals().scs_tsem_profile_inventory,
-                                                           _get_scs_globals().tsem_library_rel_path)
-
-            _config_container.update_traffic_rules_library_rel_path(_get_scs_globals().scs_traffic_rules_inventory,
-                                                                    _get_scs_globals().traffic_rules_library_rel_path)
-
-            _config_container.update_hookup_library_rel_path(_get_scs_globals().scs_hookup_inventory,
-                                                             _get_scs_globals().hookup_library_rel_path)
-
-            _config_container.update_matsubs_inventory(_get_scs_globals().scs_matsubs_inventory,
-                                                       _get_scs_globals().matsubs_library_rel_path)
 
             _config_container.update_item_in_file('Paths.ProjectPath', self.scs_project_path)
 
+            scs_globals = _get_scs_globals()
+
+            # enable update lock because we only want to reload libraries, as their paths are not changed
+            _config_container.engage_config_lock()
+
+            # trigger update functions via asynchronous operator for library paths initialization
+            bpy.ops.world.scs_paths_initialization('INVOKE_DEFAULT', paths_list=[
+                {"name": "trigger actions library", "attr": "trigger_actions_rel_path", "path": scs_globals.trigger_actions_rel_path},
+                {"name": "sign library", "attr": "sign_library_rel_path", "path": scs_globals.sign_library_rel_path},
+                {"name": "traffic semaphore library", "attr": "tsem_library_rel_path", "path": scs_globals.tsem_library_rel_path},
+                {"name": "traffic rules library", "attr": "traffic_rules_library_rel_path", "path": scs_globals.traffic_rules_library_rel_path},
+                {"name": "hookups library", "attr": "hookup_library_rel_path", "path": scs_globals.hookup_library_rel_path},
+                {"name": "material substance library", "attr": "matsubs_library_rel_path", "path": scs_globals.matsubs_library_rel_path},
+                {"name": "sun profiles library", "attr": "sun_profiles_lib_path", "path": scs_globals.sun_profiles_lib_path},
+            ])
+
+            # release lock as properties are applied
+            _config_container.release_config_lock(use_paths_init_callback=True)
+
+        return None
+
+    def use_alternative_bases_update(self, context):
+
+        _config_container.update_item_in_file('Paths.UseAlternativeBases', int(self.use_alternative_bases))
+
+        self.scs_project_path_update(context)
         return None
 
     def shader_presets_filepath_update(self, context):
@@ -458,6 +470,25 @@ class GlobalSCSProps(bpy.types.PropertyGroup):
         # subtype="DIR_PATH",
         subtype='NONE',
         update=scs_project_path_update
+    )
+    use_alternative_bases = BoolProperty(
+        name="Use SCS Resources and Libraries From Alternative Bases",
+        description="When used, all resources with relative paths ('//') will also be searched for inside alternative 'base' directories.\n\n"
+                    "For example let's say we have:\n"
+                    "- SCS Project Base Path: 'D:/projects/ets_mod_1/my_mod_base'\n"
+                    "- Sign Library: '//def/world/sign.sii'\n\n"
+                    "then you can use texture resources from:\n\n"
+                    "1. 'D:/projects/ets_mod_1/my_mod_base'\n"
+                    "2. 'D:/projects/ets_mod_1/base'\n"
+                    "3. 'D:/projects/base'\n\n"
+                    "and sign library will be loaded from this files:\n\n"
+                    "1. 'D:/projects/ets_mod_1/my_mod_base/def/world/sign.sii'\n"
+                    "2. 'D:/projects/ets_mod_1/base/def/world/sign.sii'\n"
+                    "3. 'D:/projects/base/def/world/sign.sii'\n\n"
+                    "In short, alternative 'base' paths are intended for any existing resources from 'base.scs'\n"
+                    "that you don't want to pack with your mod, but still use in SCS Blender Tools.\n",
+        default=True,
+        update=use_alternative_bases_update,
     )
     shader_presets_filepath = StringProperty(
         name="Shader Presets Library",
@@ -1304,4 +1335,123 @@ class GlobalSCSProps(bpy.types.PropertyGroup):
             (_CONV_HLPR_consts.Bzip2Zip, "BZIP2", "Uses bzip2 compression method"),
         ),
         default=_CONV_HLPR_consts.DeflatedZip
+    )
+
+    # SUN PROFILE SETTINGS
+    class SunProfileInventoryItem(bpy.types.PropertyGroup):
+        """
+        Sun profile properties used to load climate profiles and create lighting scene from them.
+        """
+
+        name = StringProperty(name="Name", default="")
+
+        low_elevation = IntProperty(
+            name="Low Elevation",
+            options={'HIDDEN'},
+        )
+        high_elevation = IntProperty(
+            name="High Elevation",
+            options={'HIDDEN'},
+        )
+
+        sun_direction = IntProperty(
+            name="Sun Elevation Direction",
+            options={'HIDDEN'},
+        )
+
+        ambient = FloatVectorProperty(
+            name="Ambient",
+            options={'HIDDEN'},
+            subtype='COLOR',
+            size=3,
+            min=-5, max=5,
+            soft_min=0, soft_max=1,
+            step=3, precision=2,
+        )
+        ambient_hdr_coef = FloatProperty(
+            name="Ambient HDR Coeficient",
+            options={'HIDDEN'},
+        )
+
+        diffuse = FloatVectorProperty(
+            name="Diffuse",
+            options={'HIDDEN'},
+            subtype='COLOR',
+            size=3,
+            min=-5, max=5,
+            soft_min=0, soft_max=1,
+            step=3, precision=2,
+        )
+        diffuse_hdr_coef = FloatProperty(
+            name="Diffuse HDR Coeficient",
+            options={'HIDDEN'},
+        )
+
+        specular = FloatVectorProperty(
+            name="Specular",
+            options={'HIDDEN'},
+            subtype='COLOR',
+            size=3,
+            min=-5, max=5,
+            soft_min=0, soft_max=1,
+            step=3, precision=2,
+        )
+        specular_hdr_coef = FloatProperty(
+            name="Specular HDR Coeficient",
+            options={'HIDDEN'},
+        )
+
+        sun_color = FloatVectorProperty(
+            name="Sun Color",
+            options={'HIDDEN'},
+            subtype='COLOR',
+            size=3,
+            min=-5, max=5,
+            soft_min=0, soft_max=1,
+            step=3, precision=2,
+        )
+        sun_color_hdr_coef = FloatProperty(
+            name="Sun Color HDR Coeficient",
+            options={'HIDDEN'},
+        )
+
+        env = FloatProperty(
+            name="Env Factor",
+            options={'HIDDEN'},
+        )
+        env_static_mod = FloatProperty(
+            name="Env Static Modulator",
+            options={'HIDDEN'},
+        )
+
+    sun_profiles_inventory = CollectionProperty(
+        type=SunProfileInventoryItem,
+        options={'SKIP_SAVE'},
+    )
+
+    sun_profiles_inventory_active = IntProperty(
+        name="Currently Active Sun Profile",
+    )
+
+    def sun_profiles_path_update(self, context):
+        _config_container.update_sun_profiles_library_path(_get_scs_globals().sun_profiles_inventory,
+                                                           self.sun_profiles_lib_path)
+        return
+
+    sun_profiles_lib_path = StringProperty(
+        name="Sun Profiles Library",
+        description="Relative or absolute path to sun profiles definition file.",
+        default="//def/climate/default/nice.sii",
+        update=sun_profiles_path_update
+    )
+
+    def lighting_scene_east_direction_update(self, context):
+        bpy.ops.world.scs_use_sun_profile(skip_background_set=True)
+        return
+
+    lighting_scene_east_direction = IntProperty(
+        name="SCS Lighting East",
+        description="Defines east position in lighting scene (changing it will change direction of diffuse and specular light).",
+        default=0, min=0, max=360, step=10, subtype='ANGLE',
+        update=lighting_scene_east_direction_update
     )

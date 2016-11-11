@@ -21,6 +21,7 @@
 import os
 
 import bpy
+from collections import OrderedDict
 from mathutils import Vector, Matrix, Euler, Quaternion
 from io_scs_tools.utils import convert as _convert_utils
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
@@ -99,7 +100,7 @@ def _get_bone_channels(scs_root_obj, armature, scs_animation, action, export_sca
     armature_mat = scs_root_obj.matrix_world.inverted() * armature.matrix_world
 
     invalid_data = False  # flag to indicate invalid data state
-    curves_per_bone = {}  # store all the curves we are interested in per bone names
+    curves_per_bone = OrderedDict()  # store all the curves we are interested in per bone names
 
     for bone in armature.data.bones:
         for fcurve in action.fcurves:

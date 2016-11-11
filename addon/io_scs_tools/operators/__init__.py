@@ -23,3 +23,4 @@ from io_scs_tools.operators import mesh
 from io_scs_tools.operators import object
 from io_scs_tools.operators import scene
 from io_scs_tools.operators import wm
+from io_scs_tools.operators import world

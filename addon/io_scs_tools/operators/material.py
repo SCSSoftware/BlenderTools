@@ -110,7 +110,7 @@ class Common:
                 if ng_name not in bpy.data.node_groups:
                     continue
 
-                bpy.data.node_groups.remove(bpy.data.node_groups[ng_name])
+                bpy.data.node_groups.remove(bpy.data.node_groups[ng_name], do_unlink=True)
 
             # 4. finally set preset to material again, which will update nodes and possible input interface changes
             for mat in bpy.data.materials:
@@ -519,6 +519,14 @@ class Flavors:
 
                     if is_in_middle or is_on_end:
                         flavors_suffix += "." + flavor_variant.name
+
+            # if desired combination doesn't exists, abort switching and notify user
+            if not _shader_presets_cache.has_section(preset, flavors_suffix):
+                message = "Enabling %r flavor aborted! Wanted shader combination: %r is not supported!" % (self.flavor_name,
+                                                                                                           preset.effect + flavors_suffix)
+                lprint("E " + message)
+                self.report({'WARNING'}, message)
+                return {'FINISHED'}
 
             # finally set new shader data to material
             section = _shader_presets_cache.get_section(preset, flavors_suffix)
