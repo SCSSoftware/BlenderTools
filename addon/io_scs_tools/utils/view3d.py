@@ -78,6 +78,36 @@ def get_all_spaces():
     return spaces
 
 
+def has_multiple_view3d_spaces(screen=None):
+    """Tells if given blender screen has multile 3D views or not.
+
+    :param screen: blender screen
+    :type screen: bpy.types.Screen
+    :return: True if at leas one 3d view is present; False otherwise
+    :rtype: bool
+    """
+
+    screens = {}
+    if screen is None:
+        if len(bpy.data.window_managers) > 0:
+            for wnd in bpy.data.window_managers[0].windows:
+                screens[wnd.screen.name] = wnd.screen
+    else:
+        screens[screen.name] = screen
+
+    spaces_count = 0
+    for scr in screens.values():
+        for area in scr.areas:
+
+            if area.type == 'VIEW_3D':
+                spaces_count += 1
+
+            if spaces_count > 1:
+                return True
+
+    return False
+
+
 def has_view3d_space(screen):
     """Tells if given blender screen has 3D view or not.
 

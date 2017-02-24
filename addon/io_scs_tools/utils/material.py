@@ -23,9 +23,9 @@ import os
 from io_scs_tools.consts import Material as _MAT_consts
 from io_scs_tools.imp import tobj as _tobj_imp
 from io_scs_tools.internals import inventory as _invetory
+from io_scs_tools.internals import shader_presets as _shader_presets
 from io_scs_tools.internals.containers import pix as _pix_container
 from io_scs_tools.internals.shaders import shader as _shader
-from io_scs_tools.internals.shader_presets import cache as _shader_presets_cache
 from io_scs_tools.utils import path as _path
 from io_scs_tools.utils.printout import lprint
 
@@ -160,62 +160,6 @@ def get_texture(texture_path, texture_type, report_invalid=False):
             lprint("", report_warnings=1, report_errors=1)
 
     return texture
-
-
-def get_shader_presets_container(shader_presets_filepath):
-    """Returns shader presets data continaer from given path.
-
-    :param shader_presets_filepath: relative or absolute shader presets filepath
-    :type shader_presets_filepath: str
-    :return: data container if file is found; None otherwise
-    :rtype: io_scs_tools.internals.structure.SectionData
-    """
-
-    presets_container = None
-
-    if shader_presets_filepath.startswith("//"):  # IF RELATIVE PATH, MAKE IT ABSOLUTE
-        shader_presets_filepath = _path.get_abs_path(shader_presets_filepath)
-
-    if os.path.isfile(shader_presets_filepath):
-
-        presets_container = _pix_container.get_data_from_file(shader_presets_filepath, '    ')
-
-    else:
-        lprint('\nW The file path "%s" is not valid!', (shader_presets_filepath,))
-
-    return presets_container
-
-
-def get_shader_preset(shader_presets_filepath, template_name, presets_container=None):
-    """Returns requested Shader Preset data from preset file.
-
-    :param shader_presets_filepath: A file path to SCS shader preset file, can be absolute or relative
-    :type shader_presets_filepath: str
-    :param template_name: Preset name
-    :type template_name: str
-    :param presets_container: if provided this container is used to search shader in instead of opening the file again
-    :type presets_container: io_scs_tools.internals.structure.SectionData
-    :return: Preset data section
-    :rtype: SectionData
-    """
-
-    # get container as it's not present in argument
-    if not presets_container:
-
-        presets_container = get_shader_presets_container(shader_presets_filepath)
-
-    preset_section = None
-    if presets_container:
-        for section in presets_container:
-            if section.type == "Shader":
-                for prop in section.props:
-                    if prop[0] == "PresetName":
-                        if prop[1] == template_name:
-                            # print(' + template name: "%s"' % template_name)
-                            preset_section = section
-                            break
-
-    return preset_section
 
 
 def get_material_from_context(context):
@@ -586,7 +530,7 @@ def find_preset(material_effect, material_textures):
         else:
             search_i += 1
 
-        if _shader_presets_cache.effect_exists(curr_substr) and len(curr_substr) > len(longest_match):
+        if _shader_presets.has_effect(curr_substr) and len(curr_substr) > len(longest_match):
             longest_match = curr_substr
 
     # nothing matched
@@ -594,7 +538,7 @@ def find_preset(material_effect, material_textures):
         return None, None
 
     # use longest base effect match and search for a match inside flavors
-    preset_sections = _shader_presets_cache.find_sections(longest_match, material_effect[len(longest_match):])
+    preset_sections = _shader_presets.find_sections(longest_match, material_effect[len(longest_match):])
     for preset_section in preset_sections:
 
         # also check for matching among locked textures

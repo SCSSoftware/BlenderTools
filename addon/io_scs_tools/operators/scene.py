@@ -386,7 +386,7 @@ class Paths:
         def invoke(self, context, event):
             """Invoke a file path selector."""
             filepath = _get_scs_globals().shader_presets_filepath
-            if filepath.startswith("//"):
+            if _path_utils.is_valid_shader_presets_library_path():
                 self.filepath = _path_utils.get_abs_path(filepath, skip_mod_check=True)
             else:
                 self.filepath = filepath
@@ -422,7 +422,8 @@ class Paths:
 
         def invoke(self, context, event):
             """Invoke a file path selector."""
-            self.filepath = _path_utils.get_abs_path(_get_scs_globals().trigger_actions_rel_path)
+            if _path_utils.is_valid_trigger_actions_rel_path():
+                self.filepath = _path_utils.get_abs_path(_get_scs_globals().trigger_actions_rel_path)
             context.window_manager.fileselect_add(self)
             return {'RUNNING_MODAL'}
 
@@ -455,7 +456,8 @@ class Paths:
 
         def invoke(self, context, event):
             """Invoke a file path selector."""
-            self.filepath = _path_utils.get_abs_path(_get_scs_globals().sign_library_rel_path)
+            if _path_utils.is_valid_sign_library_rel_path():
+                self.filepath = _path_utils.get_abs_path(_get_scs_globals().sign_library_rel_path)
             context.window_manager.fileselect_add(self)
             return {'RUNNING_MODAL'}
 
@@ -488,7 +490,8 @@ class Paths:
 
         def invoke(self, context, event):
             """Invoke a file path selector."""
-            self.filepath = _path_utils.get_abs_path(_get_scs_globals().tsem_library_rel_path)
+            if _path_utils.is_valid_tsem_library_rel_path():
+                self.filepath = _path_utils.get_abs_path(_get_scs_globals().tsem_library_rel_path)
             context.window_manager.fileselect_add(self)
             return {'RUNNING_MODAL'}
 
@@ -521,7 +524,8 @@ class Paths:
 
         def invoke(self, context, event):
             """Invoke a file path selector."""
-            self.filepath = _path_utils.get_abs_path(_get_scs_globals().traffic_rules_library_rel_path)
+            if _path_utils.is_valid_traffic_rules_library_rel_path():
+                self.filepath = _path_utils.get_abs_path(_get_scs_globals().traffic_rules_library_rel_path)
             context.window_manager.fileselect_add(self)
             return {'RUNNING_MODAL'}
 
@@ -554,7 +558,8 @@ class Paths:
 
         def invoke(self, context, event):
             """Invoke a path selector."""
-            self.directory = _path_utils.get_abs_path(_get_scs_globals().hookup_library_rel_path)
+            if _path_utils.is_valid_hookup_library_rel_path():
+                self.directory = _path_utils.get_abs_path(_get_scs_globals().hookup_library_rel_path)
             context.window_manager.fileselect_add(self)
             return {'RUNNING_MODAL'}
 
@@ -587,7 +592,8 @@ class Paths:
 
         def invoke(self, context, event):
             """Invoke a file path selector."""
-            self.filepath = _path_utils.get_abs_path(_get_scs_globals().matsubs_library_rel_path)
+            if _path_utils.is_valid_matsubs_library_rel_path():
+                self.filepath = _path_utils.get_abs_path(_get_scs_globals().matsubs_library_rel_path)
             context.window_manager.fileselect_add(self)
             return {'RUNNING_MODAL'}
 
@@ -619,7 +625,8 @@ class Paths:
 
         def invoke(self, context, event):
             """Invoke a file path selector."""
-            self.filepath = _path_utils.get_abs_path(_get_scs_globals().sun_profiles_lib_path)
+            if _path_utils.is_valid_sun_profiles_library_path():
+                self.filepath = _path_utils.get_abs_path(_get_scs_globals().sun_profiles_lib_path)
             context.window_manager.fileselect_add(self)
             return {'RUNNING_MODAL'}
 

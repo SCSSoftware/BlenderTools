@@ -132,6 +132,28 @@ class Common:
 
             return {'FINISHED'}
 
+    class SearchShaderPreset(bpy.types.Operator):
+        bl_label = "Search Shader Preset"
+        bl_idname = "material.scs_search_shader_preset"
+        bl_description = "Quickly search trough shader presets with typing and assign selected shader preset to material."
+        bl_property = "shader_presets_list"
+
+        from io_scs_tools.properties.world import GlobalSCSProps
+
+        # Create reference to shader preset list and sorting property from global scs props.
+        # This way operator will be able to assign values directly to them once called.
+        shader_presets_list = GlobalSCSProps.shader_preset_list
+        shader_preset_list_sorted = GlobalSCSProps.shader_preset_list_sorted
+
+        def execute(self, context):
+            lprint("D You searched & selected preset with name: %s", (self.shader_presets_list,))
+            return {'FINISHED'}
+
+        def invoke(self, context, event):
+            wm = context.window_manager
+            wm.invoke_search_popup(self)
+            return {'FINISHED'}
+
 
 class CustomMapping:
     """
@@ -481,14 +503,12 @@ class Flavors:
         def execute(self, context):
             lprint("I " + self.bl_label + "...")
 
-            from io_scs_tools.internals.shader_presets import cache as _shader_presets_cache
-            from io_scs_tools.utils import get_shader_presets_inventory as _get_shader_presets_inventory
+            from io_scs_tools.internals import shader_presets as _shader_presets
 
             mat = context.material
             mat_scs_props = mat.scs_props
             """:type: io_scs_tools.properties.material.MaterialSCSTools"""
-            preset = _get_shader_presets_inventory()[mat_scs_props.active_shader_preset_name]
-            """:type: io_scs_tools.properties.world.ShaderPresetsInventoryItem"""
+            preset = _shader_presets.get_preset(mat_scs_props.active_shader_preset_name)
 
             # extract only flavor effect part of string
             flavor_effect_part = mat_scs_props.mat_effect_name[len(preset.effect):]
@@ -499,10 +519,10 @@ class Flavors:
                 flavor_variant_found = False
                 for flavor_variant in flavor.variants:
 
-                    if flavor_variant.name == self.flavor_name:
+                    if flavor_variant.suffix == self.flavor_name:
                         # add founded flavor to flavors suffix only if enabled
                         if new_flavor_state:
-                            flavors_suffix += "." + flavor_variant.name
+                            flavors_suffix += "." + flavor_variant.suffix
 
                         flavor_variant_found = True
                         break
@@ -514,14 +534,14 @@ class Flavors:
                 # make sure to add all other enabled flavors to flavors suffix
                 for flavor_variant in flavor.variants:
 
-                    is_in_middle = "." + flavor_variant.name + "." in flavor_effect_part
-                    is_on_end = flavor_effect_part.endswith("." + flavor_variant.name)
+                    is_in_middle = "." + flavor_variant.suffix + "." in flavor_effect_part
+                    is_on_end = flavor_effect_part.endswith("." + flavor_variant.suffix)
 
                     if is_in_middle or is_on_end:
-                        flavors_suffix += "." + flavor_variant.name
+                        flavors_suffix += "." + flavor_variant.suffix
 
             # if desired combination doesn't exists, abort switching and notify user
-            if not _shader_presets_cache.has_section(preset, flavors_suffix):
+            if not _shader_presets.has_section(preset.name, flavors_suffix):
                 message = "Enabling %r flavor aborted! Wanted shader combination: %r is not supported!" % (self.flavor_name,
                                                                                                            preset.effect + flavors_suffix)
                 lprint("E " + message)
@@ -529,7 +549,7 @@ class Flavors:
                 return {'FINISHED'}
 
             # finally set new shader data to material
-            section = _shader_presets_cache.get_section(preset, flavors_suffix)
+            section = _shader_presets.get_section(preset.name, flavors_suffix)
             context.material.scs_props.mat_effect_name = preset.effect + flavors_suffix
             _material_utils.set_shader_data_to_material(context.material, section)
 

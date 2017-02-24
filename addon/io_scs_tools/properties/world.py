@@ -29,38 +29,12 @@ from bpy.props import (StringProperty,
                        FloatVectorProperty)
 from io_scs_tools.consts import ConvHlpr as _CONV_HLPR_consts
 from io_scs_tools.internals import preview_models as _preview_models
+from io_scs_tools.internals import shader_presets as _shader_presets
+from io_scs_tools.internals.callbacks import lighting_east_lock as _lighting_east_lock_callback
 from io_scs_tools.internals.containers import config as _config_container
 from io_scs_tools.utils import material as _material_utils
 from io_scs_tools.utils import path as _path_utils
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
-from io_scs_tools.utils import get_shader_presets_inventory as _get_shader_presets_inventory
-
-
-class ShaderPresetsInventoryItem(bpy.types.PropertyGroup):
-    """
-    Shader Presets inventory on World.
-    """
-
-    class Flavor(bpy.types.PropertyGroup):
-        class FlavorVariant(bpy.types.PropertyGroup):
-            name = StringProperty(
-                description="Name of flavor variant inside effect name"
-            )
-            preset_name = StringProperty(
-                description="Name of the preset where this flavor variant belongs too"
-            )
-
-        variants = CollectionProperty(
-            description="Represents one variant of same flavor (eg. tsnmap, tsnmapuv)",
-            type=FlavorVariant
-        )
-
-    name = StringProperty(name="Shader Presets Name")
-    effect = StringProperty(name="Full Effect Name")
-    flavors = CollectionProperty(
-        description="Collection of flavors for this shader ordered by the name of apperance in the effect name",
-        type=Flavor
-    )
 
 
 class GlobalSCSProps(bpy.types.PropertyGroup):
@@ -158,41 +132,18 @@ class GlobalSCSProps(bpy.types.PropertyGroup):
         options={'SKIP_SAVE'},
     )
 
-    # TODO: rename this ShaderNamesDictionary to some generic name used for enumeration and move it to proper class
-    class ShaderNamesDictionary:
+    def retrieve_shader_presets_items(self, context):
         """
-        Dictionary for saving unique names of shader names loaded from presets file.
-
-        NOTE:
-        Necessary to store dictionary of presets names because of blender
-        restriction that enum ID properties which are generated with
-        callback function needs to have references of it's items strings
+        Returns list of shader presets names as they are saved inside cache in the form of list
+        that can be used in Blender enumaration property.
         """
 
-        def __init__(self):
-            self.preset = {}
+        # print('  > update_shader_presets...')
+        # items = [("<none>", "<none>", "No SCS shader preset in use (may result in incorrect model output)", 'X_VEC', 0)]
+        items = []
 
-        def add(self, new_preset):
-            if new_preset not in self.preset:
-                self.preset[new_preset] = new_preset
-            return self.preset[new_preset]
+        for preset_name in _shader_presets.get_preset_names(self.shader_preset_list_sorted):
 
-        def has(self, preset_name):
-            if preset_name in self.preset:
-                return True
-            else:
-                return False
-
-    @staticmethod
-    def get_shader_icon_str(preset_name):
-        """
-        Returns icon string for given preset name.
-
-        :type preset_name: str
-        :param preset_name: Name of shader preset
-        :rtype: str
-        """
-        if preset_name != "<none>":  # The item already exists...
             if "spec" in preset_name:
                 icon_str = 'MATERIAL'
             elif "glass" in preset_name:
@@ -205,49 +156,14 @@ class GlobalSCSProps(bpy.types.PropertyGroup):
                 icon_str = 'AUTO'
             elif "mlaa" in preset_name:
                 icon_str = 'GROUP_UVS'
+            elif preset_name == "<none>":
+                icon_str = 'X_VEC'
             else:
                 icon_str = 'SOLID'
-        else:
-            icon_str = None
-        return icon_str
 
-    def update_shader_presets(self, context):
-        """
-        Returns the actual Shader name list from "scs_shader_presets_inventory".
-        It also updates "shader_presets_container", so the UI could contain all
-        the items with no error. (necessary hack :-/)
-        :param context:
-        :return:
-        """
+            preset_i = _shader_presets.get_preset_index(preset_name)
+            items.append((preset_name, preset_name, "", icon_str, preset_i))
 
-        items = [("<none>", "<none>", "No SCS shader preset in use (may result in incorrect model output)", 'X_VEC', 0)]
-
-        # print('  > update_shader_presets...')
-
-        # save dictionary of preset names references in globals so that UI doesn't mess up strings
-        if not "shader_presets_container" in globals():
-            global shader_presets_container
-            shader_presets_container = GlobalSCSProps.ShaderNamesDictionary()
-            # print("Presets container created!")
-
-        if self.shader_preset_list_sorted:
-            inventory = {}
-            for preset_i, preset in enumerate(_get_shader_presets_inventory()):
-                inventory[preset.name] = preset_i
-            for preset in sorted(inventory):
-                preset_i = inventory[preset]
-                act_preset = shader_presets_container.add(preset)
-                # print(' + %i act_preset: %s (%s)' % (preset_i, str(act_preset), str(preset)))
-                icon_str = GlobalSCSProps.get_shader_icon_str(act_preset)
-                if icon_str is not None:  # if None then it's <none> preset which is already added
-                    items.append((act_preset, act_preset, "", icon_str, preset_i))
-        else:
-            for preset_i, preset in enumerate(_get_shader_presets_inventory()):
-                act_preset = shader_presets_container.add(preset.name)
-                # print(' + %i act_preset: %s (%s)' % (preset_i, str(act_preset), str(preset)))
-                icon_str = GlobalSCSProps.get_shader_icon_str(act_preset)
-                if icon_str is not None:  # if None then it's <none> preset which is already added
-                    items.append((act_preset, act_preset, "", icon_str, preset_i))
         return items
 
     def get_shader_presets_item(self):
@@ -258,13 +174,8 @@ class GlobalSCSProps(bpy.types.PropertyGroup):
         """
         # print('  > get_shader_presets_items...')
         material = bpy.context.active_object.active_material
-        result = 0
 
-        for preset_i, preset in enumerate(_get_shader_presets_inventory()):
-            if preset.name == material.scs_props.active_shader_preset_name:
-                result = preset_i
-
-        return result
+        return _shader_presets.get_preset_index(material.scs_props.active_shader_preset_name)
 
     def set_shader_presets_item(self, value):
         """
@@ -275,7 +186,19 @@ class GlobalSCSProps(bpy.types.PropertyGroup):
         """
 
         material = bpy.context.active_object.active_material
-        if value == 0:  # No Shader...
+        preset_name = _shader_presets.get_preset_name(value)
+        preset_section = _shader_presets.get_section(preset_name)
+
+        if preset_section:
+
+            preset_effect = preset_section.get_prop_value("Effect")
+
+            material.scs_props.mat_effect_name = preset_effect
+            _material_utils.set_shader_data_to_material(material, preset_section)
+            material.scs_props.active_shader_preset_name = preset_name
+
+        elif preset_name == "<none>":
+
             material.scs_props.active_shader_preset_name = "<none>"
             material.scs_props.mat_effect_name = "None"
 
@@ -286,71 +209,19 @@ class GlobalSCSProps(bpy.types.PropertyGroup):
 
             material["scs_shader_attributes"] = {}
         else:
-            for preset_i, preset in enumerate(_get_shader_presets_inventory()):
-                if value == preset_i:
-
-                    # Set Shader Preset in the Material
-                    preset_section = _material_utils.get_shader_preset(_get_scs_globals().shader_presets_filepath, preset.name)
-
-                    if preset_section:
-                        preset_name = preset_section.get_prop_value("PresetName")
-                        preset_effect = preset_section.get_prop_value("Effect")
-                        material.scs_props.mat_effect_name = preset_effect
-
-                        if preset_name:
-                            _material_utils.set_shader_data_to_material(material, preset_section)
-                            material.scs_props.active_shader_preset_name = preset_name
-                        else:
-                            material.scs_props.active_shader_preset_name = "<none>"
-                            material["scs_shader_attributes"] = {}
-                            print('    NO "preset_name"!')
-                            # if preset_effect:
-                            # print('      preset_effect: "%s"' % preset_effect)
-                            # if preset_flags:
-                            # print('      preset_flags: "%s"' % preset_flags)
-                            # if preset_attribute_cnt:
-                            # print('      preset_attribute_cnt: "%s"' % preset_attribute_cnt)
-                            # if preset_texture_cnt:
-                            # print('      preset_texture_cnt: "%s"' % preset_texture_cnt)
-                    else:
-                        print('''NO "preset_section"! (Shouldn't happen!)''')
-                else:
-                    preset.active = False
+            print('''NO "preset_section"! (Shouldn't happen!)''')
 
     shader_preset_list = EnumProperty(
         name="Shader Presets",
         description="Shader presets",
-        items=update_shader_presets,
+        items=retrieve_shader_presets_items,
         get=get_shader_presets_item,
         set=set_shader_presets_item,
     )
     shader_preset_list_sorted = BoolProperty(
         name="Shader Preset List Sorted Alphabetically",
         description="Sort Shader preset list alphabetically",
-        default=False,
-    )
-
-    def update_shader_preset_search_value(self, context):
-
-        if self.shader_preset_search_value != "":
-
-            for preset_i, preset in enumerate(_get_shader_presets_inventory()):
-
-                if self.shader_preset_search_value == preset.name:
-                    self.set_shader_presets_item(preset_i)
-
-            self.shader_preset_search_value = ""
-            self.shader_preset_use_search = False
-
-    shader_preset_search_value = StringProperty(
-        description="Search for shader preset by typing in the name. When selected shader preset will be used for this material.",
-        options={'HIDDEN'},
-        update=update_shader_preset_search_value
-    )
-
-    shader_preset_use_search = BoolProperty(
-        description="Use search property for selecting shader preset.",
-        options={'HIDDEN'}
+        default=True,
     )
 
     # SCS TOOLS GLOBAL PATHS
@@ -389,8 +260,7 @@ class GlobalSCSProps(bpy.types.PropertyGroup):
         return None
 
     def shader_presets_filepath_update(self, context):
-        # print('Shader Presets Library Path UPDATE: "%s"' % self.shader_presets_filepath)
-        _config_container.update_shader_presets_path(_get_shader_presets_inventory(), self.shader_presets_filepath)
+        _config_container.update_shader_presets_path(self.shader_presets_filepath)
         return None
 
     def trigger_actions_rel_path_update(self, context):
@@ -1446,7 +1316,7 @@ class GlobalSCSProps(bpy.types.PropertyGroup):
     )
 
     def lighting_scene_east_direction_update(self, context):
-        bpy.ops.world.scs_use_sun_profile(skip_background_set=True)
+        _lighting_east_lock_callback.set_lighting_east()
         return
 
     lighting_scene_east_direction = IntProperty(
@@ -1454,4 +1324,19 @@ class GlobalSCSProps(bpy.types.PropertyGroup):
         description="Defines east position in lighting scene (changing it will change direction of diffuse and specular light).",
         default=0, min=0, max=360, step=10, subtype='ANGLE',
         update=lighting_scene_east_direction_update
+    )
+
+    def lighting_east_lock_update(self, context):
+        if self.lighting_east_lock:
+            _lighting_east_lock_callback.enable()
+        else:
+            _lighting_east_lock_callback.disable()
+            _lighting_east_lock_callback.correct_lighting_east()
+
+        return
+
+    lighting_east_lock = BoolProperty(
+        name="Lock East",
+        description="Locks east side of SCS lighting to view. When used lamps will follow rotation of camera in 3D view.",
+        update=lighting_east_lock_update,
     )

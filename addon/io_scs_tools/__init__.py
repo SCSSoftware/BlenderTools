@@ -22,7 +22,7 @@ bl_info = {
     "name": "SCS Tools",
     "description": "Setup models, Import-Export SCS data format",
     "author": "Simon Lusenc (50keda), Milos Zajic (4museman)",
-    "version": (1, 5, "78732b8"),
+    "version": (1, 6, "780f5be"),
     "blender": (2, 78, 0),
     "location": "File > Import-Export",
     "wiki_url": "http://modding.scssoft.com/wiki/Documentation/Tools/SCS_Blender_Tools",
@@ -334,10 +334,6 @@ def register():
         type=properties.object.ObjectAnimationInventoryItem
     )
 
-    bpy.types.World.scs_shader_presets_inventory = CollectionProperty(
-        type=properties.world.ShaderPresetsInventoryItem
-    )
-
     bpy.types.World.scs_globals = PointerProperty(
         name="SCS Tools Global Variables",
         type=properties.world.GlobalSCSProps,
@@ -413,7 +409,6 @@ def unregister():
     del bpy.types.Object.scs_object_part_inventory
     del bpy.types.Object.scs_object_variant_inventory
     del bpy.types.Object.scs_object_animation_inventory
-    del bpy.types.World.scs_shader_presets_inventory
 
 
 if __name__ == "__main__":

@@ -23,6 +23,7 @@ import os
 from bpy.app.handlers import persistent
 from io_scs_tools.internals import preview_models as _preview_models
 from io_scs_tools.internals.callbacks import open_gl as _open_gl_callback
+from io_scs_tools.internals.callbacks import lighting_east_lock as _lighting_east_lock_callback
 from io_scs_tools.internals.containers import config as _config_container
 from io_scs_tools.internals.connections.wrappers import group as _connections_group_wrapper
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
@@ -83,6 +84,16 @@ def initialise_scs_dict(scene):
 
         # ADD DRAW HANDLERS
         _open_gl_callback.enable(mode=_get_scs_globals().drawing_mode)
+
+        # ENABLE LIGHTING EAST LOCK HANDLER
+        # Blender doesn't call update on properties when file is opened,
+        # so in case lighting east was locked in saved blend file, we have to manually enable callback for it
+        # On the other hand if user previously had east locked and now loaded the file without it,
+        # again we have to manually disable callback.
+        if _get_scs_globals().lighting_east_lock:
+            _lighting_east_lock_callback.enable()
+        else:
+            _lighting_east_lock_callback.disable()
 
         # as last notify user if his Blender version is outdated
         if not _info_utils.is_blender_able_to_run_tools():

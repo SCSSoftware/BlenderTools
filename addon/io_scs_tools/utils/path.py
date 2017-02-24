@@ -533,6 +533,13 @@ def get_skeleton_relative_filepath(armature, directory, default_name):
     if skeleton_custom_dir != "":
         if skeleton_custom_dir.startswith("//"):
             skeleton_path = os.path.relpath(os.path.join(_get_scs_globals().scs_project_path, skeleton_custom_dir[2:]), directory)
+
+            # if custom skeleton path and default skeleton path ere the same relpath will result in ".",
+            # now if we use that in returning join function, then our skeleton path will look like "./skeleton.pis" which is not correct.
+            # So instead just reset skeleton path to empty string and join will return only skeleton name as it should.
+            if skeleton_path == ".":
+                skeleton_path = ""
+
         else:
             lprint("E Custom skeleton export path is not relative to SCS Project Base Path.\n\t   " +
                    "Custom path will be ignored, which might lead to wrongly linked skeleton file inside PIM and PIA files.")

@@ -57,6 +57,8 @@ class SCSToolShelfBlDefs(_ToolShelfBlDefs, Panel):
             row = col.row(align=True)
             row.operator('object.create_scs_root_object', text='Add Root', icon_value=get_icon(_ICON_TYPES.scs_root))
             row.operator('object.create_scs_root_object_dialog', text='', icon='OUTLINER_DATA_FONT')
+            row = col.row(align=True)
+            row.operator('object.scs_geometry_check', text="Check Geometry", icon="ZOOM_SELECTED")
 
 
 class SCSToolsConvexBlDefs(_ToolShelfBlDefs, Panel):

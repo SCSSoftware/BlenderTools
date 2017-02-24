@@ -24,12 +24,11 @@ import shutil
 from io_scs_tools.consts import Variant as _VARIANT_consts
 from io_scs_tools.exp import tobj as _tobj
 from io_scs_tools.internals import looks as _looks
+from io_scs_tools.internals import shader_presets as _shader_presets
 from io_scs_tools.internals.structure import SectionData as _SectionData
 from io_scs_tools.internals.containers import pix as _pix_container
-from io_scs_tools.internals.shader_presets import cache as _shader_presets_cache
 from io_scs_tools.utils import path as _path_utils
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
-from io_scs_tools.utils import get_shader_presets_inventory as _get_shader_presets_inventory
 from io_scs_tools.utils.info import get_combined_ver_str
 from io_scs_tools.utils.printout import lprint
 
@@ -412,11 +411,11 @@ def export(root_object, filepath, used_materials, used_parts):
                     attribute_sections.append(substance_data)
                     attribute_cnt += 1
 
-                if active_shader_preset_name in _get_shader_presets_inventory() and active_shader_preset_name != "<none>":
+                if _shader_presets.has_preset(active_shader_preset_name) and active_shader_preset_name != "<none>":
 
-                    preset = _get_shader_presets_inventory()[active_shader_preset_name]
+                    preset = _shader_presets.get_preset(active_shader_preset_name)
                     flavors_str = effect_name[len(preset.effect):]
-                    section = _shader_presets_cache.get_section(preset, flavors_str)
+                    section = _shader_presets.get_section(active_shader_preset_name, flavors_str)
 
                     # FLAGS
                     for prop in section.props:

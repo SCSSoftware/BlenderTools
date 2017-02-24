@@ -26,9 +26,9 @@ from io_scs_tools.utils import path as _path_utils
 from io_scs_tools.utils import property as _property_utils
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
 from io_scs_tools.utils.info import get_combined_ver_str
+from io_scs_tools.internals import shader_presets as _shader_presets
 from io_scs_tools.internals.containers import pix as _pix
 from io_scs_tools.internals.containers import sii as _sii
-from io_scs_tools.internals.shader_presets import cache as _shader_presets_cache
 from io_scs_tools.internals.structure import SectionData as _SectionData
 from io_scs_tools.operators.world import SCSPathsInitialization as _SCSPathsInitialization
 
@@ -79,7 +79,7 @@ def update_item_in_file(item_pointer, new_value):
     return True
 
 
-def update_shader_presets_path(scs_shader_presets_inventory, shader_presets_filepath):
+def update_shader_presets_path(shader_presets_filepath):
     """The function deletes and populates again a list of Shader Preset items in inventory. It also updates corresponding record in config file.
 
     :param shader_presets_filepath: Absolute or relative path to the file with Shader Presets
@@ -87,19 +87,18 @@ def update_shader_presets_path(scs_shader_presets_inventory, shader_presets_file
     """
     shader_presets_abs_path = _path_utils.get_abs_path(shader_presets_filepath)
 
-    if _shader_presets_cache.is_initilized(shader_presets_abs_path):
-        lprint("I Shader presets cache is up-to date, no update will happen!")
+    if _shader_presets.is_library_initialized(shader_presets_abs_path):
+        lprint("I Shader presets library is up-to date, no update will happen!")
         return
 
     # CLEAR INVENTORY AND CACHE
-    scs_shader_presets_inventory.clear()
-    _shader_presets_cache.clear()
+    _shader_presets.clear()
+
+    # ADD DEFAULT PRESET ITEM "<none>" INTO INVENTORY
+    _shader_presets.add_section("<none>", "<none>", "", None)
 
     if os.path.isfile(shader_presets_abs_path):
 
-        # ADD DEFAULT PRESET ITEM "<none>" INTO INVENTORY
-        new_shader_preset = scs_shader_presets_inventory.add()
-        new_shader_preset.name = "<none>"
         presets_container = _pix.get_data_from_file(shader_presets_abs_path, '    ')
 
         # ADD ALL SHADER PRESET ITEMS FROM FILE INTO INVENTORY
@@ -136,19 +135,17 @@ def update_shader_presets_path(scs_shader_presets_inventory, shader_presets_file
                 shader_flavors = shader.get_prop_value("Flavors")
 
                 # create new preset item
-                new_shader_preset = scs_shader_presets_inventory.add()
-                new_shader_preset.name = shader.get_prop_value("PresetName")
-                new_shader_preset.effect = shader.get_prop_value("Effect")
-
+                shader_preset_name = shader.get_prop_value("PresetName")
+                shader_preset_effect = shader.get_prop_value("Effect")
                 unique_names.append("")
-                _shader_presets_cache.add_section(new_shader_preset, "", shader)
+                _shader_presets.add_section(shader_preset_effect, shader_preset_name, "", shader)
 
                 if shader_flavors:
 
                     for j, flavor_types in enumerate(shader_flavors):
 
                         # create new flavor item
-                        flavor_item = new_shader_preset.flavors.add()
+                        _shader_presets.add_flavor(shader_preset_name)
 
                         new_unique_names = []
                         for i, flavor_type in enumerate(flavor_types.split("|")):
@@ -157,25 +154,24 @@ def update_shader_presets_path(scs_shader_presets_inventory, shader_presets_file
                                 lprint("D Flavor used by shader preset, but not defined: %s", (flavor_type,))
                                 continue
 
-                            # create new flavor variant item (when flavor has more variants eg. "BLEND_ADD|BLEND_OVER")
-                            flavor_variant = flavor_item.variants.add()
-                            flavor_variant.name = flavors[flavor_type].get_prop_value("Name")
-                            flavor_variant.preset_name = new_shader_preset.name
+                            # create new flavor variant item (there can be more variants eg. "BLEND_ADD|BLEND_OVER")
+                            flavor_variant_name = flavors[flavor_type].get_prop_value("Name")
+                            _shader_presets.add_flavor_variant(shader_preset_name, flavor_variant_name)
 
                             # modify and save section as string into cache
                             for unique_name in unique_names:
 
-                                new_unique_str = unique_name + "." + flavors[flavor_type].get_prop_value("Name")
-                                full_effect_name = new_shader_preset.effect + new_unique_str
+                                new_unique_str = unique_name + "." + flavor_variant_name
+                                new_full_effect_name = shader_preset_effect + new_unique_str
 
                                 # check if this shader-flavor combination can exists, if not skip it
-                                if supported_effects_dict and full_effect_name not in supported_effects_dict:
-                                    lprint("S Marking none existing effect as dirty: %r", (full_effect_name,))
+                                if supported_effects_dict and new_full_effect_name not in supported_effects_dict:
+                                    lprint("S Marking none existing effect as dirty: %r", (new_full_effect_name,))
                                     is_dirty = True
                                 else:
                                     is_dirty = False
 
-                                section = _shader_presets_cache.get_section(new_shader_preset, unique_name)
+                                section = _shader_presets.get_section(shader_preset_name, unique_name)
 
                                 for flavor_section in flavors[flavor_type].sections:
 
@@ -195,14 +191,14 @@ def update_shader_presets_path(scs_shader_presets_inventory, shader_presets_file
                                         section.sections.append(flavor_section)
 
                                 new_unique_names.append(new_unique_str)
-                                assert section.set_prop_value("Effect", new_shader_preset.effect + new_unique_str)
-                                _shader_presets_cache.add_section(new_shader_preset, new_unique_str, section, is_dirty=is_dirty)
+                                assert section.set_prop_value("Effect", shader_preset_effect + new_unique_str)
+                                _shader_presets.add_section(shader_preset_effect, shader_preset_name, new_unique_str, section, is_dirty=is_dirty)
 
                         unique_names.extend(new_unique_names)
 
-            # now as we built cache it's time to clean it up of dirty items (eg. none existing effect combinations) and
-            # set path from which this cache was initialized
-            _shader_presets_cache.set_initialized(shader_presets_abs_path)
+            # now as we built library it's time to clean it up of dirty items (eg. none existing effect combinations) and
+            # set path from which this library was initialized
+            _shader_presets.set_library_initialized(shader_presets_abs_path)
 
     update_item_in_file('Paths.ShaderPresetsFilePath', shader_presets_filepath)
 
@@ -937,6 +933,12 @@ def apply_settings():
                         # release update lock and don't search/apply any settings further
                         if prop[1] == "BlendFile":
                             settings_file_valid += 1
+
+                            # as dump level can be read already (it can be placed above config storage place property),
+                            # reset local variable back to value that was saved with blend file
+                            dump_level = scs_globals.dump_level
+
+                            break  # to avoid further reading of header properties, so dump_level won't be overwritten unintentionally
 
     scs_globals.dump_level = dump_level
 

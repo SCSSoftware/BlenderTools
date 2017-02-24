@@ -21,11 +21,10 @@
 import bpy
 import os
 from io_scs_tools.consts import Mesh as _MESH_consts
-from io_scs_tools.internals.shader_presets import cache as _shader_presets_cache
+from io_scs_tools.internals import shader_presets as _shader_presets
 from io_scs_tools.utils import object as _object_utils
 from io_scs_tools.utils import path as _path_utils
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
-from io_scs_tools.utils import get_shader_presets_inventory as _get_shader_presets_inventory
 from io_scs_tools.ui import shared as _shared
 
 
@@ -34,10 +33,10 @@ class _MaterialPanelBlDefs(_shared.HeaderIconPanel):
     bl_region_type = "WINDOW"
 
 
-def _draw_shader_presets(layout, scs_props, scs_globals, read_only=False):
+def _draw_shader_presets(layout, scs_props, scs_globals, is_imported_shader=False):
     """Creates Shader Presets sub-panel."""
     layout_box = layout.box()
-    layout_box.enabled = not read_only
+    layout_box.enabled = not is_imported_shader
     if scs_props.shader_presets_expand:
         panel_header = layout_box.split(percentage=0.5)
         panel_header_1 = panel_header.row()
@@ -64,11 +63,11 @@ def _draw_shader_presets(layout, scs_props, scs_globals, read_only=False):
         column = layout_box_row.column(align=True)
 
         row = column.row(align=True)
-        row.prop(scs_globals, 'shader_preset_list', text='')
-        row.prop(scs_globals, "shader_preset_use_search", icon="VIEWZOOM", icon_only=True, toggle=True)
-
-        if scs_globals.shader_preset_use_search:
-            column.prop_search(scs_globals, "shader_preset_search_value", bpy.data.worlds[0], "scs_shader_presets_inventory", text="", icon="BLANK1")
+        if is_imported_shader:
+            row.prop(bpy.context.material.scs_props, "active_shader_preset_name", icon="COLOR", text="")
+        else:
+            row.prop(scs_globals, 'shader_preset_list', text='')
+        row.operator("material.scs_search_shader_preset", text="", icon="VIEWZOOM")
 
 
 def _draw_shader_flavors(layout, mat):
@@ -83,75 +82,73 @@ def _draw_shader_flavors(layout, mat):
     if mat.scs_props.active_shader_preset_name == "<none>":
         return
 
-    for preset in _get_shader_presets_inventory():
-        if preset.name == mat.scs_props.active_shader_preset_name:
+    preset = _shader_presets.get_preset(mat.scs_props.active_shader_preset_name)
+    if preset:
 
-            # if there is no flavors in found preset,
-            # then we don't have to draw anything so exit drawing shader flavors right away
-            if len(preset.flavors) <= 0:
-                return
-
-            # strip of base effect name, to avoid any flavor matching in base effect name
-            effect_flavor_part = mat.scs_props.mat_effect_name[len(preset.effect):]
-
-            column = layout.column(align=True)
-            column.alignment = "LEFT"
-
-            # draw switching operator for each flavor (if there is more variants draw operator for each variant)
-            enabled_flavors = {}  # store enabled flavors, for later analyzing which rows should be disabled
-            flavor_rows = []  # store row UI layout of flavor operators, for later analyzing which rows should be disabled
-            for i, flavor in enumerate(preset.flavors):
-
-                row = column.row(align=True)
-                flavor_rows.append(row)
-
-                for flavor_variant in flavor.variants:
-
-                    is_in_middle = "." + flavor_variant.name + "." in effect_flavor_part
-                    is_on_end = effect_flavor_part.endswith("." + flavor_variant.name)
-                    flavor_enabled = is_in_middle or is_on_end
-
-                    icon = "FILE_TICK" if flavor_enabled else "X"
-                    props = row.operator("material.scs_switch_flavor", text=flavor_variant.name, icon=icon)
-                    props.flavor_name = flavor_variant.name
-                    props.flavor_enabled = flavor_enabled
-
-                    if flavor_enabled:
-                        enabled_flavors[i] = flavor_variant
-
-            # now as we drawn the flavors and we know which ones are enabled,
-            # search the ones that are not compatible with currently enabled flavors and disable them in UI!
-            for i, flavor in enumerate(preset.flavors):
-
-                # enabled flavors have to stay enabled so skip them
-                if i in enabled_flavors:
-                    continue
-
-                for flavor_variant in flavor.variants:
-
-                    # 1. construct proposed new flavor string:
-                    # combine strings of enabled flavors and current flavor variant
-                    new_flavor_str = ""
-                    curr_flavor_added = False
-                    for enabled_i in enabled_flavors.keys():
-
-                        if i < enabled_i and not curr_flavor_added:
-                            new_flavor_str += "." + flavor_variant.name
-                            curr_flavor_added = True
-
-                        new_flavor_str += "." + enabled_flavors[enabled_i].name
-
-                    if not curr_flavor_added:
-                        new_flavor_str += "." + flavor_variant.name
-
-                    # 2. check if proposed new flavor combination exists in cache:
-                    # if not then row on current flavor index has to be disabled
-                    if not _shader_presets_cache.has_section(preset, new_flavor_str):
-                        flavor_rows[i].enabled = False
-                        break
-
-            # once preset was found just use return to skip other presets
+        # if there is no flavors in found preset,
+        # then we don't have to draw anything so exit drawing shader flavors right away
+        if len(preset.flavors) <= 0:
             return
+
+        # strip of base effect name, to avoid any flavor matching in base effect name
+        effect_flavor_part = mat.scs_props.mat_effect_name[len(preset.effect):]
+
+        column = layout.column(align=True)
+        column.alignment = "LEFT"
+
+        # draw switching operator for each flavor (if there is more variants draw operator for each variant)
+        enabled_flavors = {}  # store enabled flavors, for later analyzing which rows should be disabled
+        """:type: dict[int, io_scs_tools.internals.shader_presets.ui_shader_preset_item.FlavorVariant]"""
+        flavor_rows = []  # store row UI layout of flavor operators, for later analyzing which rows should be disabled
+        for i, flavor in enumerate(preset.flavors):
+
+            row = column.row(align=True)
+            flavor_rows.append(row)
+
+            for flavor_variant in flavor.variants:
+
+                is_in_middle = "." + flavor_variant.suffix + "." in effect_flavor_part
+                is_on_end = effect_flavor_part.endswith("." + flavor_variant.suffix)
+                flavor_enabled = is_in_middle or is_on_end
+
+                icon = "FILE_TICK" if flavor_enabled else "X"
+                props = row.operator("material.scs_switch_flavor", text=flavor_variant.suffix, icon=icon)
+                props.flavor_name = flavor_variant.suffix
+                props.flavor_enabled = flavor_enabled
+
+                if flavor_enabled:
+                    enabled_flavors[i] = flavor_variant
+
+        # now as we drawn the flavors and we know which ones are enabled,
+        # search the ones that are not compatible with currently enabled flavors and disable them in UI!
+        for i, flavor in enumerate(preset.flavors):
+
+            # enabled flavors have to stay enabled so skip them
+            if i in enabled_flavors:
+                continue
+
+            for flavor_variant in flavor.variants:
+
+                # 1. construct proposed new flavor string:
+                # combine strings of enabled flavors and current flavor variant
+                new_flavor_str = ""
+                curr_flavor_added = False
+                for enabled_i in enabled_flavors.keys():
+
+                    if i < enabled_i and not curr_flavor_added:
+                        new_flavor_str += "." + flavor_variant.suffix
+                        curr_flavor_added = True
+
+                    new_flavor_str += "." + enabled_flavors[enabled_i].suffix
+
+                if not curr_flavor_added:
+                    new_flavor_str += "." + flavor_variant.suffix
+
+                # 2. check if proposed new flavor combination exists in cache:
+                # if not then row on current flavor index has to be disabled
+                if not _shader_presets.has_section(preset.name, new_flavor_str):
+                    flavor_rows[i].enabled = False
+                    break
 
 
 def _draw_shader_attribute(layout, mat, split_perc, attribute):
@@ -434,7 +431,7 @@ def _draw_shader_texture(layout, mat, split_perc, texture, read_only):
         texture_box.row().label('Unsupported Shader Texture Type!', icon="ERROR")
 
 
-def _draw_shader_parameters(layout, mat, scs_props, scs_globals, read_only=False):
+def _draw_shader_parameters(layout, mat, scs_props, scs_globals, is_imported_shader=False):
     """Creates Shader Parameters sub-panel."""
     split_perc = scs_props.shader_item_split_percentage
     # panel_header = layout_box.split(percentage=0.5)
@@ -490,7 +487,7 @@ def _draw_shader_parameters(layout, mat, scs_props, scs_globals, read_only=False
 
         # MATERIAL ALIASING
         alias_row = global_mat_attr.row()
-        alias_row.enabled = not read_only
+        alias_row.enabled = not is_imported_shader
         alias_row = alias_row.split(percentage=split_perc)
         alias_row.label("Aliasing:")
 
@@ -536,7 +533,7 @@ def _draw_shader_parameters(layout, mat, scs_props, scs_globals, read_only=False
 
         # MATERIAL SUBSTANCE
         substance_row = global_mat_attr.row()
-        substance_row.enabled = not read_only
+        substance_row.enabled = not is_imported_shader
         substance_row = substance_row.split(percentage=split_perc)
         substance_row.label("Substance:")
         substance_row = substance_row.split(percentage=1 / (1 - split_perc + 0.000001) * 0.1, align=True)
@@ -554,7 +551,7 @@ def _draw_shader_parameters(layout, mat, scs_props, scs_globals, read_only=False
         if 'attributes' in shader_data and len(shader_data["attributes"]) > 0:
 
             attributes_box = layout.box()
-            attributes_box.enabled = not read_only
+            attributes_box.enabled = not is_imported_shader
 
             if scs_props.shader_attributes_expand:
                 panel_header = attributes_box.split(percentage=0.5)
@@ -603,7 +600,7 @@ def _draw_shader_parameters(layout, mat, scs_props, scs_globals, read_only=False
                 textures_data = shader_data['textures']
                 if textures_data:
 
-                    if read_only:
+                    if is_imported_shader:
 
                         mappings_box = textures_box.box()
                         row = mappings_box.row()
@@ -627,7 +624,7 @@ def _draw_shader_parameters(layout, mat, scs_props, scs_globals, read_only=False
                         col.operator('material.remove_custom_tex_coord_map', text="", icon='ZOOMOUT')
 
                     for texture_key in sorted(textures_data.keys()):
-                        _draw_shader_texture(textures_box, mat, split_perc, textures_data[texture_key], read_only)
+                        _draw_shader_texture(textures_box, mat, split_perc, textures_data[texture_key], is_imported_shader)
             else:
                 panel_header = textures_box.split(percentage=0.5)
                 panel_header_1 = panel_header.row()
@@ -637,16 +634,16 @@ def _draw_shader_parameters(layout, mat, scs_props, scs_globals, read_only=False
 def _draw_preset_shader_panel(layout, mat, scene_scs_props, scs_globals):
     """Creates provisional Shader Preset sub-panel."""
 
-    has_imported_shader = mat.scs_props.active_shader_preset_name == "<imported>"
+    is_imported_shader = mat.scs_props.active_shader_preset_name == "<imported>"
 
     # SHADER PRESETS PANEL
-    _draw_shader_presets(layout, scene_scs_props, scs_globals, read_only=has_imported_shader)
+    _draw_shader_presets(layout, scene_scs_props, scs_globals, is_imported_shader=is_imported_shader)
 
     # FLAVORS PANEL
     _draw_shader_flavors(layout, mat)
 
     # PARAMETERS PANEL
-    _draw_shader_parameters(layout, mat, scene_scs_props, scs_globals, read_only=has_imported_shader)
+    _draw_shader_parameters(layout, mat, scene_scs_props, scs_globals, is_imported_shader=is_imported_shader)
 
 
 class SCSMaterialCustomMappingSlot(bpy.types.UIList):

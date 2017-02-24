@@ -95,6 +95,16 @@ def _get_look(section):
                     mat_alias = sec_prop[1]
                 elif sec_prop[0] == "Effect":
                     mat_effect = sec_prop[1]
+
+                    # HACK for "flipflake" flavor in eut2.truckpaint shader
+                    #
+                    # Flavor was never been visually implemented in Blender as it doesn't effect exported mesh data.
+                    # This means we can "silently" ignore it on import as this flavor
+                    # should be used only trough paint-job definitions for player vehicles.
+                    if mat_effect.startswith("eut2.truckpaint") and mat_effect.find(".flipflake") != -1:
+                        mat_effect = mat_effect.replace(".flipflake", "")
+                        lprint("W Flipflake flavor detected in material %r, ignoring it!", (mat_alias,))
+
                 elif sec_prop[0] == "Flags":
                     mat_flags = sec_prop[1]
                 elif sec_prop[0] == "AttributeCount":

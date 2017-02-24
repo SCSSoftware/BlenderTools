@@ -40,12 +40,3 @@ def get_scs_globals():
     :rtype: io_scs_tools.properties.world.GlobalSCSProps
     """
     return __get_world__().scs_globals
-
-
-def get_shader_presets_inventory():
-    """Function for accessing shader presets inventory.
-
-    :return: global shader presets inventory for SCS Blender Tools
-    :rtype: list[io_scs_tools.properties.world.ShaderPresetsInventoryItem]
-    """
-    return __get_world__().scs_shader_presets_inventory

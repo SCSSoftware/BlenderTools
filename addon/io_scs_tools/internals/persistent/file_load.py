@@ -21,12 +21,12 @@
 import bpy
 from bpy.app.handlers import persistent
 from io_scs_tools.internals import looks as _looks
+from io_scs_tools.internals import shader_presets as _shader_presets
 from io_scs_tools.operators.world import SCSPathsInitialization as _SCSPathsInitialization
 from io_scs_tools.utils import material as _material_utils
 from io_scs_tools.utils import object as _object_utils
 from io_scs_tools.utils import info as _info_utils
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
-from io_scs_tools.utils import get_shader_presets_inventory as _get_shader_presets_inventory
 
 
 @persistent
@@ -118,7 +118,7 @@ def apply_fixes_for_0_6():
                     update_func(material)
 
         # ignore already properly set materials
-        if material.scs_props.active_shader_preset_name in _get_shader_presets_inventory():
+        if _shader_presets.has_preset(material.scs_props.active_shader_preset_name):
             continue
 
         # 3. try to recover "active_shader_preset_name" from none flavor times Blender Tools

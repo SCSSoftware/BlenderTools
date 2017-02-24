@@ -16,156 +16,129 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2015: SCS Software
+# Copyright (C) 2017: SCS Software
 
 
 import pickle
 from os.path import getmtime, isfile
 
-__PATH_DICT_KEY = "initialized_filepath"
-__cache_presets_path = {}  # storing last initialized shader presets file path, to avoid multiple initializing of same path
-__cache_dict = {}  # storing all combinations of shader presets and it's flavors
-__dirty_items = []  # storing dirty combinations of shader presets and it's flavors that can be cleared with cleanup function
 
+class ShaderPresetsCache:
+    def __init__(self):
+        """Constructor.
+        """
+        self.__initialized_path = (None, None)
+        """Storing last initialized shader presets file path, to avoid multiple initializing of same path."""
+        self.__cache = {}
+        """Storing all combinations of shader presets and it's flavors."""
+        self.__dirty_items = []
+        """Storing dirty combinations of shader presets and it's flavors that can be cleared with cleanup function.
+           Used for temporarly save sections even the ones that are not supported by the game,
+           just to be able to create further flavor combinations.
+        """
 
-def clear():
-    """Clears shader presets cache.
-    """
+    def clear(self):
+        """Clears shader presets cache.
+        """
 
-    for key in __cache_dict:
-        for key1 in __cache_dict[key]:
-            __cache_dict[key][key1].clear()
-        __cache_dict[key].clear()
+        for key1 in self.__cache:
+            self.__cache[key1].clear()
 
-    __cache_dict.clear()
-    __cache_presets_path.clear()
-    __dirty_items.clear()
+        self.__cache.clear()
+        self.__dirty_items.clear()
+        self.__initialized_path = (None, None)
 
+    def cleanup(self):
+        """Cleanup dirty sections from cache.
+    
+        Any sections added with dirty flag, will now be removed from cache. Additional dirty items list is also cleared,
+        so if this function is called two times in a row, second time will be for nothing.
+        """
 
-def cleanup():
-    """Cleanup dirty sections from cache.
+        for i, flavor_str in self.__dirty_items:
+            del self.__cache[i][flavor_str]
 
-    Any sections added with dirty flag, will now be removed from cache. Additional dirty items list is also cleared,
-    so if this function is called two times in a row, second time will be for nothing.
-    """
+            if len(self.__cache[i].keys()) == 0:
+                del self.__cache[i]
 
-    for effect, item_name, flavor_str in __dirty_items:
-        del __cache_dict[effect][item_name][flavor_str]
+        self.__dirty_items.clear()
 
-    __dirty_items.clear()
+    def add_section(self, preset_idx, flavors_str, section, is_dirty=False):
+        """Adds section for current shader presets inventory item to the cache.
+    
+        :param preset_idx: index of shader presets item for which should contain section with given flavors combination
+        :type preset_idx: int
+        :param flavors_str: flavors part of effect name
+        :type flavors_str: str
+        :param section: Shader section that should be stored
+        :type section: io_scs_tools.internals.structure.SectionData
+        :param is_dirty: mark this section as dirty, set to true when inserting section only for time beeing of cache creation
+        :type is_dirty: bool
+        """
 
+        if preset_idx not in self.__cache:
+            self.__cache[preset_idx] = {}
 
-def add_section(inventory_item, flavors_str, section, is_dirty=False):
-    """Adds section for current shader presets inventory item to the cache.
+        self.__cache[preset_idx][flavors_str] = pickle.dumps(section)
 
-    :param inventory_item: shader presets item for which given section should be stored
-    :type inventory_item: io_scs_tools.properties.world.ShaderPresetsInventoryItem
-    :param flavors_str: flavors part of effect name
-    :type flavors_str: str
-    :param section: Shader section that should be stored
-    :type section: io_scs_tools.internals.structure.SectionData
-    :param is_dirty: mark this section as dirty, set to true when inserting section only for time beeing of cache creation
-    :type is_dirty: bool
-    """
+        if is_dirty:
+            self.__dirty_items.append((preset_idx, flavors_str))
 
-    if inventory_item.effect not in __cache_dict:
-        __cache_dict[inventory_item.effect] = {}
+    def has_section(self, preset_idx, flavors_str):
+        """Is shader data section for given inventory item and flavor string existing in shader presets cache?
+    
+        :param preset_idx: index of shader presets item for which should contain section with given flavors combination
+        :type preset_idx: int
+        :param flavors_str: flavors part of effect name
+        :type flavors_str: str
+        :return: True if section exists; otherwise False
+        :rtype: bool
+        """
+        return (
+            preset_idx in self.__cache and
+            flavors_str in self.__cache[preset_idx]
+        )
 
-    if inventory_item.name not in __cache_dict[inventory_item.effect]:
-        __cache_dict[inventory_item.effect][inventory_item.name] = {}
+    def get_section(self, preset_idx, flavors_str=""):
+        """Get section from shader presets cache for given inventory item and flavor string
 
-    __cache_dict[inventory_item.effect][inventory_item.name][flavors_str] = pickle.dumps(section)
+        NOTE: There is no safety check if preset for given index exists.
+              So for safety use "has_section" before using this method.
+    
+        :param preset_idx: index of shader presets item for which should contain section with given flavors combination
+        :type preset_idx: int
+        :param flavors_str: flavors part of effect name
+        :type flavors_str: str
+        :return: stored section data for given inventory item and flavor string
+        :rtype: io_scs_tools.internals.structure.SectionData
+        """
+        return pickle.loads(self.__cache[preset_idx][flavors_str])
 
-    if is_dirty:
-        __dirty_items.append((inventory_item.effect, inventory_item.name, flavors_str))
+    def set_initialized(self, path):
+        """Cleanup dirty entries and set shader presets cache as initialized for given path.
+        Should be called once all possible sections were added to cache for given path.
+    
+        :param path: path for which this cache was built
+        :type path: str
+        """
 
+        self.cleanup()
 
-def has_section(inventory_item, flavors_str):
-    """Is shader data section for given inventory item and flavor string existing in shader presets cache?
+        self.__initialized_path = (path, getmtime(path))
 
-    :param inventory_item: shader presets item for which should contain section with given flavors combination
-    :type inventory_item: io_scs_tools.properties.world.ShaderPresetsInventoryItem
-    :param flavors_str: flavors part of effect name
-    :type flavors_str: str
-    :return: True if section exists; otherwise False
-    :rtype: bool
-    """
-    return (
-        inventory_item.effect in __cache_dict and
-        inventory_item.name in __cache_dict[inventory_item.effect] and
-        flavors_str in __cache_dict[inventory_item.effect][inventory_item.name]
-    )
-
-
-def get_section(inventory_item, flavors_str):
-    """Get section from shader presets cache for given inventory item and flavor string
-
-    :param inventory_item: shader presets item for which given section should be returned
-    :type inventory_item: io_scs_tools.properties.world.ShaderPresetsInventoryItem
-    :param flavors_str: flavors part of effect name
-    :type flavors_str: str
-    :return: stored section data for given inventory item and flavor string
-    :rtype: io_scs_tools.internals.structure.SectionData
-    """
-    return pickle.loads(__cache_dict[inventory_item.effect][inventory_item.name][flavors_str])
-
-
-def effect_exists(effect_str):
-    """Tells if giveen effect exists in cache.
-
-    :param effect_str: shader effect string
-    :type effect_str: str
-    :return: True if exists; False otherwise
-    :rtype: bool
-    """
-    return effect_str in __cache_dict
-
-
-def find_sections(base_effect, flavors_str):
-    """Gets all sections for given base effect that are stored in cache.
-
-    :param flavors_str: flavors string for given base effect
-    :type flavors_str: str
-    :param base_effect: base effect name for which presets should be returned
-    :type base_effect: str
-    :return: list of found sections if any; otherwise empty list
-    :rtype: list[io_scs_tools.internals.structure.SectionData]
-    """
-
-    found_sections = []
-    for stored_preset in __cache_dict[base_effect].values():
-        if flavors_str in stored_preset:
-
-            found_sections.append(pickle.loads(stored_preset[flavors_str]))
-
-    return found_sections
-
-
-def set_initialized(path):
-    """Cleanup dirty entries and set shader presets cache as initialized for given path.
-    Should be called once all possible sections were added to cache for given path.
-
-    :param path: path for which this cache was built
-    :type path: str
-    """
-
-    cleanup()
-
-    __cache_presets_path[__PATH_DICT_KEY] = (path, getmtime(path))
-
-
-def is_initilized(path):
-    """Tells if shader preset cache was initilized for given path.
-
-    It also takes in consideration if shader presets file on given path was modified after
-    cache was set as initilized.
-
-    :param path:
-    :type path:
-    :return: True if cache was built upon given path; False if cache wasn't set as initilized for given path;
-    :rtype: bool
-    """
-    return (__PATH_DICT_KEY in __cache_presets_path and
-            __cache_presets_path[__PATH_DICT_KEY][0] == path and
-            isfile(__cache_presets_path[__PATH_DICT_KEY][0]) and
-            __cache_presets_path[__PATH_DICT_KEY][1] >= getmtime(path))
+    def is_initialized(self, path):
+        """Tells if shader preset cache was initilized for given path.
+    
+        It also takes in consideration if shader presets file on given path was modified after
+        cache was set as initilized.
+    
+        :param path:
+        :type path:
+        :return: True if cache was built upon given path; False if cache wasn't set as initilized for given path;
+        :rtype: bool
+        """
+        return (
+            self.__initialized_path[0] == path and
+            isfile(self.__initialized_path[0]) and
+            self.__initialized_path[1] >= getmtime(path)
+        )

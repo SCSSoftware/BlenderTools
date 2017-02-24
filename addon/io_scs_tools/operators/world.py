@@ -42,7 +42,6 @@ class UseSunProfile(bpy.types.Operator):
     to determinate from which sun profile light data should be taken while seting up lighting scene."""
 
     sun_profile_index = IntProperty(default=-1)
-    skip_background_set = BoolProperty(default=False)
 
     def execute(self, context):
         lprint('D ' + self.bl_label + "...")
@@ -173,13 +172,11 @@ class UseSunProfile(bpy.types.Operator):
         # 5. search for AddEnv node group and setup coefficient for environment accordingly
         _add_env_node_group.set_global_env_factor(sun_profile_item.env * sun_profile_item.env_static_mod)
 
-        # 6. set lighting scene as background scene of current scene if skipping wasn't requested in input params
-        if not self.skip_background_set:
-
-            if context.scene and context.scene != lighting_scene:
-                context.scene.background_set = lighting_scene
-            else:
-                lprint("E Lighting scene created but not used, as currently there is no active scene!")
+        # 6. set lighting scene as background scene of current scene
+        if context.scene and context.scene != lighting_scene:
+            context.scene.background_set = lighting_scene
+        else:
+            lprint("E Lighting scene created but not used, as currently there is no active scene!")
 
         return {'FINISHED'}
 

@@ -21,6 +21,7 @@
 from bpy.types import Panel, UIList
 from io_scs_tools.consts import SCSLigthing as _LIGHTING_consts
 from io_scs_tools.utils import path as _path_utils
+from io_scs_tools.utils import view3d as _view_3d_utils
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
 from io_scs_tools.ui import shared as _shared
 
@@ -92,9 +93,26 @@ class SCSLighting(_WorldPanelBlDefs, Panel):
 
         # 2. body
         # lighting scene east direction
-        row = body.row()
-        row.label("", icon="LAMP_SPOT")
-        row.prop(scs_globals, "lighting_scene_east_direction", slider=True)
+        row = body.row(align=True)
+
+        left_col = row.row(align=True)
+        left_col.enabled = not scs_globals.lighting_east_lock
+        left_col.label("", icon="LAMP_SPOT")
+        left_col.separator()
+        left_col.prop(scs_globals, "lighting_scene_east_direction", slider=True)
+
+        right_col = row.row(align=True)
+        right_col.prop(scs_globals, "lighting_east_lock", icon="LOCKED", icon_only=True)
+
+        # now if we have multiple 3D views locking has to be disabled,
+        # as it can not work properly with multiple views because all views share same SCS Lighting lamps
+        if _view_3d_utils.has_multiple_view3d_spaces(screen=context.screen):
+            right_col.enabled = False
+            _shared.draw_warning_operator(row.row(align=True),
+                                          "SCS Lighting East Lock Disabled!",
+                                          "East lock can not be used, because you are using multiple 3D views and\n"
+                                          "tools can not decide on which view you want to lock the east.",
+                                          icon="INFO")
 
         # disable any UI from now on if active sun profile is not valid
         body.enabled = is_active_sun_profile_valid
