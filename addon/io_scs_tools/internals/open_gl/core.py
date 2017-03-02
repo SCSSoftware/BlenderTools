@@ -416,7 +416,7 @@ def _draw_3dview_report(region):
     :param region: region of 3D viewport
     :type region: bpy.types.Region
     """
-    pos = region.height - 65
+    pos = region.height - 62
 
     if _Show3DViewReportOperator.has_lines():
 
@@ -441,7 +441,7 @@ def _draw_3dview_report(region):
         glDisable(GL_TEXTURE_2D)
 
         # draw version string
-        blf.size(0, 11, 72)
+        blf.size(0, 10, 72)
         glColor3f(.952, .635, .062)
         blf.position(0, 20, pos, 0)
         blf.draw(0, _info_utils.get_combined_ver_str(only_version_numbers=True))

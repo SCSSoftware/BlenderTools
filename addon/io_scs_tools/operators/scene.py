@@ -22,6 +22,7 @@ import bpy
 import os
 import subprocess
 import shutil
+from hashlib import sha1
 from sys import platform
 from bpy.props import StringProperty, CollectionProperty, EnumProperty, IntProperty, BoolProperty
 from io_scs_tools.consts import ConvHlpr as _CONV_HLPR_consts
@@ -1021,8 +1022,16 @@ class ConversionHelper:
                 self.report({'ERROR'}, "Conversion tools path is incorrect! Please fix it first.")
                 return {'CANCELLED'}
 
+            if not os.path.isdir(_get_scs_globals().scs_project_path):
+                self.report({'ERROR'}, "SCS Project Base Path doesn't exists! Aborting Conversion!")
+                return {'CANCELLED'}
+
+            link_hash = "linked_bt_" + sha1(str.encode(_get_scs_globals().scs_project_path)).hexdigest()
+            linked_path = os.path.join(main_path, link_hash)
+            _path_utils.ensure_symlink(_get_scs_globals().scs_project_path, linked_path)
+
             with open(extra_mount_path, mode="w") as f:
-                f.write(os.path.realpath(_get_scs_globals().scs_project_path))
+                f.write(link_hash)
 
             return ConversionHelper.RunConversion.execute(self, context)
 
@@ -1059,11 +1068,24 @@ class ConversionHelper:
                         self.report({'WARNING'}, "None existing custom paths detected, they were ignored!")
                         continue
 
-                    f.write(path)
+                    link_hash = "linked_bt_" + sha1(str.encode(path)).hexdigest()
+                    linked_path = os.path.join(main_path, link_hash)
+                    _path_utils.ensure_symlink(path, linked_path)
+
+                    f.write(link_hash)
                     f.write("\r\n")
 
                 if self.include_current_project:
-                    f.write(os.path.realpath(_get_scs_globals().scs_project_path))
+
+                    if os.path.isdir(_get_scs_globals().scs_project_path):
+
+                        link_hash = "linked_bt_" + sha1(str.encode(_get_scs_globals().scs_project_path)).hexdigest()
+                        linked_path = os.path.join(main_path, link_hash)
+                        _path_utils.ensure_symlink(_get_scs_globals().scs_project_path, linked_path)
+                        f.write(link_hash)
+
+                    else:
+                        self.report({'WARNING'}, "None existing SCS Project Base Path detected, ignoring it!")
 
             return ConversionHelper.RunConversion.execute(self, context)
 
@@ -1235,7 +1257,13 @@ class ConversionHelper:
             # do copy or zipping
             if scs_globals.conv_hlpr_mod_compression == _CONV_HLPR_consts.NoZip:
 
-                shutil.copytree(rsrc_path, mod_filepath_as_dir)
+                for converted_dir in os.listdir(rsrc_path):  # use old conversion tools behaviour and pack everything that is in rsrc
+
+                    curr_dir = os.path.join(os.path.join(rsrc_path, converted_dir), "@cache")
+                    if not os.path.isdir(curr_dir):
+                        continue
+
+                    shutil.copytree(curr_dir, mod_filepath_as_dir)
 
                 self.report({'INFO'}, "Packing done, mod copied to: '%s'" % mod_filepath_as_dir)
 
@@ -1245,13 +1273,27 @@ class ConversionHelper:
 
                 with ZipFile(mod_filepath, 'w') as myzip:
 
-                    for root, dirs, files in os.walk(rsrc_path):
+                    for converted_dir in os.listdir(rsrc_path):  # use old conversion tools behaviour and pack everything that is in rsrc
 
-                        for file in files:
+                        curr_dir = os.path.join(os.path.join(rsrc_path, converted_dir), "@cache")
+                        if not os.path.isdir(curr_dir):
+                            continue
 
-                            abs_file = os.path.join(root, file)
-                            archive_file = abs_file.replace(rsrc_path, "")
-                            myzip.write(abs_file, archive_file, compress_type=int(scs_globals.conv_hlpr_mod_compression))
+                        for root, dirs, files in os.walk(curr_dir):
+
+                            for file in files:
+
+                                abs_file = os.path.join(root, file)
+                                # Extract archive path+name, do conversion to proper slashes
+                                # as zipfile namelist is returning only normal slashes even on windows and
+                                # as last remove leading slash as zipfile namelist again doesn't have it.
+                                archive_file = abs_file.replace(curr_dir, "").replace("\\", "/").lstrip("/")
+
+                                if archive_file in myzip.namelist():
+                                    lprint("D Archive name %r already exists, ignoring it!" % archive_file)
+                                    continue
+
+                                myzip.write(abs_file, archive_file, compress_type=int(scs_globals.conv_hlpr_mod_compression))
 
                 self.report({'INFO'}, "Packing done, mod packed to: '%s'" % mod_filepath)
 

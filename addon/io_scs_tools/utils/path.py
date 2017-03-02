@@ -21,6 +21,8 @@
 
 import bpy
 import os
+import subprocess
+from sys import platform
 from io_scs_tools.utils.printout import lprint
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
 
@@ -725,3 +727,22 @@ def readable_norm(path):
     norm_path = norm_path.replace("\\", "/")
 
     return norm_path
+
+
+def ensure_symlink(src, dest):
+    """Ensures symbolic link from source to destination. On Windows junction links are used
+    to avoid problems with link creation rights.
+
+    :param src: directory or file path from which should be taken as source for creation of symbolic link
+    :type src: str
+    :param dest: directory or file path where symbolic link should be written
+    :type dest: str
+    """
+
+    if os.path.isdir(dest):
+        os.remove(dest)  # use os.remove instead os.unlink, as we can't remove mklink junction with os.unlink.
+
+    if platform == "win32":
+        subprocess.check_call(["mklink", "/J", dest, src], shell=True)
+    else:
+        os.symlink(src, dest)
