@@ -21,7 +21,7 @@
 import bpy
 import os
 import subprocess
-import shutil
+from distutils import dir_util
 from hashlib import sha1
 from sys import platform
 from bpy.props import StringProperty, CollectionProperty, EnumProperty, IntProperty, BoolProperty
@@ -857,7 +857,7 @@ class ConversionHelper:
     class CleanRSRC(bpy.types.Operator):
         bl_label = "Clean RSRC"
         bl_idname = "scene.scs_conv_hlpr_clean_rsrc"
-        bl_description = "Cleans 'rsrc' folder from any already converted content"
+        bl_description = "Cleans-up converted data inside of conversion tools (empties 'rsrc' folder & removes symbolic links)."
 
         def execute(self, context):
 
@@ -872,11 +872,18 @@ class ConversionHelper:
 
             for root, dirs, files in os.walk(rsrc_path):
                 for folder in dirs:
-                    shutil.rmtree(root + os.sep + folder)
+                    dir_util.remove_tree(root + os.sep + folder)
                 for file in files:
                     os.remove(root + os.sep + file)
 
-            self.report({'INFO'}, "Successfully cleaned 'rsrc' folder!")
+            # also remove symlinks created with blender tools
+            for dir_entry in os.listdir(main_path):
+
+                dir_entry_abs_path = os.path.join(main_path, dir_entry)
+                if dir_entry.startswith("linked_bt_") and os.path.isdir(dir_entry_abs_path):
+                    os.remove(dir_entry_abs_path)
+
+            self.report({'INFO'}, "Successfully cleaned converted data in conversion tools folder!")
             return {'FINISHED'}
 
     class AddConversionPath(bpy.types.Operator):
@@ -1089,6 +1096,21 @@ class ConversionHelper:
 
             return ConversionHelper.RunConversion.execute(self, context)
 
+    class ConvertAllPaths(bpy.types.Operator):
+        bl_label = "Convert All"
+        bl_idname = "scene.scs_conv_hlpr_convert_all"
+        bl_description = "Converts all paths given in Custom Paths list + current SCS Project Base"
+
+        def __init__(self):
+            self.include_current_project = True
+
+        @classmethod
+        def poll(cls, context):
+            return len(_get_scs_globals().conv_hlpr_custom_paths) > 0
+
+        def execute(self, context):
+            return ConversionHelper.ConvertCustomPaths.execute(self, context)
+
     class FindGameModFolder(bpy.types.Operator):
         bl_label = "Search SCS Game 'mod' Folder"
         bl_idname = "scene.scs_conv_hlpr_find_mod_folder"
@@ -1186,7 +1208,8 @@ class ConversionHelper:
     class RunPacking(bpy.types.Operator):
         bl_label = "Run Packing"
         bl_idname = "scene.scs_conv_hlpr_pack"
-        bl_description = "Pack converted sources from 'rsrc' to mod package and copy it to mod destination path."
+        bl_description = "Pack converted sources to mod package and copy it to mod destination path.\n" \
+                         "Depending on auto settings this operator will also execute clean, export and convert before packing."
 
         @classmethod
         def poll(cls, context):
@@ -1224,7 +1247,7 @@ class ConversionHelper:
             if scs_globals.conv_hlpr_convert_on_packing:
 
                 try:
-                    if len(scs_globals.conv_hlpr_custom_paths) > 0:
+                    if scs_globals.conv_hlpr_use_custom_paths and len(scs_globals.conv_hlpr_custom_paths) > 0:
                         bpy.ops.scene.scs_conv_hlpr_convert_custom(include_current_project=True)
                     else:
                         bpy.ops.scene.scs_conv_hlpr_convert_current()
@@ -1248,7 +1271,7 @@ class ConversionHelper:
             # delete mod folder if previously no archive option was used
             mod_filepath_as_dir = mod_filepath[:-4]
             if os.path.isdir(mod_filepath_as_dir):
-                shutil.rmtree(mod_filepath_as_dir)
+                dir_util.remove_tree(mod_filepath_as_dir)
 
             # make sure previous ZIP file is not present
             if os.path.isfile(mod_filepath):
@@ -1263,7 +1286,7 @@ class ConversionHelper:
                     if not os.path.isdir(curr_dir):
                         continue
 
-                    shutil.copytree(curr_dir, mod_filepath_as_dir)
+                    dir_util.copy_tree(curr_dir, mod_filepath_as_dir)
 
                 self.report({'INFO'}, "Packing done, mod copied to: '%s'" % mod_filepath_as_dir)
 

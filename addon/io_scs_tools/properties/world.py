@@ -950,7 +950,7 @@ class GlobalSCSProps(bpy.types.PropertyGroup):
         default='scene',
     )
     export_scale = FloatProperty(
-        name="Scale",
+        name="Export Scale",
         description="Export scale of model",
         min=0.01, max=1000.0,
         soft_min=0.01, soft_max=1000.0,
@@ -1163,6 +1163,11 @@ class GlobalSCSProps(bpy.types.PropertyGroup):
         description="Expand Conversion Helper",
         default=True,
     )
+    conv_hlpr_use_custom_paths = BoolProperty(
+        name="Use Custom Paths",
+        description="Enable/disable custom paths used for converting more targets at once",
+        default=False
+    )
     conv_hlpr_custom_paths = CollectionProperty(
         type=ConvHlprCustomPathEntry,
         description="Custom paths used for converting more targets to one"
@@ -1193,7 +1198,7 @@ class GlobalSCSProps(bpy.types.PropertyGroup):
     )
     conv_hlpr_convert_on_packing = BoolProperty(
         name="Auto Convert",
-        description="Execute convert before packing.",
+        description="Execute convert before packing (targets that will be converted: SCS Project Base Path + Custom Paths if enabled).",
         default=True
     )
     conv_hlpr_mod_compression = EnumProperty(

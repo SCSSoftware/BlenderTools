@@ -318,9 +318,7 @@ def _draw_export_panel(scene, layout, scs_globals):
             row.label("Press ENTER to export selection!")
             row.label("Press ESC to cancel export!")
 
-        box_row = layout_box.row()
-        box = box_row.box()
-        col = box.column()
+        col = layout_box.column()
 
         # Default Export Path (FILE_PATH - relative)
         col_row = col.row()
@@ -343,7 +341,7 @@ def _draw_export_panel(scene, layout, scs_globals):
         props = col_row.operator('scene.select_directory_inside_base', text='', icon='FILESEL')
         props.type = "DefaultExportPath"
 
-        _shared.draw_export_panel(layout_box)
+        _shared.draw_export_panel(layout_box, ignore_extra_boxes=True)
     else:
         box_row = layout_box.row()
         box_row.prop(scene.scs_props, 'export_panel_expand', text="Export Panel:", icon='TRIA_RIGHT', icon_only=True, emboss=False)
@@ -355,48 +353,52 @@ def _draw_conversion_panel(layout, scs_globals):
     layout_column = layout.column(align=True)
     layout_box = layout_column.box()  # header
     if scs_globals.conversion_helper_expand:
-        box_row = layout_box.row()
-        box_row.prop(scs_globals, 'conversion_helper_expand', text="Conversion Helper:", icon='TRIA_DOWN', icon_only=True, emboss=False)
-        box_row.label('')
+        header_split = layout_box.row().split()
+        header_split.prop(scs_globals, 'conversion_helper_expand', text="Conversion Helper:", icon='TRIA_DOWN', icon_only=True, emboss=False)
+        header_split.operator("scene.scs_conv_hlpr_clean_rsrc", text="Clean Converted Data", icon="SCULPTMODE_HLT")
 
         layout_box = layout_column.box()  # body
 
-        # CLEAN & CONVERT CURRENT
-        row = layout_box.row(align=True)
-        row.scale_y = 1.2
-        row.operator("scene.scs_conv_hlpr_clean_rsrc", text='CLEAN RSRC')
-        row.operator("scene.scs_conv_hlpr_convert_current", text='CONVERT CURRENT SCS PROJECT')
-
-        # CUSTOM PATHS & CONVERT
-        cstm_paths_col = layout_box.column(align=False)
-        cstm_paths_col.label("Custom Paths:", icon="LINENUMBERS_ON")
-
-        row = cstm_paths_col.row()
-        row.column().template_list(
-            'SCSConversionEntrySlots',
-            list_id="",
-            dataptr=scs_globals,
-            propname="conv_hlpr_custom_paths",
-            active_dataptr=scs_globals,
-            active_propname="conv_hlpr_custom_paths_active",
-            rows=3,
-            maxrows=5,
-            type='DEFAULT',
-            columns=9
-        )
-
-        side_bar = row.column(align=True)
-        side_bar.operator("scene.scs_conv_hlpr_add_path", text="", icon="ZOOMIN")
-        side_bar.operator("scene.scs_conv_hlpr_remove_path", text="", icon="ZOOMOUT")
-        side_bar.separator()
-        props = side_bar.operator("scene.scs_conv_hlpr_order_path", icon="TRIA_UP", text="")
-        props.move_up = True
-        props = side_bar.operator("scene.scs_conv_hlpr_order_path", icon="TRIA_DOWN", text="")
-        props.move_up = False
-
+        # CUSTOM PATHS
+        cstm_paths_col = layout_box.column(align=not scs_globals.conv_hlpr_use_custom_paths)
         row = cstm_paths_col.row(align=True)
-        row.scale_y = 1.2
-        row.operator("scene.scs_conv_hlpr_convert_custom", text='CONVERT CUSTOM PATHS')
+        row.scale_y = 1.1
+        text = "Custom Paths: ON" if scs_globals.conv_hlpr_use_custom_paths else "Custom Paths: OFF"
+        icon = "FILE_TICK" if scs_globals.conv_hlpr_use_custom_paths else "X_VEC"
+        row.prop(scs_globals, "conv_hlpr_use_custom_paths", text=text, icon=icon, toggle=True)
+
+        if scs_globals.conv_hlpr_use_custom_paths:
+            row = cstm_paths_col.row()
+            row.template_list(
+                'SCSConversionEntrySlots',
+                list_id="",
+                dataptr=scs_globals,
+                propname="conv_hlpr_custom_paths",
+                active_dataptr=scs_globals,
+                active_propname="conv_hlpr_custom_paths_active",
+                rows=4,
+                maxrows=5,
+                type='DEFAULT',
+                columns=9
+            )
+
+            side_bar = row.column(align=True)
+            side_bar.operator("scene.scs_conv_hlpr_add_path", text="", icon="ZOOMIN")
+            side_bar.operator("scene.scs_conv_hlpr_remove_path", text="", icon="ZOOMOUT")
+            side_bar.separator()
+
+            props = side_bar.operator("scene.scs_conv_hlpr_order_path", icon="TRIA_UP", text="")
+            props.move_up = True
+            props = side_bar.operator("scene.scs_conv_hlpr_order_path", icon="TRIA_DOWN", text="")
+            props.move_up = False
+
+        # CONVERT
+        row = cstm_paths_col.column(align=True)
+        row.scale_y = 1.1
+        row.operator("scene.scs_conv_hlpr_convert_current", text='CONVERT CURRENT SCS PROJECT')
+        if scs_globals.conv_hlpr_use_custom_paths:
+            row.operator("scene.scs_conv_hlpr_convert_custom", text='CONVERT CUSTOM PATHS')
+            row.operator("scene.scs_conv_hlpr_convert_all", text='CONVERT ALL')
 
         # PACKING
         col = layout_box.column(align=True)
@@ -423,7 +425,7 @@ def _draw_conversion_panel(layout, scs_globals):
 
         row = col.row(align=True)
         row.scale_y = 1.5
-        row.operator("scene.scs_conv_hlpr_pack", text="PACK CONVERTED DATA")
+        row.operator("scene.scs_conv_hlpr_pack", text=">>>>    PACK MOD    <<<<")
 
     else:
         box_row = layout_box.row()

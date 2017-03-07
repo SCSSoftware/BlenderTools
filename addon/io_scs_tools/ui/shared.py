@@ -96,8 +96,8 @@ def draw_scs_looks_panel(layout, scene, active_object, scs_root_object):
         row.prop(scene.scs_props, 'scs_look_panel_expand', text=" ", icon='NONE', icon_only=True, emboss=False)
 
 
-def draw_export_panel(layout):
-    box1 = layout.box()
+def draw_export_panel(layout, ignore_extra_boxes=False):
+    box1 = layout.box() if not ignore_extra_boxes else layout
     row = box1.row()
     row.prop(_get_scs_globals(), 'export_scale')
     col = box1.column()
@@ -130,7 +130,7 @@ def draw_export_panel(layout):
     '''
     # row = box1.row()
     # row.prop(_get_scs_globals(), 'export_anim_file', expand=True)
-    box2 = layout.box()
+    box2 = layout.box() if not ignore_extra_boxes else layout
     box2.prop(_get_scs_globals(), 'output_type')
     '''
     col = box2.column()
