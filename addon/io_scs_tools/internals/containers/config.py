@@ -575,29 +575,30 @@ def gather_default():
         """Fills up "Import" section."""
         section = _SectionData("Import")
         section.props.append(("ImportScale", _property_utils.get_by_type(bpy.types.GlobalSCSProps.import_scale)))
+        section.props.append(("PreservePathForExport", _property_utils.get_by_type(bpy.types.GlobalSCSProps.import_preserve_path_for_export)))
         section.props.append(("ImportPimFile", int(_property_utils.get_by_type(bpy.types.GlobalSCSProps.import_pim_file))))
-        section.props.append(("UseWelding", int(_property_utils.get_by_type(bpy.types.GlobalSCSProps.use_welding))))
-        section.props.append(("WeldingPrecision", int(_property_utils.get_by_type(bpy.types.GlobalSCSProps.welding_precision))))
-        section.props.append(("UseNormals", int(_property_utils.get_by_type(bpy.types.GlobalSCSProps.use_normals))))
+        section.props.append(("UseWelding", int(_property_utils.get_by_type(bpy.types.GlobalSCSProps.import_use_welding))))
+        section.props.append(("WeldingPrecision", int(_property_utils.get_by_type(bpy.types.GlobalSCSProps.import_welding_precision))))
+        section.props.append(("UseNormals", int(_property_utils.get_by_type(bpy.types.GlobalSCSProps.import_use_normals))))
         section.props.append(("ImportPitFile", int(_property_utils.get_by_type(bpy.types.GlobalSCSProps.import_pit_file))))
-        section.props.append(("LoadTextures", int(_property_utils.get_by_type(bpy.types.GlobalSCSProps.load_textures))))
+        section.props.append(("LoadTextures", int(_property_utils.get_by_type(bpy.types.GlobalSCSProps.import_load_textures))))
         section.props.append(("ImportPicFile", int(_property_utils.get_by_type(bpy.types.GlobalSCSProps.import_pic_file))))
         section.props.append(("ImportPipFile", int(_property_utils.get_by_type(bpy.types.GlobalSCSProps.import_pip_file))))
         section.props.append(("ImportPisFile", int(_property_utils.get_by_type(bpy.types.GlobalSCSProps.import_pis_file))))
-        section.props.append(("ConnectedBones", int(_property_utils.get_by_type(bpy.types.GlobalSCSProps.connected_bones))))
-        section.props.append(("BoneImportScale", _property_utils.get_by_type(bpy.types.GlobalSCSProps.bone_import_scale)))
+        section.props.append(("ConnectedBones", int(_property_utils.get_by_type(bpy.types.GlobalSCSProps.import_connected_bones))))
+        section.props.append(("BoneImportScale", _property_utils.get_by_type(bpy.types.GlobalSCSProps.import_bone_scale)))
         section.props.append(("ImportPiaFile", int(_property_utils.get_by_type(bpy.types.GlobalSCSProps.import_pia_file))))
-        section.props.append(("IncludeSubdirsForPia", int(_property_utils.get_by_type(bpy.types.GlobalSCSProps.include_subdirs_for_pia))))
+        section.props.append(("IncludeSubdirsForPia", int(_property_utils.get_by_type(bpy.types.GlobalSCSProps.import_include_subdirs_for_pia))))
         return section
 
     def fill_export_section():
         """Fills up "Export" section."""
         section = _SectionData("Export")
         section.props.append(("ExportScale", _property_utils.get_by_type(bpy.types.GlobalSCSProps.export_scale)))
-        section.props.append(("ApplyModifiers", int(_property_utils.get_by_type(bpy.types.GlobalSCSProps.apply_modifiers))))
-        section.props.append(("ExcludeEdgesplit", int(_property_utils.get_by_type(bpy.types.GlobalSCSProps.exclude_edgesplit))))
-        section.props.append(("IncludeEdgesplit", int(_property_utils.get_by_type(bpy.types.GlobalSCSProps.include_edgesplit))))
-        section.props.append(("ActiveUVOnly", int(_property_utils.get_by_type(bpy.types.GlobalSCSProps.active_uv_only))))
+        section.props.append(("ApplyModifiers", int(_property_utils.get_by_type(bpy.types.GlobalSCSProps.export_apply_modifiers))))
+        section.props.append(("ExcludeEdgesplit", int(_property_utils.get_by_type(bpy.types.GlobalSCSProps.export_exclude_edgesplit))))
+        section.props.append(("IncludeEdgesplit", int(_property_utils.get_by_type(bpy.types.GlobalSCSProps.export_include_edgesplit))))
+        section.props.append(("ActiveUVOnly", int(_property_utils.get_by_type(bpy.types.GlobalSCSProps.export_active_uv_only))))
         section.props.append(("ExportVertexGroups", int(_property_utils.get_by_type(bpy.types.GlobalSCSProps.export_vertex_groups))))
         section.props.append(("ExportVertexColor", int(_property_utils.get_by_type(bpy.types.GlobalSCSProps.export_vertex_color))))
         section.props.append(("ExportVertexColorType", _property_utils.get_by_type(bpy.types.GlobalSCSProps.export_vertex_color_type)))
@@ -608,7 +609,7 @@ def gather_default():
         section.props.append(("ExportPitFile", int(_property_utils.get_by_type(bpy.types.GlobalSCSProps.export_pit_file))))
         section.props.append(("ExportPicFile", int(_property_utils.get_by_type(bpy.types.GlobalSCSProps.export_pic_file))))
         section.props.append(("ExportPipFile", int(_property_utils.get_by_type(bpy.types.GlobalSCSProps.export_pip_file))))
-        section.props.append(("SignExport", int(_property_utils.get_by_type(bpy.types.GlobalSCSProps.sign_export))))
+        section.props.append(("SignExport", int(_property_utils.get_by_type(bpy.types.GlobalSCSProps.export_write_signature))))
         return section
 
     def fill_global_display_section():
@@ -812,18 +813,20 @@ def apply_settings():
                             pass
                         elif prop[0] == "ImportScale":
                             scs_globals.import_scale = float(prop[1])
+                        elif prop[0] == "PreservePathForExport":
+                            scs_globals.import_preserve_path_for_export = prop[1]
                         elif prop[0] == "ImportPimFile":
                             scs_globals.import_pim_file = prop[1]
                         elif prop[0] == "UseWelding":
-                            scs_globals.use_welding = prop[1]
+                            scs_globals.import_use_welding = prop[1]
                         elif prop[0] == "WeldingPrecision":
-                            scs_globals.welding_precision = prop[1]
+                            scs_globals.import_welding_precision = prop[1]
                         elif prop[0] == "UseNormals":
-                            scs_globals.use_normals = prop[1]
+                            scs_globals.import_use_normals = prop[1]
                         elif prop[0] == "ImportPitFile":
                             scs_globals.import_pit_file = prop[1]
                         elif prop[0] == "LoadTextures":
-                            scs_globals.load_textures = prop[1]
+                            scs_globals.import_load_textures = prop[1]
                         elif prop[0] == "ImportPicFile":
                             scs_globals.import_pic_file = prop[1]
                         elif prop[0] == "ImportPipFile":
@@ -831,13 +834,13 @@ def apply_settings():
                         elif prop[0] == "ImportPisFile":
                             scs_globals.import_pis_file = prop[1]
                         elif prop[0] == "ConnectedBones":
-                            scs_globals.connected_bones = prop[1]
+                            scs_globals.import_connected_bones = prop[1]
                         elif prop[0] == "BoneImportScale":
-                            scs_globals.bone_import_scale = float(prop[1])
+                            scs_globals.import_bone_scale = float(prop[1])
                         elif prop[0] == "ImportPiaFile":
                             scs_globals.import_pia_file = prop[1]
                         elif prop[0] == "IncludeSubdirsForPia":
-                            scs_globals.include_subdirs_for_pia = prop[1]
+                            scs_globals.import_include_subdirs_for_pia = prop[1]
                 elif section.type == "Export":
                     for prop in section.props:
                         if prop[0] in ("", "#"):
@@ -845,13 +848,13 @@ def apply_settings():
                         elif prop[0] == "ExportScale":
                             scs_globals.export_scale = float(prop[1])
                         elif prop[0] == "ApplyModifiers":
-                            scs_globals.apply_modifiers = prop[1]
+                            scs_globals.export_apply_modifiers = prop[1]
                         elif prop[0] == "ExcludeEdgesplit":
-                            scs_globals.exclude_edgesplit = prop[1]
+                            scs_globals.export_exclude_edgesplit = prop[1]
                         elif prop[0] == "IncludeEdgesplit":
-                            scs_globals.include_edgesplit = prop[1]
+                            scs_globals.export_include_edgesplit = prop[1]
                         elif prop[0] == "ActiveUVOnly":
-                            scs_globals.active_uv_only = prop[1]
+                            scs_globals.export_active_uv_only = prop[1]
                         elif prop[0] == "ExportVertexGroups":
                             scs_globals.export_vertex_groups = prop[1]
                         elif prop[0] == "ExportVertexColor":
@@ -863,7 +866,7 @@ def apply_settings():
                         elif prop[0] == "ExportPimFile":
                             scs_globals.export_pim_file = prop[1]
                         elif prop[0] == "OutputType":
-                            scs_globals.output_type = prop[1]
+                            scs_globals.export_output_type = prop[1]
                         elif prop[0] == "ExportPitFile":
                             scs_globals.export_pit_file = prop[1]
                         elif prop[0] == "ExportPicFile":
@@ -871,7 +874,7 @@ def apply_settings():
                         elif prop[0] == "ExportPipFile":
                             scs_globals.export_pip_file = prop[1]
                         elif prop[0] == "SignExport":
-                            scs_globals.sign_export = prop[1]
+                            scs_globals.export_write_signature = prop[1]
                 elif section.type == "GlobalDisplay":
                     for prop in section.props:
                         if prop[0] in ("", "#"):

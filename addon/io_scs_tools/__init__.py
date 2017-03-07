@@ -22,7 +22,7 @@ bl_info = {
     "name": "SCS Tools",
     "description": "Setup models, Import-Export SCS data format",
     "author": "Simon Lusenc (50keda), Milos Zajic (4museman)",
-    "version": (1, 7, "3770dea"),
+    "version": (1, 7, "785c749"),
     "blender": (2, 78, 0),
     "location": "File > Import-Export",
     "wiki_url": "http://modding.scssoft.com/wiki/Documentation/Tools/SCS_Blender_Tools",
@@ -170,16 +170,18 @@ class ImportSCS(bpy.types.Operator, ImportHelper):
 
         col.row().prop(scs_globals, "import_scale")
         col.row().separator()
+        col.row().prop(scs_globals, "import_preserve_path_for_export")
+        col.row().separator()
         col.row().prop(scs_globals, "import_pim_file", toggle=True, icon="FILE_TICK" if scs_globals.import_pim_file else "X")
         if scs_globals.import_pim_file:
-            col.row().prop(scs_globals, "use_normals")
-            col.row().prop(scs_globals, "use_welding")
-            if scs_globals.use_welding:
-                col.row().prop(scs_globals, "welding_precision")
+            col.row().prop(scs_globals, "import_use_normals")
+            col.row().prop(scs_globals, "import_use_welding")
+            if scs_globals.import_use_welding:
+                col.row().prop(scs_globals, "import_welding_precision")
         col.row().separator()
         col.row().prop(scs_globals, "import_pit_file", toggle=True, icon="FILE_TICK" if scs_globals.import_pit_file else "X")
         if scs_globals.import_pit_file:
-            col.row().prop(scs_globals, "load_textures")
+            col.row().prop(scs_globals, "import_load_textures")
         col.row().separator()
         col.row().prop(scs_globals, "import_pic_file", toggle=True, icon="FILE_TICK" if scs_globals.import_pic_file else "X")
         col.row().separator()
@@ -187,11 +189,11 @@ class ImportSCS(bpy.types.Operator, ImportHelper):
         col.row().separator()
         col.row(align=True).prop(scs_globals, "import_pis_file", toggle=True, icon="FILE_TICK" if scs_globals.import_pis_file else "X")
         if scs_globals.import_pis_file:
-            col.row(align=True).prop(scs_globals, "bone_import_scale")
+            col.row(align=True).prop(scs_globals, "import_bone_scale")
             col.row().separator()
             col.row().prop(scs_globals, "import_pia_file", toggle=True, icon="FILE_TICK" if scs_globals.import_pia_file else "X")
             if scs_globals.import_pia_file:
-                col.row().prop(scs_globals, "include_subdirs_for_pia")
+                col.row().prop(scs_globals, "import_include_subdirs_for_pia")
 
         # Common global settings
         ui.shared.draw_common_settings(layout, log_level_only=True)

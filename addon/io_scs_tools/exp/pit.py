@@ -340,7 +340,7 @@ def export(root_object, filepath, used_materials, used_parts):
     """
 
     scs_globals = _get_scs_globals()
-    output_type = scs_globals.output_type
+    output_type = scs_globals.export_output_type
 
     file_name = root_object.name
 
@@ -628,7 +628,7 @@ def export(root_object, filepath, used_materials, used_parts):
             variant_list.append((variant.name, part_list), )
 
     # DATA CREATION
-    header_section = _fill_header_section(file_name, scs_globals.sign_export)
+    header_section = _fill_header_section(file_name, scs_globals.export_write_signature)
     look_section = _fill_look_sections(look_list)
     # part_sections = fill_part_section(part_list)
     variant_section = _fill_variant_sections(variant_list)

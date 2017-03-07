@@ -765,18 +765,18 @@ def get_mesh(obj):
         if modifier.type == "ARMATURE" and modifier.object in sibling_objs and modifier.object.type == "ARMATURE":
             disabled_modifiers = disable_modifier(modifier, disabled_modifiers)
 
-    if _get_scs_globals().output_type.startswith('def'):
-        if _get_scs_globals().apply_modifiers:
-            if _get_scs_globals().exclude_edgesplit:
+    if _get_scs_globals().export_output_type.startswith('def'):
+        if _get_scs_globals().export_apply_modifiers:
+            if _get_scs_globals().export_exclude_edgesplit:
                 disabled_modifiers.append(disable_modifiers(obj, modifier_type_to_disable='EDGE_SPLIT'))
             mesh = obj.to_mesh(scene, True, 'PREVIEW')
         else:
             mesh = obj.data
     else:
-        if _get_scs_globals().apply_modifiers:
+        if _get_scs_globals().export_apply_modifiers:
             mesh = obj.to_mesh(scene, True, 'PREVIEW')
         else:
-            if _get_scs_globals().include_edgesplit:
+            if _get_scs_globals().export_include_edgesplit:
                 disabled_modifiers.append(disable_modifiers(obj, modifier_type_to_disable='EDGE_SPLIT', inverse=True))
                 mesh = obj.to_mesh(scene, True, 'PREVIEW')
             else:

@@ -282,7 +282,7 @@ def export(collision_locator_list, filepath, filename, used_parts):
     print("************************************\n")
 
     # DATA CREATION
-    header_section = _fill_header_section(filename, scs_globals.sign_export)
+    header_section = _fill_header_section(filename, scs_globals.export_write_signature)
     piece_sections = []
     materials = 0
     len_vertices = 0

@@ -315,7 +315,7 @@ def export(scs_root_obj, armature, scs_animation, dirpath, skeleton_filepath):
     custom_channels = _get_custom_channels(scs_animation, action)
 
     # DATA CREATION
-    header_section = _fill_header_section(scs_animation.name, scs_globals.sign_export)
+    header_section = _fill_header_section(scs_animation.name, scs_globals.export_write_signature)
     custom_channel_sections = _fill_channel_sections(custom_channels, "CustomChannel")
     bone_channel_sections = _fill_channel_sections(bone_channels, "BoneChannel")
     global_section = _fill_global_section(skeleton_filepath, total_time, len(bone_channels), len(custom_channels))

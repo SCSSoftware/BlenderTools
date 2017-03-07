@@ -79,7 +79,7 @@ def execute(dirpath, root_object, armature_object, skeleton_filepath, mesh_objec
 
     scs_globals = _get_scs_globals()
 
-    if scs_globals.output_type == "5":
+    if scs_globals.export_output_type == "5":
         format_version = 5
         format_type = ""
     else:

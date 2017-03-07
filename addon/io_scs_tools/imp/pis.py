@@ -85,8 +85,8 @@ def _get_bones(pis_container):
 def load(filepath, armature, get_only=False):
     scs_globals = _get_scs_globals()
     import_scale = scs_globals.import_scale
-    bone_import_scale = scs_globals.bone_import_scale
-    connected_bones = scs_globals.connected_bones
+    bone_import_scale = scs_globals.import_bone_scale
+    connected_bones = scs_globals.import_connected_bones
 
     print("\n************************************")
     print("**      SCS PIS Importer          **")

@@ -715,28 +715,32 @@ class GlobalSCSProps(bpy.types.PropertyGroup):
         _config_container.update_item_in_file('Import.ImportScale', float(self.import_scale))
         return None
 
+    def import_preserve_path_for_export_update(self, context):
+        _config_container.update_item_in_file('Import.PreservePathForExport', int(self.import_preserve_path_for_export))
+        return None
+
     def import_pim_file_update(self, context):
         _config_container.update_item_in_file('Import.ImportPimFile', int(self.import_pim_file))
         return None
 
-    def use_welding_update(self, context):
-        _config_container.update_item_in_file('Import.UseWelding', int(self.use_welding))
+    def import_use_welding_update(self, context):
+        _config_container.update_item_in_file('Import.UseWelding', int(self.import_use_welding))
         return None
 
-    def welding_precision_update(self, context):
-        _config_container.update_item_in_file('Import.WeldingPrecision', int(self.welding_precision))
+    def import_welding_precision_update(self, context):
+        _config_container.update_item_in_file('Import.WeldingPrecision', int(self.import_welding_precision))
         return None
 
-    def use_normals_update(self, context):
-        _config_container.update_item_in_file('Import.UseNormals', int(self.use_normals))
+    def import_use_normals_update(self, context):
+        _config_container.update_item_in_file('Import.UseNormals', int(self.import_use_normals))
         return None
 
     def import_pit_file_update(self, context):
         _config_container.update_item_in_file('Import.ImportPitFile', int(self.import_pit_file))
         return None
 
-    def load_textures_update(self, context):
-        _config_container.update_item_in_file('Import.LoadTextures', int(self.load_textures))
+    def import_load_textures_update(self, context):
+        _config_container.update_item_in_file('Import.LoadTextures', int(self.import_load_textures))
         return None
 
     def import_pic_file_update(self, context):
@@ -751,40 +755,40 @@ class GlobalSCSProps(bpy.types.PropertyGroup):
         _config_container.update_item_in_file('Import.ImportPisFile', int(self.import_pis_file))
         return None
 
-    def connected_bones_update(self, context):
-        _config_container.update_item_in_file('Import.ConnectedBones', int(self.connected_bones))
+    def import_connected_bones_update(self, context):
+        _config_container.update_item_in_file('Import.ConnectedBones', int(self.import_connected_bones))
         return None
 
-    def bone_import_scale_update(self, context):
-        _config_container.update_item_in_file('Import.BoneImportScale', float(self.bone_import_scale))
+    def import_bone_scale_update(self, context):
+        _config_container.update_item_in_file('Import.BoneImportScale', float(self.import_bone_scale))
         return None
 
     def import_pia_file_update(self, context):
         _config_container.update_item_in_file('Import.ImportPiaFile', int(self.import_pia_file))
         return None
 
-    def search_subdirs_for_pia_update(self, context):
-        _config_container.update_item_in_file('Import.IncludeSubdirsForPia', int(self.include_subdirs_for_pia))
+    def import_include_subdirs_for_pia_update(self, context):
+        _config_container.update_item_in_file('Import.IncludeSubdirsForPia', int(self.import_include_subdirs_for_pia))
         return None
 
     def export_scale_update(self, context):
         _config_container.update_item_in_file('Export.ExportScale', float(self.export_scale))
         return None
 
-    def apply_modifiers_update(self, context):
-        _config_container.update_item_in_file('Export.ApplyModifiers', int(self.apply_modifiers))
+    def export_apply_modifiers_update(self, context):
+        _config_container.update_item_in_file('Export.ApplyModifiers', int(self.export_apply_modifiers))
         return None
 
-    def exclude_edgesplit_update(self, context):
-        _config_container.update_item_in_file('Export.ExcludeEdgesplit', int(self.exclude_edgesplit))
+    def export_exclude_edgesplit_update(self, context):
+        _config_container.update_item_in_file('Export.ExcludeEdgesplit', int(self.export_exclude_edgesplit))
         return None
 
-    def include_edgesplit_update(self, context):
-        _config_container.update_item_in_file('Export.IncludeEdgesplit', int(self.include_edgesplit))
+    def export_include_edgesplit_update(self, context):
+        _config_container.update_item_in_file('Export.IncludeEdgesplit', int(self.export_include_edgesplit))
         return None
 
-    def active_uv_only_update(self, context):
-        _config_container.update_item_in_file('Export.ActiveUVOnly', int(self.active_uv_only))
+    def export_active_uv_only_update(self, context):
+        _config_container.update_item_in_file('Export.ActiveUVOnly', int(self.export_active_uv_only))
         return None
 
     def export_vertex_groups_update(self, context):
@@ -819,8 +823,8 @@ class GlobalSCSProps(bpy.types.PropertyGroup):
         _config_container.update_item_in_file('Export.ExportPimFile', int(self.export_pim_file))
         return None
 
-    def output_type_update(self, context):
-        _config_container.update_item_in_file('Export.OutputType', self.output_type)
+    def export_output_type_update(self, context):
+        _config_container.update_item_in_file('Export.OutputType', self.export_output_type)
         return None
 
     def export_pit_file_update(self, context):
@@ -843,8 +847,8 @@ class GlobalSCSProps(bpy.types.PropertyGroup):
         _config_container.update_item_in_file('Export.ExportPiaFile', int(self.export_pia_file))
         return None
 
-    def sign_export_update(self, context):
-        _config_container.update_item_in_file('Export.SignExport', int(self.sign_export))
+    def export_write_signature_update(self, context):
+        _config_container.update_item_in_file('Export.SignExport', int(self.export_write_signature))
         return None
 
     # IMPORT OPTIONS
@@ -856,31 +860,37 @@ class GlobalSCSProps(bpy.types.PropertyGroup):
         default=1.0,
         update=import_scale_update,
     )
+    import_preserve_path_for_export = BoolProperty(
+        name="Preserve Path for Export",
+        description="Automatically use and set custom export path on SCS Root to the same path that it was imported from.",
+        default=False,
+        update=import_preserve_path_for_export_update,
+    )
     import_pim_file = BoolProperty(
         name="Import Model (PIM)",
         description="Import Model data from PIM file",
         default=True,
         update=import_pim_file_update,
     )
-    use_welding = BoolProperty(
+    import_use_welding = BoolProperty(
         name="Use Welding",
         description="Use automatic routine for welding of divided mesh surfaces",
         default=True,
-        update=use_welding_update,
+        update=import_use_welding_update,
     )
-    welding_precision = IntProperty(
+    import_welding_precision = IntProperty(
         name="Welding Precision",
         description="Number of decimals which has to be equal for welding to take place.",
         min=1, max=6,
         default=4,
-        update=welding_precision_update
+        update=import_welding_precision_update
     )
-    use_normals = BoolProperty(
+    import_use_normals = BoolProperty(
         name="Use Normals",
         description="When used meshes will get custom normals data from PIM file; "
                     "otherwise Blender calculated normals will be used.",
         default=True,
-        update=use_normals_update
+        update=import_use_normals_update
     )
     import_pit_file = BoolProperty(
         name="Import Trait (PIT)",
@@ -888,11 +898,11 @@ class GlobalSCSProps(bpy.types.PropertyGroup):
         default=True,
         update=import_pit_file_update,
     )
-    load_textures = BoolProperty(
+    import_load_textures = BoolProperty(
         name="Load Textures",
         description="Load textures",
         default=True,
-        update=load_textures_update,
+        update=import_load_textures_update,
     )
     import_pic_file = BoolProperty(
         name="Import Collision (PIC)",
@@ -912,19 +922,19 @@ class GlobalSCSProps(bpy.types.PropertyGroup):
         default=True,
         update=import_pis_file_update,
     )
-    connected_bones = BoolProperty(
+    import_connected_bones = BoolProperty(
         name="Create Connected Bones",
         description="Create connected Bones whenever possible",
         default=False,
-        update=connected_bones_update,
+        update=import_connected_bones_update,
     )
-    bone_import_scale = FloatProperty(
+    import_bone_scale = FloatProperty(
         name="Bone Scale",
         description="Import scale for Bones",
         min=0.0001, max=10.0,
         soft_min=0.001, soft_max=1.0,
         default=0.1,
-        update=bone_import_scale_update,
+        update=import_bone_scale_update,
     )
     import_pia_file = BoolProperty(
         name="Import Animations (PIA)",
@@ -932,11 +942,11 @@ class GlobalSCSProps(bpy.types.PropertyGroup):
         default=True,
         update=import_pia_file_update,
     )
-    include_subdirs_for_pia = BoolProperty(
+    import_include_subdirs_for_pia = BoolProperty(
         name="Search Subdirectories",
         description="Search also all subdirectories for animation files (PIA)",
         default=True,
-        update=search_subdirs_for_pia_update,
+        update=import_include_subdirs_for_pia_update,
     )
 
     # EXPORT OPTIONS
@@ -957,33 +967,33 @@ class GlobalSCSProps(bpy.types.PropertyGroup):
         default=1.0,
         update=export_scale_update,
     )
-    apply_modifiers = BoolProperty(
+    export_apply_modifiers = BoolProperty(
         name="Apply Modifiers",
         description="Export meshes as modifiers were applied",
         default=True,
-        update=apply_modifiers_update,
+        update=export_apply_modifiers_update,
     )
-    exclude_edgesplit = BoolProperty(
+    export_exclude_edgesplit = BoolProperty(
         name="Exclude 'Edge Split'",
         description="When you use Sharp Edge flags, then prevent 'Edge Split' modifier from "
                     "dismemberment of the exported mesh - the correct smoothing will be still "
                     "preserved with use of Sharp Edge Flags",
         default=True,
-        update=exclude_edgesplit_update,
+        update=export_exclude_edgesplit_update,
     )
-    include_edgesplit = BoolProperty(
+    export_include_edgesplit = BoolProperty(
         name="Apply Only 'Edge Split'",
         description="When you use Sharp Edge flags and don't want to apply modifiers, "
                     "then use only 'Edge Split' modifier for dismemberment of the exported mesh "
                     "- the only way to preserve correct smoothing",
         default=True,
-        update=include_edgesplit_update,
+        update=export_include_edgesplit_update,
     )
-    active_uv_only = BoolProperty(
+    export_active_uv_only = BoolProperty(
         name="Only Active UVs",
         description="Export only active UV layer coordinates",
         default=False,
-        update=active_uv_only_update,
+        update=export_active_uv_only_update,
     )
     export_vertex_groups = BoolProperty(
         name="Vertex Groups",
@@ -1024,7 +1034,7 @@ class GlobalSCSProps(bpy.types.PropertyGroup):
         default=True,
         update=export_pim_file_update,
     )
-    output_type = EnumProperty(
+    export_output_type = EnumProperty(
         name="Output Format",
         items=(
             ('5', "Game Data Format, ver. 5", "Export PIM (version 5) file formats for SCS Game Engine"),
@@ -1034,7 +1044,7 @@ class GlobalSCSProps(bpy.types.PropertyGroup):
             # exchange between different modeling tools"),
         ),
         default='5',
-        update=output_type_update,
+        update=export_output_type_update,
     )
     export_pit_file = BoolProperty(
         name="Export PIT",
@@ -1066,11 +1076,11 @@ class GlobalSCSProps(bpy.types.PropertyGroup):
         default=True,
         update=export_pia_file_update,
     )
-    sign_export = BoolProperty(
+    export_write_signature = BoolProperty(
         name="Write A Signature To Exported Files",
         description="Add a signature to the header of the output files with some additional information",
         default=False,
-        update=sign_export_update,
+        update=export_write_signature_update,
     )
 
     # COMMON SETTINGS - SAVED IN CONFIG

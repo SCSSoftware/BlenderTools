@@ -351,6 +351,17 @@ def load(context, filepath):
     if objects or locators or (armature and skeleton):
         scs_root_object = _create_scs_root_object(lod_name, loaded_variants, loaded_looks, mats_info, objects, locators, armature)
 
+        # Additionally if user wants to have automatically set custom export path, then let him have it :P
+        if scs_globals.import_preserve_path_for_export:
+            relative_export_path = _path_utils.relative_path(scs_globals.scs_project_path, path)
+            if path.startswith(scs_globals.scs_project_path) and relative_export_path != path:
+                scs_root_object.scs_props.scs_root_object_export_filepath = relative_export_path
+                scs_root_object.scs_props.scs_root_object_allow_custom_path = True
+            else:
+                lprint("W Can not preserve import path for export on import SCS Root %r, "
+                       "as import was done from outside of current SCS Project Base Path!",
+                       (scs_root_object.name,))
+
     # IMPORT PIS
     if scs_globals.import_pis_file:
         # pis file path is created from directory of pim file and skeleton definition inside pim header
@@ -378,7 +389,7 @@ def load(context, filepath):
             pia_files = []
             index = 0
             for root, dirs, files in os.walk(basepath):
-                if not scs_globals.include_subdirs_for_pia:
+                if not scs_globals.import_include_subdirs_for_pia:
                     if index > 0:
                         break
                 # print('  root: %s - dirs: %s - files: %s' % (str(root), str(dirs), str(files)))

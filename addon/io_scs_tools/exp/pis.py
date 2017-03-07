@@ -75,7 +75,7 @@ def export(filepath, scs_root_obj, armature_object, used_bones):
     scs_globals = _get_scs_globals()
 
     # DATA CREATION
-    header_section = _fill_header_section(scs_root_obj.name, scs_globals.sign_export)
+    header_section = _fill_header_section(scs_root_obj.name, scs_globals.export_write_signature)
     bones_section = _fill_bones_sections(scs_root_obj, armature_object, used_bones, scs_globals.export_scale)
     global_section = _fill_global_section(len(used_bones))
 

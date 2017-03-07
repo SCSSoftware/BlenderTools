@@ -102,28 +102,28 @@ def draw_export_panel(layout, ignore_extra_boxes=False):
     row.prop(_get_scs_globals(), 'export_scale')
     col = box1.column()
     row = col.row()
-    row.prop(_get_scs_globals(), 'apply_modifiers')
+    row.prop(_get_scs_globals(), 'export_apply_modifiers')
     row_2 = row.row()
-    if _get_scs_globals().output_type.startswith('def'):
-        if int(_get_scs_globals().apply_modifiers):
+    if _get_scs_globals().export_output_type.startswith('def'):
+        if int(_get_scs_globals().export_apply_modifiers):
             row_2.enabled = True
         else:
             row_2.enabled = False
-        row_2.prop(_get_scs_globals(), 'exclude_edgesplit')
+        row_2.prop(_get_scs_globals(), 'export_exclude_edgesplit')
     else:
-        if not int(_get_scs_globals().apply_modifiers):
+        if not int(_get_scs_globals().export_apply_modifiers):
             row_2.enabled = True
         else:
             row_2.enabled = False
-        row_2.prop(_get_scs_globals(), 'include_edgesplit')
+        row_2.prop(_get_scs_globals(), 'export_include_edgesplit')
     '''
-    col.prop(_get_scs_globals(), 'active_uv_only')
-    if not _get_scs_globals().output_type.startswith('def'):
+    col.prop(_get_scs_globals(), 'export_active_uv_only')
+    if not _get_scs_globals().export_output_type.startswith('def'):
         col.prop(_get_scs_globals(), 'export_vertex_groups')
     col.prop(_get_scs_globals(), 'export_vertex_color')
     if _get_scs_globals().export_vertex_color:
         row = box1.row()
-        if not _get_scs_globals().output_type.startswith('def'):
+        if not _get_scs_globals().export_output_type.startswith('def'):
             row.prop(_get_scs_globals(), 'export_vertex_color_type_7')
         else:
             row.prop(_get_scs_globals(), 'export_vertex_color_type')
@@ -131,12 +131,12 @@ def draw_export_panel(layout, ignore_extra_boxes=False):
     # row = box1.row()
     # row.prop(_get_scs_globals(), 'export_anim_file', expand=True)
     box2 = layout.box() if not ignore_extra_boxes else layout
-    box2.prop(_get_scs_globals(), 'output_type')
+    box2.prop(_get_scs_globals(), 'export_output_type')
     '''
     col = box2.column()
     col.prop(_get_scs_globals(), 'export_pim_file', text="Export Model (PIM)", toggle=True)
     if _get_scs_globals().export_pim_file:
-        col.prop(_get_scs_globals(), 'output_type')
+        col.prop(_get_scs_globals(), 'export_output_type')
     col.prop(_get_scs_globals(), 'export_pit_file', text="Export Trait (PIT)", toggle=True)
     col.prop(_get_scs_globals(), 'export_pic_file', text="Export Collision (PIC)", toggle=True)
     col.prop(_get_scs_globals(), 'export_pip_file', text="Export Prefab (PIP)", toggle=True)
@@ -152,10 +152,10 @@ def draw_export_panel(layout, ignore_extra_boxes=False):
     else:
         row.enabled = False
     row.prop(_get_scs_globals(), 'export_pia_file', text="Export Animations (PIA)", toggle=True)
-    if not _get_scs_globals().output_type.startswith('def'):
+    if not _get_scs_globals().export_output_type.startswith('def'):
         box3 = layout.box()
         row = box3.row()
-        row.prop(_get_scs_globals(), 'sign_export')
+        row.prop(_get_scs_globals(), 'export_write_signature')
     '''
 
 

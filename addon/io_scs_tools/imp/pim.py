@@ -561,7 +561,7 @@ def _create_5_piece(
     bm.free()
 
     # NORMALS - has to be applied after bmesh creation as they are set directly to mesh
-    if _get_scs_globals().use_normals:
+    if _get_scs_globals().import_use_normals:
 
         mesh.create_normals_split()
 
@@ -972,12 +972,12 @@ def load_pim_file(context, filepath, terrain_points_trans=None, preview_model=Fa
                     points_to_weld_list = []
                     if mesh_normals:
                         # print('Piece %i going to "make_posnorm_list"...' % ob_index)
-                        if scs_globals.use_welding:
+                        if scs_globals.import_use_welding:
                             points_to_weld_list = _mesh_utils.make_points_to_weld_list(mesh_vertices,
                                                                                        mesh_normals,
                                                                                        mesh_rgb,
                                                                                        mesh_rgba,
-                                                                                       scs_globals.welding_precision)
+                                                                                       scs_globals.import_welding_precision)
 
                     objects_data[ob_index] = (
                         context,
