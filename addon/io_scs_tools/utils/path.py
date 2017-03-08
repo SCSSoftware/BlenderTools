@@ -22,6 +22,7 @@
 import bpy
 import os
 import subprocess
+import shutil
 from sys import platform
 from io_scs_tools.utils.printout import lprint
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
@@ -746,3 +747,39 @@ def ensure_symlink(src, dest):
         subprocess.check_call(["mklink", "/J", dest, src], shell=True)
     else:
         os.symlink(src, dest)
+
+
+def rmtree(src):
+    """Remove directory or file. In case of directory all the content inside will also be removed.
+    :param src: source path which should be recursively removed
+    :type src: str
+    """
+    try:
+        shutil.rmtree(src)
+    except shutil.Error:
+        lprint("E Problem removing directory: %r", (readable_norm(src),))
+
+
+def copytree(src, dest):
+    """Recursively copy whole tree of given source path to destination path.
+    If directories doesn't exists they will be created.
+    If directores/files exists then content will be overwritten.
+
+    :param src: source path to copy from
+    :type src: str
+    :param dest: destination path to copy to
+    :type dest: str
+    """
+
+    for root, dirs, files in os.walk(src):
+        if not os.path.isdir(root):
+            os.makedirs(root)
+
+        for file in files:
+            rel_path = root.replace(src, '').lstrip(os.sep)
+            dest_path = os.path.join(dest, rel_path)
+
+            if not os.path.isdir(dest_path):
+                os.makedirs(dest_path)
+
+            shutil.copyfile(os.path.join(root, file), os.path.join(dest_path, file))

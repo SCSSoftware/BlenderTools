@@ -575,7 +575,7 @@ def gather_default():
         """Fills up "Import" section."""
         section = _SectionData("Import")
         section.props.append(("ImportScale", _property_utils.get_by_type(bpy.types.GlobalSCSProps.import_scale)))
-        section.props.append(("PreservePathForExport", _property_utils.get_by_type(bpy.types.GlobalSCSProps.import_preserve_path_for_export)))
+        section.props.append(("PreservePathForExport", int(_property_utils.get_by_type(bpy.types.GlobalSCSProps.import_preserve_path_for_export))))
         section.props.append(("ImportPimFile", int(_property_utils.get_by_type(bpy.types.GlobalSCSProps.import_pim_file))))
         section.props.append(("UseWelding", int(_property_utils.get_by_type(bpy.types.GlobalSCSProps.import_use_welding))))
         section.props.append(("WeldingPrecision", int(_property_utils.get_by_type(bpy.types.GlobalSCSProps.import_welding_precision))))
@@ -605,7 +605,7 @@ def gather_default():
         section.props.append(("ExportVertexColorType7", _property_utils.get_by_type(bpy.types.GlobalSCSProps.export_vertex_color_type_7)))
         # section.props.append(("ExportAnimFile", info.get_default_prop_value(bpy.types.GlobalSCSProps.export_anim_file)))
         section.props.append(("ExportPimFile", int(_property_utils.get_by_type(bpy.types.GlobalSCSProps.export_pim_file))))
-        section.props.append(("OutputType", _property_utils.get_by_type(bpy.types.GlobalSCSProps.output_type)))
+        section.props.append(("OutputType", _property_utils.get_by_type(bpy.types.GlobalSCSProps.export_output_type)))
         section.props.append(("ExportPitFile", int(_property_utils.get_by_type(bpy.types.GlobalSCSProps.export_pit_file))))
         section.props.append(("ExportPicFile", int(_property_utils.get_by_type(bpy.types.GlobalSCSProps.export_pic_file))))
         section.props.append(("ExportPipFile", int(_property_utils.get_by_type(bpy.types.GlobalSCSProps.export_pip_file))))

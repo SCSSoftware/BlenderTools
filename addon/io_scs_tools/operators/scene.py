@@ -21,7 +21,6 @@
 import bpy
 import os
 import subprocess
-from distutils import dir_util
 from hashlib import sha1
 from sys import platform
 from bpy.props import StringProperty, CollectionProperty, EnumProperty, IntProperty, BoolProperty
@@ -872,7 +871,7 @@ class ConversionHelper:
 
             for root, dirs, files in os.walk(rsrc_path):
                 for folder in dirs:
-                    dir_util.remove_tree(root + os.sep + folder)
+                    _path_utils.rmtree(root + os.sep + folder)
                 for file in files:
                     os.remove(root + os.sep + file)
 
@@ -1271,7 +1270,7 @@ class ConversionHelper:
             # delete mod folder if previously no archive option was used
             mod_filepath_as_dir = mod_filepath[:-4]
             if os.path.isdir(mod_filepath_as_dir):
-                dir_util.remove_tree(mod_filepath_as_dir)
+                _path_utils.rmtree(mod_filepath_as_dir)
 
             # make sure previous ZIP file is not present
             if os.path.isfile(mod_filepath):
@@ -1286,7 +1285,7 @@ class ConversionHelper:
                     if not os.path.isdir(curr_dir):
                         continue
 
-                    dir_util.copy_tree(curr_dir, mod_filepath_as_dir)
+                    _path_utils.copytree(curr_dir, mod_filepath_as_dir)
 
                 self.report({'INFO'}, "Packing done, mod copied to: '%s'" % mod_filepath_as_dir)
 
