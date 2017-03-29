@@ -255,25 +255,26 @@ class SCSPathsInitialization(bpy.types.Operator):
     DUMP_LEVEL = 3
     """Constant for log level index according in SCS Globals, on which operator should printout extended report."""
 
-    # Static running variables
-    __timer = None
-    """Timer instance variable. We use timer to initilize paths gradually one by one."""
     __last_time = None
     """Used for time tracking on each individual path initialization."""
     __path_in_progress = False
     """Used as flag for indicating path being processed. So another execute method call shouldn't be triggered."""
+
+    # Static running variables
+    __static_timer = None
+    """Timer instance variable. We use timer to initilize paths gradually one by one."""
     __static_paths_count = 0
     """Static variable holding number of all paths that had to be processed. Used for reporting progress eg. 'X of Y paths done'."""
     __static_paths_done = 0
     """Static variable holding number of already processed paths. Used for reporting progress eg. 'X of Y paths done'."""
-    __static_running_instances = 0
-    """Used for indication of already running operator."""
+    __static_abort_instances = False
+    """Static variable holding existing operator instance alive until it's set to false. Used when multiple instance are invoked."""
 
     # Static data storage
     __static_message = ""
     """Static variable holding printout extended message. This message used only if dump level is high enough."""
     __static_paths_list = []
-    """Static variable holding CollectionProperty with entries of Filepath class, defining paths that needs initialization.
+    """Static variable holding list with dictonariy entries each of them representing Filepath class entry that needs in initialization.
     Processed paths are removed on the fly.
     """
     __static_callbacks = []
@@ -306,7 +307,7 @@ class SCSPathsInitialization(bpy.types.Operator):
         :return: True if scs paths initialization is still in progress; False if none instances are running
         :rtype: bool
         """
-        return SCSPathsInitialization.__static_running_instances > 0
+        return len(SCSPathsInitialization.__static_paths_list) > 0 and SCSPathsInitialization.__static_timer
 
     @staticmethod
     def append_callback(callback):
@@ -325,25 +326,6 @@ class SCSPathsInitialization(bpy.types.Operator):
 
         return False
 
-    def __init__(self):
-        SCSPathsInitialization.__static_running_instances += 1
-
-    def __del__(self):
-        if SCSPathsInitialization.__static_running_instances > 0:
-
-            SCSPathsInitialization.__static_running_instances -= 1
-
-        # if user disables add-on, destructor is called again, so cleanup timer and static variables
-        if SCSPathsInitialization.__static_running_instances <= 0:
-
-            SCSPathsInitialization.__static_message = ""
-            SCSPathsInitialization.__static_paths_list = []
-            SCSPathsInitialization.__static_callbacks = []
-
-            if bpy.context and bpy.context.window_manager and self.__timer:
-                wm = bpy.context.window_manager
-                wm.event_timer_remove(self.__timer)
-
     def execute(self, context):
 
         # do not proceed if list is already empty
@@ -353,9 +335,9 @@ class SCSPathsInitialization(bpy.types.Operator):
         self.__path_in_progress = True
 
         # update message with current path and apply it
-        SCSPathsInitialization.__static_message += "Initializing " + SCSPathsInitialization.__static_paths_list[0].name + "..."
-        setattr(_get_scs_globals(), SCSPathsInitialization.__static_paths_list[0].attr, SCSPathsInitialization.__static_paths_list[0].path)
-        SCSPathsInitialization.__static_paths_list.remove(0)  # remove just processed item
+        SCSPathsInitialization.__static_message += "Initializing " + SCSPathsInitialization.__static_paths_list[0]["name"] + "..."
+        setattr(_get_scs_globals(), SCSPathsInitialization.__static_paths_list[0]["attr"], SCSPathsInitialization.__static_paths_list[0]["path"])
+        SCSPathsInitialization.__static_paths_list = SCSPathsInitialization.__static_paths_list[1:]  # remove just processed item
         SCSPathsInitialization.__static_message += " Done in %.2f s!\n" % (time() - self.__last_time)
         SCSPathsInitialization.__static_paths_done += 1
 
@@ -386,8 +368,11 @@ class SCSPathsInitialization(bpy.types.Operator):
         SCSPathsInitialization.__static_message = ""
         SCSPathsInitialization.__static_paths_list.clear()
 
-        wm = context.window_manager
-        wm.event_timer_remove(self.__timer)
+        # try to reset timer if window manager is available
+        if len(bpy.data.window_managers) > 0:
+            wm = bpy.data.window_managers[0]
+            wm.event_timer_remove(SCSPathsInitialization.__static_timer)
+            SCSPathsInitialization.__static_timer = None
 
         # report finished progress to 3d view report operator
         if int(_get_scs_globals().dump_level) < self.DUMP_LEVEL:
@@ -405,7 +390,15 @@ class SCSPathsInitialization(bpy.types.Operator):
             callback()
             SCSPathsInitialization.__static_callbacks.remove(callback)
 
+        lprint("D Paths initialization cancel invoked!")
+
     def modal(self, context, event):
+
+        # if abort was requested finish immediately
+        if SCSPathsInitialization.__static_abort_instances:
+            self.cancel(context)
+            lprint("I Paths initialization aborted, deleting operator!")
+            return {'FINISHED'}
 
         if event.type == "TIMER":  # process timer event
 
@@ -426,52 +419,54 @@ class SCSPathsInitialization(bpy.types.Operator):
 
     def invoke(self, context, event):
 
+        self.__last_time = time()  # reset last time now as everything starts again
         SCSPathsInitialization.__static_paths_done = 0  # reset done paths counter as everything starts here
 
-        # if another instance is running update static paths list with paths passed to this instance
-        if SCSPathsInitialization.__static_running_instances > 1:
+        # engage abortion of any running instances
+        SCSPathsInitialization.__abort_any_running_instances = True
 
-            # now fill up new paths to static inventory
-            for filepath_prop in self.paths_list:
+        # now fill up new paths to static inventory
+        for filepath_prop in self.paths_list:
 
-                # search for identical path in not yet processed paths list
-                old_item = None
-                for item in SCSPathsInitialization.__static_paths_list:
-                    if item.attr == filepath_prop.attr:
-                        old_item = item
-                        break
+            # sort out only unique paths and merge them with current static path list
+            old_item = None
+            for item in SCSPathsInitialization.__static_paths_list:
+                if item["attr"] == filepath_prop.attr:
+                    old_item = item
+                    break
 
-                # if old item is found just reuse it instead of adding new item to list
-                item = old_item if old_item else SCSPathsInitialization.__static_paths_list.add()
-                item.name = filepath_prop.name
-                item.attr = filepath_prop.attr
-                item.path = filepath_prop.path
+            # if old item is found just reuse it instead of adding new item to list
+            if old_item:
+                old_item["name"] = filepath_prop["name"]
+                old_item["path"] = filepath_prop["path"]
+            else:
+                SCSPathsInitialization.__static_paths_list.append(
+                    {
+                        "name": filepath_prop["name"],
+                        "attr": filepath_prop["attr"],
+                        "path": filepath_prop["path"]
+                    }
+                )
 
-            # update paths counter to the current paths list length
-            SCSPathsInitialization.__static_paths_count = len(SCSPathsInitialization.__static_paths_list)
+        # update paths counter to the current paths list length
+        SCSPathsInitialization.__static_paths_count = len(SCSPathsInitialization.__static_paths_list)
 
-            # cancel this instance if another instance is still running
-            # (it can happen that previous operator was done until now as each operator runs asynchronously,
-            # in that case we have to continue otherwise latest paths won't be  )
-            if SCSPathsInitialization.__static_running_instances > 0:
-
-                SCSPathsInitialization.__static_message = "Restarting initialization...\n\n"
-                bpy.ops.wm.show_3dview_report('INVOKE_DEFAULT', message=SCSPathsInitialization.__static_message,
-                                              hide_controls=True, is_progress_message=True)
-
-                lprint("D Restarting initialization...!")
-                return {'CANCELLED'}
+        # now as paths list is updated and we are about to run our instance
+        # release switch that should be aborting all the rest of operator instances
+        SCSPathsInitialization.__abort_any_running_instances = False
 
         SCSPathsInitialization.__static_message = "Starting initialization...\n"
         bpy.ops.wm.show_3dview_report('INVOKE_DEFAULT', message=SCSPathsInitialization.__static_message,
                                       hide_controls=True, is_progress_message=True)
 
-        SCSPathsInitialization.__static_paths_list = self.paths_list
-        SCSPathsInitialization.__static_paths_count = len(self.paths_list)
+        wm = bpy.data.window_managers[0]
+        window = wm.windows[0]
 
-        wm = context.window_manager
-        self.__timer = wm.event_timer_add(0.2, context.window)
-        self.__last_time = time()
+        # in case any operator was previously invoked we have to remove timer before adding new
+        if SCSPathsInitialization.__static_timer:
+            wm.event_timer_remove(SCSPathsInitialization.__static_timer)
+
+        SCSPathsInitialization.__static_timer = wm.event_timer_add(0.2, window)
 
         wm.modal_handler_add(self)
         lprint("I Paths initialization started...")

@@ -89,7 +89,7 @@ def execute(dirpath, root_object, armature_object, skeleton_filepath, mesh_objec
     is_skin_used = (armature_object and root_object.scs_props.scs_root_animated == "anim")
 
     pim_header = Header(format_type, format_version, root_object.name)
-    pim_global = Globall(used_parts.count(), skeleton_filepath)
+    pim_global = Globall(len(used_parts.get_as_list()), skeleton_filepath)
 
     pim_materials = collections.OrderedDict()  # dict of Material class instances representing used materials
     """:type: dict[str, Material]"""
@@ -105,15 +105,29 @@ def execute(dirpath, root_object, armature_object, skeleton_filepath, mesh_objec
 
     bones = skin = skin_stream = None
     if is_skin_used:
+
+        invalid_bone_names = set()  # set for saving bones with invalid names, they are used for reporting to user
+
         # create bones data section
         bones = Bones()
         for bone in armature_object.data.bones:
             bones.add_bone(bone.name)
             used_bones.add(bone.name)
 
+            # do bones name checks
+            if _name_utils.tokenize_name(bone.name) != bone.name:
+                invalid_bone_names.add(bone.name)
+
         # create skin data section
         skin_stream = SkinStream(SkinStream.Types.POSITION)
         skin = Skin(skin_stream)
+
+        # report invalid bone names
+        if len(invalid_bone_names) > 0:
+            lprint("W Invalid bone names detected, max. length of valid bone name is 12 and must consists from [a-z, 0-9 and _ ] characters.\n\t   "
+                   "Conversion will generalize names, however expect problems by re-import! List of invalid bone names for %r:\n\t   "
+                   "%r",
+                   (armature_object.name, list(invalid_bone_names)))
 
     # create mesh object data sections
     for mesh_obj in mesh_objects:
@@ -151,6 +165,7 @@ def execute(dirpath, root_object, armature_object, skeleton_filepath, mesh_objec
         missing_uv_layers = {}  # stores missing uvs specified by materials of this object
         missing_vcolor = False  # indicates if object is missing vertex color layer
         missing_vcolor_a = False  # indicates if object is missing vertex color alpha layer
+        missing_skinned_verts = set()  # indicates if object is having only partial skin, which is not allowed in our models
 
         for poly in mesh.polygons:
 
@@ -275,6 +290,7 @@ def execute(dirpath, root_object, armature_object, skeleton_filepath, mesh_objec
                 if is_skin_used:
                     # get skinning data for vertex and save it to skin stream
                     bone_weights = {}
+                    bone_weights_sum = 0
                     for v_group_entry in mesh.vertices[vert_i].groups:
                         bone_indx = bones.get_bone_index(vert_groups[v_group_entry.group].name)
                         bone_weight = v_group_entry.weight
@@ -282,9 +298,14 @@ def execute(dirpath, root_object, armature_object, skeleton_filepath, mesh_objec
                         # proceed only if bone exists in our armature
                         if bone_indx != -1:
                             bone_weights[bone_indx] = bone_weight
+                            bone_weights_sum += bone_weight
 
-                    skin_entry = SkinStream.Entry(mesh_piece.get_index(), piece_vert_index, position, bone_weights)
+                    skin_entry = SkinStream.Entry(mesh_piece.get_index(), piece_vert_index, position, bone_weights, bone_weights_sum)
                     skin_stream.add_entry(skin_entry)
+
+                    # report un-skinned vertices (no bones or zero sum weight)
+                    if bone_weights_sum <= 0:
+                        missing_skinned_verts.add(vert_i)
 
                 # save to terrain points storage if present in correct vertex group
                 for group in mesh.vertices[vert_i].groups:
@@ -333,7 +354,7 @@ def execute(dirpath, root_object, armature_object, skeleton_filepath, mesh_objec
         _mesh_utils.cleanup_mesh(mesh)
 
         # create part if it doesn't exists yet
-        part_name = mesh_obj.scs_props.scs_part
+        part_name = used_parts.ensure_part(mesh_obj)
         if part_name not in pim_parts:
             pim_parts[part_name] = Part(part_name)
 
@@ -357,6 +378,9 @@ def execute(dirpath, root_object, armature_object, skeleton_filepath, mesh_objec
         if missing_vcolor_a:
             lprint("W Object %r is missing vertex color alpha layer with name %r! Default alpha will be exported (0.5)",
                    (mesh_obj.name, _MESH_consts.default_vcol + _MESH_consts.vcol_a_suffix))
+        if len(missing_skinned_verts) > 0:
+            lprint("E Object %r from SCS Root %r has %s vertices which are not skinned to any bone, expect errors during conversion!",
+                   (mesh_obj.name, root_object.name, len(missing_skinned_verts)))
 
     # report missing data for whole model
     if len(missing_mappings_data) > 0:
@@ -393,9 +417,8 @@ def execute(dirpath, root_object, armature_object, skeleton_filepath, mesh_objec
         locator.set_scale(sca)
 
         # create part if it doesn't exists yet
-        part_name = loc_obj.scs_props.scs_part
+        part_name = used_parts.ensure_part(loc_obj)
         if part_name not in pim_parts:
-            assert used_parts.is_present(part_name)
             pim_parts[part_name] = Part(part_name)
 
         # add locator to part
@@ -416,7 +439,7 @@ def execute(dirpath, root_object, armature_object, skeleton_filepath, mesh_objec
 
     for part_name in used_parts.get_as_list():
 
-        # export all parts even empty ones gathered from PIC and PIP
+        # export all parts even empty ones used only in PIC and/or PIP
         if part_name in pim_parts:
             pim_container.append(pim_parts[part_name].get_as_section())
         else:

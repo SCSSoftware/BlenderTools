@@ -305,6 +305,8 @@ def _fill_part_list(parts, used_parts_names, all_parts=False):
     """
     part_list = []
     for part_name in used_parts_names:
+
+        part_written = False
         for part in parts:
 
             if part.name == part_name:
@@ -320,21 +322,25 @@ def _fill_part_list(parts, used_parts_names, all_parts=False):
                     part_atr.append(('INT', 'visible', include))
 
                 part_list.append((part.name, part_atr), )
+                part_written = True
+
+        if not part_written:
+            lprint("E Part %r from collected parts not avaliable in variant parts inventory, expect problems by conversion!", (part_name,))
 
     return part_list
 
 
-def export(root_object, filepath, used_materials, used_parts):
+def export(root_object, filepath, used_parts, used_materials):
     """Export PIT.
 
     :param root_object: SCS root object
     :type root_object: bpy.types.Object
     :param filepath: PIT file path
     :type filepath: str
-    :param used_materials: materials transitional structure for accessing stored materials from PIM
-    :type used_materials: io_scs_tools.exp.transition_structs.materials.MaterialsTrans
     :param used_parts: parts transitional structure for accessing stored parts from PIM, PIC and PIP
     :type used_parts: io_scs_tools.exp.transition_structs.parts.PartsTrans
+    :param used_materials: materials transitional structure for accessing stored materials from PIM
+    :type used_materials: io_scs_tools.exp.transition_structs.materials.MaterialsTrans
     :return: True if successful; False otherwise;
     :rtype: bool
     """
@@ -617,7 +623,6 @@ def export(root_object, filepath, used_materials, used_parts):
 
     # PARTS AND VARIANTS...
     used_parts_names = used_parts.get_as_list()
-    part_list_cnt = len(used_parts_names)
     if len(root_object.scs_object_variant_inventory) == 0:
         # If there is no Variant, add the Default one...
         part_list = _fill_part_list(root_object.scs_object_part_inventory, used_parts_names, all_parts=True)
@@ -633,7 +638,7 @@ def export(root_object, filepath, used_materials, used_parts):
     # part_sections = fill_part_section(part_list)
     variant_section = _fill_variant_sections(variant_list)
     comment_header_section = _fill_comment_header_section(look_list, variant_list)
-    global_section = _fill_global_section(len(look_list), len(variant_list), part_list_cnt, len(used_materials_pairs))
+    global_section = _fill_global_section(len(look_list), len(variant_list), len(used_parts_names), len(used_materials_pairs))
 
     # DATA ASSEMBLING
     pit_container = [comment_header_section, header_section, global_section]

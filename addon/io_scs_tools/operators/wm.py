@@ -49,14 +49,17 @@ class ShowWarningMessage(bpy.types.Operator):
             self.layout.label(line)
 
     def draw(self, context):
-        row = self.layout.row().split(0.05)
+        row = self.layout.row().split(0.00001 * self.width)
         row.label(" ")
 
         col = row.column()
         col.label(self.title, icon=self.icon)
+        col.separator()
         lines = self.message.split("\n")
         for line in lines:
-            col.label(line)
+            col.label(line.strip())
+        col.separator()
+        col.separator()
 
     def execute_popup(self, context):
         context.window_manager.popup_menu(self.popup_draw, title=self.title, icon=self.icon)

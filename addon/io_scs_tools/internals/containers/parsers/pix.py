@@ -363,7 +363,7 @@ def read_data(filepath, ind, print_info=False):
     pix_container = []
 
     # if filepath:
-    file = open(filepath, 'r')
+    file = open(filepath, mode="r", encoding="utf8")
     while 1:
         data_type, line = next_line(file)
         if data_type in ('EOF', 'ERR'):

@@ -182,7 +182,7 @@ def write_data(container, filepath, ind='    ', print_on_success=True, print_inf
     orig_ind = ind
 
     # WRITE TO FILE
-    file = open(filepath, "w", encoding="utf8", newline="\n")
+    file = open(filepath, mode="w", encoding="utf8", newline="\n")
     fw = file.write
     if print_on_success:
         lprint('I WRITTING PIX FILE to: %r', (filepath,))

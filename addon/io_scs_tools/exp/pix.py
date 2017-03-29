@@ -42,7 +42,7 @@ def _get_objects_by_type(blender_objects, parts):
 
     :param blender_objects: list of the objects that should be sorted by type
     :type blender_objects: list of bpy.types.Object
-    :param parts: transitional parts class instance to collect parts to
+    :param parts: transitional parts class instance for adding users (parts without users won't be exported)
     :type parts: io_scs_tools.exp.transition_structs.parts.PartsTrans
     :return: more lists of objects in order: meshes, prefab_locators, model_locators, collision_locators and armutare object as last
     :rtype: list of [list]
@@ -62,17 +62,17 @@ def _get_objects_by_type(blender_objects, parts):
                 prefab_locator_list.append(obj)
 
                 if _object_utils.has_part_property(obj):
-                    parts.add(obj.scs_props.scs_part)
+                    parts.add_user(obj)
 
             elif obj.scs_props.locator_type == 'Model':
                 model_locator_list.append(obj)
 
-                parts.add(obj.scs_props.scs_part)
+                parts.add_user(obj)
 
             elif obj.scs_props.locator_type == 'Collision':
                 collision_locator_list.append(obj)
 
-                parts.add(obj.scs_props.scs_part)
+                parts.add_user(obj)
 
         # ARMATURES
         elif obj.type == 'ARMATURE':
@@ -88,7 +88,7 @@ def _get_objects_by_type(blender_objects, parts):
             if obj.data.scs_props.locator_preview_model_path == "":  # Export object only if it's not a Preview Model...
                 mesh_object_list.append(obj)
 
-                parts.add(obj.scs_props.scs_part)
+                parts.add_user(obj)
 
         else:
             print('!!! - Unhandled object type: %r' % str(obj.type))
@@ -119,7 +119,7 @@ def export(dirpath, root_object, game_object_list):
 
     # TRANSITIONAL STRUCTURES
     terrain_points = TerrainPntsTrans()
-    parts = PartsTrans()
+    parts = PartsTrans(root_object.scs_object_part_inventory)
     materials = MaterialsTrans()
     bones = BonesTrans()
 
@@ -174,13 +174,13 @@ def export(dirpath, root_object, game_object_list):
     # EXPORT PIP
     if scs_globals.export_pip_file and prefab_locators and export_success:
         in_args = (dirpath, root_object.name, prefab_locators, root_object.matrix_world)
-        trans_structs_args = (terrain_points,)
+        trans_structs_args = (parts, terrain_points)
         export_success = _pip_exporter.execute(*(in_args + trans_structs_args))
 
     # EXPORT PIT
     if scs_globals.export_pit_file and export_success:
         in_args = (root_object, dirpath + os.sep + root_object.name)
-        trans_structs_args = (materials, parts)
+        trans_structs_args = (parts, materials)
         export_success = _pit.export(*(in_args + trans_structs_args))
 
     # PIS, PIA

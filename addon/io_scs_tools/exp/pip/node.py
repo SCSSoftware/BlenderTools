@@ -19,7 +19,8 @@
 # Copyright (C) 2015: SCS Software
 
 from collections import OrderedDict
-
+from mathutils import Vector
+from mathutils.geometry import distance_point_to_plane
 from io_scs_tools.consts import PrefabLocators as _PL_consts
 from io_scs_tools.exp.pip.node_stream import Stream
 from io_scs_tools.internals.structure import SectionData as _SectionData
@@ -91,6 +92,9 @@ class Node:
         """Converts terrain points from variant mapped indices to PIP streams and stores them.
         """
 
+        # first prepare terrain points for export
+        self.__prepare_terrain_points__()
+
         # ensure empty streams
         pos_stream = Stream(Stream.Types.POSITION)
         nor_stream = Stream(Stream.Types.NORMAL)
@@ -129,6 +133,22 @@ class Node:
 
         if variant_stream.get_size() > 0:
             self.__tp_streams[Stream.Types.VARIANT_BLOCK] = variant_stream
+
+    def __prepare_terrain_points__(self):
+        """Reverses the order of terrain points if last point is closer to the node in it's forward direction.
+        """
+
+        for variant_index in self.__tp_per_variant:
+
+            # now if tail is closer to node on it's forward axis, we reverse list
+            plane_co = Vector(self.__position)
+            plane_no = Vector(self.__direction)
+
+            head_distance = distance_point_to_plane(self.__tp_per_variant[variant_index][0][0], plane_co, plane_no)
+            tail_distance = distance_point_to_plane(self.__tp_per_variant[variant_index][-1][0], plane_co, plane_no)
+
+            if not (head_distance <= tail_distance - 0.001):  # 0.001 taken from Maya exporter
+                self.__tp_per_variant[variant_index].reverse()
 
     def set_input_lane(self, index, curve_index):
         """Set the curve index for given input lane.
@@ -197,18 +217,41 @@ class Node:
         if position is None and normal is None:
             return
 
-        # ordering with insertion by position where closest terrain point
-        # shall be first in the list and farthest terrain point the last
+        # find nearest existing terrain point
         i = 0
-        while i < len(self.__tp_per_variant[variant_index]):
+        smallest_dist = float("inf")
+        smallest_dist_i = 0
+        tp_count = len(self.__tp_per_variant[variant_index])
+        while i < tp_count:
 
             pos, normal = self.__tp_per_variant[variant_index][i]
-            if get_distance(self.__position, position) < get_distance(self.__position, pos):
-                break
+            curr_distance = get_distance(position, pos)
+            if curr_distance < smallest_dist:
+                smallest_dist = curr_distance
+                smallest_dist_i = i
 
             i += 1
 
-        self.__tp_per_variant[variant_index].insert(i, (position, normal))
+        # depending on index of the nearest point insert new point
+        if smallest_dist_i == 0:  # no terrain points yet or the nearest is first just put it at start
+            self.__tp_per_variant[variant_index].insert(0, (position, normal))
+        elif smallest_dist_i == tp_count - 1:  # last is the nearest put it at the back
+            self.__tp_per_variant[variant_index].append((position, normal))
+        else:
+
+            # now this is a tricky one: once nearest point is in the middle.
+            # With that in mind take previous and next existing points and calculate
+            # to which new point is closer:
+            # 1. if closer to previous we have to insert new point before the nearest
+            # 2. if closer to next we have to insert new point after the nearest
+
+            ahead_tp = self.__tp_per_variant[variant_index][smallest_dist_i - 1]
+            behind_tp = self.__tp_per_variant[variant_index][smallest_dist_i + 1]
+
+            if get_distance(behind_tp[0], position) < get_distance(ahead_tp[0], position):
+                smallest_dist_i += 1
+
+            self.__tp_per_variant[variant_index].insert(smallest_dist_i, (position, normal))
 
         Node.__global_tp_counter += 1
 

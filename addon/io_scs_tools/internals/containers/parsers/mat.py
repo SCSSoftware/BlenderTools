@@ -30,7 +30,7 @@ def read_data(filepath, print_info=False):
 
     attr_dict = {}
 
-    with open(filepath) as f:
+    with open(filepath, encoding="utf8") as f:
         f_data = f.read()
         f.close()
 

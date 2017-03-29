@@ -18,6 +18,7 @@
 
 # Copyright (C) 2015: SCS Software
 
+
 def parse_file(filepath, print_info=False):
     """Reads data from TOBJ file and returns it's records as list.
 
@@ -34,7 +35,7 @@ def parse_file(filepath, print_info=False):
         print('   filepath: %r' % str(filepath))
 
     data = []
-    with open(filepath) as f:
+    with open(filepath, encoding="utf8") as f:
         for i, line in enumerate(f):
             line_split = line.strip().split()
             if len(line_split) != 0:

@@ -101,7 +101,7 @@ class _Tokenizer():
                     if not os.path.isfile(file_name):
                         continue
 
-                    file = open(file_name, 'r')
+                    file = open(file_name, mode="r", encoding="utf8")
                     included_lines = file.readlines()
                     file.close()
                     break
@@ -331,7 +331,7 @@ def parse_file(filepath, print_info=False):
         print("** SII Parser ...")
     sii_container = []
 
-    file = open(filepath, 'r')
+    file = open(filepath, mode="r", encoding="utf8")
     lines = file.readlines()
     file.close()
 

@@ -1036,7 +1036,7 @@ class ConversionHelper:
             linked_path = os.path.join(main_path, link_hash)
             _path_utils.ensure_symlink(_get_scs_globals().scs_project_path, linked_path)
 
-            with open(extra_mount_path, mode="w") as f:
+            with open(extra_mount_path, mode="w", encoding="utf8") as f:
                 f.write(link_hash)
 
             return ConversionHelper.RunConversion.execute(self, context)
@@ -1064,7 +1064,7 @@ class ConversionHelper:
                 self.report({'ERROR'}, "Conversion tools path is incorrect! Please fix it first.")
                 return {'CANCELLED'}
 
-            with open(extra_mount_path, mode="w") as f:
+            with open(extra_mount_path, mode="w", encoding="utf8") as f:
 
                 for path_entry in _get_scs_globals().conv_hlpr_custom_paths:
 

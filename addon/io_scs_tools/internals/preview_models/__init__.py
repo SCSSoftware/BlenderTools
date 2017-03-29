@@ -140,6 +140,19 @@ def load(locator):
             from io_scs_tools.imp import pim as _pim_import
 
             obj = _pim_import.load_pim_file(bpy.context, abs_filepath, preview_model=True)
+
+            # in case used preview model doesn't have any mesh, abort loading, report error and reset path
+            # Path has to be reset to prevent loading preview model over and over again
+            # from possible callbacks trying to fix not present preview model
+            if not obj:
+                message = "Selected PIM model doesn't have any mesh inside, so it can not be used as a preview model."
+                bpy.ops.wm.show_warning_message('INVOKE_DEFAULT', is_modal=True, title="Preview Model Load Error!", message=message,
+                                                width=500,
+                                                height=100)
+                lprint("E " + message)
+                locator.scs_props.locator_preview_model_path = ""
+                return False
+
             obj.name = prem_name
             obj.data.name = prem_name
             obj.data.scs_props.locator_preview_model_path = locator.scs_props.locator_preview_model_path

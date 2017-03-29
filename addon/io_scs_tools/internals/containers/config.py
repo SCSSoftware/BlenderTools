@@ -110,7 +110,7 @@ def update_shader_presets_path(shader_presets_filepath):
             supported_effects_path = os.path.join(_path_utils.get_addon_installation_paths()[0], "supported_effects.bin")
             if os.path.isfile(supported_effects_path):
                 try:
-                    supported_effects_dict = pickle.load(open(supported_effects_path, "rb"))
+                    supported_effects_dict = pickle.load(open(supported_effects_path, mode="rb"))
                 except PermissionError:
                     lprint("W Can't load supported effects file (persmission denied), please ensure read/write permissions for:\n\t   %r\n\t   "
                            "Without supported effects file invalid combinations of shader and flavors can be created!",

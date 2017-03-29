@@ -177,7 +177,7 @@ class TobjContainer:
 
         try:
 
-            file = open(self.filepath, "w", encoding="utf8", newline="\n")
+            file = open(self.filepath, mode="w", encoding="utf8", newline="\n")
 
         except IOError:
 

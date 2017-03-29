@@ -1190,11 +1190,20 @@ def load_pim_file(context, filepath, terrain_points_trans=None, preview_model=Fa
 
     if preview_model:
 
+        # abort loading if no meshes inside imported model
+        if len(objects) == 0 and len(skinned_objects) == 0:
+            return None
+
         bases = []
         # get the bases of newly created objects for override
         for base in bpy.context.scene.object_bases:
             if base.object in objects:
                 bases.append(base)
+            if base.object in skinned_objects:
+                bases.append(base)
+
+        # get active object for joining meshes into it
+        active_object = objects[0] if len(objects) > 0 else skinned_objects[0]
 
         override = {
             'window': bpy.context.window,
@@ -1203,12 +1212,12 @@ def load_pim_file(context, filepath, terrain_points_trans=None, preview_model=Fa
             'scene': bpy.context.scene,
             'region': None,
             'area': None,
-            'active_object': objects[0],
+            'active_object': active_object,
             'selected_editable_bases': bases
         }
         bpy.ops.object.join(override)
 
-        return objects[0]
+        return active_object
 
     # CREATE MODEL LOCATORS
     locators = []

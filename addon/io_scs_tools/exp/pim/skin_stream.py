@@ -42,15 +42,7 @@ class SkinStream:
         __bone_weights = None
         __clones = None
 
-        @staticmethod
-        def __get_weight_sum__(bone_weights):
-            weight_sum = 0
-            for bone_weight in bone_weights.values():
-                weight_sum += bone_weight
-
-            return weight_sum
-
-        def __init__(self, piece_index, vertex_index, vertex_pos, bone_weights):
+        def __init__(self, piece_index, vertex_index, vertex_pos, bone_weights, bone_weights_sum):
             """Create new entry instance with given indices, position and bone weights.
             :param piece_index: index of the piece inside SCS game object
             :type piece_index: int
@@ -60,6 +52,8 @@ class SkinStream:
             :type vertex_pos: tuple
             :param bone_weights: bone weights dictonary where key is bone index and value is bone weight
             :type bone_weights: dict
+            :param bone_weights_sum: summary of weights of all the bones vertex is skinned to
+            :type bone_weights_sum: float
             """
 
             self.__bone_weights = OrderedDict()
@@ -67,12 +61,10 @@ class SkinStream:
 
             self.__position = vertex_pos
 
-            weight_sum = self.__get_weight_sum__(bone_weights)
-
             # normalize if sum of weights is bigger than one
-            if weight_sum > 1:
+            if bone_weights_sum > 1:
                 for bone_indx in bone_weights.keys():
-                    self.__bone_weights[bone_indx] = bone_weights[bone_indx] / weight_sum
+                    self.__bone_weights[bone_indx] = bone_weights[bone_indx] / bone_weights_sum
             else:
                 for bone_indx in bone_weights.keys():
                     self.__bone_weights[bone_indx] = bone_weights[bone_indx]

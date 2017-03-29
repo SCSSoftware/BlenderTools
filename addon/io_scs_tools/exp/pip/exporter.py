@@ -114,7 +114,7 @@ def __get_trigger_point__(pip_trigger_points, locator_name):
     return pip_trigger_points[locator_name]
 
 
-def execute(dirpath, filename, prefab_locator_list, offset_matrix, used_terrain_points):
+def execute(dirpath, filename, prefab_locator_list, offset_matrix, used_parts, used_terrain_points):
     """Exports PIP file from given locator list.
 
     :param prefab_locator_list:
@@ -125,6 +125,8 @@ def execute(dirpath, filename, prefab_locator_list, offset_matrix, used_terrain_
     :type filename: str
     :param offset_matrix: offset matrix for locators
     :type offset_matrix: mathutils.Matrix
+    :param used_parts: parts transitional structure for storing used parts inside this PIP export
+    :type used_parts: io_scs_tools.exp.transition_structs.parts.PartsTrans
     :param used_terrain_points: terrain points transitional structure for accessing terrain points stored during PIM export
     :type used_terrain_points: io_scs_tools.exp.transition_structs.terrain_points.TerrainPntsTrans
     :return: True if successfull; otherwise False
@@ -274,7 +276,7 @@ def execute(dirpath, filename, prefab_locator_list, offset_matrix, used_terrain_
         """:type: io_scs_tools.properties.object.ObjectSCSTools"""
 
         # create sign and set properties
-        sign = Sign(locator.name, locator_scs_props.scs_part)
+        sign = Sign(locator.name, used_parts.ensure_part(locator))
 
         pos, rot, scale = _get_scs_transformation_components(offset_matrix.inverted() * locator.matrix_world)
         sign.set_position(pos)

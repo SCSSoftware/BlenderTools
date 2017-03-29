@@ -123,44 +123,31 @@ def _fill_part_sections(locator_list, used_parts):
     :rtype: list
     """
 
-    parts = []
     locator_parts = {}
     for locator_i, locator in enumerate(locator_list):
-        scs_part = locator.scs_props.scs_part
+        scs_part = used_parts.ensure_part(locator)
 
         if scs_part not in locator_parts:
             locator_parts[scs_part] = [locator_i]
         else:
             locator_parts[scs_part].append(locator_i)
 
-        if scs_part not in parts:
-            parts.append(scs_part)
-
     # PART SECTIONS
     ordered_part_sections = []
     for part_name in used_parts.get_as_list():
 
-        piece_count = 0
-        pieces = None
         locator_count = 0
+        pieces = None  # just make zero pieces as we are not using that in PIC
+        piece_count = 0
+
+        # LOCATOR COUNT
+        if part_name in locator_parts:
+            locator_count = len(locator_parts[part_name])
+        # LOCATORS
         locators = None
-
-        # fill up part data from PIC data
-        if part_name in parts:
-
-            # PIECE COUNT
-            piece_count = 0
-            # PIECES
-            pieces = None
-
-            # LOCATOR COUNT
-            if part_name in locator_parts:
-                locator_count = len(locator_parts[part_name])
-            # LOCATORS
-            locators = None
-            if part_name in locator_parts:
-                if locator_parts[part_name]:
-                    locators = locator_parts[part_name]
+        if part_name in locator_parts:
+            if locator_parts[part_name]:
+                locators = locator_parts[part_name]
 
         # MAKE SECTION
         part_section = _SectionData("Part")

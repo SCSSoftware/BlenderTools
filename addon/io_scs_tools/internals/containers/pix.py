@@ -32,7 +32,7 @@ def fast_check_for_pia_skeleton(pia_filepath, skeleton):
     """Check for the skeleton record in PIA file without parsing the whole file.
     It takes filepath and skeleton name (string) and returns True if the skeleton
     record in the file is the same as skeleton name provided, otherwise False."""
-    file = open(pia_filepath, 'r')
+    file = open(pia_filepath, mode="r", encoding="utf8")
     while 1:
         data_type, line = _pix_parser.next_line(file)
         if data_type in ('EOF', 'ERR'):
@@ -58,7 +58,7 @@ def utter_check_for_pia_skeleton(pia_filepath, armature):
     """Skeleton analysis in PIA file with reasonably quick searching the whole file.
     It takes filepath and an Armature object and returns True if the skeleton in PIA file
     can be used for the skeleton in provided Armature object, otherwise it returns False."""
-    file = open(pia_filepath, 'r')
+    file = open(pia_filepath, mode="r", encoding="utf8")
     skeleton = None
     bone_matches = []
     while 1:
