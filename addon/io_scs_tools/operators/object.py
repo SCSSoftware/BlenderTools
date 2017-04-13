@@ -37,6 +37,7 @@ from io_scs_tools.operators.bases.selection import Selection as _BaseSelectionOp
 from io_scs_tools.operators.bases.view import View as _BaseViewOperator
 from io_scs_tools.properties.object import ObjectSCSTools as _ObjectSCSTools
 from io_scs_tools.utils.printout import lprint
+from io_scs_tools.utils import convert as _convert_utils
 from io_scs_tools.utils import object as _object_utils
 from io_scs_tools.utils import name as _name_utils
 from io_scs_tools.utils import material as _material_utils
@@ -1137,6 +1138,35 @@ class Locators:
                         obj.select = False
                 return {'FINISHED'}
 
+        class SelectLocatorsWithSameHookup(bpy.types.Operator):
+            bl_label = "Select Locators With Same Hookup"
+            bl_idname = "object.select_model_locators_with_same_hookup"
+            bl_description = "Select all visible model locators with the same hookup value as this one."
+
+            source_object = StringProperty(
+                default=""
+            )
+
+            def execute(self, context):
+                lprint("D " + self.bl_label + "...")
+
+                if self.source_object in bpy.data.objects:
+                    src_obj = bpy.data.objects[self.source_object]
+                else:
+                    src_obj = context.active_object
+
+                    if src_obj.scs_props.locator_type != "Model":
+                        self.report({"ERRROR"}, "Active object is not model locator, aborting selection!")
+                        return {"CANCELLED"}
+
+                for obj in context.visible_objects:
+                    if obj.scs_props.locator_type == 'Model' and obj.scs_props.locator_model_hookup == src_obj.scs_props.locator_model_hookup:
+                        obj.select = True
+                    else:
+                        obj.select = False
+
+                return {"FINISHED"}
+
         class ViewModelLocators(bpy.types.Operator, _BaseViewOperator):
             """Switch visibility of model locators."""
             bl_label = "Switch Visibility of Model Locators"
@@ -1150,6 +1180,46 @@ class Locators:
 
                 _object_utils.show_loc_type(self.get_objects(context), 'Model',
                                             hide_state=actual_hide_state, view_only=self.view_type == self.VIEWONLY)
+                return {'FINISHED'}
+
+        class FixHookups(bpy.types.Operator):
+            bl_label = "Fix SCS Hookup Names on Model Locators"
+            bl_idname = "object.scs_fix_model_locator_hookups"
+            bl_description = "Tries to convert existing pure hookup ids to valid hookup name (valid Hookup Library is required)."
+
+            def execute(self, context):
+                lprint("D " + self.bl_label + "...")
+
+                if not _path_utils.is_valid_hookup_library_rel_path():
+                    self.report({"ERROR"}, "Aborting hookup fix operator, 'Hookup Library' is not initialized (has invalid path)!")
+                    return {"CANCELLED"}
+
+                model_locators_count = 0
+                fixed_model_locators_count = 0
+                for obj in context.scene.objects:
+
+                    # ignore none model locator objects
+                    if obj.type != "EMPTY" or obj.scs_props.empty_object_type != "Locator" or obj.scs_props.locator_type != "Model":
+                        continue
+
+                    # ignore model locators with empty hookup or valid hookups
+                    if obj.scs_props.locator_model_hookup == "" or " : " in obj.scs_props.locator_model_hookup:
+                        continue
+
+                    model_locators_count += 1
+
+                    hookup_id = obj.scs_props.locator_model_hookup
+                    hookup_name = _convert_utils.hookup_id_to_hookup_name(hookup_id)
+
+                    # if id is different from returned name, it means hookup was properly found in library
+                    if hookup_id != hookup_name:
+                        obj.scs_props.locator_model_hookup = hookup_name
+                        fixed_model_locators_count += 1
+
+                message = "Successfully fixed %s/%s model locator with invalid hookups!" % (fixed_model_locators_count, model_locators_count)
+                lprint("I " + message)
+                self.report({"INFO"}, message)
+
                 return {'FINISHED'}
 
     class Prefab:

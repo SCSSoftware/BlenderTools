@@ -59,7 +59,7 @@ class Piece:
         return Piece.__global_triangle_count
 
     @staticmethod
-    def __calc_vertex_hash(index, uvs, rgba):
+    def __calc_vertex_hash(index, uvs, rgba, tangent):
         """Calculates vertex hash from original vertex index, uvs components and vertex color.
         :param index: original index from Blender mesh
         :type index: int
@@ -67,6 +67,8 @@ class Piece:
         :type uvs: list of (tuple | mathutils.Vector)
         :param rgba: rgba representation of vertex color in SCS values
         :type rgba: tuple | mathutils.Color
+        :param tangent: vertex tangent in SCS coordinates or none, if piece doesn't have tangents
+        :type tangent: tuple | None
         :return: calculated vertex hash
         :rtype: str
         """
@@ -78,6 +80,9 @@ class Piece:
             vertex_hash += frmt % uv[0] + frmt % uv[1]
 
         vertex_hash += frmt % rgba[0] + frmt % rgba[1] + frmt % rgba[2] + frmt % rgba[3]
+
+        if tangent:
+            vertex_hash += frmt % tangent[0] + frmt % tangent[1] + frmt % tangent[2] + frmt % tangent[3]
 
         return vertex_hash
 
@@ -140,16 +145,20 @@ class Piece:
         :type normal: tuple | mathutils.Vector
         :param uvs: list of uvs used on vertex (each uv must be in SCS coordinates)
         :type uvs: list of (tuple | mathutils.Vector)
+        :param uvs_aliases: list of uv aliases names per uv layer
+        :type uvs_aliases: list[list[str]]
         :param rgba: rgba representation of vertex color in SCS values
         :type rgba: tuple | mathutils.Color
+        :param tangent: tuple representation of vertex tangent in SCS values or None if piece doesn't have tangents
+        :type tangent: tuple | None
         :return: vertex index inside piece streams ( use it for adding triangles )
         :rtype: int
         """
 
-        vertex_hash = self.__calc_vertex_hash(vert_index, uvs, rgba)
+        vertex_hash = self.__calc_vertex_hash(vert_index, uvs, rgba, tangent)
 
         # save vertex if the vertex with the same properties doesn't exists yet in streams
-        if not vertex_hash in self.__vertices_hash:
+        if vertex_hash not in self.__vertices_hash:
 
             stream = self.__streams[Stream.Types.POSITION]
             stream.add_entry(position)
@@ -194,6 +203,9 @@ class Piece:
 
     def get_index(self):
         return self.__index
+
+    def get_vertex_count(self):
+        return self.__streams[Stream.Types.POSITION].get_size()
 
     def get_as_section(self):
         """Gets piece represented with SectionData structure class.

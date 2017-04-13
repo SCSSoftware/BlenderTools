@@ -95,6 +95,8 @@ class Show3DViewReport(bpy.types.Operator):
     """Used for saving message inside class to be able to retrieve it on open gl draw."""
     __static_progress_message_l = []
     """Used for saving progress message inside class to be able to retrieve it on open gl draw."""
+    __static_abort = False
+    """Used to propage abort message to all instances, so when abort is requested all instances will kill itself."""
 
     esc_abort = 0
     """Used for staging ESC key press in operator:
@@ -215,6 +217,10 @@ class Show3DViewReport(bpy.types.Operator):
 
     def modal(self, context, event):
 
+        # if global abort was requested finish this modal operator instance
+        if Show3DViewReport.__static_abort:
+            return {'FINISHED'}
+
         # if operator doesn't have controls, then it can not be cancelled by user,
         # so we should simply pass trough
         if not Show3DViewReport.has_controls():
@@ -296,6 +302,9 @@ class Show3DViewReport(bpy.types.Operator):
         _view3d_utils.tag_redraw_all_view3d()
 
     def invoke(self, context, event):
+
+        # propagate abort to all instances trough static variable
+        Show3DViewReport.__static_abort = self.abort
 
         # if abort is requested just cancel operator
         if self.abort:

@@ -131,6 +131,9 @@ class Export:
             2. if only root is selected -> select all children
             3. if root and some children are selected -> don't change selection
             """
+
+            lprint("D Gathering object which visibility should be altered for export ...")
+
             self.layers_visibilities = _view3d_utils.switch_layers_visibility([], True)
             self.last_active_obj = bpy.context.active_object
             self.altered_objs = []
@@ -163,11 +166,15 @@ class Export:
                 bpy.data.objects[obj_name].hide = False
                 bpy.data.objects[obj_name].select = True
 
+            lprint("D Gathering object visibility done!")
+
         def __del__(self):
             """Revert altered initial selection and layers visibilites
             """
 
-            # saftey check if it's not deleting last instance
+            lprint("D Recovering object visibility after export ...")
+
+            # safety check if it's not deleting last instance
             if hasattr(self, "altered_objs"):
                 i = 0
                 for obj_name in self.altered_objs:
@@ -184,6 +191,8 @@ class Export:
                     self.last_active_obj.select = not self.last_active_obj.select
 
                 _view3d_utils.switch_layers_visibility(self.layers_visibilities, False)
+
+            lprint("D Recovering object visibility done!")
 
         def execute_export(self, context, disable_local_view):
             """Actually executes export of current selected objects (bpy.context.selected_objects)

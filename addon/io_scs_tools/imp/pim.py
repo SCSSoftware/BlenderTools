@@ -21,6 +21,7 @@
 import bpy
 import bmesh
 import array
+from re import match
 from mathutils import Vector
 from bpy_extras import object_utils as bpy_object_utils
 from io_scs_tools.consts import Mesh as _MESH_consts
@@ -380,7 +381,7 @@ def _get_locator_properties(section):
         elif prop[0] == "Name":
             loc_name = prop[1]
         elif prop[0] == "Hookup":
-            loc_hookup = _search_hookup_name(prop[1])
+            loc_hookup = _convert_utils.hookup_id_to_hookup_name(prop[1])
         elif prop[0] == "Position":
             loc_position = prop[1]
         elif prop[0] == "Rotation":
@@ -457,24 +458,6 @@ def _get_skin_properties(section):
                 skin_streams.append(skin_stream)
 
     return skin_stream_cnt, skin_streams
-
-
-def _search_hookup_name(hookup_id):
-    """Takes a Hookup ID string and returns the whole Hookup Name
-    or original ID string if it doesn't exists in Hookup inventory.
-
-    :param hookup_id: Hookup ID (as saved in PIM)
-    :type hookup_id: str
-    :return: Hookup Name (as used in Blender UI)
-    :rtype: str
-    """
-    hookup_name = hookup_id
-    for rec in _get_scs_globals().scs_hookup_inventory:
-        rec_id = rec.name.split(':', 1)[1].strip()
-        if rec_id == hookup_id:
-            hookup_name = rec.name
-            break
-    return hookup_name
 
 
 def _create_5_piece(
@@ -1119,6 +1102,26 @@ def load_pim_file(context, filepath, terrain_points_trans=None, preview_model=Fa
     objects = []
     skinned_objects = []
     for obj_i in objects_data:
+
+        # PARTS - search part first so preview model can possibly ignore objects with prescribed variant
+        part_name = None
+        for part in parts_data:
+            if parts_data[part][0] is not None and obj_i in parts_data[part][0]:
+                part_name = part.lower()
+
+        if preview_model:
+
+            # ignore pieces with "coll" parts
+            if match(r'^coll([0-9]?|_.*)$', part_name):
+                lprint("I Ignoring piece with part collision part name %r for preview model!", (part_name,))
+                continue
+
+            # ignore pieces with shadow and none material effects
+            used_mat_effect = materials_data[objects_data[obj_i][2]][1]
+            if ".shadowonly" in used_mat_effect or ".fakeshadow" in used_mat_effect or used_mat_effect.startswith("eut2.none"):
+                lprint("I Ignoring piece with material having shadow or none effect for preview model!")
+                continue
+
         # print('objects_data[obj_i]: %s' % str(objects_data[obj_i]))
         if format_version in (5, 6):
             obj = _create_5_piece(
@@ -1179,12 +1182,8 @@ def load_pim_file(context, filepath, terrain_points_trans=None, preview_model=Fa
             lprint('I Created Object "%s"...', (obj.name,))
 
             # PARTS
-            for part in parts_data:
-                # print('parts_data["%s"]: %s' % (str(part), str(parts_data[part])))
-                if parts_data[part][0] is not None:
-                    if obj_i in parts_data[part][0]:
-                        # print('  obj_i: %s - part: %s - parts_data[part][0]: %s' % (obj_i, part, parts_data[part][0]))
-                        obj.scs_props.scs_part = part.lower()
+            if part_name:
+                obj.scs_props.scs_part = part_name
         else:
             lprint('E "%s" - Object creation FAILED!', piece_name)
 

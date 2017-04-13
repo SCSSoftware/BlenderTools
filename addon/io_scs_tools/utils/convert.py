@@ -346,3 +346,37 @@ def str_to_int(str_value):
         value = None
 
     return value
+
+
+def hookup_id_to_hookup_name(hookup_id):
+    """Takes a Hookup ID string and returns the whole Hookup Name
+    or original ID string if it doesn't exists in Hookup inventory.
+
+    :param hookup_id: Hookup ID (as saved in PIM)
+    :type hookup_id: str
+    :return: Hookup Name (as used in Blender UI)
+    :rtype: str
+    """
+    hookup_name = hookup_id
+    for rec in _get_scs_globals().scs_hookup_inventory:
+        rec_id = rec.name.split(':', 1)[1].strip()
+        if rec_id == hookup_id:
+            hookup_name = rec.name
+            break
+
+    return hookup_name
+
+
+def hookup_name_to_hookup_id(hookup_string):
+    """Takes hookup name from model locator hookup property and returns hookup id used for export.
+
+    :param hookup_string: hookup name string from model locator hookup property "flare_vehicle : flare.vehicle.high_beam"
+    :type hookup_string: str
+    :return: hookup id
+    :rtype: str | None
+    """
+    hookup = None
+    if hookup_string != "" and ":" in hookup_string:
+        hookup = hookup_string.split(':', 1)[1].strip()
+
+    return hookup

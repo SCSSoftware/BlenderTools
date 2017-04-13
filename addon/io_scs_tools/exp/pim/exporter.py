@@ -42,6 +42,7 @@ from io_scs_tools.utils import get_scs_globals as _get_scs_globals
 from io_scs_tools.utils.convert import change_to_scs_uv_coordinates as _change_to_scs_uv_coordinates
 from io_scs_tools.utils.convert import get_scs_transformation_components as _get_scs_transformation_components
 from io_scs_tools.utils.convert import scs_to_blend_matrix as _scs_to_blend_matrix
+from io_scs_tools.utils.convert import hookup_name_to_hookup_id as _hookup_name_to_hookup_id
 from io_scs_tools.utils.printout import lprint
 
 
@@ -74,7 +75,7 @@ def execute(dirpath, root_object, armature_object, skeleton_filepath, mesh_objec
 
     print("\n************************************")
     print("**      SCS PIM Exporter          **")
-    print("**      (c)2015 SCS Software      **")
+    print("**      (c)2017 SCS Software      **")
     print("************************************\n")
 
     scs_globals = _get_scs_globals()
@@ -102,6 +103,7 @@ def execute(dirpath, root_object, armature_object, skeleton_filepath, mesh_objec
 
     objects_with_default_material = {}  # stores object names which has no material set
     missing_mappings_data = {}  # indicates if material doesn't have set any uv layer for export
+    invalid_objects_for_tangents = set()  # stores object names which tangents calculation failed because of N-gons existence
 
     bones = skin = skin_stream = None
     if is_skin_used:
@@ -150,17 +152,34 @@ def execute(dirpath, root_object, armature_object, skeleton_filepath, mesh_objec
 
         # calculate transformation matrix for current object (root object transforms are always subtracted!)
         mesh_transf_mat = root_object.matrix_world.inverted() * mesh_obj.matrix_world
+        """:type: mathutils.Matrix"""
 
-        # calculate transformation matrices for this object
+        # calculate vertex position transformation matrix for this object
         pos_transf_mat = (Matrix.Scale(scs_globals.export_scale, 4) *
                           _scs_to_blend_matrix().inverted())
+        """:type: mathutils.Matrix"""
 
-        nor_transf_mat = _scs_to_blend_matrix().inverted()
+        # calculate vertex normals transformation matrix for this object
+        # NOTE: as normals will be read from none export prepared mesh we have to add rotation and scale from mesh transformation matrix
+        _, rot, scale = mesh_transf_mat.decompose()
+        scale_matrix_x = Matrix.Scale(scale.x, 3, Vector((1, 0, 0))).to_4x4()
+        scale_matrix_y = Matrix.Scale(scale.y, 3, Vector((0, 1, 0))).to_4x4()
+        scale_matrix_z = Matrix.Scale(scale.z, 3, Vector((0, 0, 1))).to_4x4()
+        nor_transf_mat = (_scs_to_blend_matrix().inverted() *
+                          rot.to_matrix().to_4x4() *
+                          scale_matrix_x * scale_matrix_y * scale_matrix_z)
+        """:type: mathutils.Matrix"""
+
+        tangent_transf_mat = _scs_to_blend_matrix().inverted()
+        """:type: mathutils.Matrix"""
 
         # get initial mesh and vertex groups for it
         mesh = _object_utils.get_mesh(mesh_obj)
-        _mesh_utils.bm_prepare_mesh_for_export(mesh, mesh_transf_mat, face_flip)
-        mesh.calc_normals_split()
+        _mesh_utils.bm_prepare_mesh_for_export(mesh, mesh_transf_mat)
+
+        # get extra mesh only for normals
+        mesh_for_normals = _object_utils.get_mesh(mesh_obj)
+        mesh_for_normals.calc_normals_split()
 
         missing_uv_layers = {}  # stores missing uvs specified by materials of this object
         missing_vcolor = False  # indicates if object is missing vertex color layer
@@ -197,7 +216,10 @@ def execute(dirpath, root_object, armature_object, skeleton_filepath, mesh_objec
                 if nmap_uv_layer:
 
                     if nmap_uv_layer in mesh.uv_layers:
-                        mesh.calc_tangents(uvmap=nmap_uv_layer)
+                        try:
+                            mesh.calc_tangents(uvmap=nmap_uv_layer)
+                        except RuntimeError:
+                            invalid_objects_for_tangents.add(mesh_obj.name)
                     else:
                         lprint("W Unable to calculate normal map tangents for object %r,\n\t   "
                                "as it's missing UV layer with name: %r, expect problems!",
@@ -206,8 +228,9 @@ def execute(dirpath, root_object, armature_object, skeleton_filepath, mesh_objec
             mesh_piece = mesh_pieces[pim_mat_name]
             """:type: Piece"""
 
-            piece_vert_indices = []
-            for loop_i in poly.loop_indices:
+            first_loop_pvert_i = None  # storing first loop piece vertex index for usage as first vertex of each triangle of the polygon
+            prev_tris_last_pvert_i = None  # storing last piece vertex index for usage as second vertex of each next triangle of the polygon
+            for i, loop_i in enumerate(poly.loop_indices):
 
                 loop = mesh.loops[loop_i]
                 """:type: bpy.types.MeshLoop"""
@@ -218,7 +241,8 @@ def execute(dirpath, root_object, armature_object, skeleton_filepath, mesh_objec
                 position = tuple(pos_transf_mat * mesh.vertices[vert_i].co)
 
                 # 2. normal -> loop.normal -> calc_normals_split() has to be called before
-                normal = nor_transf_mat * loop.normal
+                # NOTE: we are using normals from original mesh
+                normal = nor_transf_mat * mesh_for_normals.loops[loop_i].normal
                 normal = tuple(Vector(normal).normalized())
 
                 # 3. uvs -> uv_lay = mesh.uv_layers[0].data; uv_lay[loop_i].uv
@@ -277,18 +301,17 @@ def execute(dirpath, root_object, armature_object, skeleton_filepath, mesh_objec
 
                 # 5. tangent -> loop.tangent; loop.bitangent_sign -> calc_tangents() has to be called before
                 if pim_materials[pim_mat_name].get_nmap_uv_name():  # calculate tangents only if needed
-                    tangent = tuple(nor_transf_mat * loop.tangent)
+                    tangent = tuple(tangent_transf_mat * loop.tangent)
                     tangent = tuple(Vector(tangent).normalized())
                     tangent = (tangent[0], tangent[1], tangent[2], loop.bitangent_sign)
                 else:
                     tangent = None
 
-                # save internal vertex index to array to be able to construct triangle afterwards
+                # 6. There we go, vertex data collected! Now create internal vertex index, for triangle and skin stream construction
                 piece_vert_index = mesh_piece.add_vertex(vert_i, position, normal, uvs, uvs_aliases, vcol, tangent)
-                piece_vert_indices.append(piece_vert_index)
 
+                # 7. Get skinning data for vertex and save it to skin stream
                 if is_skin_used:
-                    # get skinning data for vertex and save it to skin stream
                     bone_weights = {}
                     bone_weights_sum = 0
                     for v_group_entry in mesh.vertices[vert_i].groups:
@@ -307,7 +330,33 @@ def execute(dirpath, root_object, armature_object, skeleton_filepath, mesh_objec
                     if bone_weights_sum <= 0:
                         missing_skinned_verts.add(vert_i)
 
-                # save to terrain points storage if present in correct vertex group
+                # 8. Triangle construction!
+                #
+                #    We are using totally naive method for triangulation, taking polygon loops one by one
+                #    and once we have enough vertices, we create triangle.
+                #
+                if i < 2:  # on start only save first two loops piece vertex indices
+
+                    if i == 0:
+                        first_loop_pvert_i = piece_vert_index
+                    else:
+                        prev_tris_last_pvert_i = piece_vert_index
+
+                else:  # each next loop requires triangle creation
+
+                    # 1. construct vertices of triangle:
+                    tris_pvert_indices = [first_loop_pvert_i, prev_tris_last_pvert_i, piece_vert_index]
+
+                    # 2. save current piece vertex index as last triangle vertex for possible next triangles
+                    prev_tris_last_pvert_i = piece_vert_index
+
+                    # 3. Triangle creation, at last!
+                    if face_flip:
+                        mesh_piece.add_triangle(tuple(tris_pvert_indices))
+                    else:
+                        mesh_piece.add_triangle(tuple(tris_pvert_indices[::-1]))  # yep it's weird but it simply works vice versa
+
+                # Addition - Terrain Points: save vertex to terrain points storage, if present in correct vertex group
                 for group in mesh.vertices[vert_i].groups:
 
                     # if current object doesn't have vertex group found in mesh data, then ignore that group
@@ -348,10 +397,9 @@ def execute(dirpath, root_object, armature_object, skeleton_filepath, mesh_objec
                                 used_terrain_points.add(variant_i, node_index, position, normal)
                                 break
 
-            mesh_piece.add_triangle(tuple(piece_vert_indices[::-1]))  # invert indices because of normals flip
-
         # free normals calculations
         _mesh_utils.cleanup_mesh(mesh)
+        _mesh_utils.cleanup_mesh(mesh_for_normals)
 
         # create part if it doesn't exists yet
         part_name = used_parts.ensure_part(mesh_obj)
@@ -360,6 +408,12 @@ def execute(dirpath, root_object, armature_object, skeleton_filepath, mesh_objec
 
         mesh_pieces = mesh_pieces.values()
         for piece in mesh_pieces:
+
+            # now as pieces are created we can check for it's flaws
+            if piece.get_vertex_count() > 65536:
+                lprint("E Object %r has exceeded maximum vertex count (65536), expect errors during conversion!",
+                       (mesh_obj.name,))
+
             # put pieces of current mesh to global list
             pim_pieces.append(piece)
 
@@ -370,7 +424,7 @@ def execute(dirpath, root_object, armature_object, skeleton_filepath, mesh_objec
         # report missing data for each object
         if len(missing_uv_layers) > 0:
             for uv_lay_name in missing_uv_layers:
-                lprint("W Object '%s' is missing UV layer '%s' specified by materials: %s\n",
+                lprint("W Object %r is missing UV layer %r specified by materials: %r",
                        (mesh_obj.name, uv_lay_name, missing_uv_layers[uv_lay_name]))
         if missing_vcolor:
             lprint("W Object %r is missing vertex color layer with name %r! Default RGB color will be exported (0.5, 0.5, 0.5)!",
@@ -391,6 +445,11 @@ def execute(dirpath, root_object, armature_object, skeleton_filepath, mesh_objec
         lprint("W Some objects don't use any material. Default material and UV mapping is used on them:\n\t   %s",
                (list(objects_with_default_material.keys()),))
 
+    if len(invalid_objects_for_tangents) > 0:
+        lprint("E N-gons present in some objects, thus normal map tangent calculation failed.\n\t   "
+               "Visualization in game will be distorted for this objects:\n\t   %s",
+               (list(invalid_objects_for_tangents),))
+
     # create locators data sections
     for loc_obj in model_locators:
 
@@ -403,15 +462,14 @@ def execute(dirpath, root_object, armature_object, skeleton_filepath, mesh_objec
 
         name = _name_utils.tokenize_name(loc_obj.name)
         hookup_string = loc_obj.scs_props.locator_model_hookup
-        if hookup_string != "" and ":" in hookup_string:
-            hookup = hookup_string.split(':', 1)[1].strip()
-        else:
-            if hookup_string != "":
-                lprint("W The Hookup %r has no expected value!", hookup_string)
-            hookup = None
+        hookup_id = None
+        if hookup_string != "":
+            hookup_id = _hookup_name_to_hookup_id(hookup_string)
+            if hookup_id is None:
+                lprint("W Model locator %r has unexpected hookup value %r.", (loc_obj.name, loc_obj.scs_props.locator_model_hookup))
 
         # create locator object for export
-        locator = Locator(len(pim_locators), name, hookup)
+        locator = Locator(len(pim_locators), name, hookup_id)
         locator.set_position(pos)
         locator.set_rotation(qua)
         locator.set_scale(sca)

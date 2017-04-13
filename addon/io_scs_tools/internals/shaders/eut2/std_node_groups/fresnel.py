@@ -67,19 +67,19 @@ def __create_fresnel_group__():
     subtract_dot_n = fresnel_g.nodes.new("ShaderNodeMath")
     subtract_dot_n.location = (185 * 2, 100)
     subtract_dot_n.operation = "SUBTRACT"
-    subtract_dot_n.use_clamp = True
+    subtract_dot_n.use_clamp = False
     subtract_dot_n.inputs[0].default_value = 1.0
 
     mult_subtract_n = fresnel_g.nodes.new("ShaderNodeMath")
     mult_subtract_n.location = (185 * 3, 50)
     mult_subtract_n.operation = "MULTIPLY"
-    mult_subtract_n.use_clamp = True
+    mult_subtract_n.use_clamp = False
     mult_subtract_n.inputs[0].default_value = 1.0
 
     add_mult_n = fresnel_g.nodes.new("ShaderNodeMath")
     add_mult_n.location = (185 * 4, 0)
     add_mult_n.operation = "ADD"
-    add_mult_n.use_clamp = True
+    add_mult_n.use_clamp = False
     add_mult_n.inputs[0].default_value = 1.0
 
     # group links

@@ -451,18 +451,23 @@ def bm_delete_loose(mesh):
     bm.free()
 
 
-def bm_prepare_mesh_for_export(mesh, transformation_matrix, flip=False):
+def bm_prepare_mesh_for_export(mesh, transformation_matrix, triangulate=False, flip=False):
     """Triangulates given mesh with bmesh module. Data are then saved back into original mesh!
     :param mesh: mesh data block to be triangulated and transformed
     :type mesh: bpy.types.Mesh
     :param transformation_matrix: transformation matrix which should be applied to mesh (usually root.matrix_world.inverted * obj.matrix_world)
     :type transformation_matrix: mathutils.Matrix
+    :param triangulate: flag indicating if triangulation should be executed
+    :type triangulate: bool
     :param flip: flag indicating if faces vertex order should be flipped
     :type flip: bool
     """
     bm = bmesh.new()
     bm.from_mesh(mesh)
-    bmesh.ops.triangulate(bm, faces=bm.faces)
+
+    if triangulate:
+        bmesh.ops.triangulate(bm, faces=bm.faces)
+
     bmesh.ops.transform(bm, matrix=transformation_matrix, verts=bm.verts)
 
     if flip:

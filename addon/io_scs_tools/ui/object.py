@@ -111,6 +111,8 @@ def _draw_locator_panel(layout, context, scene, obj, enabled=True):
             row = col2.row(align=True)
             props = row.operator('scene.scs_reload_library', icon='FILE_REFRESH', text="")
             props.library_path_attr = "hookup_library_rel_path"
+            props = row.operator("object.select_model_locators_with_same_hookup", icon="ZOOM_SELECTED", text="")
+            props.source_object = obj.name
             row.prop_search(obj.scs_props, 'locator_model_hookup', _get_scs_globals(), 'scs_hookup_inventory', text="")
             # (MODEL) LOCATOR PREVIEW PANEL
             _draw_locator_preview_panel(layout_box, obj)

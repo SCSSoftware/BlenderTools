@@ -73,6 +73,7 @@ class Common:
                 if not mat.node_tree:
                     continue
 
+                # also check none blender tools materials just to remove possible nodes usage of our groups
                 if mat.scs_props.active_shader_preset_name == "<none>":
 
                     nodes_to_remove = []
@@ -113,8 +114,10 @@ class Common:
                 bpy.data.node_groups.remove(bpy.data.node_groups[ng_name], do_unlink=True)
 
             # 4. finally set preset to material again, which will update nodes and possible input interface changes
+            scs_roots = _object_utils.gather_scs_roots(bpy.data.objects)
             for mat in bpy.data.materials:
 
+                # ignore none blender tools materials
                 if mat.scs_props.active_shader_preset_name == "<none>":
                     continue
 
@@ -129,6 +132,11 @@ class Common:
 
                 if preset_section:
                     _material_utils.set_shader_data_to_material(mat, preset_section)
+
+                    # sync shader types on all scs roots by updating looks on them
+                    # without this call we might end up with outdated looks raising errors once user will switch to them
+                    for scs_root in scs_roots:
+                        _looks.update_look_from_material(scs_root, mat, True)
 
             return {'FINISHED'}
 
