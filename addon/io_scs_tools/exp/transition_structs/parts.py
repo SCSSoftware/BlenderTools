@@ -52,6 +52,14 @@ class PartsTrans:
             lprint("E Parts can't be properly constructed, 'defaultpart' will be used for export!\n\t   "
                    "However issue should be addressed to developer...")
 
+    def count(self):
+        """Number of currently stored parts in transitional structure.
+
+        :return: number of currently stored parts
+        :rtype: int
+        """
+        return len(self.get_as_list())
+
     def is_present(self, part_name):
         """Tells if given part is present in storage.
 

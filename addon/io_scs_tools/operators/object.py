@@ -811,7 +811,7 @@ class ModelObjects:
         bl_idname = "object.scs_geometry_check"
         bl_description = "Searches selected objects for degenerated polygons which should be removed before exporting for game!"
 
-        EPSILON = 0.0005 * 0.01
+        EPSILON = 0.001 * 0.01
         """Epsilon taken from maya tools which is for centimeters. So we have to multiply it with 0.01 to get to blender units aka meters."""
 
         @classmethod
@@ -1419,7 +1419,7 @@ class Locators:
                     for sibling in _object_utils.get_siblings(node_loc_obj):
 
                         # ignore none mesh siblings or hidden siblings if previewing only visible
-                        if sibling.type != "MESH" or (not self.preview_all and sibling.hide):
+                        if sibling.type != "MESH" or (not self.preview_all and (sibling.hide or sibling not in context.visible_objects)):
                             continue
 
                         for vertex_group in sibling.vertex_groups:

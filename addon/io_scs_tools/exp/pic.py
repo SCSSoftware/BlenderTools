@@ -249,13 +249,15 @@ def _sort_collision_locators(collision_locator_list):
     return box_coll_locators, sphere_coll_locators, capsule_coll_locators, cylinder_coll_locators, convex_coll_locators
 
 
-def export(collision_locator_list, filepath, filename, used_parts):
+def export(collision_locator_list, filepath, name_suffix, filename, used_parts):
     """Exports PIC colliders
 
     :param collision_locator_list:
     :type collision_locator_list:
     :param filepath:
     :type filepath:
+    :param name_suffix: file name suffix
+    :type name_suffix: str
     :param filename:
     :type filename:
     :param used_parts: parts transitional structure for storing used parts inside this PIC export
@@ -281,7 +283,7 @@ def export(collision_locator_list, filepath, filename, used_parts):
     part_sections = _fill_part_sections(collision_locator_list, used_parts)
     collision_locator_sections = _fill_collision_locator_sections(collision_locator_list)
     global_section = _fill_global_section(len_vertices, len_faces, materials,
-                                          len(piece_sections), len(part_sections), len(collision_locator_sections))
+                                          len(piece_sections), used_parts.count(), len(collision_locator_sections))
 
     # DATA ASSEMBLING
     pic_container = [header_section, global_section]
@@ -299,7 +301,7 @@ def export(collision_locator_list, filepath, filename, used_parts):
 
     # FILE EXPORT
     ind = "    "
-    pic_filepath = str(filepath + ".pic")
+    pic_filepath = str(filepath + ".pic" + name_suffix)
     result = _pix_container.write_data_to_file(pic_container, pic_filepath, ind)
 
     # print("************************************")

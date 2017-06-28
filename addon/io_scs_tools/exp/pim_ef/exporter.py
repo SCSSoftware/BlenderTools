@@ -16,7 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2013-2014: SCS Software
+# Copyright (C) 2017: SCS Software
 
 import os
 import collections
@@ -25,15 +25,15 @@ from mathutils import Matrix, Vector
 from io_scs_tools.consts import Mesh as _MESH_consts
 from io_scs_tools.consts import Operators as _OP_consts
 from io_scs_tools.consts import PrefabLocators as _PL_consts
-from io_scs_tools.exp.pim.header import Header
-from io_scs_tools.exp.pim.globall import Globall
-from io_scs_tools.exp.pim.material import Material
-from io_scs_tools.exp.pim.piece import Piece
-from io_scs_tools.exp.pim.part import Part
-from io_scs_tools.exp.pim.locator import Locator
-from io_scs_tools.exp.pim.bones import Bones
-from io_scs_tools.exp.pim.skin import Skin
-from io_scs_tools.exp.pim.skin import SkinStream
+from io_scs_tools.exp.pim_ef.header import Header
+from io_scs_tools.exp.pim_ef.globall import Globall
+from io_scs_tools.exp.pim_ef.material import Material
+from io_scs_tools.exp.pim_ef.piece import Piece
+from io_scs_tools.exp.pim_ef.part import Part
+from io_scs_tools.exp.pim_ef.locator import Locator
+from io_scs_tools.exp.pim_ef.bones import Bones
+from io_scs_tools.exp.pim_ef.skin import Skin
+from io_scs_tools.exp.pim_ef.skin import SkinStream
 from io_scs_tools.internals.containers import pix as _pix_container
 from io_scs_tools.utils import mesh as _mesh_utils
 from io_scs_tools.utils import name as _name_utils
@@ -42,7 +42,6 @@ from io_scs_tools.utils import get_scs_globals as _get_scs_globals
 from io_scs_tools.utils.convert import change_to_scs_uv_coordinates as _change_to_scs_uv_coordinates
 from io_scs_tools.utils.convert import get_scs_transformation_components as _get_scs_transformation_components
 from io_scs_tools.utils.convert import scs_to_blend_matrix as _scs_to_blend_matrix
-from io_scs_tools.utils.convert import hookup_name_to_hookup_id as _hookup_name_to_hookup_id
 from io_scs_tools.utils.printout import lprint
 
 
@@ -76,13 +75,13 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
     """
 
     print("\n************************************")
-    print("**      SCS PIM Exporter          **")
+    print("**      SCS PIM.EF Exporter      **")
     print("**      (c)2017 SCS Software      **")
     print("************************************\n")
 
     scs_globals = _get_scs_globals()
 
-    format_version = 5
+    format_version = 1
 
     is_skin_used = (armature_object and root_object.scs_props.scs_root_animated == "anim")
 
@@ -100,42 +99,23 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
 
     objects_with_default_material = {}  # stores object names which has no material set
     missing_mappings_data = {}  # indicates if material doesn't have set any uv layer for export
-    invalid_objects_for_tangents = set()  # stores object names which tangents calculation failed because of N-gons existence
 
     bones = skin = skin_stream = None
     if is_skin_used:
-
-        invalid_bone_names = set()  # set for saving bones with invalid names, they are used for reporting to user
-
         # create bones data section
         bones = Bones()
         for bone in armature_object.data.bones:
             bones.add_bone(bone.name)
             used_bones.add(bone.name)
 
-            # do bones name checks
-            if _name_utils.tokenize_name(bone.name) != bone.name:
-                invalid_bone_names.add(bone.name)
-
         # create skin data section
         skin_stream = SkinStream(SkinStream.Types.POSITION)
         skin = Skin(skin_stream)
 
-        # report invalid bone names
-        if len(invalid_bone_names) > 0:
-            lprint("W Invalid bone names detected, max. length of valid bone name is 12 and must consists from [a-z, 0-9 and _ ] characters.\n\t   "
-                   "Conversion will generalize names, however expect problems by re-import! List of invalid bone names for %r:\n\t   "
-                   "%r",
-                   (armature_object.name, list(invalid_bone_names)))
-
     # create mesh object data sections
     for mesh_obj in mesh_objects:
 
-        lprint("I Preparing mesh object: %r ...", (mesh_obj.name,))
-
         vert_groups = mesh_obj.vertex_groups
-
-        mesh_pieces = collections.OrderedDict()
 
         # calculate faces flip state from all ancestors of current object
         scale_sign = 1
@@ -147,7 +127,9 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
 
             parent = parent.parent
 
-        face_flip = scale_sign < 0
+        winding_order = 1
+        if scale_sign < 0:
+            winding_order = -1
 
         # calculate transformation matrix for current object (root object transforms are always subtracted!)
         mesh_transf_mat = root_object.matrix_world.inverted() * mesh_obj.matrix_world
@@ -169,15 +151,12 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
                           scale_matrix_x * scale_matrix_y * scale_matrix_z)
         """:type: mathutils.Matrix"""
 
-        tangent_transf_mat = _scs_to_blend_matrix().inverted()
-        """:type: mathutils.Matrix"""
-
-        # get initial mesh & extra copy of the mesh for normals
+        # get initial mesh and vertex groups for it
         mesh = _object_utils.get_mesh(mesh_obj)
-        mesh_for_normals = mesh.copy()
+        _mesh_utils.bm_prepare_mesh_for_export(mesh, mesh_transf_mat)
 
-        # prepare meshes
-        faces_mapping = _mesh_utils.bm_prepare_mesh_for_export(mesh, mesh_transf_mat, triangulate=True)
+        # get extra mesh only for normals
+        mesh_for_normals = _object_utils.get_mesh(mesh_obj)
         mesh_for_normals.calc_normals_split()
 
         missing_uv_layers = {}  # stores missing uvs specified by materials of this object
@@ -186,6 +165,9 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
         missing_skinned_verts = set()  # indicates if object is having only partial skin, which is not allowed in our models
         has_unnormalized_skin = False  # indicates if object has vertices which bones weight sum is smaller then one
 
+        hard_edges = set()
+        mesh_piece = Piece(len(pim_pieces))
+        """:type: Piece"""
         for poly in mesh.polygons:
 
             mat_index = poly.material_index
@@ -207,65 +189,39 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
                 pim_materials[pim_mat_name] = pim_material
                 used_materials.add(pim_mat_name, material)
 
-            # create new piece if piece with this material doesn't exists yet -> split to pieces by material
-            if pim_mat_name not in mesh_pieces:
-                mesh_pieces[pim_mat_name] = Piece(len(pim_pieces) + len(mesh_pieces), pim_materials[pim_mat_name])
-
-                nmap_uv_layer = pim_materials[pim_mat_name].get_nmap_uv_name()
-                # if there is uv layer used for normal maps and that uv layer exists on mesh then calculate tangents on it otherwise report warning
-                if nmap_uv_layer:
-
-                    if nmap_uv_layer in mesh.uv_layers:
-                        try:
-                            mesh.calc_tangents(uvmap=nmap_uv_layer)
-                        except RuntimeError:
-                            invalid_objects_for_tangents.add(mesh_obj.name)
-                    else:
-                        lprint("W Unable to calculate normal map tangents for object %r,\n\t   "
-                               "as it's missing UV layer with name: %r, expect problems!",
-                               (mesh_obj.name, nmap_uv_layer))
-
-            mesh_piece = mesh_pieces[pim_mat_name]
-            """:type: Piece"""
-
-            # get polygon loop indices for normals depending on mapped triangulated face
-            if poly.index in faces_mapping:
-                normals_poly_loop_indices = list(mesh_for_normals.polygons[faces_mapping[poly.index]].loop_indices)
-            else:
-                normals_poly_loop_indices = list(mesh_for_normals.polygons[poly.index].loop_indices)
-
-            # vertex data
-            triangle_pvert_indices = []  # storing vertex indices for this polygon triangle
+            piece_vert_indices = []
+            vert_normals = []
+            vert_uvs = []
+            uvs_aliases = []
+            uvs_names = []
+            vert_rgbas = []
+            tex_coord_alias_map = pim_materials[pim_mat_name].get_tex_coord_map()
             for loop_i in poly.loop_indices:
 
                 loop = mesh.loops[loop_i]
                 """:type: bpy.types.MeshLoop"""
                 vert_i = loop.vertex_index
 
+                # as we are already looping first find out if edge is hard and put it to set
+                if mesh.edges[loop.edge_index].use_edge_sharp:
+                    hard_edges.add(loop.edge_index)
+
                 # get data of current vertex
                 # 1. position -> mesh.vertices[loop.vertex_index].co
                 position = tuple(pos_transf_mat * mesh.vertices[vert_i].co)
 
-                # 2. normal -> mesh_for_normals.loops[loop_i].normal -> calc_normals_split() has to be called before
-                normal = (0, 0, 0)
-                for i, normals_poly_loop_i in enumerate(normals_poly_loop_indices):
-                    normal_loop = mesh_for_normals.loops[normals_poly_loop_i]
-
-                    # match by vertex index as triangle will for sure have three unique vertices
-                    if vert_i == normal_loop.vertex_index:
-                        normal = nor_transf_mat * normal_loop.normal
-                        normal = tuple(Vector(normal).normalized())
-                        del normals_poly_loop_indices[i]
-                        break
-                else:
-                    lprint("E Normals data gathering went wrong, expect corrupted mesh! Shouldn't happen...")
+                # 2. normal -> loop.normal -> calc_normals_split() has to be called before
+                normal = nor_transf_mat * mesh_for_normals.loops[loop_i].normal
+                normal = tuple(Vector(normal).normalized())
+                vert_normals.append(normal)
 
                 # 3. uvs -> uv_lay = mesh.uv_layers[0].data; uv_lay[loop_i].uv
                 uvs = []
+                uvs_names = []
                 uvs_aliases = []
-                tex_coord_alias_map = pim_materials[pim_mat_name].get_tex_coord_map()
                 if len(tex_coord_alias_map) < 1:  # no textures or none uses uv mapping in current material effect
                     uvs.append((0.0, 0.0))
+                    uvs_names.append("generated")
                     uvs_aliases.append(["_TEXCOORD0"])
 
                     # report missing mappings only on actual materials with textures using uv mappings
@@ -275,28 +231,22 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
 
                         if mesh_obj.name not in missing_mappings_data[material.name]:
                             missing_mappings_data[material.name][mesh_obj.name] = 1
-
                 else:
-                    for uv_lay_name in tex_coord_alias_map:
 
-                        if uv_lay_name not in mesh.uv_layers:
-                            uvs.append((0.0, 0.0))
+                    for uv_lay_name in mesh.uv_layers.keys():
 
-                            # properly report missing uv layers where name of uv layout is key and materials that misses it are values
-                            if uv_lay_name not in missing_uv_layers:
-                                missing_uv_layers[uv_lay_name] = []
-
-                            if pim_mat_name not in missing_uv_layers[uv_lay_name]:  # add material if not already there
-                                missing_uv_layers[uv_lay_name].append(pim_mat_name)
-                        else:
-                            uv_lay = mesh.uv_layers[uv_lay_name]
-                            uvs.append(_change_to_scs_uv_coordinates(uv_lay.data[loop_i].uv))
+                        uv_lay = mesh.uv_layers[uv_lay_name]
+                        uvs.append(_change_to_scs_uv_coordinates(uv_lay.data[loop_i].uv))
+                        uvs_names.append(uv_lay_name)
 
                         aliases = []
-                        for alias_index in tex_coord_alias_map[uv_lay_name]:
-                            aliases.append("_TEXCOORD" + str(alias_index))
+                        if uv_lay_name in tex_coord_alias_map:
+                            for alias_index in tex_coord_alias_map[uv_lay_name]:
+                                aliases.append("_TEXCOORD" + str(alias_index))
 
                         uvs_aliases.append(aliases)
+
+                vert_uvs.append(uvs)
 
                 # 4. vcol -> vcol_lay = mesh.vertex_colors[0].data; vcol_lay[loop_i].color
                 vcol_multi = mesh_obj.data.scs_props.vertex_color_multiplier
@@ -313,23 +263,14 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
                 else:
                     alpha = mesh.vertex_colors[_MESH_consts.default_vcol + _MESH_consts.vcol_a_suffix].data[loop_i].color
                     vcol += ((alpha[0] + alpha[1] + alpha[2]) / 3.0 * 2 * vcol_multi,)  # take avg of colors for alpha
+                vert_rgbas.append(vcol)
 
-                # 5. tangent -> loop.tangent; loop.bitangent_sign -> calc_tangents() has to be called before
-                if pim_materials[pim_mat_name].get_nmap_uv_name():  # calculate tangents only if needed
-                    tangent = tuple(tangent_transf_mat * loop.tangent)
-                    tangent = tuple(Vector(tangent).normalized())
-                    tangent = (tangent[0], tangent[1], tangent[2], loop.bitangent_sign)
-                else:
-                    tangent = None
+                # save internal vertex index to array to be able to construct triangle afterwards
+                piece_vert_index = mesh_piece.add_vertex(vert_i, position)
+                piece_vert_indices.append(piece_vert_index)
 
-                # 6. There we go, vertex data collected! Now create internal vertex index, for triangle and skin stream construction
-                piece_vert_index = mesh_piece.add_vertex(vert_i, position, normal, uvs, uvs_aliases, vcol, tangent)
-
-                # 7. Add vertex to triangle creation list
-                triangle_pvert_indices.append(piece_vert_index)
-
-                # 8. Get skinning data for vertex and save it to skin stream
                 if is_skin_used:
+                    # get skinning data for vertex and save it to skin stream
                     bone_weights = {}
                     bone_weights_sum = 0
                     for v_group_entry in mesh.vertices[vert_i].groups:
@@ -350,7 +291,7 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
                     elif bone_weights_sum < 1:
                         has_unnormalized_skin = True
 
-                # Addition - Terrain Points: save vertex to terrain points storage, if present in correct vertex group
+                # save to terrain points storage if present in correct vertex group
                 for group in mesh.vertices[vert_i].groups:
 
                     # if current object doesn't have vertex group found in mesh data, then ignore that group
@@ -391,40 +332,40 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
                                 used_terrain_points.add(variant_i, node_index, position, normal)
                                 break
 
-            # triangles
-            if face_flip:
-                mesh_piece.add_triangle(tuple(triangle_pvert_indices))
-            else:
-                mesh_piece.add_triangle(tuple(triangle_pvert_indices[::-1]))  # yep it's weird but it simply works vice versa
+            assert mesh_piece.add_face(pim_materials[pim_mat_name],
+                                       tuple(piece_vert_indices[::winding_order * -1]),  # invert indices because of conversion to scs system
+                                       tuple(vert_normals[::winding_order]),
+                                       tuple(vert_uvs[::winding_order]),
+                                       uvs_names,
+                                       uvs_aliases,
+                                       tuple(vert_rgbas[::winding_order]),
+                                       )
 
-        # free normals calculations
+        # as we captured all hard edges collect them now and put it into Piece
+        for hard_edge in hard_edges:
+            (vert1_i, vert2_i) = mesh.edges[hard_edge].vertices
+            assert mesh_piece.add_edge(vert1_i, vert2_i, blender_mesh_indices=True)
+
+        # free normals calculations and eventually remove mesh object
         _mesh_utils.cleanup_mesh(mesh)
         _mesh_utils.cleanup_mesh(mesh_for_normals)
 
         # create part if it doesn't exists yet
-        part_name = used_parts.ensure_part(mesh_obj)
+        part_name = mesh_obj.scs_props.scs_part
         if part_name not in pim_parts:
             pim_parts[part_name] = Part(part_name)
 
-        mesh_pieces = mesh_pieces.values()
-        for piece in mesh_pieces:
+        # put pieces of current mesh to global list
+        pim_pieces.append(mesh_piece)
 
-            # now as pieces are created we can check for it's flaws
-            if piece.get_vertex_count() > 65536:
-                lprint("E Object %r has exceeded maximum vertex count (65536), expect errors during conversion!",
-                       (mesh_obj.name,))
-
-            # put pieces of current mesh to global list
-            pim_pieces.append(piece)
-
-            # add pieces of current mesh to part
-            pim_part = pim_parts[part_name]
-            pim_part.add_piece(piece)
+        # add pieces of current mesh to part
+        pim_part = pim_parts[part_name]
+        pim_part.add_piece(mesh_piece)
 
         # report missing data for each object
         if len(missing_uv_layers) > 0:
             for uv_lay_name in missing_uv_layers:
-                lprint("W Object %r is missing UV layer %r specified by materials: %r",
+                lprint("W Object '%s' is missing UV layer '%s' specified by materials: %s\n",
                        (mesh_obj.name, uv_lay_name, missing_uv_layers[uv_lay_name]))
         if missing_vcolor:
             lprint("W Object %r is missing vertex color layer with name %r! Default RGB color will be exported (0.5, 0.5, 0.5)!",
@@ -449,11 +390,6 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
         lprint("W Some objects don't use any material. Default material and UV mapping is used on them:\n\t   %s",
                (list(objects_with_default_material.keys()),))
 
-    if len(invalid_objects_for_tangents) > 0:
-        lprint("E N-gons present in some objects, thus normal map tangent calculation failed.\n\t   "
-               "Visualization in game will be distorted for this objects:\n\t   %s",
-               (list(invalid_objects_for_tangents),))
-
     # create locators data sections
     for loc_obj in model_locators:
 
@@ -466,21 +402,23 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
 
         name = _name_utils.tokenize_name(loc_obj.name)
         hookup_string = loc_obj.scs_props.locator_model_hookup
-        hookup_id = None
-        if hookup_string != "":
-            hookup_id = _hookup_name_to_hookup_id(hookup_string)
-            if hookup_id is None:
-                lprint("W Model locator %r has unexpected hookup value %r.", (loc_obj.name, loc_obj.scs_props.locator_model_hookup))
+        if hookup_string != "" and ":" in hookup_string:
+            hookup = hookup_string.split(':', 1)[1].strip()
+        else:
+            if hookup_string != "":
+                lprint("W The Hookup %r has no expected value!", hookup_string)
+            hookup = None
 
         # create locator object for export
-        locator = Locator(len(pim_locators), name, hookup_id)
+        locator = Locator(len(pim_locators), name, hookup)
         locator.set_position(pos)
         locator.set_rotation(qua)
         locator.set_scale(sca)
 
         # create part if it doesn't exists yet
-        part_name = used_parts.ensure_part(loc_obj)
+        part_name = loc_obj.scs_props.scs_part
         if part_name not in pim_parts:
+            assert used_parts.is_present(part_name)
             pim_parts[part_name] = Part(part_name)
 
         # add locator to part
@@ -501,7 +439,7 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
 
     for part_name in used_parts.get_as_list():
 
-        # export all parts even empty ones used only in PIC and/or PIP
+        # export all parts even empty ones gathered from PIC and PIP
         if part_name in pim_parts:
             pim_container.append(pim_parts[part_name].get_as_section())
         else:

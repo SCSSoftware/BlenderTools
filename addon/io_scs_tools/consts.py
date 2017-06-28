@@ -443,3 +443,18 @@ class SCSLigthing:
 
     diffuse_lamp_name = ".scs_diffuse"
     specular_lamp_name = ".scs_specular"
+
+
+class PaintjobTools:
+    """Constants for paintjob tools.
+    """
+
+    uvs_name_2nd = "scs_paintjob_2nd"
+    """2nd uvs layer name used during unification on export"""
+    uvs_name_3rd = "scs_paintjob_3rd"
+    """3rd uvs layer name used during unification on export."""
+
+    model_refs_to_sii = ".scs_model_refs_to_sii_files"
+    """Name of the property for saving references paths to models inside a group data-block."""
+    export_tag_obj_name = ".scs_export_group"
+    """Name of the object inside the group which visibility tells us either group should be exported or no."""

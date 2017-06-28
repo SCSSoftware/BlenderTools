@@ -16,20 +16,30 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2013-2014: SCS Software
+# Copyright (C) 2013-2017: SCS Software
 
 import bpy
+import bmesh
 import os
 import subprocess
 from hashlib import sha1
 from sys import platform
-from bpy.props import StringProperty, CollectionProperty, EnumProperty, IntProperty, BoolProperty
+from time import time
+from bpy.props import StringProperty, CollectionProperty, EnumProperty, IntProperty, BoolProperty, FloatProperty, FloatVectorProperty
 from io_scs_tools.consts import ConvHlpr as _CONV_HLPR_consts
+from io_scs_tools.consts import Operators as _OP_consts
+from io_scs_tools.consts import PaintjobTools as _PT_consts
+from io_scs_tools.imp import pix as _pix_import
+from io_scs_tools.internals.structure import UnitData as _UnitData
+from io_scs_tools.internals.containers import sii as _sii_container
+from io_scs_tools.internals.containers.tobj import TobjContainer as _TobjContainer
+from io_scs_tools.utils import name as _name_utils
 from io_scs_tools.utils import object as _object_utils
 from io_scs_tools.utils import view3d as _view3d_utils
 from io_scs_tools.utils import path as _path_utils
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
 from io_scs_tools.utils.printout import lprint
+from io_scs_tools.utils.property import get_by_type as _get_bpy_prop
 from io_scs_tools.utils.property import get_filebrowser_display_type
 from io_scs_tools import exp as _export
 from io_scs_tools import imp as _import
@@ -214,8 +224,13 @@ class Export:
             elif export_scope == "scenes":
                 init_obj_list = tuple(bpy.data.objects)
 
+            # check extension for EF format and properly assign it to name suffix
+            ef_name_suffix = ""
+            if _get_scs_globals().export_output_type == "EF":
+                ef_name_suffix = ".ef"
+
             try:
-                result = _export.batch_export(self, init_obj_list)
+                result = _export.batch_export(self, init_obj_list, name_suffix=ef_name_suffix)
             except Exception as e:
 
                 result = {"CANCELLED"}
@@ -1359,4 +1374,1529 @@ class Log:
             bpy.data.texts.remove(text, do_unlink=True)
 
             self.report({'INFO'}, "Blender Tools log copied to clipboard!")
+            return {'FINISHED'}
+
+
+class PaintjobTools:
+    """
+    Wrapper class for better navigation in file
+    """
+
+    class ImportFromDataSII(bpy.types.Operator):
+        bl_label = "Import SCS Truck From data.sii"
+        bl_idname = "scene.scs_import_from_data_sii"
+        bl_description = ("Import all models having paintable parts of a truck (including upgrades)"
+                          "from choosen '/def/vehicle/truck/<brand.model>/data.sii' file.")
+        bl_options = set()
+
+        directory = StringProperty(
+            name="Import Truck",
+            subtype='DIR_PATH',
+        )
+        filepath = StringProperty(
+            name="Truck 'data.sii' filepath",
+            description="File path to truck 'data.sii",
+            subtype='FILE_PATH',
+        )
+        filter_glob = StringProperty(default="*.sii", options={'HIDDEN'})
+
+        start_time = None  # saving start time when initialize is called
+
+        # saving old settings from scs globals
+        old_import_pis = None
+        old_import_pia = None
+        old_import_pic = None
+        old_import_use_welding = None
+        old_scs_project_path = None
+
+        @staticmethod
+        def gather_model_paths(dir_path, unit_type, one_of_props):
+            """Checks all SII files from combine given base_path & sub_dir and gathers model paths from first unit instance.
+            Model path is taken from first found one of property inside unit instance.
+            If instance is not of given type, then empty set is returned.
+
+            :param dir_path: absolute directory path from which SII files should be search for model paths
+            :type dir_path: str
+            :param unit_type: type of the unit we are searching for in SII
+            :type unit_type: str
+            :param one_of_props: properties which are carrying model paths; algorithm always uses first found
+            :type one_of_props: iterable
+            :return: dictonary of found model paths where key is unique path and value for it is list of SII files where model was referenced from
+            :rtype: dict[str,list[str]]
+            """
+
+            model_paths = {}
+
+            if not os.path.isdir(dir_path):
+                return model_paths
+
+            for dir_file in os.listdir(dir_path):
+
+                curr_path = _path_utils.readable_norm(os.path.join(dir_path, dir_file))
+
+                if not os.path.isfile(curr_path):
+                    continue
+
+                if not curr_path.endswith(".sii"):
+                    continue
+
+                file_sii_container = _sii_container.get_data_from_file(curr_path)
+
+                if not _sii_container.has_valid_unit_instance(file_sii_container, unit_type=unit_type, one_of_props=one_of_props):
+                    lprint("D Validation failed on SII: %r", (_path_utils.readable_norm(curr_path),))
+                    continue
+
+                model_prop = None
+                for prop in one_of_props:
+                    model_prop = _sii_container.get_unit_property(file_sii_container, prop)
+
+                    if model_prop is not None:
+                        break
+
+                if model_prop is None:
+                    lprint("E Model can not be extracted from SII: %r", (_path_utils.readable_norm(curr_path),))
+                    continue
+
+                if model_prop[:-4] not in model_paths:
+                    model_paths[model_prop[:-4]] = set()
+
+                model_paths[model_prop[:-4]].add(curr_path)
+
+            return model_paths
+
+        @staticmethod
+        def import_and_clean_model(context, project_path, model_path):
+            """Imports model from given model absolute path and removes all useless none paintable stuff.
+            If no mesh remains in the model after cleaning, whole SCS Object is removed and None is returned.
+
+            :param context: blender context used in PIX importing
+            :type context: bpy.types.Context
+            :param project_path: project path that will be use as temporary SCS Project Path
+            :type project_path: str
+            :param model_path: absolute path to the model which should be imported
+            :type model_path: str
+            :return: SCS Root object of imported model
+            :rtype: bpy.types.Object
+            """
+
+            # internally change project path for the sake of texture loading, path will be reset in finalize method call
+            _get_scs_globals()["scs_project_path"] = project_path
+
+            # import model
+            _get_scs_globals().import_in_progress = True
+            _pix_import.load(context, model_path, suppress_reports=True)
+            _get_scs_globals().import_in_progress = False
+
+            curr_scs_root = context.active_object
+            curr_scs_root.hide = True
+
+            # remove useless stuff (none truckpaint meshes & all locators except model locators without hookup)
+            mesh_obj_count = 0
+            removed_mesh_obj_count = 0
+            for obj in curr_scs_root.children:
+
+                remove_object = False
+
+                if obj.type == "MESH":
+
+                    mesh_obj_count += 1
+
+                    if len(obj.material_slots) > 0 and obj.material_slots[0].material:
+                        if not obj.material_slots[0].material.scs_props.mat_effect_name.startswith("eut2.truckpaint"):
+                            remove_object = True
+                            removed_mesh_obj_count += 1
+                    else:
+                        remove_object = True
+                        removed_mesh_obj_count += 1
+
+                elif obj.type == "EMPTY" and obj.scs_props.empty_object_type == "Locator":
+
+                    if obj.scs_props.locator_type == "Model":
+                        if obj.scs_props.locator_model_hookup != "":
+                            remove_object = True
+                    else:
+                        remove_object = True
+
+                if remove_object:
+                    bpy.data.objects.remove(obj, do_unlink=True)
+                else:
+                    obj.hide = True
+
+            # if no mesh has left inside the model, then remove everything
+            if removed_mesh_obj_count >= mesh_obj_count:
+                for obj in curr_scs_root.children:
+                    bpy.data.objects.remove(obj, do_unlink=True)
+                bpy.data.objects.remove(curr_scs_root, do_unlink=True)
+                curr_scs_root = None
+
+            return curr_scs_root
+
+        @staticmethod
+        def add_model_to_group(scs_root, group_name_prefix, linked_to_defs=set()):
+            """Adds model to group so it can be distinguished amongs all other models.
+
+            :param scs_root: blender object representing SCS Root
+            :type scs_root: bpy.types.Object
+            :param group_name_prefix: prefix name for
+            :type group_name_prefix: str
+            :param linked_to_defs: set of the sii file paths where this model was defined
+            :type linked_to_defs: set[str]
+            """
+
+            i = -1
+            for variant in scs_root.scs_object_variant_inventory:
+
+                i += 1
+
+                bpy.ops.object.select_all(action="DESELECT")
+
+                override = bpy.context.copy()
+                override["active_object"] = scs_root  # operator searches for scs root from active object, so make sure context will be correct
+                bpy.ops.object.switch_variant_selection(override, select_type=_OP_consts.SelectionType.select, variant_index=i)
+
+                group = bpy.data.groups.new(group_name_prefix + " | " + variant.name)
+                mesh_objects_count = 0
+                for obj in scs_root.children:
+
+                    if not obj.select:
+                        continue
+
+                    if obj.type == "MESH":
+                        mesh_objects_count += 1
+
+                    override = bpy.context.copy()
+                    override['object'] = obj
+                    bpy.ops.object.group_link(override, group=group.name)
+
+                # ignore variant if no mesh objects inside
+                if mesh_objects_count <= 0:
+                    bpy.data.groups.remove(group, do_unlink=True)
+                    continue
+
+                group[_PT_consts.model_refs_to_sii] = list(linked_to_defs)
+
+                obj = bpy.data.objects.new(_PT_consts.export_tag_obj_name + "_" + str(len(bpy.data.groups)), None)
+                obj.scs_props.object_identity = obj.name
+                obj.location = (0.0, 0.0, 0.0)
+                obj.use_fake_user = True  # as we don't link object to the scene (we don't want user to interfere with it somehow)
+                obj.hide = True  # as all groups are hidden by default make sure to hide object (this prevents group to get exported accidentally)
+
+                override = bpy.context.copy()
+                override['object'] = obj
+                bpy.ops.object.group_link(override, group=group.name)
+
+        @staticmethod
+        def update_model_paths_dict(models_paths_dict, curr_models):
+            """Extends given dictonary with models given by second argument.
+
+            :param models_paths_dict: already collected model SII references where key is model path and value is existing list of SII references
+            :type models_paths_dict: dict[str|list[str]]
+            :param curr_models: current model SII references where key is model path and value is list of SII references
+            :type curr_models: dict[str|list[str]]
+            """
+            for curr_model in curr_models:
+                if curr_model in models_paths_dict:
+                    models_paths_dict[curr_model].update(curr_models[curr_model])
+                else:
+                    models_paths_dict[curr_model] = curr_models[curr_model]
+
+        def initalize(self):
+            """Initilize scs globals with custom import settings, as we don't nened animations, welding, collisions.
+            """
+
+            scs_globals = _get_scs_globals()
+
+            self.old_import_pis = scs_globals.import_pis_file
+            self.old_import_pia = scs_globals.import_pia_file
+            self.old_import_pic = scs_globals.import_pic_file
+            self.old_import_use_welding = scs_globals.import_use_welding
+            self.old_scs_project_path = scs_globals.scs_project_path
+
+            self.start_time = time()
+
+            scs_globals.import_pis_file = False
+            scs_globals.import_pia_file = False
+            scs_globals.import_pic_file = False
+            scs_globals.import_use_welding = False
+
+        def finalize(self):
+            """Restore scs globals settings to the state they were before.
+            """
+
+            scs_globals = _get_scs_globals()
+
+            scs_globals.import_pis_file = self.old_import_pis
+            scs_globals.import_pia_file = self.old_import_pia
+            scs_globals.import_pic_file = self.old_import_pic
+            scs_globals.import_use_welding = self.old_import_use_welding
+            scs_globals["scs_project_path"] = self.old_scs_project_path  # set internally so initialization is not triggered
+
+            lprint("\nI Import from 'data.sii' took: %0.3f sec" % (time() - self.start_time), report_errors=True, report_warnings=True)
+
+        def execute(self, context):
+
+            self.initalize()
+
+            dir_path = self.directory
+            data_sii_path = self.filepath
+            data_sii_container = _sii_container.get_data_from_file(data_sii_path)
+
+            # initial checkups
+            if not _sii_container.has_valid_unit_instance(data_sii_container, unit_type="accessory_truck_data", req_props=("fallback",)):
+                message = "Chosen file is not a valid truck 'data.sii' file!"
+                lprint("E " + message)
+                self.report({'ERROR'}, message)
+                self.finalize()
+                return {'CANCELLED'}
+
+            ##################################
+            #
+            # 1. collect all possible project paths
+            #
+            ##################################
+
+            # first find path of whole game project
+            game_project_path = dir_path
+            for _ in range(0, 4):  # we can simply go 4 dirs up, as def has to be properly placed /def/vehicle/truck/<brand.name>
+                game_project_path = _path_utils.readable_norm(os.path.join(game_project_path, os.pardir))
+
+            truck_sub_dir = os.path.relpath(dir_path, game_project_path)
+            game_project_path = os.path.join(game_project_path, os.pardir)
+
+            # if data.sii was inside dlc or mod we have to go up once more in filesystem level
+            if os.path.basename(game_project_path).startswith("dlc_") or os.path.basename(game_project_path).startswith("mod_"):
+                game_project_path = os.path.join(game_project_path, os.pardir)
+
+            # now as we have game project path, let's do real collecting
+            project_paths = []
+            for dir_entry in os.listdir(game_project_path):
+
+                # projects can not be files so ignore them
+                if os.path.isfile(os.path.join(game_project_path, dir_entry)):
+                    continue
+
+                if dir_entry == "base" or dir_entry.startswith("dlc_"):
+
+                    project_paths.append(_path_utils.readable_norm(os.path.join(game_project_path, dir_entry)))
+
+                elif dir_entry.startswith("mod_"):
+
+                    mod_dir = os.path.join(game_project_path, dir_entry)
+                    for dir_entry2 in os.listdir(mod_dir):
+
+                        # projects can not be files so ignore them
+                        if os.path.isfile(os.path.join(mod_dir, dir_entry)):
+                            continue
+
+                        if dir_entry2 == "base" or dir_entry2.startswith("dlc_"):
+                            project_paths.append(_path_utils.readable_norm(os.path.join(mod_dir, dir_entry2)))
+
+            # sort project paths in reverse to make sure base will be searched as last
+            project_paths = sorted(project_paths, reverse=True)
+
+            lprint("S Project paths (%s):" % len(project_paths))
+            for path in project_paths:
+                lprint("S %s" % _path_utils.readable_norm(path))
+
+            ##################################
+            #
+            # 2. import truck models
+            #
+            ##################################
+
+            # collect all models paths for truck chassis and cabins
+            truck_model_paths = {}  # holds list of SII files that each model was referenced from {KEY: model path, VALUE: list of SII paths}
+            for project_path in project_paths:
+
+                truck_def_dirpath = os.path.join(project_path, truck_sub_dir)
+
+                target_dirpath = os.path.join(truck_def_dirpath, "chassis")
+                curr_models = self.gather_model_paths(target_dirpath, "accessory_chassis_data", ("detail_model", "model"))
+                self.update_model_paths_dict(truck_model_paths, curr_models)
+
+                target_dirpath = os.path.join(truck_def_dirpath, "cabin")
+                curr_models = self.gather_model_paths(target_dirpath, "accessory_cabin_data", ("detail_model", "model"))
+                self.update_model_paths_dict(truck_model_paths, curr_models)
+
+            lprint("S Truck Paths:\n%r" % truck_model_paths)
+
+            # import and properly group imported models
+            trucks_scs_roots = set()  # set holding scs roots of imported models
+            already_imported = set()  # set holding imported path of already imported model, to avoid double importing
+            multiple_project_truck_models = set()  # set of model paths found in multiple projects (for reporting purposes)
+            for project_path in project_paths:
+
+                for truck_model_path in truck_model_paths:
+
+                    model_path = os.path.join(project_path, truck_model_path.lstrip("/"))
+
+                    # initial checks
+                    if not os.path.isfile(model_path + ".pim"):
+                        continue
+
+                    if truck_model_path in already_imported:
+                        multiple_project_truck_models.add(truck_model_path)
+                        continue
+
+                    already_imported.add(truck_model_path)
+
+                    # import model
+                    curr_truck_scs_root = self.import_and_clean_model(context, project_path, model_path)
+
+                    # truck did not have any paintable parts, go to next
+                    if curr_truck_scs_root is None:
+                        continue
+
+                    # put imported model into it's own groups per variant
+                    self.add_model_to_group(curr_truck_scs_root, "truck | " + os.path.basename(truck_model_path), truck_model_paths[truck_model_path])
+
+                    # save scs root of current model
+                    trucks_scs_roots.add(curr_truck_scs_root)
+
+            # if none truck models were properly imported it makes no sense to go forward on upgrades
+            if len(trucks_scs_roots) <= 0:
+                message = "No truck models properly imported!"
+                lprint("E " + message)
+                self.report({"ERROR"}, message)
+                self.finalize()
+                return {"CANCELLED"}
+
+            ##################################
+            #
+            # 3. import upgrades
+            #
+            ##################################
+
+            # collect all upgrade models, by listing all model locators left in truck models
+            upgrade_model_paths = {}  # model paths dictionary {key: upgrade type (eg "f_intake_cab"); value: set of model paths for this upgrade}
+            for truck_scs_root in trucks_scs_roots:
+
+                for obj in truck_scs_root.children:
+
+                    if obj.type != "EMPTY" or obj.scs_props.empty_object_type != "Locator":
+                        continue
+
+                    upgrade_name = _name_utils.tokenize_name(obj.name)
+                    upgrade_model_paths[upgrade_name] = {}
+
+                    for project_path in project_paths:  # collect any possible upgrade over all projects
+
+                        truck_def_dirpath = os.path.join(project_path, truck_sub_dir)
+                        upgrade_sub_dir = os.path.join("accessory", upgrade_name)
+
+                        target_dirpath = os.path.join(truck_def_dirpath, upgrade_sub_dir)
+                        curr_models = self.gather_model_paths(target_dirpath, "accessory_addon_data", ("exterior_model",))
+                        self.update_model_paths_dict(upgrade_model_paths[upgrade_name], curr_models)
+
+                    if len(upgrade_model_paths[upgrade_name]) <= 0:  # if no models for upgrade, remove set also
+                        del upgrade_model_paths[upgrade_name]
+
+            # import models, group and position them properly
+            already_imported = set()  # set holding imported path of already imported model, to avoid double importing
+            multiple_project_upgrade_models = set()  # set of model paths found in multiple projects (for reporting purposes)
+            for project_path in project_paths:
+                for upgrade_type in upgrade_model_paths:
+
+                    for upgrade_model_path in upgrade_model_paths[upgrade_type]:
+
+                        model_path = os.path.join(project_path, upgrade_model_path.lstrip("/"))
+
+                        # initial checks
+                        if not os.path.isfile(model_path + ".pim"):
+                            continue
+
+                        if upgrade_model_path in already_imported:
+                            multiple_project_upgrade_models.add(upgrade_model_path)
+                            continue
+
+                        already_imported.add(upgrade_model_path)
+
+                        # import model
+                        curr_upgrade_scs_root = self.import_and_clean_model(context, project_path, model_path)
+
+                        if curr_upgrade_scs_root is None:  # everything was removed, so prevent group creation etc...
+                            continue
+
+                        # put imported model into it's own groups
+                        self.add_model_to_group(curr_upgrade_scs_root, upgrade_type + " | " + os.path.basename(upgrade_model_path),
+                                                upgrade_model_paths[upgrade_type][upgrade_model_path])
+
+                        # position upgrade by locator aka make parent on upgrade locator
+                        upgrade_locator = context.scene.objects[upgrade_type]
+
+                        if upgrade_locator is None:
+                            message = "Locator for upgrade positioning not found, upgrade models for %r won't be properly positioned." % upgrade_type
+                            self.report({"WARNING"}, message)
+                            lprint("W " + message)
+                            continue
+
+                        curr_upgrade_scs_root.location = (0,) * 3
+                        curr_upgrade_scs_root.rotation_euler = (0,) * 3
+                        curr_upgrade_scs_root.parent = upgrade_locator
+
+            # on the end report multiple project model problems
+            if len(multiple_project_truck_models) > 0:
+                lprint("W Truck models found in multiple projects, one from 'mod_' or 'dlc_' project was used! Multiple project models:")
+                for truck_model_path in multiple_project_truck_models:
+                    lprint("W %r", (truck_model_path,))
+
+            if len(multiple_project_upgrade_models) > 0:
+                lprint("W Upgrade models found in multiple projects, one from 'mod_' or 'dlc_' project was used! Multiple project models:")
+                for upgrade_model_path in multiple_project_upgrade_models:
+                    lprint("W %r", (upgrade_model_path,))
+
+            self.finalize()
+            return {'FINISHED'}
+
+        def invoke(self, context, event):
+            """Invoke a file path selector."""
+            self.directory = _get_scs_globals().scs_project_path
+            context.window_manager.fileselect_add(self)
+            return {'RUNNING_MODAL'}
+
+    class ExportUVLayoutAndMesh(bpy.types.Operator):
+        bl_label = "Export SCS Paintjob UV Layout & Mesh"
+        bl_idname = "scene.scs_export_paintjob_uv_layout_and_mesh"
+        bl_description = "Exports painjtob uv layout & mesh (OBJ) for currently visible objects in scene."
+        bl_options = {'PRESET'}
+
+        directory = StringProperty(
+            name="Export UV",
+            subtype='DIR_PATH',
+        )
+
+        filepath = StringProperty(
+            name="Export UVs & mesh",
+            description="File path to export paintjob uv layout & mesh too.",
+            subtype='FILE_PATH',
+        )
+
+        config_meta_filepath = StringProperty(
+            description="File path to paintjob configuration SII file."
+        )
+
+        layout_sii_selection_mode = BoolProperty(
+            default=False,
+            description="Use currently selected file as paintjob layout configuration file."
+        )
+
+        export_2nd_uvs = BoolProperty(
+            name="Export 2nd UVs",
+            description="Should 2nd UV set layout be exported?",
+            default=True
+        )
+        export_3rd_uvs = BoolProperty(
+            name="Export 3rd UVs",
+            description="Should 3rd UV set layout be exported?",
+            default=True
+        )
+
+        export_mesh = BoolProperty(
+            name="Export Mesh as OBJ",
+            description="Should OBJ mesh also be exported?",
+            default=True
+        )
+
+        @staticmethod
+        def transform_uvs(obj, texture_portion):
+            """Transform paintjob uvs on given object by data from texture portion.
+
+            :param obj: Blender mesh object to be transformed
+            :type obj: bpy.types.Object
+            :param texture_portion: texture portion defining portion position and size from which transformation is calculated
+            :type texture_portion: io_scs_tools.internals.structure.UnitData
+            """
+
+            position = [float(i) for i in texture_portion.get_prop("position")]
+            size = [float(i) for i in texture_portion.get_prop("size")]
+
+            bm = bmesh.new()
+            bm.from_mesh(obj.data)
+
+            for face in bm.faces:
+
+                uv_lay_2nd = bm.loops.layers.uv[_PT_consts.uvs_name_2nd]
+                uv_lay_3rd = bm.loops.layers.uv[_PT_consts.uvs_name_3rd]
+                for loop in face.loops:
+
+                    uv = loop[uv_lay_2nd].uv
+                    uv = (uv[0] * size[0], uv[1] * size[1])
+                    uv = (uv[0] + position[0], uv[1] + position[1])
+                    loop[uv_lay_2nd].uv = uv
+
+                    uv = loop[uv_lay_3rd].uv
+                    uv = (uv[0] * size[0], uv[1] * size[1])
+                    uv = (uv[0] + position[0], uv[1] + position[1])
+                    loop[uv_lay_3rd].uv = uv
+
+            bm.to_mesh(obj.data)
+            bm.free()
+
+        @staticmethod
+        def cleanup(*args):
+            """Interprets given argumens as iterables holding blender object that shall be cleaned aka removed from datablocks.
+            """
+
+            meshes = set()
+
+            for object_iterable in args:
+                for obj in object_iterable:
+                    meshes.add(obj.data)  # save mesh to remove it afterwards
+                    bpy.data.objects.remove(obj, do_unlink=True)
+
+            for mesh in meshes:
+                bpy.data.meshes.remove(mesh, do_unlink=True)
+
+        def check(self, context):
+
+            if self.layout_sii_selection_mode:
+                self.config_meta_filepath = _path_utils.readable_norm(self.filepath)
+                self.layout_sii_selection_mode = False
+
+            return True
+
+        def draw(self, context):
+
+            col = self.layout.column(align=True)
+
+            col.label("Paintjobs Layout META File:", icon='FILE_SCRIPT')
+            col.prop(self, "config_meta_filepath", text="")
+            col.prop(self, "layout_sii_selection_mode", toggle=True, text="Select Current File from File Browser", icon='SCREEN_BACK')
+
+            col.separator()
+
+            col.label("What to export?", icon='QUESTION')
+            col.prop(self, "export_2nd_uvs")
+            col.prop(self, "export_3rd_uvs")
+            col.prop(self, "export_mesh")
+
+        def do_report(self, type, message, do_report=False):
+
+            if 'INFO' in type:
+                prefix = "I "
+            elif 'WARNING' in type:
+                prefix = "W "
+            elif 'ERROR' in type:
+                prefix = "E "
+            else:
+                prefix = "D "
+
+            lprint(prefix + message, report_errors=do_report, report_warnings=do_report)
+
+            for line in message.split("\n"):
+                self.report(type, line.replace("\t", "").replace("  ", " "))
+
+        def execute(self, context):
+
+            ##################################
+            #
+            # 1. collect visible mesh & determinate which groups to export
+            #
+            ##################################
+            visible_groups = []
+            for group in bpy.data.groups:
+
+                if _PT_consts.model_refs_to_sii not in group:
+                    continue
+
+                has_hidden_object = False
+
+                # thanks to our dummy export tag object we can simply iterate trough group objects and
+                # once some object is hidden (either export tag object or any other)
+                # we decide that this group is not visible thus won't be exported
+                for obj in group.objects:
+                    if obj.hide:
+                        has_hidden_object = True
+                        break
+
+                if has_hidden_object:
+                    continue
+
+                visible_groups.append(group)
+
+            lprint("S Visible groups to export: %s", (visible_groups,))
+
+            merged_objects_to_export = {}
+            for group in visible_groups:
+
+                # start with selection clearing, use our implementation to deselect any possible selected object in hidden layers
+                for obj in context.scene.objects:
+                    obj.select = False
+
+                selected_objects_count = 0
+                for obj in group.objects:
+                    if obj.type == "MESH":
+                        obj.select = True
+                        selected_objects_count += 1
+
+                # in case no mesh objects in this group,
+                # there is no data to be exported, so advance to next group
+                if selected_objects_count <= 0:
+                    continue
+
+                bpy.ops.object.duplicate()
+
+                if selected_objects_count > 1:
+                    override = context.copy()
+                    override["active_object"] = context.selected_objects[0]
+                    override["selected_objects"] = context.selected_objects
+                    bpy.ops.object.join(override)  # NOTE: this operator leaves old meshes behind, but for now we won't solve this issue
+
+                curr_merged_object = context.selected_objects[0]
+                curr_truckpaint_mat = None
+                for mat_slot in curr_merged_object.material_slots:
+                    if mat_slot.material and mat_slot.material.scs_props.mat_effect_name.startswith("eut2.truckpaint"):
+                        curr_truckpaint_mat = mat_slot.material
+                        break
+
+                if curr_truckpaint_mat is None:
+                    self.do_report({'WARNING'}, "Group %r won't be exported as 'truckpaint' material wasn't found!" % group.name)
+                    self.cleanup((curr_merged_object,))
+                    continue
+
+                # rename paintjob uvs to our constant ones,
+                # so exporting at the end is easy as all objects will result in same uv layers names
+                curr_merged_object.data.uv_layers[curr_truckpaint_mat.scs_props.shader_texture_base_uv[1].value].name = _PT_consts.uvs_name_2nd
+                curr_merged_object.data.uv_layers[curr_truckpaint_mat.scs_props.shader_texture_base_uv[2].value].name = _PT_consts.uvs_name_3rd
+
+                # remove all none needed & colliding data-blocks from object: materials, groups
+                while len(curr_merged_object.material_slots) > 0:
+                    override = context.copy()
+                    override["object"] = curr_merged_object
+                    bpy.ops.object.material_slot_remove(override)
+
+                while len(curr_merged_object.users_group) > 0:
+                    override = context.copy()
+                    override["object"] = curr_merged_object
+                    override["group"] = curr_merged_object.users_group[0]
+                    bpy.ops.object.group_remove(override)
+
+                merged_objects_to_export[curr_merged_object] = group
+
+            if len(merged_objects_to_export) <= 0:
+                self.do_report({'ERROR'}, "No objects to export!")
+                return {'CANCELLED'}
+
+            lprint("S Merged objects to export: %s", (merged_objects_to_export.values(),))
+
+            ##################################
+            #
+            # 2. depending on paintjob layout file, scale/offset uv's
+            #
+            ##################################
+
+            # 1. parse & fill data from paintjobs layout configuration file
+
+            pj_config_sii_container = _sii_container.get_data_from_file(self.config_meta_filepath)
+            if not _sii_container.has_valid_unit_instance(pj_config_sii_container,
+                                                          unit_type="paintjobs_metadata",
+                                                          req_props=("common_texture_size",)):
+
+                self.do_report({'ERROR'}, "Validation failed on SII: %r" % _path_utils.readable_norm(self.config_meta_filepath))
+                self.cleanup(merged_objects_to_export.keys())
+                return {'CANCELLED'}
+
+            # interpret common texture size vector as two ints
+            common_texture_size = [int(i) for i in _sii_container.get_unit_property(pj_config_sii_container, "common_texture_size")]
+
+            # get and validate texture portion unit existence
+            texture_portions = {}
+            texture_portion_names = _sii_container.get_unit_property(pj_config_sii_container, "texture_portions")
+            if texture_portion_names:
+
+                for unit_id in texture_portion_names:
+
+                    texture_portion = _sii_container.get_unit_by_id(pj_config_sii_container, unit_id, "texture_portion_metadata")
+                    if not texture_portion:
+                        self.do_report({'WARNING'},
+                                       "Ignoring used texture portion with name %r as it's not defined in paintjob layout meta data!" % unit_id)
+                        continue
+
+                    parent = texture_portion.get_prop("parent")
+                    if parent and parent not in texture_portion_names:
+                        self.do_report({'WARNING'},
+                                       "Ignoring used texture portion with name %r as it's parent: %r "
+                                       "is not defined in paintjob layout meta data!" % (unit_id, parent))
+                        continue
+
+                    texture_portions[unit_id] = texture_portion
+
+            lprint("S Found texture portions: %r", (texture_portions.keys(),))
+
+            # 2. bind each merged object to it's texture portion and filter to three categories:
+
+            # objects which are independently exported by transformation defined in their texture potion (be it original or parent portion)
+            independent_export_objects = {}
+            # objects with set "is_master" property inside texture portion; will use master paintjob definition & texture
+            master_export_objects = {}
+            # objects which are (direct or indirect) children of master export objects;
+            # they have to be duplicated & included in master objects before export (to see uvs on all master layouts)
+            master_child_export_objects = {}
+            for obj in merged_objects_to_export:
+
+                group = merged_objects_to_export[obj]
+
+                # find texture portion belonging to export object
+                texture_portion = None
+                for unit_id in texture_portions:
+
+                    model_sii = texture_portions[unit_id].get_prop("model_sii")
+
+                    for reference_to_sii in group[_PT_consts.model_refs_to_sii]:
+
+                        # yep we found possible sii of the model, but not quite yet
+                        if reference_to_sii.endswith(model_sii):
+
+                            sii_cont = _sii_container.get_data_from_file(reference_to_sii)
+                            variant = _sii_container.get_unit_property(sii_cont, "variant")
+
+                            if not variant:
+                                variant = "default"  # if variant is not specified in sii, our games use default
+
+                            # now check variant: if it's the same then we have it!
+                            if variant == group.name.split(" | ")[2]:  # yep, 3rd split of group name suggest variant
+                                texture_portion = texture_portions[unit_id]
+                                break
+
+                    if texture_portion:
+                        break
+
+                if not texture_portion:  # texture portion not found help the user!
+                    referenced_siis = ""
+                    for referenced_sii in sorted(group[_PT_consts.model_refs_to_sii]):
+                        referenced_siis += "-> %r\n\t   " % referenced_sii
+
+                    self.do_report({'WARNING'},
+                                   "Model %r wasn't referenced by any SII defined in paintjob configuration metadata, please reconfigure!\n\t   "
+                                   "SII files from which model was referenced:\n\t   %s" % (group.name, referenced_siis), do_report=True)
+                    continue
+
+                # filter out objects using master texture portions
+                if bool(texture_portion.get_prop("is_master")):
+                    master_export_objects[obj] = texture_portion
+                    continue
+
+                # filter out objects using independent texture portion
+                parent = texture_portion.get_prop("parent")
+                if parent is None:
+                    independent_export_objects[obj] = texture_portion
+
+                # as last get trough objects with parent & put them in proper dictionary assigning PARENT texture portion already
+                while parent:
+                    texture_portion = _sii_container.get_unit_by_id(pj_config_sii_container, parent, texture_portion.type)
+                    parent = texture_portion.get_prop("parent")
+
+                if bool(texture_portion.get_prop("is_master")):
+                    master_child_export_objects[obj] = texture_portion
+                else:
+                    independent_export_objects[obj] = texture_portion  # even if it has parent it's exported independent; no duplicates needed
+
+            # nonsense to go further if nothing to export
+            if len(independent_export_objects) + len(master_export_objects) <= 0:
+                self.do_report({"ERROR"},
+                               "Nothing to export, independent objects: %s, master objects: %s, objects with master parent: %s!" %
+                               (len(independent_export_objects), len(master_export_objects), len(master_child_export_objects)),
+                               do_report=True)
+                self.cleanup(merged_objects_to_export)
+                return {'CANCELLED'}
+
+            # 3. do uv transformations and distribute master children objects:
+
+            # transform independent objects
+            for obj in independent_export_objects:
+                self.transform_uvs(obj, independent_export_objects[obj])
+
+            # duplicate all objects with master parent & merge them
+            for obj in master_child_export_objects:
+
+                for master_obj in master_export_objects:
+
+                    bpy.ops.object.select_all(action="DESELECT")
+
+                    # duplicate
+                    obj.select = True
+                    bpy.ops.object.duplicate()
+
+                    # merge with master object
+                    master_obj.select = True
+                    override = context.copy()
+                    override["active_object"] = master_obj
+                    override["selected_objects"] = context.selected_objects
+                    bpy.ops.object.join(override)
+
+                bpy.data.objects.remove(obj, do_unlink=True)
+
+            # as last we transform master objects, as now they should be merged even with child objects
+            for obj in master_export_objects:
+                self.transform_uvs(obj, master_export_objects[obj])
+
+            ##################################
+            #
+            # 3. merge final mesh for export
+            #
+            ##################################
+
+            # select all export objects first
+            bpy.ops.object.select_all(action="DESELECT")
+            for obj in independent_export_objects:
+                obj.select = True
+            for obj in master_export_objects:
+                obj.select = True
+
+            # merge them
+            final_merged_object = context.selected_objects[0]
+            if len(merged_objects_to_export) > 1:
+                override = context.copy()
+                override["active_object"] = context.selected_objects[0]
+                override["selected_objects"] = context.selected_objects
+                bpy.ops.object.join(override)
+
+            ##################################
+            #
+            # 4. export selected uv layers & mesh
+            #
+            ##################################
+            if self.filepath.endswith(".png"):  # strip last extension if it's png
+                self.filepath = self.filepath[:-4]
+
+            if self.export_2nd_uvs:
+
+                # set active uv layer so export will take proper
+                final_merged_object.data.uv_textures.active = final_merged_object.data.uv_textures[_PT_consts.uvs_name_2nd]
+
+                override = context.copy()
+                override["active_object"] = final_merged_object
+                bpy.ops.uv.export_layout(override,
+                                         filepath=self.filepath + ".2nd.png",
+                                         export_all=True,
+                                         mode="PNG",
+                                         size=common_texture_size,
+                                         opacity=1)
+
+                if self.export_mesh:
+                    override = context.copy()
+                    override["active_object"] = final_merged_object
+                    override["selected_objects"] = (final_merged_object,)
+                    bpy.ops.export_scene.obj(override,
+                                             filepath=self.filepath + ".2nd.obj",
+                                             use_selection=True,
+                                             use_materials=False)
+
+            if self.export_3rd_uvs:
+
+                # set active uv layer so export will take proper
+                final_merged_object.data.uv_textures.active = final_merged_object.data.uv_textures[_PT_consts.uvs_name_3rd]
+
+                override = context.copy()
+                override["active_object"] = final_merged_object
+                bpy.ops.uv.export_layout(override,
+                                         filepath=self.filepath + ".3rd.png",
+                                         export_all=True,
+                                         mode="PNG",
+                                         size=common_texture_size,
+                                         opacity=1)
+
+                if self.export_mesh:
+                    override = context.copy()
+                    override["active_object"] = final_merged_object
+                    override["selected_objects"] = (final_merged_object,)
+                    bpy.ops.export_scene.obj(override,
+                                             filepath=self.filepath + ".3rd.obj",
+                                             use_selection=True,
+                                             use_materials=False)
+
+            # remove final merged object now as we done our work here
+            bpy.data.objects.remove(final_merged_object, do_unlink=True)
+
+            return {'FINISHED'}
+
+        def invoke(self, context, event):
+            """Invoke a file path selector."""
+            context.window_manager.fileselect_add(self)
+            return {'RUNNING_MODAL'}
+
+    class GeneratePaintjob(bpy.types.Operator):
+        bl_label = "Generate SCS Paintjob From Common Texture"
+        bl_idname = "scene.scs_generate_paintjob"
+        bl_description = "Generates complete setup for given paintjob: definitions, TGAs & TOBJs."
+        bl_options = {'INTERNAL'}
+
+        config_meta_filepath = StringProperty(
+            description="File path to paintjob configuration SII file."
+        )
+
+        project_path = StringProperty(
+            description="Project to which this paintjob belongs. Could be usefull if PSD file is not within same project."
+        )
+
+        common_texture_path = StringProperty(
+            description="File path to original common paintjob TGA texture."
+        )
+
+        export_alpha = BoolProperty(
+            description="Flag defining if textures shall be exported with alpha or not."
+        )
+
+        preserve_common_texture = BoolProperty(
+            description="Should given common texture TGA be preserved and not deleted after generation is finished?"
+        )
+
+        # paint job settings exported to common SUI settings file
+        pjs_name = StringProperty(default="pj_name")
+        pjs_price = IntProperty(default=10000)
+        pjs_unlock = IntProperty(default=0)
+        pjs_icon = StringProperty(default="paintjob_pj_name")
+
+        pjs_mask_r_color = FloatVectorProperty(default=(1, 0, 0))
+        pjs_mask_r_locked = BoolProperty(default=True)
+
+        pjs_mask_g_color = FloatVectorProperty(default=(0, 1, 0))
+        pjs_mask_g_locked = BoolProperty(default=True)
+
+        pjs_mask_b_color = FloatVectorProperty(default=(0, 0, 1))
+        pjs_mask_b_locked = BoolProperty(default=True)
+
+        pjs_base_color = FloatVectorProperty(default=(1, 1, 1))
+        pjs_base_color_locked = BoolProperty(default=True)
+
+        pjs_flip_color = FloatVectorProperty(default=(1, 0, 0))
+        pjs_flip_color_locked = BoolProperty(default=True)
+
+        pjs_flip_strength = FloatProperty(default=0.27)
+
+        pjs_flake_color = FloatVectorProperty(default=(0, 1, 0))
+        pjs_flake_color_locked = BoolProperty(default=True)
+
+        pjs_flake_uvscale = FloatProperty(default=32.0)
+        pjs_flake_density = FloatProperty(default=1.0)
+        pjs_flake_shininess = FloatProperty(default=50.0)
+        pjs_flake_clearcoat_rolloff = FloatProperty(default=2.2)
+        pjs_flake_noise = StringProperty(default="/material/custom/flake_noise.tobj")
+
+        pjs_alternate_uvset = BoolProperty(default=False)
+        pjs_flipflake = BoolProperty(default=False)
+        pjs_airbrush = BoolProperty(default=False)
+
+        @staticmethod
+        def do_report(the_type, message, do_report=False):
+
+            if 'INFO' in the_type:
+                prefix = "I "
+            elif 'WARNING' in the_type:
+                prefix = "W "
+            elif 'ERROR' in the_type:
+                prefix = "E "
+            else:
+                prefix = "D "
+
+            # change dump level internally as we want this operator to report everything
+            if int(_get_scs_globals().dump_level) < 4:
+                _get_scs_globals()["dump_level"] = 4
+
+            lprint(prefix + message, report_errors=do_report, report_warnings=do_report)
+
+        def export_texture(self, orig_img, paintjob_path, texture_portion):
+            """Export given texture portion into given paintjob path.
+
+            :param orig_img: Blender image datablock representing common texture
+            :type orig_img: bpy.types.Image
+            :param paintjob_path: absolute path to export TGA and TOBJ to
+            :type paintjob_path: str
+            :param texture_portion: texture portion defining portion position and size
+            :type texture_portion: io_scs_tools.internals.structure.UnitData
+            :return: True if export was successful, otherwise False
+            :rtype: bool
+            """
+
+            position = [float(i) for i in texture_portion.get_prop("position")]
+            size = [float(i) for i in texture_portion.get_prop("size")]
+
+            orig_img_width = orig_img.size[0]
+            orig_img_height = orig_img.size[1]
+
+            orig_img_start_x = int(orig_img_width * position[0])
+            orig_img_start_y = int(orig_img_height * position[1])
+
+            img_width = int(orig_img_width * size[0])
+            img_height = int(orig_img_height * size[1])
+
+            # create new texture data-block
+            img = bpy.data.images.new(texture_portion.id, img_width, img_height, alpha=True)
+            img.colorspace_settings.name = "Raw"  # force raw color-profile for TGA to be saved properly
+            img.use_alpha = True
+            img.use_generated_float = True
+
+            # create copied data
+            # We "invoke get" for original image pixels only on the rows where actual portion is positioned.
+            # Additionally we do that in chunks, so we take only part of the height,
+            # gaining smaller RAM usage as getting pixels from original image really eats it up.
+            # In case of having portion of 4kx4k, getting pixels from original image can take up to 7GB rams,
+            # which isn't really what user might have available.
+            img_pixels = [0.0] * img_width * img_height * 4
+            orig_img_pixels = []
+            rows_in_chunk = 1024  # this size of chunk seems to work the best for ration of used ram/export speed
+            for row in range(0, img_height):
+
+                # on the beginning of the chunk refill pixels from original image
+                if row % rows_in_chunk == 0:
+
+                    start_pixel = (orig_img_start_y + row) * orig_img_width * 4
+                    end_pixel = start_pixel + orig_img_width * rows_in_chunk * 4
+                    end_pixel = min(end_pixel, start_pixel + orig_img_width * img_height * 4)
+
+                    orig_img_pixels = orig_img.pixels[start_pixel:end_pixel]
+
+                orig_start_pixel = (row % rows_in_chunk) * orig_img_width * 4 + orig_img_start_x * 4
+                orig_end_pixel = orig_start_pixel + img_width * 4
+
+                start_pixel = row * img_width * 4
+                end_pixel = start_pixel + img_width * 4
+
+                img_pixels[start_pixel:end_pixel] = orig_img_pixels[orig_start_pixel:orig_end_pixel]
+
+            # copy over data
+            img.pixels[:] = img_pixels
+
+            # save
+            scene = bpy.context.scene
+            scene.render.image_settings.file_format = "TARGA"
+            scene.render.image_settings.color_mode = "RGBA" if self.export_alpha else "RGB"
+            img.save_render(paintjob_path, bpy.context.scene)
+
+            # remove image data-block, as we don't need it anymore
+            orig_img.buffers_free()
+            bpy.data.images.remove(img, do_unlink=True)
+
+            # write TOBJ beside tga file
+            tobj_cont = _TobjContainer()
+
+            tobj_cont.map_type = "2d"
+            tobj_cont.map_names.append(os.path.basename(paintjob_path))
+            tobj_cont.addr.append("clamp_to_edge")
+            tobj_cont.addr.append("clamp_to_edge")
+            tobj_cont.filepath = paintjob_path[:-4] + ".tobj"
+
+            return tobj_cont.write_data_to_file()
+
+        def export_sii(self, config_path, pj_token, pj_full_unit_name, pj_mask_path, is_master=False, master_model_sii_unit_name=None):
+            """Export SII configuration file into given absolute path.
+
+            :param config_path: absolute file path for SII where it should be epxorted
+            :type config_path: str
+            :param pj_token: string of original paintjob token got from original TGA file name
+            :type pj_token: str
+            :param pj_full_unit_name: for master paintjob: <pj_unit_name>.<brand.model>.paint_job, otherwise .simplepj
+            :type pj_full_unit_name: str
+            :param pj_mask_path: relative filepath to paint job mask TOBJ (eg. /vehicle/truck/upgrade/<brand_model>/paintjob/<pj_unit_name>.tobj)
+            :type pj_mask_path: str
+            :param is_master: True for master paint job texture, otherwise False
+            :type is_master: bool
+            :param master_model_sii_unit_name: full unit name of referenced model inside master; if None suitable_for property won't be written
+            :type master_model_sii_unit_name: str
+            :return: True if export was successful, False otherwise
+            :rtype: bool
+            """
+
+            if is_master:
+                data_type = "accessory_paint_job_data"
+            else:
+                data_type = "simple_paint_job_data"
+
+            unit = _UnitData(data_type, pj_full_unit_name)
+
+            # write paint job settings only into master
+            if is_master:
+
+                pj_settings_sui_name = pj_token + "_settings.sui"
+
+                # export paint job settings SUI file
+                assert self.export_settings_sui(os.path.join(os.path.dirname(config_path), pj_settings_sui_name), pj_token)
+
+                # write include into paint job sii
+                unit.props["@include"] = pj_settings_sui_name
+
+                # create suitable to model sii unit name
+                if master_model_sii_unit_name:
+                    unit.props["suitable_for"] = [master_model_sii_unit_name, ]
+
+            unit.props["paint_job_mask"] = pj_mask_path
+
+            return _sii_container.write_data_to_file(config_path, (unit,), create_dirs=True)
+
+        def export_settings_sui(self, settings_sui_path, pj_token):
+            """Export common SUI settings for paint job. This file includes all settings of the paintjob
+            and shall be included in paint job master definitions.
+
+            :param settings_sui_path: absolute file path for SUI where it should be exported
+            :type settings_sui_path: str
+            :param pj_token: string of original paintjob toke got from original TGA file name
+            :type pj_token: str
+            :return: True if settings were successfully written or if file is alredy up to date; False if sth goes wrong
+            :rtype: bool
+            """
+
+            # do not reexport rapidly
+            if os.path.isfile(settings_sui_path) and time() - os.path.getmtime(settings_sui_path) < 5:
+                return True
+
+            unit = _UnitData("", "", is_headless=True)
+
+            # force export of mandatory properties
+            unit.props["name"] = self.pjs_name
+            unit.props["price"] = self.pjs_price
+            unit.props["unlock"] = self.pjs_unlock
+            unit.props["icon"] = self.pjs_icon
+
+            # now go trough all props and export the ones that are different from default value
+            for object_dir_entry in dir(self):
+                if object_dir_entry.startswith("pjs_"):
+                    assert self.append_prop_if_not_default(unit, object_dir_entry)
+
+            return _sii_container.write_data_to_file(settings_sui_path, (unit,), is_sui=True)
+
+        def append_prop_if_not_default(self, unit, prop_name):
+            """Appends property value into given unit instance, if property is different from default value.
+            This way we will always write only needed values.
+
+            :param unit: unit from container to be written
+            :type unit: io_scs_tools.internals.structure.UnitData
+            :param prop_name: name of the property that should
+            :type prop_name: str
+            :return: True if property was found and properly processed; False if property is invalid
+            :rtype: bool
+            """
+
+            _EPSILON = 0.0001  # float values max difference to be still equal
+            _PJS_PREFIX = "pjs_"  # prefix that marks setting as paint job setting
+
+            # gather values
+            default_value = _get_bpy_prop(getattr(PaintjobTools.GeneratePaintjob, prop_name))
+            current_value = getattr(self, prop_name)
+
+            if default_value is None or current_value is None or not prop_name.startswith(_PJS_PREFIX):
+                lprint("E Invalid property for paintjob settings: %r, contact the developer!", (prop_name,))
+                return False
+
+            # do comparison of property differently for each type
+            is_different = False
+            if isinstance(default_value, tuple):
+
+                current_value = tuple(current_value)  # convert to tuple for proper export
+
+                for i in range(0, len(default_value)):
+                    if isinstance(default_value[i], float):
+                        is_different |= abs(current_value[i] - default_value[i]) > _EPSILON
+                    else:
+                        is_different |= current_value[i] != default_value[i]
+
+            elif isinstance(default_value, float):
+
+                is_different = abs(current_value - default_value) > _EPSILON
+
+            else:  # for bool, int and string we can compare them directly
+
+                is_different = current_value != default_value
+
+            # finally append property if different
+            if is_different:
+                unit.props[prop_name[len(_PJS_PREFIX):]] = current_value
+
+            return True
+
+        def execute(self, context):
+
+            from time import time
+
+            start_time = time()
+
+            ##################################
+            #
+            # 1. parse & validate input settings
+            #
+            ##################################
+
+            if not os.path.isfile(self.config_meta_filepath):
+                self.do_report({'WARNING'}, "Given paintjob layout META file does not exist: %r!" % self.config_meta_filepath)
+                return {'CANCELLED'}
+
+            # get truck brand model token
+            brand_model_token = os.path.basename(os.path.abspath(os.path.join(self.config_meta_filepath, os.pardir)))
+
+            if not self.common_texture_path.endswith(".tga"):
+                self.do_report({'ERROR'}, "Given common texture is not TGA file: %r!" % self.common_texture_path)
+                return {'CANCELLED'}
+
+            if not os.path.isfile(self.common_texture_path):
+                self.do_report({'ERROR'}, "Given common texture file does not exist: %r!" % self.common_texture_path)
+                return {'CANCELLED'}
+
+            # solve project path, if not given try to get it from given common texture path
+            if self.project_path != "":
+
+                project_path = _path_utils.readable_norm(self.project_path)
+
+                if not os.path.isdir(project_path):
+                    self.do_report({'ERROR'}, "Given paintjob project path does not exist: %r!" % project_path)
+                    return {'CANCELLED'}
+
+                # there has to be sibling base directory, otherwise we for sure aren't in right place
+                if not os.path.isdir(os.path.join(os.path.join(project_path, os.pardir), "base")):
+                    self.do_report({'ERROR'}, "Given pointjob project path is invalid, can't find sibling 'base' project: %r" % project_path)
+                    return {'CANCELLED'}
+
+            else:
+
+                project_path = _path_utils.readable_norm(os.path.dirname(self.common_texture_path))
+                # we can simply go 5 dirs up, as paintjob has to be properly placed /vehicle/truck/upgrade/paintjob/<brand.model>
+                for _ in range(0, 5):
+                    project_path = _path_utils.readable_norm(os.path.join(project_path, os.pardir))
+
+                if not os.path.isdir(project_path):
+                    self.do_report({'ERROR'}, "Paintjob TGA seems to be saved outside proper structure, should be inside\n"
+                                              "'<project_path>/vehicle/truck/upgrade/paintjob/<brand_model>/', instead is in:\n"
+                                              "%r" % self.common_texture_path)
+                    return {'CANCELLED'}
+
+            # get paint job token from texture name
+            pj_token = os.path.basename(self.common_texture_path)[:-4]
+
+            if _name_utils.tokenize_name(pj_token) != pj_token:
+                self.do_report({'ERROR'},
+                               "Given common texture name is invalid, can't be tokenized (max. length: 11, accepted chars: a-z, 0-9, _): %r"
+                               % pj_token)
+                return {'CANCELLED'}
+
+            # get brand & model unit name from texture path
+            common_tex_dirpath = _path_utils.readable_norm(os.path.join(self.common_texture_path, os.pardir))
+            brand_model_dir = os.path.basename(common_tex_dirpath)
+
+            underscore_idx = brand_model_dir.find("_")
+            if underscore_idx == -1:
+                self.do_report({'ERROR'},
+                               "Paintjob TGA file parent directory name seems to be invalid should be '<brand_model>' instead is: %r." %
+                               brand_model_dir)
+                return {'CANCELLED'}
+
+            brand_token = brand_model_dir[0:underscore_idx]
+            model_token = brand_model_dir[underscore_idx + 1:]
+
+            is_common_tex_path_invalid = (
+                brand_model_token != brand_token + "." + model_token or
+                not common_tex_dirpath.endswith("/vehicle/truck/upgrade/paintjob/" + brand_model_dir)
+            )
+
+            if is_common_tex_path_invalid:
+                self.do_report({'ERROR'}, "Paintjob TGA file isn't saved on correct place, should be inside\n"
+                                          "'<project_path>/vehicle/truck/upgrade/paintjob/%s' instead is saved in:\n"
+                                          "%r." % (brand_model_token.replace(".", "_"), common_tex_dirpath))
+                return {'CANCELLED'}
+
+            lprint("D <brand>: %r, <model>: %r, <paintjob_unit_name>: %r" % (brand_token, model_token, pj_token))
+
+            ##################################
+            #
+            # 2. parse paintjob layout config file
+            #
+            ##################################
+
+            pj_config_sii_container = _sii_container.get_data_from_file(self.config_meta_filepath)
+            if not _sii_container.has_valid_unit_instance(pj_config_sii_container,
+                                                          unit_type="paintjobs_metadata",
+                                                          req_props=("common_texture_size",)):
+
+                self.do_report({'ERROR'}, "Validation failed on SII: %r" % _path_utils.readable_norm(self.config_meta_filepath))
+                return {'CANCELLED'}
+
+            # interpret common texture size vector as two ints
+            common_texture_size = [int(i) for i in _sii_container.get_unit_property(pj_config_sii_container, "common_texture_size")]
+
+            # get and validate texture portion unit existence
+            texture_portions = {}
+            texture_portion_names = _sii_container.get_unit_property(pj_config_sii_container, "texture_portions")
+            if texture_portion_names:
+
+                for unit_id in texture_portion_names:
+
+                    texture_portion = _sii_container.get_unit_by_id(pj_config_sii_container, unit_id, "texture_portion_metadata")
+                    if not texture_portion:
+                        self.do_report({'WARNING'},
+                                       "Ignoring used texture portion with name %r as it's not defined in paintjob layout meta data!" % unit_id)
+                        continue
+
+                    parent = texture_portion.get_prop("parent")
+                    if parent and parent not in texture_portion_names:
+                        self.do_report({'WARNING'},
+                                       "Ignoring used texture portion with name %r as it's parent: %r "
+                                       "is not defined in paintjob layout meta data!" % (unit_id, parent))
+                        continue
+
+                    texture_portions[unit_id] = texture_portion
+
+            lprint("D Found texture portions: %r", (texture_portions.keys(),))
+
+            ##################################
+            #
+            # 3. load common texture & export texture portions TGAs + TOBJs
+            #
+            ##################################
+
+            common_tex_img = bpy.data.images.load(self.common_texture_path, check_existing=False)
+
+            if common_tex_img.size[0] != common_texture_size[0] or common_tex_img.size[1] != common_texture_size[1]:
+                self.do_report({'ERROR'}, "Wrong size of common texture TGA: [%s, %s], paintjob layout META is prescribing different size: %r!"
+                               % (common_tex_img.size[0], common_tex_img.size[1], common_texture_size))
+                return {'CANCELLED'}
+
+            texture_portions_tobj_paths = {}  # storing TGA paths for each texture portion, used later for referencing textures in SIIs
+            exported_portion_textures = set()  # storing already exported texture portion to avoid double exporting same TGA
+            for unit_id in texture_portions:
+
+                texture_portion = texture_portions[unit_id]
+
+                parent = texture_portions[unit_id].get_prop("parent")
+                while parent:
+                    texture_portion = _sii_container.get_unit_by_id(pj_config_sii_container, parent, texture_portion.type)
+                    parent = texture_portion.get_prop("parent")
+
+                # get TGA path for this texture portion
+                tga_path = os.path.join(common_tex_dirpath, pj_token)
+                tga_path = os.path.join(tga_path, texture_portion.id.lstrip(".")) + ".tga"  # TGA file name is always texture portion unit id
+
+                # save TOBJ path to dictionary for later usage in config generation
+                texture_portions_tobj_paths[unit_id] = tga_path[:-4] + ".tobj"
+
+                # filter out already exported texture portions
+                if texture_portion.id in exported_portion_textures:
+                    continue
+
+                exported_portion_textures.add(texture_portion.id)
+
+                # export TGA
+                assert self.export_texture(common_tex_img, tga_path, texture_portion)
+
+                lprint("I Exported: %r", (tga_path,))
+
+            ##################################
+            #
+            # 4. create configs
+            #
+            ##################################
+
+            for unit_id in texture_portions:
+
+                texture_portion = texture_portions[unit_id]
+
+                model_sii = texture_portion.get_prop("model_sii")
+                is_master = bool(texture_portion.get_prop("is_master"))
+                master_unit_suffix = texture_portion.get_prop("master_unit_suffix")
+
+                # don't write config for texture portions when top most parent is master
+                parent = texture_portion.get_prop("parent")
+                is_parent_master = False
+                while parent:
+                    is_parent_master = bool(texture_portions[parent].get_prop("is_master"))
+                    parent = texture_portions[parent].get_prop("parent")
+
+                if is_parent_master:
+                    continue
+
+                # check for SIIs from "model_sii" in current project, sibling "base" and parent "base"
+                truck_def_subdir = os.path.join("def/vehicle/truck", brand_model_token)
+                model_sii_subpath = os.path.join(truck_def_subdir, model_sii)
+
+                model_sii_path = os.path.join(project_path, model_sii_subpath)
+
+                # check if given model sii path really exists; check in current project, sibling "base" and parent "base"
+                sii_exists = os.path.isfile(model_sii_path)
+
+                if not sii_exists:
+
+                    model_sii_path = os.path.join(project_path, os.pardir)
+                    model_sii_path = os.path.join(model_sii_path, "base")
+                    model_sii_path = os.path.join(model_sii_path, model_sii_subpath)
+
+                    sii_exists = os.path.isfile(model_sii_path)
+
+                if not sii_exists:
+
+                    model_sii_path = os.path.join(project_path, os.pardir)
+                    model_sii_path = os.path.join(model_sii_path, os.pardir)
+                    model_sii_path = os.path.join(model_sii_path, "base")
+                    model_sii_path = os.path.join(model_sii_path, model_sii_subpath)
+
+                    sii_exists = os.path.isfile(model_sii_path)
+
+                if not sii_exists:
+                    lprint("E Can't find referenced 'model_sii' file for texture portion %r, aborting SII write!", (texture_portion.id,))
+                    return {'CANCELLED'}
+
+                # export either master paint job config or override
+                master_model_sii_unit_name = None  # unit name of referenced model sii used for suitable_for field in master paint jobs
+                if is_master:
+
+                    suffixed_pj_unit_name = pj_token + master_unit_suffix
+                    if _name_utils.tokenize_name(suffixed_pj_unit_name) != suffixed_pj_unit_name:
+                        lprint("E Can't tokenize generated paintjob unit name: %r for texture portion %r, aborting SII write!",
+                               (suffixed_pj_unit_name, texture_portion.id))
+                        return {'CANCELLED'}
+
+                    # get model sii unit name to use it in suitable for field
+                    model_sii_cont = _sii_container.get_data_from_file(model_sii_path)
+                    if not model_sii_cont:
+                        lprint("E SII is there but getting unit name from 'model_sii' failed for texture portion %r, aborting SII write!",
+                               (texture_portion.id,))
+                        return {'CANCELLED'}
+
+                    master_model_sii_unit_name = model_sii_cont[0].id
+
+                    # config path: "/def/vehicle/truck/<brand.model>/paint_job/<pj_unit_name>.sii"
+                    config_path = os.path.join(project_path, truck_def_subdir)
+                    config_path = os.path.join(config_path, "paint_job")
+                    config_path = os.path.join(config_path, suffixed_pj_unit_name + ".sii")
+
+                    # full paint job unit name: <pj_unit_name>.<brand.model>.paint_job
+                    pj_full_unit_name = suffixed_pj_unit_name + "." + brand_model_token + ".paint_job"
+
+                else:
+
+                    model_type = str(model_sii).split("/")[0]
+
+                    if model_type in ("accessory", "cabin", "chassis"):
+
+                        model_sii_cont = _sii_container.get_data_from_file(model_sii_path)
+                        truck_acc_unit_name = model_sii_cont[0].id.split(".")[0]  # first token
+                        acc_type_unit_name = model_sii_cont[0].id.split(".")[-1]  # last token
+
+                        # config path: "/def/vehicle/truck/<brand.model>/accessory/<acc_name>/paint_job/<pj_unit_name>.<truck_acc_unit_name>.sii"
+                        config_path = os.path.join(project_path, truck_def_subdir)
+                        config_path = os.path.join(config_path, model_type)
+
+                        if model_type == "accessory":
+                            config_path = os.path.join(config_path, acc_type_unit_name)
+
+                        config_path = os.path.join(config_path, "paint_job")
+                        config_path = os.path.join(config_path, pj_token + "." + truck_acc_unit_name + ".sii")
+
+                        # for overrides full paint job name is always .simplepj
+                        pj_full_unit_name = ".simplepj"
+
+                    else:
+
+                        lprint("E Can not create paintjob config for texture portion: %r, as 'model_sii' property is not one of: "
+                               "accessory, cabin or chassis neither is texture portion marked with 'is_master'!",
+                               (texture_portion.id,))
+                        return {'CANCELLED'}
+
+                # get TOBJ in game path
+                tobj_subpath = _path_utils.readable_norm("/" + os.path.relpath(texture_portions_tobj_paths[unit_id], project_path))
+
+                assert self.export_sii(config_path, pj_token, pj_full_unit_name, tobj_subpath, is_master, master_model_sii_unit_name)
+                lprint("I Created SII config for %r: %r", (texture_portion.id, config_path))
+
+            # finally we can remove original TGA
+            if not self.preserve_common_texture and os.path.isfile(self.common_texture_path):
+                os.remove(self.common_texture_path)
+
+            lprint("\nI Export of paintjobs took: %0.3f sec" % (time() - start_time))
+
             return {'FINISHED'}

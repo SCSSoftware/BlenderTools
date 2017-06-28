@@ -614,6 +614,12 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
 
         obj = context.object
 
+        # safety check to ensure we are dealing with proper object
+        # NOTE: if this gets triggered during import, it's very likely that another object
+        # was already set as active. In that case error might occur while accessing scs properties.
+        if not hasattr(obj, "scs_props"):
+            return
+
         # PREVIEW MODELS LOADING
         if obj.scs_props.locator_type in ("Collision", "None"):
             _preview_models.unload(obj)

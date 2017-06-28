@@ -16,8 +16,9 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2013-2014: SCS Software
+# Copyright (C) 2013-2017: SCS Software
 
+from collections import OrderedDict
 from io_scs_tools.utils import convert as _convert_utils
 
 
@@ -105,10 +106,11 @@ class UnitData(object):
     """
     _type_ = "unit"
 
-    def __init__(self, data_type, data_id):
+    def __init__(self, data_type, data_id, is_headless=False):
         self.type = data_type
         self.id = data_id
-        self.props = {}
+        self.is_headless = is_headless  # used when exporting SUI to filter out unit header and writing only properties of it
+        self.props = OrderedDict()  # use ordered dict just to be able to have order when exporting unit objects
 
     def get_prop_as_number(self, prop_name):
         """Gets given property as float value. If property is there
@@ -162,3 +164,17 @@ class UnitData(object):
             prop_value[i] = convert_res
 
         return prop_value
+
+    def get_prop(self, prop_name):
+        """Gets properety from unit.
+
+        :param prop_name: name of the property we are searching for
+        :type prop_name: str
+        :return: None if property not found, otherwise object representing it's data
+        :rtype:  None|object
+        """
+
+        if prop_name not in self.props:
+            return None
+
+        return self.props[prop_name]

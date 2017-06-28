@@ -104,7 +104,7 @@ def draw_export_panel(layout, ignore_extra_boxes=False):
     row = col.row()
     row.prop(_get_scs_globals(), 'export_apply_modifiers')
     row_2 = row.row()
-    if _get_scs_globals().export_output_type.startswith('def'):
+    if _get_scs_globals().export_output_type.startswith('EF'):
         if int(_get_scs_globals().export_apply_modifiers):
             row_2.enabled = True
         else:
@@ -118,12 +118,12 @@ def draw_export_panel(layout, ignore_extra_boxes=False):
         row_2.prop(_get_scs_globals(), 'export_include_edgesplit')
     '''
     col.prop(_get_scs_globals(), 'export_active_uv_only')
-    if not _get_scs_globals().export_output_type.startswith('def'):
+    if not _get_scs_globals().export_output_type.startswith('EF'):
         col.prop(_get_scs_globals(), 'export_vertex_groups')
     col.prop(_get_scs_globals(), 'export_vertex_color')
     if _get_scs_globals().export_vertex_color:
         row = box1.row()
-        if not _get_scs_globals().export_output_type.startswith('def'):
+        if not _get_scs_globals().export_output_type.startswith('EF'):
             row.prop(_get_scs_globals(), 'export_vertex_color_type_7')
         else:
             row.prop(_get_scs_globals(), 'export_vertex_color_type')
@@ -152,7 +152,7 @@ def draw_export_panel(layout, ignore_extra_boxes=False):
     else:
         row.enabled = False
     row.prop(_get_scs_globals(), 'export_pia_file', text="Export Animations (PIA)", toggle=True)
-    if not _get_scs_globals().export_output_type.startswith('def'):
+    if not _get_scs_globals().export_output_type.startswith('EF'):
         box3 = layout.box()
         row = box3.row()
         row.prop(_get_scs_globals(), 'export_write_signature')

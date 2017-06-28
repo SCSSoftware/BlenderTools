@@ -24,6 +24,7 @@ from io_scs_tools.consts import Operators as _OP_consts
 from io_scs_tools.imp import pia as _pia
 from io_scs_tools.imp import pic as _pic
 from io_scs_tools.imp import pim as _pim
+from io_scs_tools.imp import pim_ef as _pim_ef
 from io_scs_tools.imp import pip as _pip
 from io_scs_tools.imp import pis as _pis
 from io_scs_tools.imp import pit as _pit
@@ -261,22 +262,28 @@ def _create_scs_root_object(name, loaded_variants, loaded_looks, mats_info, obje
     return scs_root_object
 
 
-def load(context, filepath):
+def load(context, filepath, name_suffix="", suppress_reports=False):
     """
 
     :param context: Blender Context currently used for window_manager.update_progress and bpy_object_utils.object_data_add
     :type context: bpy.types.Context
     :param filepath: File path to be imported
     :type filepath: str
+    :param name_suffix: files name suffix (exchange format is using .ef)
+    :type name_suffix: str
+    :param suppress_reports: True if you don't want for reports to be flushed & summaries to be printed out; False otherwise
+    :type suppress_reports: bool
     :return: Return state statuses (Usually 'FINISHED')
-    :rtype: dict
+    :rtype: set
     """
     import time
 
     t = time.time()
     bpy.context.window.cursor_modal_set('WAIT')
     scs_globals = _get_scs_globals()
-    lprint("", report_errors=-1, report_warnings=-1)  # Clear the 'error_messages' and 'warning_messages'
+
+    if not suppress_reports:
+        lprint("", report_errors=-1, report_warnings=-1)  # Clear the 'error_messages' and 'warning_messages'
 
     collision_locators = []
     prefab_locators = []
@@ -292,7 +299,7 @@ def load(context, filepath):
 
     # IMPORT PIP -> has to be loaded before PIM because of terrain points
     if scs_globals.import_pip_file:
-        pip_filepath = str(filepath[:-1] + 'p')
+        pip_filepath = filepath + ".pip" + name_suffix
         if os.path.isfile(pip_filepath):
             lprint('\nD PIP filepath:\n  %s', (pip_filepath,))
             # print('PIP filepath:\n  %s' % pip_filepath)
@@ -303,24 +310,34 @@ def load(context, filepath):
 
     # IMPORT PIM
     if scs_globals.import_pim_file or scs_globals.import_pis_file:
-        if filepath:
-            if os.path.isfile(filepath):
-                lprint('\nD PIM filepath:\n  %s', (_path_utils.readable_norm(filepath),))
-                result, objects, locators, armature, skeleton, mats_info = _pim.load(
-                    context,
-                    filepath,
-                    terrain_points_trans=terrain_points
-                )
-                # print('  armature:\n%s\n  skeleton:\n%s' % (str(armature), str(skeleton)))
+        pim_filepath = filepath + ".pim" + name_suffix
+        if pim_filepath:
+            if os.path.isfile(pim_filepath):
+                lprint('\nD PIM filepath:\n  %s', (_path_utils.readable_norm(pim_filepath),))
+
+                if pim_filepath.endswith(".pim"):
+                    result, objects, locators, armature, skeleton, mats_info = _pim.load(
+                        context,
+                        pim_filepath,
+                        terrain_points_trans=terrain_points
+                    )
+                elif pim_filepath.endswith(".pim.ef"):
+                    result, objects, locators, armature, skeleton, mats_info = _pim_ef.load(
+                        context,
+                        pim_filepath,
+                        terrain_points_trans=terrain_points
+                    )
+                else:
+                    lprint("\nE Unknown PIM file extension! Shouldn't happen...")
             else:
-                lprint('\nI No file found at %r!' % (_path_utils.readable_norm(filepath),))
+                lprint('\nI No file found at %r!' % (_path_utils.readable_norm(pim_filepath),))
         else:
             lprint('\nI No filepath provided!')
 
     # IMPORT PIT
     bpy.context.scene.objects.active = None
     if scs_globals.import_pit_file:
-        pit_filepath = str(filepath[:-1] + 't')
+        pit_filepath = filepath + ".pit" + name_suffix
         if os.path.isfile(pit_filepath):
             lprint('\nD PIT filepath:\n  %s', (pit_filepath,))
             # print('PIT filepath:\n  %s' % pit_filepath)
@@ -331,7 +348,7 @@ def load(context, filepath):
 
     # IMPORT PIC
     if scs_globals.import_pic_file:
-        pic_filepath = str(filepath[:-1] + 'c')
+        pic_filepath = filepath + ".pic" + name_suffix
         if os.path.isfile(pic_filepath):
             lprint('\nD PIC filepath:\n  %s', (pic_filepath,))
             # print('PIC filepath:\n  %s' % pic_filepath)
@@ -369,6 +386,9 @@ def load(context, filepath):
         if os.path.isfile(pis_filepath):
             lprint('\nD PIS filepath:\n  %s', (pis_filepath,))
 
+            # strip off name suffix from skeleton path
+            skeleton = skeleton[:-len(name_suffix)]
+
             # fill in custom data if PIS file is from other directory
             if skeleton[:-4] != scs_root_object.name:
                 armature.scs_props.scs_skeleton_custom_export_dirpath = "//" + os.path.relpath(os.path.dirname(pis_filepath),
@@ -394,7 +414,7 @@ def load(context, filepath):
                         break
                 # print('  root: %s - dirs: %s - files: %s' % (str(root), str(dirs), str(files)))
                 for file in files:
-                    if file.endswith(".pia"):
+                    if file.endswith(".pia" + name_suffix):
                         pia_filepath = os.path.join(root, file)
                         pia_files.append(pia_filepath)
                 index += 1
@@ -426,5 +446,9 @@ def load(context, filepath):
 
     # FINAL FEEDBACK
     bpy.context.window.cursor_modal_restore()
-    lprint('\nI Import compleeted in %.3f sec.', time.time() - t, report_errors=True, report_warnings=True)
+    if suppress_reports:
+        lprint('\nI Import compleeted in %.3f sec.', time.time() - t)
+    else:
+        lprint('\nI Import compleeted in %.3f sec.', time.time() - t, report_errors=True, report_warnings=True)
+
     return True

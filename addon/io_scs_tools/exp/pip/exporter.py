@@ -114,7 +114,7 @@ def __get_trigger_point__(pip_trigger_points, locator_name):
     return pip_trigger_points[locator_name]
 
 
-def execute(dirpath, filename, prefab_locator_list, offset_matrix, used_parts, used_terrain_points):
+def execute(dirpath, filename, name_suffix, prefab_locator_list, offset_matrix, used_parts, used_terrain_points):
     """Exports PIP file from given locator list.
 
     :param prefab_locator_list:
@@ -123,6 +123,8 @@ def execute(dirpath, filename, prefab_locator_list, offset_matrix, used_parts, u
     :type dirpath: str
     :param filename: name of PIP file
     :type filename: str
+    :param name_suffix: file name suffix
+    :type name_suffix: str
     :param offset_matrix: offset matrix for locators
     :type offset_matrix: mathutils.Matrix
     :param used_parts: parts transitional structure for storing used parts inside this PIP export
@@ -495,6 +497,6 @@ def execute(dirpath, filename, prefab_locator_list, offset_matrix, used_parts, u
 
     # write to file
     ind = "    "
-    pip_filepath = path.join(dirpath, str(filename + ".pip"))
+    pip_filepath = path.join(dirpath, str(filename + ".pip" + name_suffix))
     result = _pix_container.write_data_to_file(pip_container, pip_filepath, ind)
     return result

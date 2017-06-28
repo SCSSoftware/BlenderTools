@@ -44,15 +44,17 @@ class UIShaderPresetItem:
         new_flavor = Flavor()
         self.flavors.append(new_flavor)
 
-    def append_flavor_variant(self, variant_suffix):
+    def append_flavor_variant(self, variant_type, variant_suffix):
         """Appends flavor variant to lastly added flavor.
 
         NOTE: This should be always called after "append_flavor", otherwise it will result in error.
 
+        :param variant_type: type of the flavor variant
+        :type variant_type: str
         :param variant_suffix: name of the flavor variant
         :type variant_suffix: str
         """
-        new_flavor_variant = FlavorVariant(variant_suffix)
+        new_flavor_variant = FlavorVariant(variant_type, variant_suffix)
         self.flavors[-1].append_variant(new_flavor_variant)
 
 
@@ -76,11 +78,15 @@ class Flavor:
 
 
 class FlavorVariant:
-    def __init__(self, the_suffix):
+    def __init__(self, the_type, the_suffix):
         """Constructor.
 
+        :param the_type: type of the flavor variant
+        :type the_type: str
         :param the_suffix: name of the flavor variant
         :type the_suffix: str
         """
+        self.type = the_type
+        """Internal type name of the flavor variant."""
         self.suffix = the_suffix
-        """Suffix of flavor variant inside effect name"""
+        """Suffix of flavor variant inside effect name."""

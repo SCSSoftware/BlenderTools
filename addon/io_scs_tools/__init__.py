@@ -22,7 +22,7 @@ bl_info = {
     "name": "SCS Tools",
     "description": "Setup models, Import-Export SCS data format",
     "author": "Simon Lusenc (50keda), Milos Zajic (4museman)",
-    "version": (1, 8, "2926820"),
+    "version": (1, 9, "12a2cec"),
     "blender": (2, 78, 0),
     "location": "File > Import-Export",
     "wiki_url": "http://modding.scssoft.com/wiki/Documentation/Tools/SCS_Blender_Tools",
@@ -68,7 +68,7 @@ class ImportSCS(bpy.types.Operator, ImportHelper):
     )
 
     directory = StringProperty()
-    filename_ext = "*.pim"
+    filename_ext = "*.pim;*.pim.ef;"
     filter_glob = StringProperty(default=filename_ext, options={'HIDDEN'})
 
     def check(self, context):
@@ -107,12 +107,20 @@ class ImportSCS(bpy.types.Operator, ImportHelper):
         for filepath in paths:
 
             result = False
-            if filepath.endswith("pim"):
+            if filepath.endswith(".pim") or filepath.endswith(".pim.ef"):
+
+                # check extension for DEF format and properly assign it to name suffix
+                ef_format_suffix = ""
+                if filepath.endswith(".ef"):
+                    ef_format_suffix = ".ef"
+                    filepath = filepath[:-len(ef_format_suffix)]
+
+                filepath = filepath[:-4]
 
                 try:
 
                     _get_scs_globals().import_in_progress = True
-                    result = _pix_import.load(context, filepath)
+                    result = _pix_import.load(context, filepath, name_suffix=ef_format_suffix)
                     _get_scs_globals().import_in_progress = False
 
                 except Exception as e:
@@ -265,8 +273,13 @@ class ExportSCS(bpy.types.Operator, ExportHelper):
         elif export_scope == 'scenes':
             init_obj_list = tuple(bpy.data.objects)
 
+        # check extension for EF format and properly assign it to name suffix
+        ef_name_suffix = ""
+        if _get_scs_globals().export_output_type == "EF":
+            ef_name_suffix = ".ef"
+
         try:
-            result = _export.batch_export(self, init_obj_list, menu_filepath=filepath)
+            result = _export.batch_export(self, init_obj_list, name_suffix=ef_name_suffix, menu_filepath=filepath)
         except Exception as e:
 
             result = {"CANCELLED"}

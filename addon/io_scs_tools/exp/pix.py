@@ -28,7 +28,9 @@ from io_scs_tools.exp import pia as _pia
 from io_scs_tools.exp import pic as _pic
 from io_scs_tools.exp import pis as _pis
 from io_scs_tools.exp import pit as _pit
+from io_scs_tools.exp import pit_ef as _pit_ef
 from io_scs_tools.exp.pim import exporter as _pim_exporter
+from io_scs_tools.exp.pim_ef import exporter as _pim_ef_exporter
 from io_scs_tools.exp.pip import exporter as _pip_exporter
 from io_scs_tools.exp.transition_structs.bones import BonesTrans
 from io_scs_tools.exp.transition_structs.materials import MaterialsTrans
@@ -96,11 +98,13 @@ def _get_objects_by_type(blender_objects, parts):
     return mesh_object_list, prefab_locator_list, model_locator_list, collision_locator_list, armature_object
 
 
-def export(dirpath, root_object, game_object_list):
+def export(dirpath, name_suffix, root_object, game_object_list):
     """The main export function.
 
     :param dirpath: The main Filepath where most of the Files will be exported
     :type dirpath: str
+    :param name_suffix: files name suffix (exchange format is using .ef)
+    :type name_suffix: str
     :param root_object: This is the "SCS Root Object" and parent object of all objects in "game_object_list" and carries many settings for the
     whole "SCS Game Object"
     :type root_object: bpy.types.Object
@@ -133,10 +137,10 @@ def export(dirpath, root_object, game_object_list):
     ) = _get_objects_by_type(game_object_list, parts)
 
     # INITIAL CHECKS
-    skeleton_filepath = root_object.name + ".pis"  # NOTE: if no skeleton is exported name of it should be there anyway
+    skeleton_filepath = root_object.name + ".pis" + name_suffix  # NOTE: if no skeleton is exported name of it should be there anyway
     if armature_object and root_object.scs_props.scs_root_animated == "anim":
 
-        skeleton_filepath = _path_utils.get_skeleton_relative_filepath(armature_object, dirpath, root_object.name)
+        skeleton_filepath = _path_utils.get_skeleton_relative_filepath(armature_object, dirpath, root_object.name) + name_suffix
 
         if len(mesh_objects) == 0:
             context.window.cursor_modal_restore()
@@ -158,14 +162,20 @@ def export(dirpath, root_object, game_object_list):
 
     # EXPORT PIM
     if scs_globals.export_pim_file:
-        in_args = (dirpath, root_object, armature_object, skeleton_filepath, mesh_objects, model_locators)
+        in_args = (dirpath, name_suffix, root_object, armature_object, skeleton_filepath, mesh_objects, model_locators)
         trans_structs_args = (parts, materials, bones, terrain_points)
-        export_success = _pim_exporter.execute(*(in_args + trans_structs_args))
+
+        if scs_globals.export_output_type == "5":
+            export_success = _pim_exporter.execute(*(in_args + trans_structs_args))
+        elif scs_globals.export_output_type == "EF":
+            export_success = _pim_ef_exporter.execute(*(in_args + trans_structs_args))
+        else:
+            export_success = False
 
         # EXPORT PIC
         if scs_globals.export_pic_file and export_success:
             if collision_locators:
-                in_args = (collision_locators, dirpath + os.sep + root_object.name, root_object.name)
+                in_args = (collision_locators, dirpath + os.sep + root_object.name, name_suffix, root_object.name)
                 trans_structs_args = (parts,)
                 export_success = _pic.export(*(in_args + trans_structs_args))
             else:
@@ -173,15 +183,21 @@ def export(dirpath, root_object, game_object_list):
 
     # EXPORT PIP
     if scs_globals.export_pip_file and prefab_locators and export_success:
-        in_args = (dirpath, root_object.name, prefab_locators, root_object.matrix_world)
+        in_args = (dirpath, root_object.name, name_suffix, prefab_locators, root_object.matrix_world)
         trans_structs_args = (parts, terrain_points)
         export_success = _pip_exporter.execute(*(in_args + trans_structs_args))
 
     # EXPORT PIT
     if scs_globals.export_pit_file and export_success:
-        in_args = (root_object, dirpath + os.sep + root_object.name)
+        in_args = (root_object, dirpath + os.sep + root_object.name, name_suffix)
         trans_structs_args = (parts, materials)
-        export_success = _pit.export(*(in_args + trans_structs_args))
+
+        if scs_globals.export_output_type == "5":
+            export_success = _pit.export(*(in_args + trans_structs_args))
+        elif scs_globals.export_output_type == "EF":
+            export_success = _pit_ef.export(*(in_args + trans_structs_args))
+        else:
+            export_success = False
 
     # PIS, PIA
     if root_object.scs_props.scs_root_animated == 'anim':
@@ -198,7 +214,7 @@ def export(dirpath, root_object, game_object_list):
 
                 anim_dirpath = os.path.join(dirpath, anim_dirpath)
                 # make sure to get relative path from PIA to PIS (animations may use custom export path)
-                skeleton_filepath = _path_utils.get_skeleton_relative_filepath(armature_object, anim_dirpath, root_object.name)
+                skeleton_filepath = _path_utils.get_skeleton_relative_filepath(armature_object, anim_dirpath, root_object.name) + name_suffix
 
                 exported_anims_names = {}  # store exported animations paths, so we can report duplicates and overwrites
 
@@ -207,7 +223,7 @@ def export(dirpath, root_object, game_object_list):
                     if scs_anim.export:  # check if export is disabled on animation itself
 
                         # TODO: use bones transitional variable for safety checks
-                        export_success = _pia.export(root_object, armature_object, scs_anim, anim_dirpath, skeleton_filepath)
+                        export_success = _pia.export(root_object, armature_object, scs_anim, anim_dirpath, name_suffix, skeleton_filepath)
 
                         if export_success:
 

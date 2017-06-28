@@ -232,26 +232,53 @@ class Node:
 
             i += 1
 
-        # depending on index of the nearest point insert new point
-        if smallest_dist_i == 0:  # no terrain points yet or the nearest is first just put it at start
-            self.__tp_per_variant[variant_index].insert(0, (position, normal))
-        elif smallest_dist_i == tp_count - 1:  # last is the nearest put it at the back
-            self.__tp_per_variant[variant_index].append((position, normal))
+        # depending on distance to closest, previous and next terrain point insert it so that points are sorted already
+        if tp_count < 2:  # no terrain points yet or just one just put it at the end
+
+            insert_i = tp_count
+
+        elif smallest_dist_i == 0:  # the nearest is first just put it at start or behind the first one
+
+            next_tp = self.__tp_per_variant[variant_index][smallest_dist_i + 1]
+            closest_tp = self.__tp_per_variant[variant_index][smallest_dist_i]
+
+            if get_distance(next_tp[0], position) < get_distance(closest_tp[0], next_tp[0]):
+                insert_i = 1
+            else:
+                insert_i = 0
+
+        elif smallest_dist_i == tp_count - 1:  # last is the nearest put it at the back or before last one
+
+            prev_tp = self.__tp_per_variant[variant_index][smallest_dist_i - 1]
+            closest_tp = self.__tp_per_variant[variant_index][smallest_dist_i]
+
+            if get_distance(prev_tp[0], position) < get_distance(closest_tp[0], prev_tp[0]):
+                insert_i = smallest_dist_i
+            else:
+                insert_i = smallest_dist_i + 1
+
         else:
 
             # now this is a tricky one: once nearest point is in the middle.
-            # With that in mind take previous and next existing points and calculate
-            # to which new point is closer:
-            # 1. if closer to previous we have to insert new point before the nearest
-            # 2. if closer to next we have to insert new point after the nearest
+            # With that in mind take previous and next existing points and calculate to which new point is closer.
+            # After that also compare distance of next/previous to closest which gives us final answer
+            # either point should be inserted before or after closest point.
 
-            ahead_tp = self.__tp_per_variant[variant_index][smallest_dist_i - 1]
-            behind_tp = self.__tp_per_variant[variant_index][smallest_dist_i + 1]
+            prev_tp = self.__tp_per_variant[variant_index][smallest_dist_i - 1]
+            closest_tp = self.__tp_per_variant[variant_index][smallest_dist_i]
+            next_tp = self.__tp_per_variant[variant_index][smallest_dist_i + 1]
 
-            if get_distance(behind_tp[0], position) < get_distance(ahead_tp[0], position):
-                smallest_dist_i += 1
+            prev_tp_dist = get_distance(prev_tp[0], position)
+            next_tp_dist = get_distance(next_tp[0], position)
 
-            self.__tp_per_variant[variant_index].insert(smallest_dist_i, (position, normal))
+            if next_tp_dist < prev_tp_dist and next_tp_dist < get_distance(closest_tp[0], next_tp[0]):
+                insert_i = smallest_dist_i + 1
+            elif prev_tp_dist > get_distance(closest_tp[0], prev_tp[0]):
+                insert_i = smallest_dist_i + 1
+            else:
+                insert_i = smallest_dist_i
+
+        self.__tp_per_variant[variant_index].insert(insert_i, (position, normal))
 
         Node.__global_tp_counter += 1
 

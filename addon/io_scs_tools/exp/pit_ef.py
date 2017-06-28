@@ -16,322 +16,55 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2013-2014: SCS Software
+# Copyright (C) 2017: SCS Software
 
 import bpy
 import os
-import shutil
 from io_scs_tools.consts import Variant as _VARIANT_consts
-from io_scs_tools.exp import tobj as _tobj
+from io_scs_tools.exp.pit import default_material
+from io_scs_tools.exp.pit import get_texture_path_from_material
+from io_scs_tools.exp.pit import fill_material_sections
+from io_scs_tools.exp.pit import fill_part_list
+from io_scs_tools.exp.pit import fill_header_section
+from io_scs_tools.exp.pit import fill_look_sections
+from io_scs_tools.exp.pit import fill_variant_sections
+from io_scs_tools.exp.pit import fill_comment_header_section
+from io_scs_tools.exp.pit import fill_global_section
 from io_scs_tools.internals import looks as _looks
 from io_scs_tools.internals import shader_presets as _shader_presets
 from io_scs_tools.internals.structure import SectionData as _SectionData
 from io_scs_tools.internals.containers import pix as _pix_container
-from io_scs_tools.utils import path as _path_utils
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
-from io_scs_tools.utils.info import get_combined_ver_str
 from io_scs_tools.utils.printout import lprint
 
 
-def fill_comment_header_section(look_list, variant_list):
-    """Fills up comment section (before Header)."""
-    section = _SectionData("#comment")
-    section.props.append(("#", "# Look Names:"))
-    for look in look_list:
-        section.props.append(("#", "#\t" + look['name']))
-    section.props.append(("#", "#"))
-    section.props.append(("#", "# Variant Names:"))
-    for variant in variant_list:
-        section.props.append(("#", "#\t" + variant[0]))
-    section.props.append(("#", "#"))
-    return section
+def _get_flavor_types(preset, flavors_str):
+    """Get enabled flavor types from given preset and flavor string.
 
-
-def fill_header_section(format_version, file_name, sign_export):
-    """Fills up "Header" section."""
-    section = _SectionData("Header")
-    section.props.append(("FormatVersion", format_version))
-    section.props.append(("Source", get_combined_ver_str()))
-    section.props.append(("Type", "Trait"))
-    section.props.append(("Name", file_name))
-    if sign_export:
-        section.props.append(("SourceFilename", str(bpy.data.filepath)))
-        author = bpy.context.user_preferences.system.author
-        if author:
-            section.props.append(("Author", str(author)))
-    return section
-
-
-def fill_global_section(looks, variants, parts, materials):
-    """Fills up "Global" section."""
-    section = _SectionData("Global")
-    section.props.append(("LookCount", looks))
-    section.props.append(("VariantCount", variants))
-    section.props.append(("PartCount", parts))
-    section.props.append(("MaterialCount", materials))
-    return section
-
-
-def fill_material_sections(materials, material_dict):
-    """Fills up "Material" sections."""
-    sections = []
-    for material in materials:
-        if isinstance(material, str):
-            sections.append(material_dict[material])
-        else:
-            if material.name in material_dict:
-                material_section = material_dict[material.name]
-            else:
-                material_section = material_dict[str("_" + material.name + "_-_default_settings_")]
-            sections.append(material_section)
-    return sections
-
-
-def default_material(alias):
-    """Return 'default material' data section."""
-
-    # DEFAULT PROPERTIES
-    material_export_data = _SectionData("Material")
-    material_export_data.props.append(("Alias", alias))
-    # material_export_data.props.append(("Effect", "eut2.none"))
-    material_export_data.props.append(("Effect", "eut2.dif"))
-    material_export_data.props.append(("Flags", 0))
-    attribute_data = [
-        ('FLOAT3', "diffuse", (1.0, 1.0, 1.0)),
-        ('FLOAT3', "specular", (0.0, 0.0, 0.0)),
-        ('FLOAT', "shininess", (5.0,)),
-        ('FLOAT', "add_ambient", (0.0,)),
-        ('FLOAT', "reflection", (0.0,)),
-    ]
-    texture_data = [
-        ('texture[0]:texture_base', ""),
-    ]
-    material_export_data.props.append(("AttributeCount", len(attribute_data)))
-    material_export_data.props.append(("TextureCount", len(texture_data)))
-
-    # DEFAULT ATTRIBUTES AND TEXTURE
-    for attribute in attribute_data:
-        attribute_section = _SectionData("Attribute")
-        attribute_section.props.append(("Format", attribute[0]))
-        attribute_section.props.append(("Tag", attribute[1]))
-        attribute_section.props.append(("Value", ["i", attribute[2]]))
-        material_export_data.sections.append(attribute_section)
-    for texture in texture_data:
-        texture_section = _SectionData("Texture")
-        texture_section.props.append(("Tag", texture[0]))
-        texture_section.props.append(("Value", texture[1]))
-        material_export_data.sections.append(texture_section)
-    return material_export_data
-
-
-def get_texture_path_from_material(material, texture_type, export_path):
-    """Get's relative path for Texture section of tobj from given texture_type.
-    If tobj is not yet created it also creates tobj for it.
-
-    :param material: Blender material
-    :type material: bpy.types.Material
-    :param texture_type: type of texture which should be readed from material (example "texture_base")
-    :type texture_type: str
-    :return: relative path for Texture section data of PIT material
-    :rtype: str
+    :param preset: ui shader preset item
+    :type preset: io_scs_tools.internals.shader_presets.ui_shader_preset_item.UIShaderPresetItem
+    :param flavors_str:
+    :type flavors_str: str
+    :return: tuple of found flavors from flavor string; otherwise empty tuple is returned
+    :rtype: tuple
     """
 
-    # overwrite tobj value directly if specified
-    if getattr(material.scs_props, "shader_" + texture_type + "_use_imported", False):
-        return getattr(material.scs_props, "shader_" + texture_type + "_imported_tobj", "")
+    enabled_flavors = []
+    for flavor in preset.flavors:
+        for flavor_variant in flavor.variants:
 
-    # use tobj value from shader preset if texture is locked and has default value
-    if "scs_shader_attributes" in material and "textures" in material["scs_shader_attributes"]:
-        for tex_entry in material["scs_shader_attributes"]["textures"].values():
-            if "Tag" in tex_entry and texture_type in tex_entry["Tag"]:
-                if "Lock" in tex_entry and tex_entry["Lock"] == "True":
-                    if "Value" in tex_entry and tex_entry["Value"] != "":
-                        return tex_entry["Value"]
+            is_in_middle = "." + flavor_variant.suffix + "." in flavors_str
+            is_on_end = flavors_str.endswith("." + flavor_variant.suffix)
 
-    # CALCULATING TOBJ AND TEXTURE PATHS
-    texture_raw_path = getattr(material.scs_props, "shader_" + texture_type, "NO PATH")
-    tobj_rel_filepath = tobj_abs_filepath = texture_abs_filepath = ""
-    scs_project_path = _get_scs_globals().scs_project_path.rstrip("\\").rstrip("/")
+            if is_in_middle or is_on_end:
 
-    extensions, texture_raw_path = _path_utils.get_texture_extens_and_strip_path(texture_raw_path)
+                enabled_flavors.append(flavor_variant.type)
 
-    for ext in extensions:
-        if texture_raw_path.startswith("//"):  # relative
-
-            # search for relative path inside current scs project base and
-            # possible dlc/mod parent folders; use first found
-            for infix in ("", "../base/", "../../base/"):
-
-                curr_path = os.path.join(scs_project_path, infix + texture_raw_path[2:] + ext)
-
-                if os.path.isfile(curr_path):
-
-                    tobj_rel_filepath = texture_raw_path.replace("//", "/")
-
-                    # if tobj is used by user then get texture path from tobj
-                    # otherwise get tobj path from texture path
-                    if ext == ".tobj":
-                        tobj_abs_filepath = curr_path
-                        texture_abs_filepath = _path_utils.get_texture_path_from_tobj(curr_path)
-                    else:
-                        tobj_abs_filepath = _path_utils.get_tobj_path_from_shader_texture(curr_path, check_existance=False)
-                        texture_abs_filepath = curr_path
-                    break
-
-            # break searching for texture if texture was found
-            if tobj_rel_filepath != "":
-                break
-
-        elif ext != ".tobj" and os.path.isfile(texture_raw_path + ext):  # absolute
-
-            texture_raw_path_with_ext = texture_raw_path + ext
-
-            # if we are exporting somewhere into SCS Project Base Path texture still can be saved
-            if scs_project_path != "" and _path_utils.startswith(export_path, scs_project_path):
-
-                tex_dir, tex_filename = os.path.split(texture_raw_path_with_ext)
-                tobj_filename = tex_filename + ".tobj"
-
-                # copy texture beside exported files
-                try:
-                    shutil.copy2(texture_raw_path_with_ext, os.path.join(export_path, tex_filename))
-                except OSError as e:
-                    # ignore copying the same file
-                    # NOTE: happens if absolute texture paths are used
-                    # even if they are referring to texture inside scs project path
-                    if type(e).__name__ != "SameFileError":
-                        raise e
-
-                # copy also TOBJ if exists
-                texture_raw_tobj_path = str(tex_dir) + os.sep + tobj_filename
-                if os.path.isfile(texture_raw_tobj_path):
-                    shutil.copy2(texture_raw_tobj_path, os.path.join(export_path, tobj_filename))
-
-                # get copied TOBJ relative path to current scs project path
-                tobj_rel_filepath = ""
-                if export_path != scs_project_path:
-                    tobj_rel_filepath = os.sep + os.path.relpath(export_path, scs_project_path)
-
-                tobj_rel_filepath = tobj_rel_filepath + os.sep + tobj_filename[:-5]
-                tobj_abs_filepath = os.path.join(export_path, tobj_filename)
-                texture_abs_filepath = texture_raw_path_with_ext
-                break
-
-            else:
-                lprint("E Can not properly export texture %r from material %r!\n\t   " +
-                       "Make sure you are exporting somewhere into Project Base Path and texture is properly set!",
-                       (texture_raw_path, material.name))
-                return ""
-
-    else:
-        lprint("E Texture file %r from material %r doesn't exists inside current Project Base Path.\n\t   " +
-               "TOBJ  won't be exported and reference will remain empty, expect problems!",
-               (texture_raw_path, material.name))
-        return ""
-
-    # CREATE TOBJ FILE
-    if not os.path.isfile(tobj_abs_filepath):  # only if it does not exists yet
-
-        # export tobj only if file of texture exists
-        if os.path.isfile(texture_abs_filepath):
-            texture_name = os.path.basename(_path_utils.strip_sep(texture_abs_filepath))
-            _tobj.export(tobj_abs_filepath, texture_name, set())
-        else:
-            lprint("E Texture file %r from material %r doesn't exists, TOBJ can not be exported!",
-                   (texture_raw_path, material.name))
-
-    # make sure that Windows users will export proper paths
-    tobj_rel_filepath = tobj_rel_filepath.replace("\\", "/")
-
-    return tobj_rel_filepath
-
-
-def fill_look_sections(data_list):
-    """Fills up "Look" sections."""
-    sections = []
-    for item_i, item in enumerate(data_list):
-        section = _SectionData("Look")
-        section.props.append(("Name", item['name']))
-        for material_section in item['material_sections']:
-            section.sections.append(material_section)
-        sections.append(section)
-    return sections
-
-
-def _fill_atr_section(atr):
-    """Creates "Attribute" section."""
-    section = _SectionData("Attribute")
-    section.props.append(("Format", atr[0]))
-    section.props.append(("Tag", atr[1]))
-    section.props.append(("Value", ["&&", (atr[2],)]))
-    return section
-
-
-def _fill_part_section(part):
-    """Creates "Part" section."""
-    section = _SectionData("Part")
-    section.props.append(("Name", part[0]))
-    section.props.append(("AttributeCount", len(part[1])))
-    for atr in part[1]:
-        atr_section = _fill_atr_section(atr)
-        section.sections.append(atr_section)
-    return section
-
-
-def fill_variant_sections(data_list):
-    """Fills up "Variant" sections."""
-    sections = []
-    for item_i, item in enumerate(data_list):
-        section = _SectionData("Variant")
-        section.props.append(("Name", item[0]))
-        for part in item[1]:
-            part_section = _fill_part_section(part)
-            section.sections.append(part_section)
-        sections.append(section)
-    return sections
-
-
-def fill_part_list(parts, used_parts_names, all_parts=False):
-    """Fills up "Part" sections in "Varian" section
-
-    :param parts: SCS Root part inventory or parts collection property from variant inventory
-    :type parts: io_scs_tools.properties.object.ObjectPartInventoryItem | list[io_scs_tools.properties.object.ObjectVariantPartInclusion]
-    :param used_parts_names: list of part names that are actually used in game object
-    :type used_parts_names: list[str]
-    :param all_parts: flag for all parts are visible (handy for creating default visibilities)
-    :type all_parts: bool
-    :return: Part records (name, attributes)
-    :rtype: list
-    """
-    part_list = []
-    for part_name in used_parts_names:
-
-        part_written = False
-        for part in parts:
-
-            if part.name == part_name:
-
-                part_atr = []
-                if all_parts:
-                    part_atr.append(('INT', 'visible', 1))
-                else:
-                    if part.include:
-                        include = 1
-                    else:
-                        include = 0
-                    part_atr.append(('INT', 'visible', include))
-
-                part_list.append((part.name, part_atr), )
-                part_written = True
-
-        if not part_written:
-            lprint("E Part %r from collected parts not avaliable in variant parts inventory, expect problems by conversion!", (part_name,))
-
-    return part_list
+    return tuple(enabled_flavors)
 
 
 def export(root_object, filepath, name_suffix, used_parts, used_materials):
-    """Export PIT.
+    """Export PIT EF.
 
     :param root_object: SCS root object
     :type root_object: bpy.types.Object
@@ -352,8 +85,8 @@ def export(root_object, filepath, name_suffix, used_parts, used_materials):
     file_name = root_object.name
 
     print("\n************************************")
-    print("**      SCS PIT Exporter          **")
-    print("**      (c)2014 SCS Software      **")
+    print("**      SCS PIT.EF Exporter       **")
+    print("**      (c)2017 SCS Software      **")
     print("************************************\n")
 
     # DATA GATHERING
@@ -421,6 +154,7 @@ def export(root_object, filepath, name_suffix, used_parts, used_materials):
 
                     preset = _shader_presets.get_preset(active_shader_preset_name)
                     flavors_str = effect_name[len(preset.effect):]
+                    flavors_types = _get_flavor_types(preset, flavors_str)
                     section = _shader_presets.get_section(active_shader_preset_name, flavors_str)
 
                     # FLAGS
@@ -512,6 +246,12 @@ def export(root_object, filepath, name_suffix, used_parts, used_materials):
                     material_export_data = _SectionData("Material")
                     material_export_data.props.append(("Alias", material.name))
                     material_export_data.props.append(("Effect", effect_name))
+
+                    # add additional info about base effect and enabled flavor types
+                    material_export_data.props.append(("BaseEffect", preset.effect))
+                    if len(flavors_types) > 0:
+                        material_export_data.props.append(("Flavors", ["ii", flavors_types]))
+
                     material_export_data.props.append(("Flags", flags))
                     material_export_data.props.append(("AttributeCount", attribute_cnt))
                     material_export_data.props.append(("TextureCount", texture_cnt))

@@ -1038,10 +1038,8 @@ class GlobalSCSProps(bpy.types.PropertyGroup):
         name="Output Format",
         items=(
             ('5', "Game Data Format, ver. 5", "Export PIM (version 5) file formats for SCS Game Engine"),
-            ('def1', "Data Exchange Format, ver. 1",
-             "Export 'PIM Data Exchange Formats' (version 1) file formats designed for data exchange between different modeling tools"),
-            # ('7', "PIM Data Exchange Formats, ver. 1", "Export 'PIM Data Exchange Formats' (version 1) file formats designed for data
-            # exchange between different modeling tools"),
+            ('EF', "Exchange Format, ver. 1",
+             "Export 'Exchange Formats' (version 1) file formats designed for data exchange between different modeling tools"),
         ),
         default='5',
         update=export_output_type_update,

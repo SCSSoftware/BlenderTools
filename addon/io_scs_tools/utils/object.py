@@ -665,21 +665,6 @@ def show_loc_type(objects, loc_type, pref_type=None, hide_state=None, view_only=
             obj.hide = True
 
 
-def set_edgesplit(name):
-    """
-    Makes the active object smooth shaded and appends "Edge Split" Modifier
-    of provided name to it and with "Edge Angle" option turned off.
-    It also turn on the sharp edges' visibility.
-    :param name:
-    :return:
-    """
-    bpy.ops.object.shade_smooth()
-    bpy.ops.object.modifier_add(type='EDGE_SPLIT')
-    bpy.context.object.modifiers["EdgeSplit"].use_edge_angle = False
-    bpy.context.object.modifiers["EdgeSplit"].name = name
-    bpy.context.object.data.show_edge_sharp = True
-
-
 def get_object_materials(obj):
     """
     Takes an object and returns all its materials or a string "_empty_material_" if object
@@ -765,7 +750,7 @@ def get_mesh(obj):
         if modifier.type == "ARMATURE" and modifier.object in sibling_objs and modifier.object.type == "ARMATURE":
             disabled_modifiers = disable_modifier(modifier, disabled_modifiers)
 
-    if _get_scs_globals().export_output_type.startswith('def'):
+    if _get_scs_globals().export_output_type.startswith('EF'):
         if _get_scs_globals().export_apply_modifiers:
             if _get_scs_globals().export_exclude_edgesplit:
                 disabled_modifiers.append(disable_modifiers(obj, modifier_type_to_disable='EDGE_SPLIT'))

@@ -305,7 +305,7 @@ Shader {
 Shader {
     PresetName: "dif.spec"
     Effect: "eut2.dif.spec"
-    Flavors: ( "NMAP|NMAPUV|NMAP_16|NMAPUV_16" "SHADOW" "PAINT" "TEXGEN0" "ASAFEW" "ALPHA" "DEPTH" "BLEND_OVER|BLEND_ADD" )
+    Flavors: ( "NMAP_TS|NMAP_TS_UV|NMAP_TS_16|NMAP_TS_UV_16" "SHADOW" "PAINT" "TEXGEN0" "ASAFEW" "ALPHA" "DEPTH" "BLEND_OVER|BLEND_ADD" )
     Flags: 0
     Attribute {
         Format: FLOAT3
@@ -341,7 +341,7 @@ Shader {
 Shader {
     PresetName: "dif.spec.add.env"
     Effect: "eut2.dif.spec.add.env"
-    Flavors: ( "INDENV" "NMAP|NMAPUV|NMAP_16|NMAPUV_16" "SHADOW" "PAINT" "TEXGEN0" "INVERTOPAC" "ALPHA" "DEPTH" "BLEND_OVER|BLEND_ADD" )
+    Flavors: ( "INDENV" "NMAP_TS|NMAP_TS_UV|NMAP_TS_16|NMAP_TS_UV_16" "SHADOW" "PAINT" "TEXGEN0" "INVERTOPAC" "ALPHA" "DEPTH" "BLEND_OVER|BLEND_ADD" )
     Flags: 0
     Attribute {
         Format: FLOAT3
@@ -392,7 +392,7 @@ Shader {
 Shader {
     PresetName: "dif.spec.add.env.nofresnel"
     Effect: "eut2.dif.spec.add.env.nofresnel"
-    Flavors: ( "NMAP|NMAPUV|NMAP_16|NMAPUV_16" "SHADOW" "PAINT" "TEXGEN0" "ALPHA" "DEPTH" "BLEND_OVER|BLEND_ADD" )
+    Flavors: ( "NMAP_TS|NMAP_TS_UV|NMAP_TS_16|NMAP_TS_UV_16" "SHADOW" "PAINT" "TEXGEN0" "ALPHA" "DEPTH" "BLEND_OVER|BLEND_ADD" )
     Flags: 0
     Attribute {
         Format: FLOAT3
@@ -485,7 +485,7 @@ Shader {
 Shader {
     PresetName: "dif.spec.mult.dif.spec"
     Effect: "eut2.dif.spec.mult.dif.spec"
-    Flavors: ( "NMAP|NMAPUV|NMAP_16|NMAPUV_16" "SHADOW" "PAINT" "TEXGEN0" "TEXGEN1" "ALPHA" "DEPTH" "BLEND_OVER|BLEND_ADD" )
+    Flavors: ( "NMAP_TS|NMAP_TS_UV|NMAP_TS_16|NMAP_TS_UV_16" "SHADOW" "PAINT" "TEXGEN0" "TEXGEN1" "ALPHA" "DEPTH" "BLEND_OVER|BLEND_ADD" )
     Flags: 0
     Attribute {
         Format: FLOAT3
@@ -526,7 +526,7 @@ Shader {
 Shader {
     PresetName: "dif.spec.mult.dif.spec.add.env"
     Effect: "eut2.dif.spec.mult.dif.spec.add.env"
-    Flavors: ( "NMAP|NMAPUV|NMAP_16|NMAPUV_16" "SHADOW" "PAINT" "TEXGEN0" "TEXGEN1" "ALPHA" "DEPTH" "BLEND_OVER|BLEND_ADD" )
+    Flavors: ( "NMAP_TS|NMAP_TS_UV|NMAP_TS_16|NMAP_TS_UV_16" "SHADOW" "PAINT" "TEXGEN0" "TEXGEN1" "ALPHA" "DEPTH" "BLEND_OVER|BLEND_ADD" )
     Flags: 0
     Attribute {
         Format: FLOAT3
@@ -582,7 +582,7 @@ Shader {
 Shader {
     PresetName: "dif.spec.mult.dif.spec.iamod.dif.spec"
     Effect: "eut2.dif.spec.mult.dif.spec.iamod.dif.spec"
-    Flavors: ( "NMAP|NMAPUV|NMAP_16|NMAPUV_16" "DEPTH" "BLEND_OVER|BLEND_ADD" )
+    Flavors: ( "NMAP_TS|NMAP_TS_UV|NMAP_TS_16|NMAP_TS_UV_16" "DEPTH" "BLEND_OVER|BLEND_ADD" )
     Flags: 0
     Attribute {
         Format: FLOAT3
@@ -628,7 +628,7 @@ Shader {
 Shader {
     PresetName: "dif.spec.oclu"
     Effect: "eut2.dif.spec.oclu"
-    Flavors: ( "NMAP|NMAPUV|NMAP_16|NMAPUV_16" "SHADOW" "PAINT" "TEXGEN0" "TEXGEN1" "ALPHA" "DEPTH" "BLEND_OVER|BLEND_ADD" )
+    Flavors: ( "NMAP_TS|NMAP_TS_UV|NMAP_TS_16|NMAP_TS_UV_16" "SHADOW" "PAINT" "TEXGEN0" "TEXGEN1" "ALPHA" "DEPTH" "BLEND_OVER|BLEND_ADD" )
     Flags: 0
     Attribute {
         Format: FLOAT3
@@ -669,7 +669,7 @@ Shader {
 Shader {
     PresetName: "dif.spec.oclu.add.env"
     Effect: "eut2.dif.spec.oclu.add.env"
-    Flavors: ( "NMAP|NMAPUV|NMAP_16|NMAPUV_16" "SHADOW" "PAINT" "TEXGEN0" "TEXGEN1" "ALPHA" "DEPTH" "BLEND_OVER|BLEND_ADD" )
+    Flavors: ( "NMAP_TS|NMAP_TS_UV|NMAP_TS_16|NMAP_TS_UV_16" "SHADOW" "PAINT" "TEXGEN0" "TEXGEN1" "ALPHA" "DEPTH" "BLEND_OVER|BLEND_ADD" )
     Flags: 0
     Attribute {
         Format: FLOAT3
@@ -807,7 +807,7 @@ Shader {
 Shader {
     PresetName: "dif.spec.weight.add.env"
     Effect: "eut2.dif.spec.weight.add.env"
-    Flavors: ( "NMAP|NMAPUV|NMAP_16|NMAPUV_16" "SHADOW" "PAINT" "TEXGEN0" "ALPHA" "DEPTH" "BLEND_OVER|BLEND_ADD" )
+    Flavors: ( "NMAP_TS|NMAP_TS_UV|NMAP_TS_16|NMAP_TS_UV_16" "SHADOW" "PAINT" "TEXGEN0" "ALPHA" "DEPTH" "BLEND_OVER|BLEND_ADD" )
     Flags: 0
     Attribute {
         Format: FLOAT3
@@ -1182,7 +1182,7 @@ Shader {
 Shader {
     PresetName: "lamp"
     Effect: "eut2.lamp"
-    Flavors: ( "NMAP|NMAPUV|NMAP_16|NMAPUV_16" "SHADOW" "ENVMAP" )
+    Flavors: ( "NMAP_TS|NMAP_TS_UV|NMAP_TS_16|NMAP_TS_UV_16" "ENVMAP" "SHADOW" )
     Flags: 0
     Attribute {
         Format: FLOAT3
@@ -1390,7 +1390,7 @@ Shader {
 Shader {
     PresetName: "truckpaint"
     Effect: "eut2.truckpaint"
-    Flavors: ( "NMAP|NMAPUV|NMAP_16|NMAPUV_16" "SHADOW" "COLORMASK|AIRBRUSH" "FLIPFLAKE" "ALTUV" )
+    Flavors: ( "NMAP_TS|NMAP_TS_UV|NMAP_TS_16|NMAP_TS_UV_16" "SHADOW" "COLORMASK|AIRBRUSH" "FLIPFLAKE" "ALTUV" )
     Flags: 0
     Attribute {
         Format: FLOAT3
@@ -1747,7 +1747,7 @@ Flavor {
     Name: "lvcol"
 }
 Flavor {
-    Type: "NMAP"
+    Type: "NMAP_TS"
     Name: "tsnmap"
     Texture {
         Tag: "texture[X]:texture_nmap"
@@ -1756,7 +1756,7 @@ Flavor {
     }
 }
 Flavor {
-    Type: "NMAP_16"
+    Type: "NMAP_TS_16"
     Name: "tsnmap16"
     Texture {
         Tag: "texture[X]:texture_nmap"
@@ -1793,7 +1793,7 @@ Flavor {
     }
 }
 Flavor {
-    Type: "NMAPUV"
+    Type: "NMAP_TS_UV"
     Name: "tsnmapuv"
     Texture {
         Tag: "texture[X]:texture_nmap"
@@ -1802,7 +1802,7 @@ Flavor {
     }
 }
 Flavor {
-    Type: "NMAPUV_16"
+    Type: "NMAP_TS_UV_16"
     Name: "tsnmapuv16"
     Texture {
         Tag: "texture[X]:texture_nmap"

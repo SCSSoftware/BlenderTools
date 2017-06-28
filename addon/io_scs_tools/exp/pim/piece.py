@@ -77,12 +77,12 @@ class Piece:
 
         vertex_hash = str(index)
         for uv in uvs:
-            vertex_hash += frmt % uv[0] + frmt % uv[1]
+            vertex_hash = ''.join((vertex_hash, frmt % uv[0], frmt % uv[1]))
 
-        vertex_hash += frmt % rgba[0] + frmt % rgba[1] + frmt % rgba[2] + frmt % rgba[3]
+        vertex_hash = ''.join((vertex_hash, frmt % rgba[0], frmt % rgba[1], frmt % rgba[2], frmt % rgba[3]))
 
         if tangent:
-            vertex_hash += frmt % tangent[0] + frmt % tangent[1] + frmt % tangent[2] + frmt % tangent[3]
+            vertex_hash = ''.join((vertex_hash, frmt % tangent[0], frmt % tangent[1], frmt % tangent[2], frmt % tangent[3]))
 
         return vertex_hash
 

@@ -280,7 +280,7 @@ def _fill_channel_sections(data_list, channel_type="BoneChannel"):
     return sections
 
 
-def export(scs_root_obj, armature, scs_animation, dirpath, skeleton_filepath):
+def export(scs_root_obj, armature, scs_animation, dirpath, name_suffix, skeleton_filepath):
     """Exports PIA animation
 
     :param scs_root_obj: root object of current animation
@@ -291,6 +291,8 @@ def export(scs_root_obj, armature, scs_animation, dirpath, skeleton_filepath):
     :type scs_animation: io_scs_tools.properties.object.ObjectAnimationInventoryItem
     :param dirpath: path to export
     :type dirpath: str
+    :param name_suffix: file name suffix
+    :type name_suffix: str
     :param skeleton_filepath: name of skeleton file that this animation works on
     :type skeleton_filepath: str
     """
@@ -336,7 +338,7 @@ def export(scs_root_obj, armature, scs_animation, dirpath, skeleton_filepath):
 
     # FILE EXPORT
     ind = "    "
-    filepath = os.path.join(dirpath, scs_animation.name + ".pia")
+    filepath = os.path.join(dirpath, scs_animation.name + ".pia" + name_suffix)
 
     # print("************************************")
     return _pix_container.write_data_to_file(pia_container, filepath, ind)

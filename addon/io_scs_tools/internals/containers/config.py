@@ -156,7 +156,7 @@ def update_shader_presets_path(shader_presets_filepath):
 
                             # create new flavor variant item (there can be more variants eg. "BLEND_ADD|BLEND_OVER")
                             flavor_variant_name = flavors[flavor_type].get_prop_value("Name")
-                            _shader_presets.add_flavor_variant(shader_preset_name, flavor_variant_name)
+                            _shader_presets.add_flavor_variant(shader_preset_name, flavor_type, flavor_variant_name)
 
                             # modify and save section as string into cache
                             for unique_name in unique_names:

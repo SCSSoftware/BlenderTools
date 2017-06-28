@@ -245,14 +245,16 @@ def add_flavor(preset_name):
     __ui_inventory[preset_name].append_flavor()
 
 
-def add_flavor_variant(preset_name, flavor_variant_effect_suffix):
+def add_flavor_variant(preset_name, flavor_variant_type, flavor_variant_effect_suffix):
     """Adds new variant of the flavor to the last added flavor inside UI shader preset object with given name.
 
     :param preset_name: name of the preset, where flavor variant should be added
     :type preset_name: str
-    :param flavor_variant_effect_suffix:
-    :type flavor_variant_effect_suffix:
+    :param flavor_variant_type: type of this flavor variant (e.g. BLEND_OVER, NMAP_TS_UV)
+    :type flavor_variant_type: str
+    :param flavor_variant_effect_suffix: effect suffix of this flavor variant
+    :type flavor_variant_effect_suffix: str
     """
     assert preset_name in __ui_inventory
 
-    __ui_inventory[preset_name].append_flavor_variant(flavor_variant_effect_suffix)
+    __ui_inventory[preset_name].append_flavor_variant(flavor_variant_type, flavor_variant_effect_suffix)

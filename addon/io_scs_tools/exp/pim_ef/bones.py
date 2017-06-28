@@ -16,12 +16,6 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2013-2014: SCS Software
+# Copyright (C) 2017: SCS Software
 
-from io_scs_tools.imp import pia
-from io_scs_tools.imp import pic
-from io_scs_tools.imp import pim
-from io_scs_tools.imp import pim_ef
-from io_scs_tools.imp import pip
-from io_scs_tools.imp import pis
-from io_scs_tools.imp import pit
+from io_scs_tools.exp.pim.bones import Bones

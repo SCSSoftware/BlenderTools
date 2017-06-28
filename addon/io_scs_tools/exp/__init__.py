@@ -32,7 +32,7 @@ from io_scs_tools.utils import get_scs_globals as _get_scs_globals
 from io_scs_tools.utils.printout import lprint
 
 
-def batch_export(operator_instance, init_obj_list, menu_filepath=None):
+def batch_export(operator_instance, init_obj_list, name_suffix="", menu_filepath=None):
     """This function calls other sorting functions and depending on the resulting output
     dictionary it exports all available 'SCS Game Objects' into specified locations.
 
@@ -40,6 +40,8 @@ def batch_export(operator_instance, init_obj_list, menu_filepath=None):
     :type operator_instance: bpy.types.Operator
     :param init_obj_list: initial object list which should be exported
     :type init_obj_list: tuple of Blender objects
+    :param name_suffix: files name suffix (exchange format is using .ef)
+    :type name_suffix: str
     :param menu_filepath: filepath used from menu export
     :type menu_filepath: str
     """
@@ -97,7 +99,7 @@ def batch_export(operator_instance, init_obj_list, menu_filepath=None):
             if os.path.isdir(filepath) and _path_utils.startswith(filepath, scs_project_path) and scs_project_path != "":
 
                 # EXPORT ENTRY POINT
-                export_success = pix.export(filepath, root_object, game_object_list)
+                export_success = pix.export(filepath, name_suffix, root_object, game_object_list)
 
                 if export_success:
                     scs_game_objects_exported.append("> \"" + root_object.name + "\" exported to: '" + filepath + "'")
