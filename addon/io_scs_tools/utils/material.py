@@ -134,10 +134,10 @@ def get_texture(texture_path, texture_type, report_invalid=False):
 
         # set proper color space depending on texture type
         if texture_type == "nmap":
-            # For TGA normal maps texture use Non-Color color space as it should be,
+            # For TGA and DDS normal maps texture use Non-Color color space as it should be,
             # but for 16-bits PNG normal maps texture Linear has to be used
             # otherwise Blender completely messes up normals calculation
-            if texture.image.filepath.endswith(".tga"):
+            if texture.image.filepath.endswith(".tga") or texture.image.filepath.endswith(".dds"):
                 texture.image.colorspace_settings.name = "Non-Color"
             elif texture.image.filepath.endswith(".png") and texture.image.is_float:
                 texture.image.colorspace_settings.name = "Linear"

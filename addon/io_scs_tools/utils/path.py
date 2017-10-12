@@ -437,7 +437,7 @@ def get_scs_texture_str(texture_string):
 
     :param texture_string: texture string for which texture should be found e.g.: "/material/environment/vehicle_reflection"
     :type texture_string: str
-    :return: relative path to texture object or absolute path to texture object or uncanged texture string
+    :return: relative path to texture object or absolute path to texture object or unchanged texture string
     :rtype: str
     """
 
@@ -449,21 +449,20 @@ def get_scs_texture_str(texture_string):
 
     extensions, texture_string = get_texture_extens_and_strip_path(texture_string)
 
-    # if texture string starts with scs project path we can directly strip of project path
+    # if texture string starts with scs project path we can directly strip of project path,
+    # otherwise check if texture string came from base project while scs project path is in dlc/mod folder
     if startswith(texture_string, scs_project_path):
         texture_string = texture_string[len(scs_project_path):]
-    else:  # check if texture string came from base project while scs project path is in dlc/mod folder
+    elif len(scs_project_path) > 0 and len(texture_string) > 0:
 
         # first find longest matching path
-        i = 1
-        while startswith(scs_project_path, texture_string[:i]) and i < len(texture_string):
-            i += 1
+        common_path_len = len(os.path.commonpath([scs_project_path, texture_string]))
 
         # now check if provided texture string is the same as:
         # current scs project path + one or two directories up + non matched path of the part
         for infix in ("..", ".." + os.sep + ".."):
 
-            nonmatched_path_part = texture_string[i - 2:]
+            nonmatched_path_part = texture_string[common_path_len:]
 
             modif_texture_string = os.path.join(scs_project_path, infix + nonmatched_path_part)
             # if one or two directories up is the same path as texture string
@@ -661,6 +660,44 @@ def get_all_infixed_file_paths(filepath, include_given_path=True):
             infixed_filepaths.append(os.path.join(orig_dir, file))
 
     return infixed_filepaths
+
+
+def get_projects_paths(game_project_path):
+    """Gets list of all projects inside givem game project path.
+
+    NOTE: function is not checking wether given path is real game project or not,
+    rather it just searches for mod and dlc projects.
+
+    :param game_project_path: directory where game repo is located
+    :type game_project_path: str
+    :return: paths of all mod and dlc projects found in game project
+    :rtype: list[str]
+    """
+
+    project_paths = []
+    for dir_entry in os.listdir(game_project_path):
+
+        # projects can not be files so ignore them
+        if os.path.isfile(os.path.join(game_project_path, dir_entry)):
+            continue
+
+        if dir_entry == "base" or dir_entry.startswith("dlc_"):
+
+            project_paths.append(readable_norm(os.path.join(game_project_path, dir_entry)))
+
+        elif dir_entry.startswith("mod_"):
+
+            mod_dir = os.path.join(game_project_path, dir_entry)
+            for dir_entry2 in os.listdir(mod_dir):
+
+                # projects can not be files so ignore them
+                if os.path.isfile(os.path.join(mod_dir, dir_entry)):
+                    continue
+
+                if dir_entry2 == "base" or dir_entry2.startswith("dlc_"):
+                    project_paths.append(readable_norm(os.path.join(mod_dir, dir_entry2)))
+
+    return project_paths
 
 
 def startswith(path1, path2):

@@ -82,4 +82,6 @@ def export(filepath, texture_name, settings):
 
         lprint("D Ignoring TOBJ settings save as TOBJ is featuring non 2d map type!")
 
+    container.color_space = "linear" if "color_space_linear" in settings else ""
+
     return container.write_data_to_file(filepath)

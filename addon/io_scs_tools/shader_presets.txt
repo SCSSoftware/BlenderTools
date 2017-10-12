@@ -1,11 +1,10 @@
 Header {
     FormatVersion: 1
-    Source: "Blender 2.76b"
     Type: "Presets"
     Note: "Shader Presets for SCS Blender Tools"
     Author: "Simon Lusenc (50keda)"
     Version: 2
-    Date: "2015-12-22"
+    Date: "2017-10-03"
 }
 Shader {
     PresetName: "building.add.env.day"
@@ -35,6 +34,11 @@ Shader {
         Format: FLOAT3
         Tag: "env_factor"
         Value: ( 0.9 0.9 0.9 )
+    }
+    Attribute {
+        Format: FLOAT2
+        Tag: "fresnel"
+        Value: ( 0.2 0.9 )
     }
     Attribute {
         Format: FLOAT
@@ -90,8 +94,80 @@ Shader {
     }
 }
 Shader {
+    PresetName: "building.asafew.a.day"
+    Effect: "eut2.building.asafew.a.day"
+    Flags: 0
+    Attribute {
+        Format: FLOAT3
+        Tag: "diffuse"
+        Value: ( 1.0 1.0 1.0 )
+    }
+    Attribute {
+        Format: FLOAT3
+        Tag: "specular"
+        Value: ( 0.0 0.0 0.0 )
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "shininess"
+        Value: ( 4.0 )
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "add_ambient"
+        Value: ( 0.0 )
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "aux[5]"
+        FriendlyTag: "Luminance Boost"
+        Value: ( 0.0 )
+    }
+    Texture {
+        Tag: "texture[X]:texture_base"
+        Value: ""
+        TexCoord: ( 0 )
+    }
+}
+Shader {
     PresetName: "building.lvcol.day"
     Effect: "eut2.building.lvcol.day"
+    Flags: 0
+    Attribute {
+        Format: FLOAT3
+        Tag: "diffuse"
+        Value: ( 1.0 1.0 1.0 )
+    }
+    Attribute {
+        Format: FLOAT3
+        Tag: "specular"
+        Value: ( 0.0 0.0 0.0 )
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "shininess"
+        Value: ( 4.0 )
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "add_ambient"
+        Value: ( 0.0 )
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "aux[5]"
+        FriendlyTag: "Luminance Boost"
+        Value: ( 0.0 )
+    }
+    Texture {
+        Tag: "texture[X]:texture_base"
+        Value: ""
+        TexCoord: ( 0 )
+    }
+}
+Shader {
+    PresetName: "building.asafew.a.lvcol.day"
+    Effect: "eut2.building.asafew.a.lvcol.day"
     Flags: 0
     Attribute {
         Format: FLOAT3
@@ -263,7 +339,7 @@ Shader {
 Shader {
     PresetName: "dif.lum.spec"
     Effect: "eut2.dif.lum.spec"
-    Flavors: ( "INVERTLUM" "LUMMULVCOL" "SHADOW" "PAINT" "TEXGEN0" "ALPHA" "DEPTH" "BLEND_OVER|BLEND_ADD" )
+    Flavors: ( "SHADOW" "PAINT" "TEXGEN0" "INVERTLUM" "LUMMULVCOL" "ASAFEW" "ALPHA" "DEPTH" "BLEND_OVER|BLEND_ADD" )
     Flags: 0
     Attribute {
         Format: FLOAT3
@@ -684,7 +760,7 @@ Shader {
     Attribute {
         Format: FLOAT
         Tag: "shininess"
-        Value: ( 12.0 )
+        Value: ( 20.0 )
     }
     Attribute {
         Format: FLOAT
@@ -718,7 +794,63 @@ Shader {
     }
     Texture {
         Tag: "texture[X]:texture_reflection"
-        Value: "/material/environment/interior_reflection"
+        Value: "/material/environment/vehicle_reflection"
+        TexCoord: ( -1 )
+    }
+}
+Shader {
+    PresetName: "dif.spec.oclu.weight.add.env"
+    Effect: "eut2.dif.spec.oclu.weight.add.env"
+    Flavors: ( "NMAP_TS|NMAP_TS_UV|NMAP_TS_16|NMAP_TS_UV_16" "SHADOW" "PAINT" )
+    Flags: 0
+    Attribute {
+        Format: FLOAT3
+        Tag: "diffuse"
+        Value: ( 1.0 1.0 1.0 )
+    }
+    Attribute {
+        Format: FLOAT3
+        Tag: "specular"
+        Value: ( 1.0 1.0 1.0 )
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "shininess"
+        Value: ( 20.0 )
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "add_ambient"
+        Value: ( 0.0 )
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "reflection"
+        Value: ( 0.0 )
+    }
+    Attribute {
+        Format: FLOAT2
+        Tag: "fresnel"
+        Value: ( 0.2 0.9 )
+    }
+    Attribute {
+        Format: FLOAT3
+        Tag: "env_factor"
+        Value: ( 0.8000000119 0.8000000119 0.8000000119 )
+    }
+    Texture {
+        Tag: "texture[X]:texture_base"
+        Value: ""
+        TexCoord: ( 0 )
+    }
+    Texture {
+        Tag: "texture[X]:texture_oclu"
+        Value: ""
+        TexCoord: ( 1 )
+    }
+    Texture {
+        Tag: "texture[X]:texture_reflection"
+        Value: "/material/environment/vehicle_reflection"
         TexCoord: ( -1 )
     }
 }
@@ -1657,6 +1789,10 @@ Flavor {
 Flavor {
     Type: "ALTUV"
     Name: "altuv"
+}
+Flavor {
+    Type: "ASAFEW"
+    Name: "asafew"
 }
 Flavor {
     Type: "AWHITE"

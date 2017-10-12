@@ -140,6 +140,10 @@ class Node:
 
         for variant_index in self.__tp_per_variant:
 
+            # no terrain points for given variant, nothing to order reverse
+            if len(self.__tp_per_variant[variant_index]) <= 0:
+                continue
+
             # now if tail is closer to node on it's forward axis, we reverse list
             plane_co = Vector(self.__position)
             plane_no = Vector(self.__direction)

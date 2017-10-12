@@ -34,21 +34,21 @@ class StdAddEnv:
         return __name__
 
     @staticmethod
-    def add(node_tree, geom_n_name, spec_col_n_name, base_tex_n_name, out_mat_n_name, output_n_name, output_n_socket_name="Env Color"):
+    def add(node_tree, geom_n_name, spec_col_socket, alpha_socket, out_mat_normal_socket, output_socket):
         """Add add env pass to node tree with links.
 
         :param node_tree: node tree on which this shader should be created
         :type node_tree: bpy.types.NodeTree
-        :param geom_n_name: name of geometry node from which normal will be taken
+        :param geom_n_name: name of geometry node from which normal and view vectors will be taken
         :type geom_n_name: str
-        :param spec_col_n_name: name of specular color node from which specular color will be taken
-        :type spec_col_n_name: str
-        :param base_tex_n_name: name of base texture node from which alpha will be taken (if empty string it won't be used)
-        :type base_tex_n_name: str
-        :param out_mat_n_name: name of output material node from which output color will be taken
-        :type out_mat_n_name: str
-        :param output_n_name: name of output node with color input node to which result will be given
-        :type output_n_name: str
+        :param spec_col_socket: specular color node socket from which specular color will be taken
+        :type spec_col_socket: bpy.type.NodeSocket
+        :param alpha_socket: socket from which alpha will be taken (if None it won't be used)
+        :type alpha_socket: bpy.type.NodeSocket | None
+        :param out_mat_normal_socket: socket of output material node normal
+        :type out_mat_normal_socket: bpy.type.NodeSocket | None
+        :param output_socket: output socket to which result will be given
+        :type output_socket: bpy.type.NodeSocket
         """
 
         start_pos_x = 0
@@ -57,10 +57,6 @@ class StdAddEnv:
         pos_x_shift = 185
 
         geometry_n = node_tree.nodes[geom_n_name]
-        spec_col_n = node_tree.nodes[spec_col_n_name]
-        base_tex_n = node_tree.nodes[base_tex_n_name] if base_tex_n_name in node_tree.nodes else None
-        out_mat_n = node_tree.nodes[out_mat_n_name]
-        output_n = node_tree.nodes[output_n_name]
 
         # node creation
         refl_tex_n = node_tree.nodes.new("ShaderNodeTexture")
@@ -87,17 +83,17 @@ class StdAddEnv:
 
         # if out material node is really material node and has normal output,
         # use it as this normal might include normal maps
-        if "Normal" in out_mat_n.outputs:
-            node_tree.links.new(refl_tex_n.inputs['Vector'], out_mat_n.outputs['Normal'])
+        if out_mat_normal_socket is not None:
+            node_tree.links.new(refl_tex_n.inputs['Vector'], out_mat_normal_socket)
 
         node_tree.links.new(add_env_gn.inputs['Env Factor Color'], env_col_n.outputs['Color'])
         node_tree.links.new(add_env_gn.inputs['Reflection Texture Color'], refl_tex_n.outputs['Color'])
 
-        node_tree.links.new(add_env_gn.inputs['Specular Color'], spec_col_n.outputs['Color'])
-        if add_env_gn and base_tex_n:
-            node_tree.links.new(add_env_gn.inputs['Base Texture Alpha'], base_tex_n.outputs['Value'])
+        node_tree.links.new(add_env_gn.inputs['Specular Color'], spec_col_socket)
+        if add_env_gn and alpha_socket:
+            node_tree.links.new(add_env_gn.inputs['Base Texture Alpha'], alpha_socket)
 
-        node_tree.links.new(output_n.inputs[output_n_socket_name], add_env_gn.outputs['Environment Addition Color'])
+        node_tree.links.new(output_socket, add_env_gn.outputs['Environment Addition Color'])
 
     @staticmethod
     def set_reflection_texture(node_tree, texture):

@@ -53,6 +53,84 @@ def _get_shader_data(material_data):
     return material_effect, material_attributes, material_textures, material_section
 
 
+def _are_shader_data_compatible(preset_section, material_attributes, material_textures, material_name):
+    """Compares preset section attributes and textures for compatibility with actual given,
+    dictionaries of material attributes and textures.
+    It returns True if this conditions are meet:
+    1. Attribute count is the same
+    2. Texture count is the same
+    3. All attributes from actual attributes dictonary exists in preset  (tags & value length has to match)
+    4. All textures types from actual textures dictionary exists in preset (types have to match)
+
+    :param preset_section: section data of the preset that should be compared with given attributes and textures
+    :type preset_section: io_scs_tools.internals.structure.SectionData
+    :param material_attributes: dictionary of attributes (key: attribute tag, value: attribute value)
+    :type material_attributes: dict[str, float|int|list]
+    :param material_textures: dictionary of textures (key: texture type, value: texture path
+    :type material_textures: dict[str, str]
+    :param material_name: name of the material we are working on, used purely for reporting messages
+    :type material_name: str
+    :return: True if everything matches, False otherwise
+    :rtype: bool
+    """
+
+    preset_mat_attributes = {}
+    preset_mat_textures = set()
+
+    # collect attributes & texture types from preset
+    for item in preset_section.sections:
+
+        if item.type == "Attribute":
+
+            attr_tag = item.get_prop_value("Tag")
+            attr_value = item.get_prop_value("Value")
+
+            preset_mat_attributes[attr_tag] = attr_value
+
+        elif item.type == "Texture":
+
+            tex_type = item.get_prop_value("Tag").split(":")[1]
+            preset_mat_textures.add(tex_type)
+
+    # we are not saving substance in presets thus add it if found in material attributes
+    if "substance" in material_attributes:
+        preset_mat_attributes["substance"] = None
+
+    # calculate counters, as we don't keep counts in shader preset
+    attr_count = len(preset_mat_attributes)
+    tex_count = len(preset_mat_textures)
+
+    # check if all material attributes are in preset
+    for mat_attr_tag in material_attributes:
+
+        if mat_attr_tag not in preset_mat_attributes:
+            lprint("W Attribute: %r inside material %r not found in the assigned shader preset!", (mat_attr_tag, material_name))
+            return False
+
+        preset_attr_value = preset_mat_attributes[mat_attr_tag]
+        if isinstance(preset_attr_value, list) and len(preset_attr_value) != len(material_attributes[mat_attr_tag]):
+            lprint("W Attribute: %r inside material %r is corrupted (attribute data count mismatch)!",
+                   (preset_attr_value, material_name))
+            return False
+
+    # check if all material texture types are in preset
+    for tex_type in material_textures:
+
+        if tex_type not in preset_mat_textures:
+            lprint("W Texture type: %r from material %r not found in the assigned shader preset!", (tex_type, material_name))
+            return False
+
+    if attr_count < len(material_attributes):
+        lprint("W Material %r has more attributes than needed by assigned shader preset!", (material_name,))
+        return False
+
+    if tex_count != len(material_textures):
+        lprint("W Texture count mismatch between material %r and it's assigned shader preset!", (material_name,))
+        return False
+
+    return True
+
+
 def _create_scs_root_object(name, loaded_variants, loaded_looks, mats_info, objects, locators, armature):
     """Creates an 'SCS Root Object' (Empty Object) for currently imported
     'SCS Game Object' and parent all import content to it.
@@ -206,18 +284,19 @@ def _create_scs_root_object(name, loaded_variants, loaded_looks, mats_info, obje
         look_name = look[0]
         look_mat_settings = look[1]
 
-        # SETUP ALL THE MATERIALS, NOTE: They should be already created by PIM import.
+        # setup all the materials. NOTE: They should be already created by PIM import.
         for mat_info in mats_info:
             mat = bpy.data.materials[mat_info[0]]
             if mat_info[2] in look_mat_settings:
 
-                # ASSIGN IMPORTED SHADER DATA
+                # extract imported shader data
                 material_effect, material_attributes, material_textures, material_section = _get_shader_data(look_mat_settings[mat_info[2]])
 
-                # TRY TO FIND SUITABLE PRESET
+                # try to find suitable preset
                 (preset_name, preset_section) = _material_utils.find_preset(material_effect, material_textures)
 
-                if preset_name:  # preset name is found within presets shaders
+                # preset name is found & shader data are compatible with found preset
+                if preset_name and _are_shader_data_compatible(preset_section, material_attributes, material_textures, mat_info[0]):
 
                     mat.scs_props.active_shader_preset_name = preset_name
 
@@ -250,7 +329,7 @@ def _create_scs_root_object(name, loaded_variants, loaded_looks, mats_info, obje
                     if "scs_tex_aliases" in mat:
                         del mat["scs_tex_aliases"]
 
-        # CREATE NEW LOOK ENTRY ON ROOT
+        # create new look entry on root
         bpy.ops.object.add_scs_look(look_name=look_name, instant_apply=False)
 
     # apply first look after everything is done

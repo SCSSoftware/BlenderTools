@@ -279,7 +279,7 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
         """Returns object type items in real time, because of accessing to custom icons.
         """
         return [
-            ('None', "None", "Normal Blender Empty object", 'X_VEC', 0),
+            ('None', "None", "Normal Blender Empty object", 'X', 0),
             ('SCS_Root', "Root Object", "Empty object will become a 'SCS Root Object'", get_icon(_ICON_TYPES.scs_root), 1),
             ('Locator', "Locator", "Empty object will become a 'Locator'", get_icon(_ICON_TYPES.loc), 2),
         ]
@@ -604,7 +604,7 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
 
     def locator_type_items(self, context):
         return [
-            ('None', "None", "Object is not locator", 'X_VEC', 0),
+            ('None', "None", "Object is not locator", 'X', 0),
             ('Prefab', "Prefab", "Prefab locator", get_icon(_ICON_TYPES.loc_prefab), 1),
             ('Model', "Model", "Model locator", get_icon(_ICON_TYPES.loc_model), 2),
             ('Collision', "Collision", "Collision locator", get_icon(_ICON_TYPES.loc_collider), 3),
@@ -971,7 +971,7 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
         items=(
             (str(_PL_consts.PNCF.LEFT_BLINKER), "Left Blinker", "", 'BACK', 0),
             ('0', "No Blinker", "", 'X', 1),
-            (str(_PL_consts.PNCF.FORCE_NO_BLINKER), "No Blinker (forced)", "", 'X_VEC', 2),
+            (str(_PL_consts.PNCF.FORCE_NO_BLINKER), "No Blinker (forced)", "", 'X', 2),
             (str(_PL_consts.PNCF.RIGHT_BLINKER), "Right Blinker", "", 'FORWARD', 3),
         ),
         default='0',
@@ -1016,7 +1016,7 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
         subtype='NONE',
     )
     enum_np_priority_modifier_items = OrderedDict([(0, ('0', "None", ""))])
-    for i in range(1, _PL_consts.PNCF.PRIORITY_MASK >> _PL_consts.PNCF.PRIORITY_SHIFT):
+    for i in range(1, (_PL_consts.PNCF.PRIORITY_MASK >> _PL_consts.PNCF.PRIORITY_SHIFT) + 1):
 
         name = str(i)
 

@@ -41,7 +41,7 @@ class DifSpecMultDifSpecAddEnv(DifSpecMultDifSpec, StdAddEnv):
         DifSpecMultDifSpec.init(node_tree)
         StdAddEnv.add(node_tree,
                       DifSpecMultDifSpec.GEOM_NODE,
-                      DifSpecMultDifSpec.SPEC_COL_NODE,
-                      DifSpecMultDifSpec.BASE_TEX_NODE,
-                      DifSpecMultDifSpec.OUT_MAT_NODE,
-                      DifSpecMultDifSpec.COMPOSE_LIGHTING_NODE)
+                      node_tree.nodes[DifSpecMultDifSpec.SPEC_COL_NODE].outputs['Color'],
+                      node_tree.nodes[DifSpecMultDifSpec.BASE_TEX_NODE].outputs['Value'],
+                      node_tree.nodes[DifSpecMultDifSpec.OUT_MAT_NODE].outputs['Normal'],
+                      node_tree.nodes[DifSpecMultDifSpec.COMPOSE_LIGHTING_NODE].inputs['Env Color'])

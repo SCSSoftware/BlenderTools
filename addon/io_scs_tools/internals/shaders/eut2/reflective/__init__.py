@@ -92,6 +92,8 @@ class Reflective:
         out_mat_n = node_tree.nodes.new("ShaderNodeExtendedMaterial")
         out_mat_n.name = Reflective.OUT_MAT_NODE
         out_mat_n.label = Reflective.OUT_MAT_NODE
+        if "SpecTra" in out_mat_n:
+            out_mat_n.inputs['SpecTra'].default_value = 0.0
         if "Refl" in out_mat_n:
             out_mat_n.inputs['Refl'].default_value = 1.0
         elif "Reflectivity" in out_mat_n:

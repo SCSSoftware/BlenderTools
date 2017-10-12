@@ -93,6 +93,9 @@ def setup_nodes(material, effect, attr_dict, tex_dict, recreate):
     if effect.endswith(".awhite") or ".awhite." in effect:
         flavors["awhite"] = True
 
+    if effect.endswith(".asafew") or ".asafew." in effect:
+        flavors["asafew"] = True
+
     if effect.endswith(".paint") or ".paint." in effect:
         flavors["paint"] = True
 

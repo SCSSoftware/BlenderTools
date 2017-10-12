@@ -21,11 +21,13 @@
 import bpy
 from io_scs_tools.consts import Mesh as _MESH_consts
 from io_scs_tools.internals.shaders.flavors.nmap import scale_ng
+from io_scs_tools.internals.shaders.flavors.nmap import dds16_ng
 
 NMAP_FLAVOR_FRAME_NODE = "TSNMap Flavor"
 NMAP_NODE = "NormalMapMat"
 NMAP_GEOM_NODE = "NMapGeom"
 NMAP_TEX_NODE = "NMapTex"
+NMAP_DDS16_GNODE = "NMapDDS16Group"
 NMAP_SCALE_GNODE = "NMapScaleGroup"
 
 
@@ -89,7 +91,51 @@ def __create_nodes__(node_tree, location=None, normal_to=None):
     node_tree.links.new(nodes[NMAP_SCALE_GNODE].inputs["Original Normal"], nodes[NMAP_GEOM_NODE].outputs["Normal"])
     node_tree.links.new(nodes[NMAP_SCALE_GNODE].inputs["Modified Normal"], nodes[NMAP_NODE].outputs["Normal"])
 
-    node_tree.links.new(normal_to, nodes[NMAP_SCALE_GNODE].outputs["Normal"])
+    # set normal only if we know where to
+    if normal_to:
+        node_tree.links.new(normal_to, nodes[NMAP_SCALE_GNODE].outputs["Normal"])
+
+
+def __check_and_create_dds16_node__(node_tree, texture):
+    """Checks if given texture is composed '16-bit DDS' texture and properly create extra node for it's representation.
+    On the contrary if texture is not 16-bit DDS and node exists clean that node and restore old connections.
+
+    :param node_tree: node tree on which normal map will be used
+    :type node_tree: bpy.types.NodeTree
+    :param texture: texture which should be assignet to nmap texture node
+    :type texture: bpy.types.Texture
+    """
+
+    # in case of DDS simulating 16-bit normal maps create it's group and properly connect it,
+    # on the other hand if group exists but shouldn't delete group and restore old connections
+
+    is_dds16 = texture and texture.image and texture.image.filepath.endswith(".dds") and texture.image.pixels[2] == 0.0
+    if is_dds16 and NMAP_DDS16_GNODE not in node_tree.nodes:
+
+        nmap_dds16_gn = node_tree.nodes.new("ShaderNodeGroup")
+        nmap_dds16_gn.parent = node_tree.nodes[NMAP_FLAVOR_FRAME_NODE]
+        nmap_dds16_gn.name = nmap_dds16_gn.label = NMAP_DDS16_GNODE
+        nmap_dds16_gn.node_tree = dds16_ng.get_node_group()
+
+        location = node_tree.nodes[NMAP_NODE].location
+
+        node_tree.nodes[NMAP_TEX_NODE].location[0] -= 185
+        node_tree.nodes[NMAP_GEOM_NODE].location[0] -= 185
+        nmap_dds16_gn.location = (location[0] - 185, location[1])
+
+        node_tree.links.new(node_tree.nodes[NMAP_DDS16_GNODE].inputs["Color"], node_tree.nodes[NMAP_TEX_NODE].outputs["Color"])
+
+        node_tree.links.new(node_tree.nodes[NMAP_NODE].inputs["Strength"], node_tree.nodes[NMAP_DDS16_GNODE].outputs["Strength"])
+        node_tree.links.new(node_tree.nodes[NMAP_NODE].inputs["Color"], node_tree.nodes[NMAP_DDS16_GNODE].outputs["Color"])
+
+    elif not is_dds16 and NMAP_DDS16_GNODE in node_tree.nodes:
+
+        node_tree.nodes.remove(node_tree.nodes[NMAP_DDS16_GNODE])
+
+        node_tree.nodes[NMAP_TEX_NODE].location[0] += 185
+        node_tree.nodes[NMAP_GEOM_NODE].location[0] += 185
+
+        node_tree.links.new(node_tree.nodes[NMAP_NODE].inputs["Color"], node_tree.nodes[NMAP_TEX_NODE].outputs["Color"])
 
 
 def init(node_tree, location, normal_to):
@@ -128,6 +174,9 @@ def set_texture(node_tree, texture):
     # create material node if not yet created
     if NMAP_FLAVOR_FRAME_NODE not in node_tree.nodes:
         __create_nodes__(node_tree)
+
+    # in case of DDS simulating 16-bit normal maps create it's group and properly connect it
+    __check_and_create_dds16_node__(node_tree, texture)
 
     # assign texture to texture node first
     node_tree.nodes[NMAP_TEX_NODE].texture = texture
@@ -169,5 +218,7 @@ def delete(node_tree, preserve_node=False):
         node_tree.nodes.remove(node_tree.nodes[NMAP_GEOM_NODE])
         node_tree.nodes.remove(node_tree.nodes[NMAP_TEX_NODE])
         node_tree.nodes.remove(node_tree.nodes[NMAP_NODE])
+        if NMAP_DDS16_GNODE in node_tree.nodes:
+            node_tree.nodes.remove(node_tree.nodes[NMAP_DDS16_GNODE])
         node_tree.nodes.remove(node_tree.nodes[NMAP_SCALE_GNODE])
         node_tree.nodes.remove(node_tree.nodes[NMAP_FLAVOR_FRAME_NODE])

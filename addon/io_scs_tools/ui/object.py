@@ -127,18 +127,18 @@ def _draw_locator_panel(layout, context, scene, obj, enabled=True):
             if obj.scs_props.locator_collider_wires:
                 icon = "FILE_TICK"
             else:
-                icon = "X_VEC"
+                icon = "X"
             display_row.prop(obj.scs_props, 'locator_collider_wires', text='Wireframes', icon=icon, toggle=True)
             if obj.scs_props.locator_collider_faces:
                 icon = "FILE_TICK"
             else:
-                icon = "X_VEC"
+                icon = "X"
             display_row.prop(obj.scs_props, 'locator_collider_faces', text='Faces', icon=icon, toggle=True)
             if obj.scs_props.locator_collider_type != 'Convex':
                 if obj.scs_props.locator_collider_centered:
                     icon = "FILE_TICK"
                 else:
-                    icon = "X_VEC"
+                    icon = "X"
                 row_box.prop(obj.scs_props, 'locator_collider_centered', icon=icon, toggle=True)
             box_col = layout_box.column()
             loc_set = box_col.column(align=True)
@@ -559,7 +559,7 @@ def _draw_scs_animation_panel(layout):
                 icon = "FILE_TICK"
                 text = "Custom Export Path Enabled"
             else:
-                icon = "X_VEC"
+                icon = "X"
                 text = "Custom Export Path Disabled"
 
             column.prop(scs_root_object.scs_props, 'scs_root_object_allow_anim_custom_path', text=text, icon=icon, toggle=True)
@@ -913,7 +913,7 @@ def _draw_scs_root_panel(layout, scene, obj):
         if obj.scs_props.scs_root_object_export_enabled:
             icon = "FILE_TICK"
         else:
-            icon = "X_VEC"
+            icon = "X"
         col.prop(obj.scs_props, 'scs_root_object_export_enabled', text="Export Inclusion", icon=icon, toggle=True)
         row = col.row(align=True)
         row.enabled = obj.scs_props.scs_root_object_export_enabled

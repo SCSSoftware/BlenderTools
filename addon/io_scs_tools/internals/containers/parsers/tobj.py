@@ -18,6 +18,9 @@
 
 # Copyright (C) 2015: SCS Software
 
+from io_scs_tools.utils import path as _path
+from io_scs_tools.utils.printout import lprint
+
 
 def parse_file(filepath, print_info=False):
     """Reads data from TOBJ file and returns it's records as list.
@@ -36,20 +39,29 @@ def parse_file(filepath, print_info=False):
 
     data = []
     with open(filepath, encoding="utf8") as f:
-        for i, line in enumerate(f):
-            line_split = line.strip().split()
-            if len(line_split) != 0:
 
-                # ignore C-like comment lines
-                if line_split[0].startswith("//"):
-                    continue
+        try:
 
-                # ignore comment lines starting with #
-                if line_split[0].startswith("#"):
-                    continue
+            for i, line in enumerate(f):
+                line_split = line.strip().split()
+                if len(line_split) != 0:
 
-                for word in line_split:
-                    data.append(word)
+                    # ignore C-like comment lines
+                    if line_split[0].startswith("//"):
+                        continue
+
+                    # ignore comment lines starting with #
+                    if line_split[0].startswith("#"):
+                        continue
+
+                    for word in line_split:
+                        data.append(word)
+
+        except UnicodeDecodeError as e:
+
+            # someone wants to open binary tobj, no go
+            if e.reason == "invalid start byte":
+                lprint("E Can't read TOBJ, most probably it's in binary version: %r", (_path.readable_norm(filepath),))
 
     f.close()
 

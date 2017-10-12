@@ -142,11 +142,10 @@ class Water(Dif, StdAddEnv):
         # add environment pass and normal maps
         StdAddEnv.add(node_tree,
                       Dif.GEOM_NODE,
-                      Dif.SPEC_COL_NODE,
-                      "",
-                      Water.NEAR_MIX_NODE,
-                      Water.ADD_REFL_MIX_NODE,
-                      "Color1")
+                      node_tree.nodes[Dif.SPEC_COL_NODE].outputs['Color'],
+                      None,
+                      None,
+                      node_tree.nodes[Water.ADD_REFL_MIX_NODE].inputs['Color1'])
 
         # links creation
         # pass 1

@@ -52,7 +52,7 @@ class DifSpecOclu(DifSpec):
         pos_x_shift = 185
 
         # init parent
-        DifSpec.init(node_tree)
+        DifSpec.init(node_tree, disable_remap_alpha=True)
 
         base_tex_n = node_tree.nodes[DifSpec.BASE_TEX_NODE]
         spec_mult_n = node_tree.nodes[DifSpec.SPEC_MULT_NODE]

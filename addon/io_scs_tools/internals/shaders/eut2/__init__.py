@@ -176,6 +176,10 @@ def get_shader(effect):
 
         from io_scs_tools.internals.shaders.eut2.dif_spec_oclu_add_env import DifSpecOcluAddEnv as Shader
 
+    elif effect.startswith("dif.spec.oclu.weight.add.env"):
+
+        from io_scs_tools.internals.shaders.eut2.dif_spec_oclu_weight_add_env import DifSpecOcluWeightAddEnv as Shader
+
     elif effect.startswith("dif.spec.weight.add.env"):
 
         from io_scs_tools.internals.shaders.eut2.dif_spec_weight_add_env import DifSpecWeightAddEnv as Shader

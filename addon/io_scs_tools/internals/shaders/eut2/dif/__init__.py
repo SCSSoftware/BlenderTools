@@ -19,7 +19,6 @@
 # Copyright (C) 2015: SCS Software
 
 
-from mathutils import Color
 from io_scs_tools.consts import Mesh as _MESH_consts
 from io_scs_tools.internals.shaders.eut2.std_node_groups import compose_lighting
 from io_scs_tools.internals.shaders.eut2.std_node_groups import vcolor_input
@@ -124,6 +123,8 @@ class Dif:
         out_mat_n = node_tree.nodes.new("ShaderNodeExtendedMaterial")
         out_mat_n.name = Dif.OUT_MAT_NODE
         out_mat_n.label = Dif.OUT_MAT_NODE
+        if "SpecTra" in out_mat_n:
+            out_mat_n.inputs['SpecTra'].default_value = 0.0
         if "Refl" in out_mat_n:
             out_mat_n.inputs['Refl'].default_value = 1.0
         elif "Reflectivity" in out_mat_n:

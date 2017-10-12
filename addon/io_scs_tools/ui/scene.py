@@ -182,7 +182,7 @@ def _draw_display_settings_panel(scene, layout, scs_globals):
         if scs_globals.display_locators:
             icon = "FILE_TICK"
         else:
-            icon = "X_VEC"
+            icon = "X"
         layout_box_row.prop(scs_globals, 'display_locators', icon=icon, toggle=True)
 
         if scs_globals.display_locators:
@@ -203,7 +203,7 @@ def _draw_display_settings_panel(scene, layout, scs_globals):
         if scs_globals.display_connections:
             icon = "FILE_TICK"
         else:
-            icon = "X_VEC"
+            icon = "X"
         layout_box_row.prop(scs_globals, 'display_connections', icon=icon, toggle=True)
 
         if scs_globals.display_connections:
@@ -227,7 +227,7 @@ def _draw_display_settings_panel(scene, layout, scs_globals):
         if scs_globals.show_preview_models:
             icon = "FILE_TICK"
         else:
-            icon = "X_VEC"
+            icon = "X"
         layout_box_row.prop(scs_globals, 'show_preview_models', icon=icon, toggle=True)
         layout_box_row = layout_box.row()
         layout_box_row.prop(scs_globals, 'base_paint_color', icon='NONE')
@@ -302,7 +302,7 @@ def _draw_export_panel(scene, layout, scs_globals):
 
             col_row = col.row(align=True)
             col_row.enabled = scs_globals.export_scope == "selection"
-            icon = "FILE_TICK" if scs_globals.preview_export_selection else "X_VEC"
+            icon = "FILE_TICK" if scs_globals.preview_export_selection else "X"
             col_row.prop(scs_globals, 'preview_export_selection', text="Preview Selection", icon=icon, toggle=True)
 
             col_row = col.row(align=True)
@@ -364,7 +364,7 @@ def _draw_conversion_panel(layout, scs_globals):
         row = cstm_paths_col.row(align=True)
         row.scale_y = 1.1
         text = "Custom Paths: ON" if scs_globals.conv_hlpr_use_custom_paths else "Custom Paths: OFF"
-        icon = "FILE_TICK" if scs_globals.conv_hlpr_use_custom_paths else "X_VEC"
+        icon = "FILE_TICK" if scs_globals.conv_hlpr_use_custom_paths else "X"
         row.prop(scs_globals, "conv_hlpr_use_custom_paths", text=text, icon=icon, toggle=True)
 
         if scs_globals.conv_hlpr_use_custom_paths:
@@ -413,11 +413,11 @@ def _draw_conversion_panel(layout, scs_globals):
 
         row = col.row(align=True)
         row.scale_y = 1.2
-        icon = "FILE_TICK" if scs_globals.conv_hlpr_clean_on_packing else "X_VEC"
+        icon = "FILE_TICK" if scs_globals.conv_hlpr_clean_on_packing else "X"
         row.prop(scs_globals, "conv_hlpr_clean_on_packing", toggle=True, icon=icon)
-        icon = "FILE_TICK" if scs_globals.conv_hlpr_export_on_packing else "X_VEC"
+        icon = "FILE_TICK" if scs_globals.conv_hlpr_export_on_packing else "X"
         row.prop(scs_globals, "conv_hlpr_export_on_packing", toggle=True, icon=icon)
-        icon = "FILE_TICK" if scs_globals.conv_hlpr_convert_on_packing else "X_VEC"
+        icon = "FILE_TICK" if scs_globals.conv_hlpr_convert_on_packing else "X"
         row.prop(scs_globals, "conv_hlpr_convert_on_packing", toggle=True, icon=icon)
 
         row = col.row(align=True)

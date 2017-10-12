@@ -51,7 +51,7 @@ class DifSpecFadeDifSpec(DifSpec):
         pos_x_shift = 185
 
         # init parent
-        DifSpec.init(node_tree)
+        DifSpec.init(node_tree, disable_remap_alpha=True)
 
         geom_n = node_tree.nodes[DifSpec.GEOM_NODE]
         base_tex_n = node_tree.nodes[DifSpec.BASE_TEX_NODE]

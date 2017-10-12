@@ -47,7 +47,7 @@ class DifSpecOverDifOpac(DifSpec):
         pos_x_shift = 185
 
         # init parent
-        DifSpec.init(node_tree)
+        DifSpec.init(node_tree, disable_remap_alpha=True)
 
         base_tex_n = node_tree.nodes[DifSpec.BASE_TEX_NODE]
         vcol_mult_n = node_tree.nodes[DifSpec.VCOLOR_MULT_NODE]

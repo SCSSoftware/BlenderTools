@@ -49,6 +49,7 @@ def __get_texture_settings__():
         ('u_repeat', "U Repeat", "Repeat texture in U direction"),
         ('v_repeat', "V Repeat", "Repeat texture in V direction"),
         ('tsnormal', "TS Normal", "Tangent Space Normal for the texture"),
+        ('color_space_linear', "Color Space Linear", "Texture is in linear color space (usually used for oclussion type of shaders)"),
     ]
 
 

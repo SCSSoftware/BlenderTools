@@ -139,7 +139,7 @@ class GlobalSCSProps(bpy.types.PropertyGroup):
         """
 
         # print('  > update_shader_presets...')
-        # items = [("<none>", "<none>", "No SCS shader preset in use (may result in incorrect model output)", 'X_VEC', 0)]
+        # items = [("<none>", "<none>", "No SCS shader preset in use (may result in incorrect model output)", 'X', 0)]
         items = []
 
         for preset_name in _shader_presets.get_preset_names(self.shader_preset_list_sorted):
@@ -157,7 +157,7 @@ class GlobalSCSProps(bpy.types.PropertyGroup):
             elif "mlaa" in preset_name:
                 icon_str = 'GROUP_UVS'
             elif preset_name == "<none>":
-                icon_str = 'X_VEC'
+                icon_str = 'X'
             else:
                 icon_str = 'SOLID'
 

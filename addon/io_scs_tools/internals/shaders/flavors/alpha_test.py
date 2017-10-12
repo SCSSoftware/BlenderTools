@@ -33,7 +33,7 @@ def __create_node__(node_tree):
     alpha_test_n.name = ALPHA_TEST_NODE
     alpha_test_n.label = ALPHA_TEST_NODE
     alpha_test_n.operation = "GREATER_THAN"
-    alpha_test_n.inputs[1].default_value = 0.05
+    alpha_test_n.inputs[1].default_value = 0.077  # actually it should be 0.05, however by visual comparison it turns out this value suits more
 
 
 def init(node_tree, location, alpha_from, alpha_to):

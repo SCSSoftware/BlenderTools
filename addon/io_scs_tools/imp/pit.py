@@ -95,16 +95,6 @@ def _get_look(section):
                     mat_alias = sec_prop[1]
                 elif sec_prop[0] == "Effect":
                     mat_effect = sec_prop[1]
-
-                    # HACK for "flipflake" flavor in eut2.truckpaint shader
-                    #
-                    # Flavor was never been visually implemented in Blender as it doesn't effect exported mesh data.
-                    # This means we can "silently" ignore it on import as this flavor
-                    # should be used only trough paint-job definitions for player vehicles.
-                    if mat_effect.startswith("eut2.truckpaint") and mat_effect.find(".flipflake") != -1:
-                        mat_effect = mat_effect.replace(".flipflake", "")
-                        lprint("W Flipflake flavor detected in material %r, ignoring it!", (mat_alias,))
-
                 elif sec_prop[0] == "Flags":
                     mat_flags = sec_prop[1]
                 elif sec_prop[0] == "AttributeCount":
@@ -144,7 +134,61 @@ def _get_look(section):
                 lprint("W Attribute count in PIT file doesn't match its declaration!")
             if len(textures) != texture_count:
                 lprint("W Texture count in PIT file doesn't match its declaration!")
+
+            # Extra treatment for eut2.truckpaint shader
+            #
+            # 1. Ignoring flip flake flavor
+            # Flavor was never been visually implemented in Blender as it doesn't effect exported mesh data.
+            # This means we can "silently" ignore it on import as this flavor
+            # should be used only trough paint-job definitions for player vehicles.
+            #
+            # 2. Ignoring aux attributes & paintjob textures
+            # This has to be done in case none of colormask, airbrush and flipflake is enabled
+            if mat_effect.startswith("eut2.truckpaint"):
+
+                has_flipflake = mat_effect.find(".flipflake") != -1
+                has_airbrush = mat_effect.find(".airbrush") != -1
+                has_colormask = mat_effect.find(".colormask") != -1
+
+                # now strip flipflake flavor string, remove flipflake related texture & report it
+                if has_flipflake:
+
+                    mat_effect = mat_effect.replace(".flipflake", "")
+                    textures.pop("texture_flakenoise", None)
+
+                    lprint("W Flipflake flavor detected in material %r, ignoring it!", (mat_alias,))
+
+                # remove aux attributes used in flipflake and colormask
+                # NOTE: in reality flipflake also defines it, but as we are ignoring flipflake we don't have to test it here
+                if not has_colormask or has_airbrush:
+
+                    for attr in ("aux[5]", "aux[6]", "aux[7]"):
+                        if attributes.pop(attr, None) is not None:
+                            lprint("W Needless truckpaint attribute: %r in current material configuration inside material %r, ignoring it!",
+                                   (attr, mat_alias))
+
+                # remove aux[8] attribute & paintjob texture if none of airbrush or colormask mode is enabled
+                # NOTE: in reality flipflake also defines it, but as we are ignoring flipflake we don't have to test it here
+                if not has_airbrush and not has_colormask:
+
+                    if attributes.pop("aux[8]", None) is not None:
+                        lprint("W Needless truckpaint attribute: 'aux[8]' in current material configuration inside material %r, ignoring it!",
+                               (mat_alias,))
+
+                    if textures.pop("texture_paintjob", None) is not None:
+                        lprint("W Needless truckpaint texture: 'texture_paintjob' in current materialconfiguration inside material %r, ignoring it!",
+                               (mat_alias,))
+
+            # Extra treatment for building shaders
+            #
+            # If night version of it is detected, switch it to day one.
+            if mat_effect.startswith("eut2.building") and mat_effect.endswith(".night"):
+
+                mat_effect = mat_effect.replace(".night", ".day")
+                lprint("W Night version of building shader detected in material %r, switching it to day!", (mat_alias,))
+
             look_mat_settings[mat_alias] = (mat_effect, mat_flags, attributes, textures, sec)
+
     return look_name, look_mat_settings
 
 

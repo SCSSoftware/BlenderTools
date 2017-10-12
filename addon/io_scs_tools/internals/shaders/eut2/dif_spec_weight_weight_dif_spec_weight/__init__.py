@@ -55,7 +55,7 @@ class DifSpecWeightWeightDifSpecWeight(DifSpec):
         pos_x_shift = 185
 
         # init parent
-        DifSpec.init(node_tree)
+        DifSpec.init(node_tree, disable_remap_alpha=False)
 
         vcol_group_n = node_tree.nodes[DifSpec.VCOL_GROUP_NODE]
         base_tex_n = node_tree.nodes[DifSpec.BASE_TEX_NODE]

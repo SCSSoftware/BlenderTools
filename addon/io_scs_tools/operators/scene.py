@@ -22,6 +22,7 @@ import bpy
 import bmesh
 import os
 import subprocess
+from collections import OrderedDict
 from hashlib import sha1
 from sys import platform
 from time import time
@@ -1234,6 +1235,21 @@ class ConversionHelper:
         bl_description = "Pack converted sources to mod package and copy it to mod destination path.\n" \
                          "Depending on auto settings this operator will also execute clean, export and convert before packing."
 
+        @staticmethod
+        def get_zipfile_path(zipfile_originpath, abs_path):
+            """Extract zipfile path, do conversion to proper slashes as zipfile namelist
+            is returning only normal slashes even on windows and as last remove leading slash
+            as zipfile namelist again doesn't have it.
+
+            :param zipfile_originpath: path to directory where root of zipfile is (generally this should be some parent folder of second argument)
+            :type zipfile_originpath: str
+            :param abs_path: absolute path of file for which zipfile path shall be returned
+            :type abs_path: str
+            :return: correct zipfile path for given absolute path relative to irigin path
+            :rtype: str
+            """
+            return abs_path.replace(zipfile_originpath, "").replace("\\", "/").lstrip("/")
+
         @classmethod
         def poll(cls, context):
             return context.scene is not None
@@ -1327,13 +1343,27 @@ class ConversionHelper:
 
                         for root, dirs, files in os.walk(curr_dir):
 
+                            # ignore packing if no files in current dir
+                            if len(files) <= 0:
+                                continue
+
+                            # write directories to zip
+                            for directory in dirs:
+
+                                abs_dir = os.path.join(root, directory)
+                                archive_dir = self.get_zipfile_path(curr_dir, abs_dir)
+
+                                if archive_dir + "/" in myzip.namelist():
+                                    lprint("D Archive name %r already exists, ignoring it!" % archive_dir)
+                                    continue
+
+                                myzip.write(abs_dir, archive_dir, compress_type=int(scs_globals.conv_hlpr_mod_compression))
+
+                            # write files to zip
                             for file in files:
 
                                 abs_file = os.path.join(root, file)
-                                # Extract archive path+name, do conversion to proper slashes
-                                # as zipfile namelist is returning only normal slashes even on windows and
-                                # as last remove leading slash as zipfile namelist again doesn't have it.
-                                archive_file = abs_file.replace(curr_dir, "").replace("\\", "/").lstrip("/")
+                                archive_file = self.get_zipfile_path(curr_dir, abs_file)
 
                                 if archive_file in myzip.namelist():
                                     lprint("D Archive name %r already exists, ignoring it!" % archive_file)
@@ -1543,10 +1573,25 @@ class PaintjobTools:
             :type linked_to_defs: set[str]
             """
 
-            i = -1
-            for variant in scs_root.scs_object_variant_inventory:
+            used_variants_by_linked_defs = set()  # stores all variants that are used by linked sii definitions
 
-                i += 1
+            # collect used variants for all definitions
+            for path in linked_to_defs:
+
+                sii_container = _sii_container.get_data_from_file(path)
+                variant = _sii_container.get_unit_property(sii_container, "variant")
+
+                if variant is not None:
+                    used_variants_by_linked_defs.add(variant)
+                else:  # if no variant specified "default" is used by game, so add it to our set
+                    used_variants_by_linked_defs.add("default")
+
+            # create groups per variant
+            for i, variant in enumerate(scs_root.scs_object_variant_inventory):
+
+                # do not create groups for unused variants
+                if variant.name not in used_variants_by_linked_defs:
+                    continue
 
                 bpy.ops.object.select_all(action="DESELECT")
 
@@ -1568,7 +1613,7 @@ class PaintjobTools:
                     override['object'] = obj
                     bpy.ops.object.group_link(override, group=group.name)
 
-                # ignore variant if no mesh objects inside
+                # do not create groups for variant if no mesh objects inside
                 if mesh_objects_count <= 0:
                     bpy.data.groups.remove(group, do_unlink=True)
                     continue
@@ -1668,28 +1713,7 @@ class PaintjobTools:
                 game_project_path = os.path.join(game_project_path, os.pardir)
 
             # now as we have game project path, let's do real collecting
-            project_paths = []
-            for dir_entry in os.listdir(game_project_path):
-
-                # projects can not be files so ignore them
-                if os.path.isfile(os.path.join(game_project_path, dir_entry)):
-                    continue
-
-                if dir_entry == "base" or dir_entry.startswith("dlc_"):
-
-                    project_paths.append(_path_utils.readable_norm(os.path.join(game_project_path, dir_entry)))
-
-                elif dir_entry.startswith("mod_"):
-
-                    mod_dir = os.path.join(game_project_path, dir_entry)
-                    for dir_entry2 in os.listdir(mod_dir):
-
-                        # projects can not be files so ignore them
-                        if os.path.isfile(os.path.join(mod_dir, dir_entry)):
-                            continue
-
-                        if dir_entry2 == "base" or dir_entry2.startswith("dlc_"):
-                            project_paths.append(_path_utils.readable_norm(os.path.join(mod_dir, dir_entry2)))
+            project_paths = _path_utils.get_projects_paths(game_project_path)
 
             # sort project paths in reverse to make sure base will be searched as last
             project_paths = sorted(project_paths, reverse=True)
@@ -1721,7 +1745,7 @@ class PaintjobTools:
             lprint("S Truck Paths:\n%r" % truck_model_paths)
 
             # import and properly group imported models
-            trucks_scs_roots = set()  # set holding scs roots of imported models
+            possible_upgrade_locators = {}  # dictionary holding all locators that can be used as candidates for upgrades positioning
             already_imported = set()  # set holding imported path of already imported model, to avoid double importing
             multiple_project_truck_models = set()  # set of model paths found in multiple projects (for reporting purposes)
             for project_path in project_paths:
@@ -1747,14 +1771,19 @@ class PaintjobTools:
                     if curr_truck_scs_root is None:
                         continue
 
+                    # collect all locators as candidates for being used for upgrades positioning
+                    for obj in curr_truck_scs_root.children:
+
+                        if obj.type != "EMPTY" or obj.scs_props.empty_object_type != "Locator":
+                            continue
+
+                        possible_upgrade_locators[obj.name] = obj
+
                     # put imported model into it's own groups per variant
                     self.add_model_to_group(curr_truck_scs_root, "truck | " + os.path.basename(truck_model_path), truck_model_paths[truck_model_path])
 
-                    # save scs root of current model
-                    trucks_scs_roots.add(curr_truck_scs_root)
-
             # if none truck models were properly imported it makes no sense to go forward on upgrades
-            if len(trucks_scs_roots) <= 0:
+            if len(already_imported) <= 0:
                 message = "No truck models properly imported!"
                 lprint("E " + message)
                 self.report({"ERROR"}, message)
@@ -1767,26 +1796,30 @@ class PaintjobTools:
             #
             ##################################
 
-            # collect all upgrade models, by listing all model locators left in truck models
+            # collect all upgrade models, by listing all upgrades directories in all projects for this truck
             upgrade_model_paths = {}  # model paths dictionary {key: upgrade type (eg "f_intake_cab"); value: set of model paths for this upgrade}
-            for truck_scs_root in trucks_scs_roots:
+            for project_path in project_paths:  # collect any possible upgrade over all projects
 
-                for obj in truck_scs_root.children:
+                truck_accessory_def_dirpath = os.path.join(project_path, truck_sub_dir)
+                truck_accessory_def_dirpath = os.path.join(truck_accessory_def_dirpath, "accessory")
 
-                    if obj.type != "EMPTY" or obj.scs_props.empty_object_type != "Locator":
+                # if current project path doesn't have accessories defined just skip it
+                if not os.path.isdir(truck_accessory_def_dirpath):
+                    continue
+
+                for upgrade_name in os.listdir(truck_accessory_def_dirpath):
+
+                    # ignore files
+                    if not os.path.isdir(os.path.join(truck_accessory_def_dirpath, upgrade_name)):
                         continue
 
-                    upgrade_name = _name_utils.tokenize_name(obj.name)
-                    upgrade_model_paths[upgrade_name] = {}
+                    if upgrade_name not in upgrade_model_paths:
+                        upgrade_model_paths[upgrade_name] = {}
 
-                    for project_path in project_paths:  # collect any possible upgrade over all projects
+                    target_dirpath = os.path.join(truck_accessory_def_dirpath, upgrade_name)
 
-                        truck_def_dirpath = os.path.join(project_path, truck_sub_dir)
-                        upgrade_sub_dir = os.path.join("accessory", upgrade_name)
-
-                        target_dirpath = os.path.join(truck_def_dirpath, upgrade_sub_dir)
-                        curr_models = self.gather_model_paths(target_dirpath, "accessory_addon_data", ("exterior_model",))
-                        self.update_model_paths_dict(upgrade_model_paths[upgrade_name], curr_models)
+                    curr_models = self.gather_model_paths(target_dirpath, "accessory_addon_data", ("exterior_model",))
+                    self.update_model_paths_dict(upgrade_model_paths[upgrade_name], curr_models)
 
                     if len(upgrade_model_paths[upgrade_name]) <= 0:  # if no models for upgrade, remove set also
                         del upgrade_model_paths[upgrade_name]
@@ -1821,8 +1854,24 @@ class PaintjobTools:
                         self.add_model_to_group(curr_upgrade_scs_root, upgrade_type + " | " + os.path.basename(upgrade_model_path),
                                                 upgrade_model_paths[upgrade_type][upgrade_model_path])
 
-                        # position upgrade by locator aka make parent on upgrade locator
-                        upgrade_locator = context.scene.objects[upgrade_type]
+                        # find upgrade locator by prefix & position upgrade by locator aka make parent on it
+                        upgrade_locator = None
+                        for locator_name in possible_upgrade_locators:
+
+                            if not locator_name.startswith(upgrade_type):
+                                continue
+
+                            # Now we are trying to find "perfect" match, which is found,
+                            # when matched prefixed upgrade locator is also assigned to at least one group.
+                            # This way we eliminate locators that are in variants
+                            # not used by any chassis or cabin of our truck.
+                            # However cases involving "suitable_for" fields are not covered here!
+
+                            if upgrade_locator is None:
+                                upgrade_locator = possible_upgrade_locators[locator_name]
+                            elif len(possible_upgrade_locators[locator_name].users_group) > 0:
+                                upgrade_locator = possible_upgrade_locators[locator_name]
+                                break
 
                         if upgrade_locator is None:
                             message = "Locator for upgrade positioning not found, upgrade models for %r won't be properly positioned." % upgrade_type
@@ -2037,8 +2086,8 @@ class PaintjobTools:
                 bpy.ops.object.duplicate()
 
                 if selected_objects_count > 1:
+                    context.scene.objects.active = context.selected_objects[0]
                     override = context.copy()
-                    override["active_object"] = context.selected_objects[0]
                     override["selected_objects"] = context.selected_objects
                     bpy.ops.object.join(override)  # NOTE: this operator leaves old meshes behind, but for now we won't solve this issue
 
@@ -2219,8 +2268,8 @@ class PaintjobTools:
 
                     # merge with master object
                     master_obj.select = True
+                    context.scene.objects.active = master_obj
                     override = context.copy()
-                    override["active_object"] = master_obj
                     override["selected_objects"] = context.selected_objects
                     bpy.ops.object.join(override)
 
@@ -2246,8 +2295,8 @@ class PaintjobTools:
             # merge them
             final_merged_object = context.selected_objects[0]
             if len(merged_objects_to_export) > 1:
+                context.scene.objects.active = context.selected_objects[0]
                 override = context.copy()
-                override["active_object"] = context.selected_objects[0]
                 override["selected_objects"] = context.selected_objects
                 bpy.ops.object.join(override)
 
@@ -2341,11 +2390,21 @@ class PaintjobTools:
             description="Should given common texture TGA be preserved and not deleted after generation is finished?"
         )
 
+        optimize_single_color_textures = BoolProperty(
+            description="Export texture with size 4x4 if whole exported texture has all pixels with same color?"
+        )
+
+        export_configs_only = BoolProperty(
+            description="Should only configurations be exported (used for export of metallic like paintjobs without paintjob texture)?"
+        )
+
         # paint job settings exported to common SUI settings file
         pjs_name = StringProperty(default="pj_name")
         pjs_price = IntProperty(default=10000)
         pjs_unlock = IntProperty(default=0)
-        pjs_icon = StringProperty(default="paintjob_pj_name")
+        pjs_icon = StringProperty(default="")
+
+        pjs_paint_job_mask = StringProperty(default="")
 
         pjs_mask_r_color = FloatVectorProperty(default=(1, 0, 0))
         pjs_mask_r_locked = BoolProperty(default=True)
@@ -2368,6 +2427,7 @@ class PaintjobTools:
         pjs_flake_color_locked = BoolProperty(default=True)
 
         pjs_flake_uvscale = FloatProperty(default=32.0)
+        pjs_flake_vratio = FloatProperty(default=1.0)
         pjs_flake_density = FloatProperty(default=1.0)
         pjs_flake_shininess = FloatProperty(default=50.0)
         pjs_flake_clearcoat_rolloff = FloatProperty(default=2.2)
@@ -2420,12 +2480,6 @@ class PaintjobTools:
             img_width = int(orig_img_width * size[0])
             img_height = int(orig_img_height * size[1])
 
-            # create new texture data-block
-            img = bpy.data.images.new(texture_portion.id, img_width, img_height, alpha=True)
-            img.colorspace_settings.name = "Raw"  # force raw color-profile for TGA to be saved properly
-            img.use_alpha = True
-            img.use_generated_float = True
-
             # create copied data
             # We "invoke get" for original image pixels only on the rows where actual portion is positioned.
             # Additionally we do that in chunks, so we take only part of the height,
@@ -2435,6 +2489,9 @@ class PaintjobTools:
             img_pixels = [0.0] * img_width * img_height * 4
             orig_img_pixels = []
             rows_in_chunk = 1024  # this size of chunk seems to work the best for ration of used ram/export speed
+
+            is_img_single_color = self.optimize_single_color_textures  # if no optimization then we can already mark image as not a single color
+            comparing_pixel = [0.0] * 4  # for computation of single color image
             for row in range(0, img_height):
 
                 # on the beginning of the chunk refill pixels from original image
@@ -2446,6 +2503,10 @@ class PaintjobTools:
 
                     orig_img_pixels = orig_img.pixels[start_pixel:end_pixel]
 
+                    # use first pixel of current texture portion for comparison
+                    if row == 0:
+                        comparing_pixel = orig_img_pixels[0:4]
+
                 orig_start_pixel = (row % rows_in_chunk) * orig_img_width * 4 + orig_img_start_x * 4
                 orig_end_pixel = orig_start_pixel + img_width * 4
 
@@ -2454,7 +2515,28 @@ class PaintjobTools:
 
                 img_pixels[start_pixel:end_pixel] = orig_img_pixels[orig_start_pixel:orig_end_pixel]
 
-            # copy over data
+                # compare for single color image only until all searched pixels have the same color
+                if is_img_single_color:
+
+                    for i in range(orig_start_pixel, orig_end_pixel, 4):
+
+                        # mark image as none single color as soon as first different pixel is found and break for loop
+                        if orig_img_pixels[i:i + 4] != comparing_pixel:
+                            is_img_single_color = False
+                            break
+
+            # create new texture and copy over data or copy only 4x4 if only one color is detected in the texture
+            if is_img_single_color:
+
+                img_width = img_height = 4
+                img_pixels[:] = img_pixels[0:64]
+
+                lprint("I Texture portion %r has only one color in common texture, optimizing it by exporting 4x4px TGA!",
+                       (texture_portion.id,))
+
+            img = bpy.data.images.new(texture_portion.id, img_width, img_height, alpha=True)
+            img.colorspace_settings.name = "sRGB"  # make sure we use sRGB color-profile
+            img.use_alpha = True
             img.pixels[:] = img_pixels
 
             # save
@@ -2478,7 +2560,7 @@ class PaintjobTools:
 
             return tobj_cont.write_data_to_file()
 
-        def export_sii(self, config_path, pj_token, pj_full_unit_name, pj_mask_path, is_master=False, master_model_sii_unit_name=None):
+        def export_sii(self, config_path, pj_token, pj_full_unit_name, pj_props, is_master=False, master_model_sii_unit_name=None):
             """Export SII configuration file into given absolute path.
 
             :param config_path: absolute file path for SII where it should be epxorted
@@ -2487,12 +2569,12 @@ class PaintjobTools:
             :type pj_token: str
             :param pj_full_unit_name: for master paintjob: <pj_unit_name>.<brand.model>.paint_job, otherwise .simplepj
             :type pj_full_unit_name: str
-            :param pj_mask_path: relative filepath to paint job mask TOBJ (eg. /vehicle/truck/upgrade/<brand_model>/paintjob/<pj_unit_name>.tobj)
-            :type pj_mask_path: str
+            :param pj_props: dictionary of sii unit attributes to be writen in sii (key: name of attribute, value: any sii unit compatible object)
+            :type pj_props: dict[str | object]
             :param is_master: True for master paint job texture, otherwise False
             :type is_master: bool
             :param master_model_sii_unit_name: full unit name of referenced model inside master; if None suitable_for property won't be written
-            :type master_model_sii_unit_name: str
+            :type master_model_sii_unit_name: str | None
             :return: True if export was successful, False otherwise
             :rtype: bool
             """
@@ -2510,7 +2592,7 @@ class PaintjobTools:
                 pj_settings_sui_name = pj_token + "_settings.sui"
 
                 # export paint job settings SUI file
-                assert self.export_settings_sui(os.path.join(os.path.dirname(config_path), pj_settings_sui_name), pj_token)
+                assert self.export_settings_sui(os.path.join(os.path.dirname(config_path), pj_settings_sui_name))
 
                 # write include into paint job sii
                 unit.props["@include"] = pj_settings_sui_name
@@ -2519,18 +2601,23 @@ class PaintjobTools:
                 if master_model_sii_unit_name:
                     unit.props["suitable_for"] = [master_model_sii_unit_name, ]
 
-            unit.props["paint_job_mask"] = pj_mask_path
+            # export extra properties only if different than default value
+            for key in pj_props:
+                assert self.append_prop_if_not_default(unit, "pjs_" + key, pj_props[key])
+
+            # as it can happen now that we don't have any properties in our unit, then it's useless to export it
+            if len(unit.props) == 0:
+                lprint("I Unit has not properties thus useless to export empty SII, ignoring it: %r", (config_path,))
+                return True
 
             return _sii_container.write_data_to_file(config_path, (unit,), create_dirs=True)
 
-        def export_settings_sui(self, settings_sui_path, pj_token):
+        def export_settings_sui(self, settings_sui_path):
             """Export common SUI settings for paint job. This file includes all settings of the paintjob
             and shall be included in paint job master definitions.
 
             :param settings_sui_path: absolute file path for SUI where it should be exported
             :type settings_sui_path: str
-            :param pj_token: string of original paintjob toke got from original TGA file name
-            :type pj_token: str
             :return: True if settings were successfully written or if file is alredy up to date; False if sth goes wrong
             :rtype: bool
             """
@@ -2545,23 +2632,24 @@ class PaintjobTools:
             unit.props["name"] = self.pjs_name
             unit.props["price"] = self.pjs_price
             unit.props["unlock"] = self.pjs_unlock
-            unit.props["icon"] = self.pjs_icon
 
             # now go trough all props and export the ones that are different from default value
             for object_dir_entry in dir(self):
                 if object_dir_entry.startswith("pjs_"):
                     assert self.append_prop_if_not_default(unit, object_dir_entry)
 
-            return _sii_container.write_data_to_file(settings_sui_path, (unit,), is_sui=True)
+            return _sii_container.write_data_to_file(settings_sui_path, (unit,), is_sui=True, create_dirs=True)
 
-        def append_prop_if_not_default(self, unit, prop_name):
+        def append_prop_if_not_default(self, unit, prop_name, prop_value=None):
             """Appends property value into given unit instance, if property is different from default value.
             This way we will always write only needed values.
 
             :param unit: unit from container to be written
             :type unit: io_scs_tools.internals.structure.UnitData
-            :param prop_name: name of the property that should
+            :param prop_name: name of the property that should be append
             :type prop_name: str
+            :param prop_value: value of the property that should be append; if None instance is search for value instead
+            :type prop_value: tuple | float | bool
             :return: True if property was found and properly processed; False if property is invalid
             :rtype: bool
             """
@@ -2569,11 +2657,19 @@ class PaintjobTools:
             _EPSILON = 0.0001  # float values max difference to be still equal
             _PJS_PREFIX = "pjs_"  # prefix that marks setting as paint job setting
 
+            if not hasattr(PaintjobTools.GeneratePaintjob, prop_name):
+                lprint("E Invalid property for paintjob settings: %r, contact the developer!", (prop_name,))
+                return False
+
             # gather values
             default_value = _get_bpy_prop(getattr(PaintjobTools.GeneratePaintjob, prop_name))
-            current_value = getattr(self, prop_name)
 
-            if default_value is None or current_value is None or not prop_name.startswith(_PJS_PREFIX):
+            if prop_value is None:
+                current_value = getattr(self, prop_name)
+            else:
+                current_value = prop_value
+
+            if current_value is None or not prop_name.startswith(_PJS_PREFIX):
                 lprint("E Invalid property for paintjob settings: %r, contact the developer!", (prop_name,))
                 return False
 
@@ -2633,25 +2729,26 @@ class PaintjobTools:
             # solve project path, if not given try to get it from given common texture path
             if self.project_path != "":
 
-                project_path = _path_utils.readable_norm(self.project_path)
+                orig_project_path = _path_utils.readable_norm(self.project_path)
 
-                if not os.path.isdir(project_path):
-                    self.do_report({'ERROR'}, "Given paintjob project path does not exist: %r!" % project_path)
+                if not os.path.isdir(orig_project_path):
+                    self.do_report({'ERROR'}, "Given paintjob project path does not exist: %r!" % orig_project_path)
                     return {'CANCELLED'}
 
                 # there has to be sibling base directory, otherwise we for sure aren't in right place
-                if not os.path.isdir(os.path.join(os.path.join(project_path, os.pardir), "base")):
-                    self.do_report({'ERROR'}, "Given pointjob project path is invalid, can't find sibling 'base' project: %r" % project_path)
+                if not os.path.isdir(os.path.join(os.path.join(orig_project_path, os.pardir), "base")):
+                    self.do_report({'ERROR'}, "Given pointjob project path is invalid, can't find sibling 'base' project: %r" % orig_project_path)
                     return {'CANCELLED'}
 
             else:
 
-                project_path = _path_utils.readable_norm(os.path.dirname(self.common_texture_path))
+                orig_project_path = _path_utils.readable_norm(os.path.dirname(self.common_texture_path))
+
                 # we can simply go 5 dirs up, as paintjob has to be properly placed /vehicle/truck/upgrade/paintjob/<brand.model>
                 for _ in range(0, 5):
-                    project_path = _path_utils.readable_norm(os.path.join(project_path, os.pardir))
+                    orig_project_path = _path_utils.readable_norm(os.path.join(orig_project_path, os.pardir))
 
-                if not os.path.isdir(project_path):
+                if not os.path.isdir(orig_project_path):
                     self.do_report({'ERROR'}, "Paintjob TGA seems to be saved outside proper structure, should be inside\n"
                                               "'<project_path>/vehicle/truck/upgrade/paintjob/<brand_model>/', instead is in:\n"
                                               "%r" % self.common_texture_path)
@@ -2732,6 +2829,16 @@ class PaintjobTools:
 
                     texture_portions[unit_id] = texture_portion
 
+            # collect master portions to be able to properly export all override paintjob masks and other paint job attributes
+            master_portions = []
+            for unit_id in texture_portions:
+
+                texture_portion = texture_portions[unit_id]
+                is_master = bool(texture_portion.get_prop("is_master"))
+
+                if is_master is True:
+                    master_portions.append(texture_portion)
+
             lprint("D Found texture portions: %r", (texture_portions.keys(),))
 
             ##################################
@@ -2741,8 +2848,9 @@ class PaintjobTools:
             ##################################
 
             common_tex_img = bpy.data.images.load(self.common_texture_path, check_existing=False)
+            common_tex_img.use_alpha = self.export_alpha
 
-            if common_tex_img.size[0] != common_texture_size[0] or common_tex_img.size[1] != common_texture_size[1]:
+            if tuple(common_tex_img.size) != tuple(common_texture_size) and not self.export_configs_only:
                 self.do_report({'ERROR'}, "Wrong size of common texture TGA: [%s, %s], paintjob layout META is prescribing different size: %r!"
                                % (common_tex_img.size[0], common_tex_img.size[1], common_texture_size))
                 return {'CANCELLED'}
@@ -2750,6 +2858,10 @@ class PaintjobTools:
             texture_portions_tobj_paths = {}  # storing TGA paths for each texture portion, used later for referencing textures in SIIs
             exported_portion_textures = set()  # storing already exported texture portion to avoid double exporting same TGA
             for unit_id in texture_portions:
+
+                # skip texture export if we are doing only configs
+                if self.export_configs_only:
+                    break
 
                 texture_portion = texture_portions[unit_id]
 
@@ -2782,6 +2894,52 @@ class PaintjobTools:
             #
             ##################################
 
+            # collect all possible projects for later search of model sii files
+            game_project_path = os.path.join(orig_project_path, os.pardir)  # search for game project path
+            if os.path.basename(game_project_path).startswith("dlc_") or os.path.basename(game_project_path).startswith("mod_"):
+                game_project_path = os.path.join(game_project_path, os.pardir)
+
+            project_paths = sorted(_path_utils.get_projects_paths(game_project_path), reverse=True)  # sort them so dlcs & mods have priority
+            truck_def_subdir = os.path.join("def/vehicle/truck", brand_model_token)
+
+            # clean old override simple paintjob configs
+            for truck_part in ("cabin", "chassis", "accessory"):
+
+                # config path: "/def/vehicle/truck/<brand.model>/<truck_part>/paint_job/"
+                config_path = os.path.join(orig_project_path, truck_def_subdir)
+                config_path = os.path.join(config_path, truck_part)
+
+                if truck_part == "accessory" and os.path.isdir(config_path):
+
+                    for directory in os.listdir(config_path):
+
+                        # accessory_dir: "/def/vehicle/truck/<brand.model>/accessory/<directory>/paint_job/"
+                        accessory_dir = os.path.join(config_path, directory)
+                        accessory_dir = os.path.join(accessory_dir, "paint_job")
+
+                        if not os.path.isdir(accessory_dir):
+                            continue
+
+                        for file in os.listdir(accessory_dir):
+                            pj_config_path = os.path.join(accessory_dir, file)
+                            # match beginning and end of the file name
+                            if os.path.isfile(pj_config_path) and file.startswith(pj_token) and file.endswith(".sii"):
+                                os.remove(pj_config_path)
+
+                else:
+
+                    # truck_part_dir: "/def/vehicle/truck/<brand.model>/<truck_part>/paint_job/"
+                    truck_part_dir = os.path.join(config_path, "paint_job")
+
+                    if os.path.isdir(truck_part_dir):
+
+                        for file in os.listdir(truck_part_dir):
+                            pj_config_path = os.path.join(truck_part_dir, file)
+                            # match beginning and end of the file name
+                            if os.path.isfile(pj_config_path) and file.startswith(pj_token) and file.endswith(".sii"):
+                                os.remove(pj_config_path)
+
+            # iterate texture portions and write all needed configs for it
             for unit_id in texture_portions:
 
                 texture_portion = texture_portions[unit_id]
@@ -2790,48 +2948,41 @@ class PaintjobTools:
                 is_master = bool(texture_portion.get_prop("is_master"))
                 master_unit_suffix = texture_portion.get_prop("master_unit_suffix")
 
-                # don't write config for texture portions when top most parent is master
-                parent = texture_portion.get_prop("parent")
-                is_parent_master = False
-                while parent:
-                    is_parent_master = bool(texture_portions[parent].get_prop("is_master"))
-                    parent = texture_portions[parent].get_prop("parent")
+                parent = curr_parent = texture_portion.get_prop("parent")
+                while curr_parent:
+                    parent = curr_parent
+                    curr_parent = texture_portions[parent].get_prop("parent")
 
-                if is_parent_master:
+                # don't write config for texture portions when top most parent is master
+                if parent and bool(texture_portions[parent].get_prop("is_master")):
                     continue
 
-                # check for SIIs from "model_sii" in current project, sibling "base" and parent "base"
-                truck_def_subdir = os.path.join("def/vehicle/truck", brand_model_token)
+                # check for SIIs from "model_sii" in all projects
                 model_sii_subpath = os.path.join(truck_def_subdir, model_sii)
 
-                model_sii_path = os.path.join(project_path, model_sii_subpath)
+                model_sii_path = os.path.join(orig_project_path, model_sii_subpath)
 
-                # check if given model sii path really exists; check in current project, sibling "base" and parent "base"
-                sii_exists = os.path.isfile(model_sii_path)
+                sii_exists = False
+                for project_path in project_paths:
 
-                if not sii_exists:
+                    model_sii_path = os.path.join(project_path, model_sii_subpath)
 
-                    model_sii_path = os.path.join(project_path, os.pardir)
-                    model_sii_path = os.path.join(model_sii_path, "base")
-                    model_sii_path = os.path.join(model_sii_path, model_sii_subpath)
-
-                    sii_exists = os.path.isfile(model_sii_path)
-
-                if not sii_exists:
-
-                    model_sii_path = os.path.join(project_path, os.pardir)
-                    model_sii_path = os.path.join(model_sii_path, os.pardir)
-                    model_sii_path = os.path.join(model_sii_path, "base")
-                    model_sii_path = os.path.join(model_sii_path, model_sii_subpath)
-
-                    sii_exists = os.path.isfile(model_sii_path)
+                    if os.path.isfile(model_sii_path):  # just take first found path
+                        sii_exists = True
+                        break
 
                 if not sii_exists:
                     lprint("E Can't find referenced 'model_sii' file for texture portion %r, aborting SII write!", (texture_portion.id,))
                     return {'CANCELLED'}
 
+                # assamble paintjob properties that will be written in each SII (currently: paint_job_mask, )
+                pj_props = OrderedDict()
+
+                if not self.export_configs_only:
+                    rel_tobj_path = os.path.relpath(texture_portions_tobj_paths[unit_id], orig_project_path)
+                    pj_props["paint_job_mask"] = _path_utils.readable_norm("/" + rel_tobj_path)
+
                 # export either master paint job config or override
-                master_model_sii_unit_name = None  # unit name of referenced model sii used for suitable_for field in master paint jobs
                 if is_master:
 
                     suffixed_pj_unit_name = pj_token + master_unit_suffix
@@ -2847,15 +2998,19 @@ class PaintjobTools:
                                (texture_portion.id,))
                         return {'CANCELLED'}
 
+                    # unit name of referenced model sii used for suitable_for field in master paint jobs
                     master_model_sii_unit_name = model_sii_cont[0].id
 
                     # config path: "/def/vehicle/truck/<brand.model>/paint_job/<pj_unit_name>.sii"
-                    config_path = os.path.join(project_path, truck_def_subdir)
+                    config_path = os.path.join(orig_project_path, truck_def_subdir)
                     config_path = os.path.join(config_path, "paint_job")
                     config_path = os.path.join(config_path, suffixed_pj_unit_name + ".sii")
 
                     # full paint job unit name: <pj_unit_name>.<brand.model>.paint_job
                     pj_full_unit_name = suffixed_pj_unit_name + "." + brand_model_token + ".paint_job"
+
+                    assert self.export_sii(config_path, pj_token, pj_full_unit_name, pj_props, True, master_model_sii_unit_name)
+                    lprint("I Created master SII config for %r: %r", (texture_portion.id, config_path))
 
                 else:
 
@@ -2868,17 +3023,42 @@ class PaintjobTools:
                         acc_type_unit_name = model_sii_cont[0].id.split(".")[-1]  # last token
 
                         # config path: "/def/vehicle/truck/<brand.model>/accessory/<acc_name>/paint_job/<pj_unit_name>.<truck_acc_unit_name>.sii"
-                        config_path = os.path.join(project_path, truck_def_subdir)
+                        config_path = os.path.join(orig_project_path, truck_def_subdir)
                         config_path = os.path.join(config_path, model_type)
 
                         if model_type == "accessory":
                             config_path = os.path.join(config_path, acc_type_unit_name)
 
                         config_path = os.path.join(config_path, "paint_job")
-                        config_path = os.path.join(config_path, pj_token + "." + truck_acc_unit_name + ".sii")
 
                         # for overrides full paint job name is always .simplepj
                         pj_full_unit_name = ".simplepj"
+
+                        if parent:
+                            portion_size = [float(i) for i in texture_portions[parent].get_prop("size")]
+                        else:
+                            portion_size = [float(i) for i in texture_portion.get_prop("size")]
+
+                        # as override paintjob masks are dependent on original paintjob unit name
+                        # we have to create override configs for each master portion
+                        for master_portion in master_portions:
+
+                            master_size = [float(i) for i in master_portion.get_prop("size")]
+                            master_unit_suffix = master_portion.get_prop("master_unit_suffix")
+
+                            curr_config_path = os.path.join(config_path, pj_token + master_unit_suffix + "." + truck_acc_unit_name + ".sii")
+
+                            if self.pjs_flipflake:
+
+                                # calculate flake uv scale by width of textures
+                                pj_props["flake_uvscale"] = (portion_size[0] / master_size[0]) * self.pjs_flake_uvscale
+
+                                # calculate vratio by calculating height of portion if it would be in ratio of master texture and
+                                # then just divide original texture height with calculated one
+                                pj_props["flake_vratio"] = portion_size[1] / (master_size[1] * portion_size[0] / master_size[0])
+
+                            assert self.export_sii(curr_config_path, pj_token, pj_full_unit_name, pj_props, False)
+                            lprint("I Created override SII config for %r: %r", (texture_portion.id, config_path))
 
                     else:
 
@@ -2886,12 +3066,6 @@ class PaintjobTools:
                                "accessory, cabin or chassis neither is texture portion marked with 'is_master'!",
                                (texture_portion.id,))
                         return {'CANCELLED'}
-
-                # get TOBJ in game path
-                tobj_subpath = _path_utils.readable_norm("/" + os.path.relpath(texture_portions_tobj_paths[unit_id], project_path))
-
-                assert self.export_sii(config_path, pj_token, pj_full_unit_name, tobj_subpath, is_master, master_model_sii_unit_name)
-                lprint("I Created SII config for %r: %r", (texture_portion.id, config_path))
 
             # finally we can remove original TGA
             if not self.preserve_common_texture and os.path.isfile(self.common_texture_path):

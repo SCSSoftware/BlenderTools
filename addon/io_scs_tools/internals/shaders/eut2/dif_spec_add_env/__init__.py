@@ -41,10 +41,10 @@ class DifSpecAddEnv(DifSpec, StdAddEnv):
         DifSpec.init(node_tree)
         StdAddEnv.add(node_tree,
                       DifSpec.GEOM_NODE,
-                      DifSpec.SPEC_COL_NODE,
-                      DifSpec.BASE_TEX_NODE,
-                      DifSpec.OUT_MAT_NODE,
-                      DifSpec.COMPOSE_LIGHTING_NODE)
+                      node_tree.nodes[DifSpec.SPEC_COL_NODE].outputs['Color'],
+                      node_tree.nodes[DifSpec.REMAP_ALPHA_GNODE].outputs['Weighted Alpha'],
+                      node_tree.nodes[DifSpec.OUT_MAT_NODE].outputs['Normal'],
+                      node_tree.nodes[DifSpec.COMPOSE_LIGHTING_NODE].inputs['Env Color'])
 
     @staticmethod
     def set_indenv_flavor(node_tree, switch_on):

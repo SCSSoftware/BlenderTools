@@ -37,6 +37,7 @@ def get_settings_and_type(filepath, as_set=False):
     """
     addr = "00"
     tsnormal = "0"
+    color_space_linear = "0"
 
     container = _TobjContainer.read_data_from_file(filepath)
 
@@ -58,18 +59,21 @@ def get_settings_and_type(filepath, as_set=False):
         if container.usage == "tsnormal":
             tsnormal = "1"
 
+    if container and container.color_space == "linear":
+        color_space_linear = "1"
+
     # if container is still empty create default one so map type can be returned
     if not container:
         container = _TobjContainer()
 
     # return result as set
     if as_set:
-        return __get_as_set(addr, tsnormal), container.map_type
+        return __get_as_set(addr, tsnormal, color_space_linear), container.map_type
 
-    return tsnormal + addr, container.map_type
+    return color_space_linear + tsnormal + addr, container.map_type
 
 
-def __get_as_set(addr, tsnormal):
+def __get_as_set(addr, tsnormal, color_space_linear):
     set_list = []
 
     if addr[0] == "1":
@@ -79,5 +83,8 @@ def __get_as_set(addr, tsnormal):
 
     if tsnormal == "1":
         set_list.append("tsnormal")
+
+    if color_space_linear == "1":
+        set_list.append("color_space_linear")
 
     return set(set_list)

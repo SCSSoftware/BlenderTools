@@ -493,7 +493,7 @@ def _draw_shader_parameters(layout, mat, scs_props, scs_globals, is_imported_sha
 
         alias_row = alias_row.row(align=True)
         alias_text = "Enabled" if mat.scs_props.enable_aliasing else "Disabled"
-        alias_icon = "FILE_TICK" if mat.scs_props.enable_aliasing else "X_VEC"
+        alias_icon = "FILE_TICK" if mat.scs_props.enable_aliasing else "X"
         alias_row.prop(mat.scs_props, "enable_aliasing", icon=alias_icon, text=alias_text, toggle=True)
 
         normalized_base_tex_path = mat.scs_props.shader_texture_base.replace("\\", "/")

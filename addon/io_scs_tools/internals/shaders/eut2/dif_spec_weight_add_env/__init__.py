@@ -41,10 +41,10 @@ class DifSpecWeightAddEnv(DifSpecWeight, StdAddEnv):
         DifSpecWeight.init(node_tree)
         StdAddEnv.add(node_tree,
                       DifSpecWeight.GEOM_NODE,
-                      DifSpecWeight.SPEC_COL_NODE,
-                      DifSpecWeight.BASE_TEX_NODE,
-                      DifSpecWeight.OUT_MAT_NODE,
-                      DifSpecWeight.COMPOSE_LIGHTING_NODE)
+                      node_tree.nodes[DifSpecWeight.SPEC_COL_NODE].outputs['Color'],
+                      node_tree.nodes[DifSpecWeight.REMAP_ALPHA_GNODE].outputs['Weighted Alpha'],
+                      node_tree.nodes[DifSpecWeight.OUT_MAT_NODE].outputs['Normal'],
+                      node_tree.nodes[DifSpecWeight.COMPOSE_LIGHTING_NODE].inputs['Env Color'])
 
     @staticmethod
     def set_reflection_texture(node_tree, texture):
