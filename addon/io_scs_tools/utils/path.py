@@ -449,14 +449,16 @@ def get_scs_texture_str(texture_string):
 
     extensions, texture_string = get_texture_extens_and_strip_path(texture_string)
 
-    # if texture string starts with scs project path we can directly strip of project path,
-    # otherwise check if texture string came from base project while scs project path is in dlc/mod folder
+    # if texture string starts with scs project path we can directly strip of project path
     if startswith(texture_string, scs_project_path):
         texture_string = texture_string[len(scs_project_path):]
-    elif len(scs_project_path) > 0 and len(texture_string) > 0:
+    else:  # check if texture string came from base project while scs project path is in dlc/mod folder
 
         # first find longest matching path
-        common_path_len = len(os.path.commonpath([scs_project_path, texture_string]))
+        try:
+            common_path_len = len(os.path.commonpath([scs_project_path, texture_string]))
+        except ValueError:  # if ValueError is raised then paths do not match for sure, thus set it to 0
+            common_path_len = 0
 
         # now check if provided texture string is the same as:
         # current scs project path + one or two directories up + non matched path of the part
