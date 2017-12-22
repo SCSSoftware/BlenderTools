@@ -647,8 +647,13 @@ def load_pim_file(context, filepath, terrain_points_trans=None, preview_model=Fa
         terrain_points_trans = TerrainPntsTrans()
 
     scs_globals = _get_scs_globals()
+
+    lprint("I Reading data from PIM file...")
+
     ind = '    '
     pim_container = _pix_container.get_data_from_file(filepath, ind)
+
+    lprint("I Assembling data...")
 
     # LOAD HEADER
     format_version, source, f_type, f_name, source_filename, author = get_header(pim_container)
@@ -790,14 +795,17 @@ def load_pim_file(context, filepath, terrain_points_trans=None, preview_model=Fa
 
     # CREATE MATERIALS
     if scs_globals.import_pim_file and not preview_model:
-        lprint('\nI MATERIALS:')
+        lprint("\nI ------ Creating materials: ------")
+
         for mat_i in materials_data:
             mat = bpy.data.materials.new(materials_data[mat_i][0])
             mat.scs_props.mat_effect_name = materials_data[mat_i][1]
 
             materials_data[mat_i].append(materials_data[mat_i][0])
             materials_data[mat_i][0] = mat.name
-            lprint('I Created Material "%s"...', mat.name)
+            lprint("I Created material %r...", (mat.name,))
+
+        lprint("I ---------------------------------")
 
     # PREPARE VERTEX GROUPS FOR SKINNING
     object_skinning = {}
@@ -819,7 +827,7 @@ def load_pim_file(context, filepath, terrain_points_trans=None, preview_model=Fa
                             object_skinning[obj][vg][vertex] = vw
 
     # CREATE OBJECTS
-    lprint('\nI OBJECTS:')
+    lprint("\nI ------ Creating mesh objects: -------")
     objects = []
     skinned_objects = []
     for obj_i in objects_data:
@@ -878,13 +886,15 @@ def load_pim_file(context, filepath, terrain_points_trans=None, preview_model=Fa
             else:
                 objects.append(obj)
 
-            lprint('I Created Object "%s"...', (obj.name,))
+            lprint("I Created object %r (%s/%s)...", (obj.name, obj_i, len(objects_data)))
 
             # PARTS
             if part_name:
                 obj.scs_props.scs_part = part_name
         else:
-            lprint('E "%s" - Object creation FAILED!', piece_name)
+            lprint("E %r - Object creation FAILED!", piece_name)
+
+    lprint("I -------------------------------------")
 
     if preview_model:
 
@@ -920,7 +930,8 @@ def load_pim_file(context, filepath, terrain_points_trans=None, preview_model=Fa
     # CREATE MODEL LOCATORS
     locators = []
     if scs_globals.import_pim_file and not preview_model:
-        lprint('\nI MODEL LOCATORS:')
+        lprint("\nI ------ Creating model locators: ------")
+
         for loc_i in locators_data:
             # print('locators_data[loc_i]: %s' % str(locators_data[loc_i]))
             loc = _object_utils.create_locator_empty(
@@ -942,7 +953,7 @@ def load_pim_file(context, filepath, terrain_points_trans=None, preview_model=Fa
             # )
             locator_name = locators_data[loc_i][0]
             if loc:
-                lprint('I Created Locator "%s"...', locator_name)
+                lprint("I Created locator %r...", (locator_name,))
                 locators.append(loc)
                 for part in parts_data:
                     # print('parts_data[part]: %s' % str(parts_data[part]))
@@ -951,7 +962,9 @@ def load_pim_file(context, filepath, terrain_points_trans=None, preview_model=Fa
                             # print('  loc_i: %s - part: %s - parts_data[part][1]: %s' % (loc_i, part, parts_data[part][1]))
                             loc.scs_props.scs_part = part.lower()
             else:
-                lprint('E "%s" - Locator creation FAILED!', locator_name)
+                lprint("E %r - Locator creation FAILED!", (locator_name,))
+
+        lprint("I --------------------------------------")
 
     # CREATE SKELETON (ARMATURE)
     armature = None
@@ -983,9 +996,9 @@ def load_pim_file(context, filepath, terrain_points_trans=None, preview_model=Fa
 
     # WARNING PRINTOUTS
     if piece_count < 0:
-        lprint('\nW More Pieces found than were declared!')
+        lprint("W More Pieces found than were declared!")
     if piece_count > 0:
-        lprint('\nW Some Pieces not found, but were declared!')
+        lprint("W Some Pieces not found, but were declared!")
 
     return {'FINISHED'}, objects, locators, armature, skeleton, materials_data.values()
 

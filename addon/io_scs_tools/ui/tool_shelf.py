@@ -18,10 +18,12 @@
 
 # Copyright (C) 2013-2014: SCS Software
 
+import bpy
 from bpy.types import Panel
 from io_scs_tools.consts import Icons as _ICONS_consts
-from io_scs_tools.consts import Operators as _OP_consts
 from io_scs_tools.consts import LampTools as _LT_consts
+from io_scs_tools.consts import Operators as _OP_consts
+from io_scs_tools.consts import VertexColorTools as _VCT_consts
 from io_scs_tools.internals.icons import get_icon
 from io_scs_tools.ui import shared as _shared
 from io_scs_tools.utils import object as _object_utils
@@ -59,6 +61,9 @@ class SCSToolShelfBlDefs(_ToolShelfBlDefs, Panel):
             row.operator('object.create_scs_root_object_dialog', text='', icon='OUTLINER_DATA_FONT')
             row = col.row(align=True)
             row.operator('object.scs_geometry_check', text="Check Geometry", icon="ZOOM_SELECTED")
+            row = col.row(align=True)
+            row.operator('mesh.scs_vcoloring_edit', text="VColoring", icon="GROUP_VCOL")
+            row.operator('mesh.scs_vcoloring_rebake', text="", icon="FILE_REFRESH")
 
 
 class SCSToolsConvexBlDefs(_ToolShelfBlDefs, Panel):
@@ -188,66 +193,68 @@ class SCSToolsVisibility(_ToolShelfBlDefs, Panel):
         layout = self.layout
         scene = context.scene
 
-        if scene:
-            scs_root_is_reachable = _object_utils.get_scs_root(context.active_object) is not None
+        if not scene:
+            return
 
-            box = layout.box()
+        scs_root_is_reachable = _object_utils.get_scs_root(context.active_object) is not None
 
-            row = box.row()
-            row.prop(scene.scs_props, "visibility_tools_scope", expand=True)
+        box = layout.box()
 
-            col = box.column(align=True)
-            col.enabled = scs_root_is_reachable or scene.scs_props.visibility_tools_scope == "Global"
-            row1 = col.row(align=True)
-            row1.alignment = 'CENTER'
-            props = row1.operator('object.switch_model_objects_visibility', text='', icon_value=get_icon(_ICON_TYPES.mesh))
-            props.view_type = _OP_consts.ViewType.viewonly
-            props = row1.operator('object.switch_shadow_casters_visibility', text='', icon_value=get_icon(_ICON_TYPES.mesh_shadow_caster))
-            props.view_type = _OP_consts.ViewType.viewonly
-            props = row1.operator('object.switch_glass_objects_visibility', text='', icon_value=get_icon(_ICON_TYPES.mesh_glass))
-            props.view_type = _OP_consts.ViewType.viewonly
-            props = row1.operator('object.switch_substance_objects_visibility', text='', icon_value=get_icon(_ICON_TYPES.mesh_with_physics))
-            props.view_type = _OP_consts.ViewType.viewonly
-            row2 = col.row(align=True)
-            row2.alignment = 'CENTER'
-            props = row2.operator('object.switch_all_locators_visibility', text='', icon_value=get_icon(_ICON_TYPES.loc))
-            props.view_type = _OP_consts.ViewType.viewonly
-            props = row2.operator('object.switch_model_locators_visibility', text='', icon_value=get_icon(_ICON_TYPES.loc_model))
-            props.view_type = _OP_consts.ViewType.viewonly
-            props = row2.operator('object.switch_prefab_locators_visibility', text='', icon_value=get_icon(_ICON_TYPES.loc_prefab))
-            props.view_type = _OP_consts.ViewType.viewonly
-            props = row2.operator('object.switch_collision_locators_visibility', text='', icon_value=get_icon(_ICON_TYPES.loc_collider))
-            props.view_type = _OP_consts.ViewType.viewonly
+        row = box.row()
+        row.prop(scene.scs_props, "visibility_tools_scope", expand=True)
 
-            col = box.column(align=True)
-            col.enabled = scs_root_is_reachable or scene.scs_props.visibility_tools_scope == "Global"
-            row2 = col.row(align=True)
-            row2.alignment = 'CENTER'
-            props = row2.operator('object.switch_prefab_nodes_visibility', text='', icon_value=get_icon(_ICON_TYPES.loc_prefab_node))
-            props.view_type = _OP_consts.ViewType.viewonly
-            props = row2.operator('object.switch_prefab_signs_visibility', text='', icon_value=get_icon(_ICON_TYPES.loc_prefab_sign))
-            props.view_type = _OP_consts.ViewType.viewonly
-            props = row2.operator('object.switch_prefab_spawns_visibility', text='', icon_value=get_icon(_ICON_TYPES.loc_prefab_spawn))
-            props.view_type = _OP_consts.ViewType.viewonly
-            props = row2.operator('object.switch_prefab_traffics_visibility', text='', icon_value=get_icon(_ICON_TYPES.loc_prefab_semaphore))
-            props.view_type = _OP_consts.ViewType.viewonly
-            row2 = col.row(align=True)
-            row2.alignment = 'CENTER'
-            props = row2.operator('object.switch_prefab_navigations_visibility', text='',
-                                  icon_value=get_icon(_ICONS_consts.Types.loc_prefab_navigation))
-            props.view_type = _OP_consts.ViewType.viewonly
-            props = row2.operator('object.switch_prefab_maps_visibility', text='', icon_value=get_icon(_ICON_TYPES.loc_prefab_map))
-            props.view_type = _OP_consts.ViewType.viewonly
-            props = row2.operator('object.switch_prefab_triggers_visibility', text='', icon_value=get_icon(_ICON_TYPES.loc_prefab_trigger))
-            props.view_type = _OP_consts.ViewType.viewonly
-            row2.operator('object.blank_operator', text='', icon='BLANK1')
+        col = box.column(align=True)
+        col.enabled = scs_root_is_reachable or scene.scs_props.visibility_tools_scope == "Global"
+        row1 = col.row(align=True)
+        row1.alignment = 'CENTER'
+        props = row1.operator('object.switch_model_objects_visibility', text='', icon_value=get_icon(_ICON_TYPES.mesh))
+        props.view_type = _OP_consts.ViewType.viewonly
+        props = row1.operator('object.switch_shadow_casters_visibility', text='', icon_value=get_icon(_ICON_TYPES.mesh_shadow_caster))
+        props.view_type = _OP_consts.ViewType.viewonly
+        props = row1.operator('object.switch_glass_objects_visibility', text='', icon_value=get_icon(_ICON_TYPES.mesh_glass))
+        props.view_type = _OP_consts.ViewType.viewonly
+        props = row1.operator('object.switch_substance_objects_visibility', text='', icon_value=get_icon(_ICON_TYPES.mesh_with_physics))
+        props.view_type = _OP_consts.ViewType.viewonly
+        row2 = col.row(align=True)
+        row2.alignment = 'CENTER'
+        props = row2.operator('object.switch_all_locators_visibility', text='', icon_value=get_icon(_ICON_TYPES.loc))
+        props.view_type = _OP_consts.ViewType.viewonly
+        props = row2.operator('object.switch_model_locators_visibility', text='', icon_value=get_icon(_ICON_TYPES.loc_model))
+        props.view_type = _OP_consts.ViewType.viewonly
+        props = row2.operator('object.switch_prefab_locators_visibility', text='', icon_value=get_icon(_ICON_TYPES.loc_prefab))
+        props.view_type = _OP_consts.ViewType.viewonly
+        props = row2.operator('object.switch_collision_locators_visibility', text='', icon_value=get_icon(_ICON_TYPES.loc_collider))
+        props.view_type = _OP_consts.ViewType.viewonly
 
-            col = layout.column(align=True)
-            col.enabled = scs_root_is_reachable or scene.scs_props.visibility_tools_scope == "Global"
-            col.label("Current SCS Root:", icon_value=get_icon(_ICONS_consts.Types.scs_root))
-            col.operator('object.invert_visibility_within_root', text='Invert Visibility')
-            col.operator('object.view_all_objects_within_root', text='View All')
-            col.operator('object.isolate_objects_within_root', text='Isolate')
+        col = box.column(align=True)
+        col.enabled = scs_root_is_reachable or scene.scs_props.visibility_tools_scope == "Global"
+        row2 = col.row(align=True)
+        row2.alignment = 'CENTER'
+        props = row2.operator('object.switch_prefab_nodes_visibility', text='', icon_value=get_icon(_ICON_TYPES.loc_prefab_node))
+        props.view_type = _OP_consts.ViewType.viewonly
+        props = row2.operator('object.switch_prefab_signs_visibility', text='', icon_value=get_icon(_ICON_TYPES.loc_prefab_sign))
+        props.view_type = _OP_consts.ViewType.viewonly
+        props = row2.operator('object.switch_prefab_spawns_visibility', text='', icon_value=get_icon(_ICON_TYPES.loc_prefab_spawn))
+        props.view_type = _OP_consts.ViewType.viewonly
+        props = row2.operator('object.switch_prefab_traffics_visibility', text='', icon_value=get_icon(_ICON_TYPES.loc_prefab_semaphore))
+        props.view_type = _OP_consts.ViewType.viewonly
+        row2 = col.row(align=True)
+        row2.alignment = 'CENTER'
+        props = row2.operator('object.switch_prefab_navigations_visibility', text='',
+                              icon_value=get_icon(_ICONS_consts.Types.loc_prefab_navigation))
+        props.view_type = _OP_consts.ViewType.viewonly
+        props = row2.operator('object.switch_prefab_maps_visibility', text='', icon_value=get_icon(_ICON_TYPES.loc_prefab_map))
+        props.view_type = _OP_consts.ViewType.viewonly
+        props = row2.operator('object.switch_prefab_triggers_visibility', text='', icon_value=get_icon(_ICON_TYPES.loc_prefab_trigger))
+        props.view_type = _OP_consts.ViewType.viewonly
+        row2.operator('object.blank_operator', text='', icon='BLANK1')
+
+        col = layout.column(align=True)
+        col.enabled = scs_root_is_reachable or scene.scs_props.visibility_tools_scope == "Global"
+        col.label("Current SCS Root:", icon_value=get_icon(_ICONS_consts.Types.scs_root))
+        col.operator('object.invert_visibility_within_root', text='Invert Visibility')
+        col.operator('object.view_all_objects_within_root', text='View All')
+        col.operator('object.isolate_objects_within_root', text='Isolate')
 
 
 class SCSDisplayMethods(_ToolShelfBlDefs, Panel):
@@ -262,30 +269,32 @@ class SCSDisplayMethods(_ToolShelfBlDefs, Panel):
         layout = self.layout
         scene = context.scene
 
-        if scene:
-            # GLASS OBJECTS
-            col = layout.column(align=True)
-            col.label(text='Glass Objects', icon_value=get_icon(_ICON_TYPES.mesh_glass))
-            row = col.row(align=True)
-            row.operator('object.glass_objects_in_wireframes', text='Wires')
-            row.operator('object.glass_objects_textured', text='Textured')
+        if not scene:
+            return
 
-            # SHADOW CASTERS
-            col = layout.column(align=True)
-            col.label(text='Shadow Casters', icon_value=get_icon(_ICON_TYPES.mesh_shadow_caster))
-            row = col.row(align=True)
-            row.operator('object.shadow_caster_objects_in_wireframes', text='Wires')
-            row.operator('object.shadow_caster_objects_textured', text='Textured')
+        # GLASS OBJECTS
+        col = layout.column(align=True)
+        col.label(text='Glass Objects', icon_value=get_icon(_ICON_TYPES.mesh_glass))
+        row = col.row(align=True)
+        row.operator('object.glass_objects_in_wireframes', text='Wires')
+        row.operator('object.glass_objects_textured', text='Textured')
 
-            # COLLISION LOCATORS
-            col = layout.column(align=True)
-            col.label(text='Collision Locators', icon_value=get_icon(_ICON_TYPES.loc_collider))
-            row = col.row(align=True)
-            row.operator('object.all_collision_locators_wires', text='All Wires')
-            row.operator('object.no_collision_locators_wires', text='No Wires')
-            row = col.row(align=True)
-            row.operator('object.all_collision_locators_faces', text='All Faces')
-            row.operator('object.no_collision_locators_faces', text='No Faces')
+        # SHADOW CASTERS
+        col = layout.column(align=True)
+        col.label(text='Shadow Casters', icon_value=get_icon(_ICON_TYPES.mesh_shadow_caster))
+        row = col.row(align=True)
+        row.operator('object.shadow_caster_objects_in_wireframes', text='Wires')
+        row.operator('object.shadow_caster_objects_textured', text='Textured')
+
+        # COLLISION LOCATORS
+        col = layout.column(align=True)
+        col.label(text='Collision Locators', icon_value=get_icon(_ICON_TYPES.loc_collider))
+        row = col.row(align=True)
+        row.operator('object.all_collision_locators_wires', text='All Wires')
+        row.operator('object.no_collision_locators_wires', text='No Wires')
+        row = col.row(align=True)
+        row.operator('object.all_collision_locators_faces', text='All Faces')
+        row.operator('object.no_collision_locators_faces', text='No Faces')
 
 
 class SCSLampSwitcher(_ToolShelfBlDefs, Panel):
@@ -414,6 +423,40 @@ class SCSLampTool(_ToolShelfBlDefs, Panel):
         props = body_row.operator("mesh.scs_set_lampmask_uv", text="Green")
         props.traffic_light_color = _LT_consts.TrafficLightTypes.Green.name
         props.vehicle_side = props.aux_color = ""
+
+
+class SCSVColoring(_ToolShelfBlDefs, Panel):
+    bl_label = "VColoring"
+
+    @classmethod
+    def poll(cls, context):
+        return context.vertex_paint_object and bpy.ops.mesh.scs_vcoloring_edit.poll()
+
+    def draw(self, context):
+        layout = self.layout
+        body_col = layout.column(align=True)
+        active_vcol_name = context.active_object.data.vertex_colors.active.name
+
+        for layer_name in _VCT_consts.ColoringLayersTypes.as_list():
+
+            if layer_name == _VCT_consts.ColoringLayersTypes.Color:
+                text = "Edit Color"
+            elif layer_name == _VCT_consts.ColoringLayersTypes.Decal:
+                text = "Edit Decal"
+            elif layer_name == _VCT_consts.ColoringLayersTypes.AO:
+                text = "Edit AO"
+            elif layer_name == _VCT_consts.ColoringLayersTypes.AO2:
+                text = "Edit AO2"
+            else:
+                text = "Edit Undefined"
+
+            body_row = body_col.row(align=True)
+            icon = 'RADIOBUT_ON' if active_vcol_name == layer_name else 'RADIOBUT_OFF'
+            props = body_row.operator("mesh.scs_vcoloring_edit", text=text, icon=icon)
+            props.layer_name = layer_name
+
+        body_row = layout.row()
+        body_row.operator("mesh.scs_vcoloring_exit", text="Exit (ESC)", icon="QUIT")
 
 
 class SCSVertexColorWrapTool(_ToolShelfBlDefs, Panel):

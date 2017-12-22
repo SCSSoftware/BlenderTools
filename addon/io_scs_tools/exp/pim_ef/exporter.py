@@ -193,8 +193,9 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
             vert_normals = []
             vert_uvs = []
             uvs_aliases = []
-            uvs_names = []
+            uvs_names = collections.OrderedDict()
             vert_rgbas = []
+            rgbas_names = collections.OrderedDict()
             tex_coord_alias_map = pim_materials[pim_mat_name].get_tex_coord_map()
             for loop_i in poly.loop_indices:
 
@@ -217,11 +218,10 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
 
                 # 3. uvs -> uv_lay = mesh.uv_layers[0].data; uv_lay[loop_i].uv
                 uvs = []
-                uvs_names = []
                 uvs_aliases = []
                 if len(tex_coord_alias_map) < 1:  # no textures or none uses uv mapping in current material effect
                     uvs.append((0.0, 0.0))
-                    uvs_names.append("generated")
+                    uvs_names["generated"] = True
                     uvs_aliases.append(["_TEXCOORD0"])
 
                     # report missing mappings only on actual materials with textures using uv mappings
@@ -237,7 +237,7 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
 
                         uv_lay = mesh.uv_layers[uv_lay_name]
                         uvs.append(_change_to_scs_uv_coordinates(uv_lay.data[loop_i].uv))
-                        uvs_names.append(uv_lay_name)
+                        uvs_names[uv_lay_name] = True
 
                         aliases = []
                         if uv_lay_name in tex_coord_alias_map:
@@ -249,6 +249,7 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
                 vert_uvs.append(uvs)
 
                 # 4. vcol -> vcol_lay = mesh.vertex_colors[0].data; vcol_lay[loop_i].color
+                rgbas = []
                 vcol_multi = mesh_obj.data.scs_props.vertex_color_multiplier
                 if _MESH_consts.default_vcol not in mesh.vertex_colors:  # get RGB component of RGBA
                     vcol = (1.0,) * 3
@@ -263,7 +264,25 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
                 else:
                     alpha = mesh.vertex_colors[_MESH_consts.default_vcol + _MESH_consts.vcol_a_suffix].data[loop_i].color
                     vcol += ((alpha[0] + alpha[1] + alpha[2]) / 3.0 * 2 * vcol_multi,)  # take avg of colors for alpha
-                vert_rgbas.append(vcol)
+
+                rgbas.append(vcol)
+                rgbas_names[_MESH_consts.default_vcol] = True
+
+                # export rest of the vertex colors too, but do not apply extra multiplies of SCS exporter
+                # as rest of the layers are just artist layers
+                for vcol_layer in mesh.vertex_colors:
+
+                    # we already computed thoose so ignore them
+                    if vcol_layer.name in [_MESH_consts.default_vcol, _MESH_consts.default_vcol + _MESH_consts.vcol_a_suffix]:
+                        continue
+
+                    color = vcol_layer.data[loop_i].color
+                    vcol = (color[0], color[1], color[2], 1.0)
+
+                    rgbas.append(vcol)
+                    rgbas_names[vcol_layer.name] = True
+
+                vert_rgbas.append(rgbas)
 
                 # save internal vertex index to array to be able to construct triangle afterwards
                 piece_vert_index = mesh_piece.add_vertex(vert_i, position)
@@ -336,9 +355,10 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
                                        tuple(piece_vert_indices[::winding_order * -1]),  # invert indices because of conversion to scs system
                                        tuple(vert_normals[::winding_order]),
                                        tuple(vert_uvs[::winding_order]),
-                                       uvs_names,
+                                       list(uvs_names.keys()),
                                        uvs_aliases,
                                        tuple(vert_rgbas[::winding_order]),
+                                       list(rgbas_names.keys())
                                        )
 
         # as we captured all hard edges collect them now and put it into Piece

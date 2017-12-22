@@ -16,13 +16,13 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2013-2014: SCS Software
+# Copyright (C) 2013-2017: SCS Software
 
 """
 Constants for data group of map and navigation curves
 """
 
-from math import pi
+from math import cos, pi
 from enum import Enum
 from zipfile import ZIP_STORED, ZIP_DEFLATED, ZIP_BZIP2
 
@@ -232,6 +232,28 @@ class VertexColorTools:
         All = "all"
         Selected = "selected"
 
+    class ColoringLayersTypes:
+        """Constants for vertex coloring that hold names of the layers we use.
+        """
+
+        Color = "color"
+        Decal = "decal"
+        AO = "ao"
+        AO2 = "ao2"
+
+        @staticmethod
+        def as_list():
+            """Gets assets vertex color layers names
+            :return: list of all layer types as name
+            :rtype: list
+            """
+            return [
+                VertexColorTools.ColoringLayersTypes.Color,
+                VertexColorTools.ColoringLayersTypes.Decal,
+                VertexColorTools.ColoringLayersTypes.AO,
+                VertexColorTools.ColoringLayersTypes.AO2
+            ]
+
 
 class Mesh:
     """Constants for mesh data used either on import or in general.
@@ -266,6 +288,8 @@ class PrefabLocators:
     """Number of segments that curves are using during export calculations"""
     CURVE_CLOSEST_POINT_ITER = 30
     """Number of iterations for closest point calculations."""
+    CURVE_SPLIT_CROSS_DOT = cos(60.0 * pi / 180.0)
+    """Dot product constante which marsk split croos intersection as sharp."""
     SAFE_DISTANCE = 4.0
     """Minimal distance between two intersecting curves to be meet until we reach safe point."""
     TERRAIN_POINTS_MIN_DISTANCE = 0.01
@@ -411,6 +435,7 @@ class PrefabLocators:
         SIBLING_COUNT_SHIFT = 4
         TYPE_START = 0x00010000
         TYPE_END = 0x00020000
+        TYPE_CROSS_SHARP = 0x00040000
 
 
 class Bones:

@@ -90,17 +90,17 @@ def is_blender_able_to_run_tools():
     :return: True if current blender version meets required version for Blender Tools; False otherwise
     :rtype: bool
     """
-    return cmp_ver_str(bpy.app.version_string, get_required_blender_version()) > -1
+    return cmp_ver_str(get_blender_version()[0], get_required_blender_version()) >= 0
 
 
 def cmp_ver_str(version_str, version_str2):
-    """Compers two version string of format "X.X.X..." where X is number.
+    """Compares two version string of format "X.X.X..." where X is number.
 
     :param version_str: version string to check (should be in format: "X.Y" where X and Y are version numbers)
     :type version_str: str
     :param version_str2: version string to check (should be in format: "X.Y" where X and Y are version numbers)
     :type version_str2: str
-    :return: -1 if first is greater; 0 if equal; 1 if second is greater;
+    :return: -1 if first is smaller; 0 if equal; 1 if first is greater;
     :rtype: int
     """
 
@@ -109,9 +109,9 @@ def cmp_ver_str(version_str, version_str2):
 
     ver_cmp = []
     for ver_i in range(0, 2):
-        if version_str[ver_i] < version_str2[ver_i]:
+        if int(version_str[ver_i]) < int(version_str2[ver_i]):
             ver_cmp.append(-1)
-        elif version_str[ver_i] == version_str2[ver_i]:
+        elif int(version_str[ver_i]) == int(version_str2[ver_i]):
             ver_cmp.append(0)
         else:
             ver_cmp.append(1)
@@ -119,12 +119,12 @@ def cmp_ver_str(version_str, version_str2):
         ver_i += 1
 
     # first version smaller than second
-    if ver_cmp[0] < 0 or (ver_cmp[0] == 0 and ver_cmp[1] <= 0):
+    if ver_cmp[0] < 0 or (ver_cmp[0] == 0 and ver_cmp[1] < 0):
         return -1
 
     # equal versions
     if ver_cmp[0] == 0 and ver_cmp[1] == 0:
         return 0
 
-    # otherwise we directly assume that second is greater
+    # otherwise we directly assume that first is greater
     return 1

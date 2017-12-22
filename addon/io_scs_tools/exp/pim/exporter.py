@@ -128,14 +128,20 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
                    "%r",
                    (armature_object.name, list(invalid_bone_names)))
 
+    mesh_pieces = collections.OrderedDict()
+    """:type: dict[str, Piece]"""
+
     # create mesh object data sections
-    for mesh_obj in mesh_objects:
+    for mesh_i, mesh_obj in enumerate(mesh_objects):
 
         lprint("I Preparing mesh object: %r ...", (mesh_obj.name,))
 
-        vert_groups = mesh_obj.vertex_groups
+        # create part if it doesn't exists yet
+        part_name = used_parts.ensure_part(mesh_obj)
+        if part_name not in pim_parts:
+            pim_parts[part_name] = Part(part_name)
 
-        mesh_pieces = collections.OrderedDict()
+        vert_groups = mesh_obj.vertex_groups
 
         # calculate faces flip state from all ancestors of current object
         scale_sign = 1
@@ -185,6 +191,7 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
         missing_vcolor_a = False  # indicates if object is missing vertex color alpha layer
         missing_skinned_verts = set()  # indicates if object is having only partial skin, which is not allowed in our models
         has_unnormalized_skin = False  # indicates if object has vertices which bones weight sum is smaller then one
+        last_tangents_uv_layer = None  # stores uv layer for which tangents were calculated, so tangents won't be calculated all over again
 
         for poly in mesh.polygons:
 
@@ -207,25 +214,49 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
                 pim_materials[pim_mat_name] = pim_material
                 used_materials.add(pim_mat_name, material)
 
-            # create new piece if piece with this material doesn't exists yet -> split to pieces by material
-            if pim_mat_name not in mesh_pieces:
-                mesh_pieces[pim_mat_name] = Piece(len(pim_pieces) + len(mesh_pieces), pim_materials[pim_mat_name])
+            # if there is uv layer used for normal maps and that uv layer exists on mesh then calculate tangents on it otherwise report warning
+            nmap_uv_layer = pim_materials[pim_mat_name].get_nmap_uv_name()
+            if nmap_uv_layer and nmap_uv_layer != last_tangents_uv_layer:
 
-                nmap_uv_layer = pim_materials[pim_mat_name].get_nmap_uv_name()
-                # if there is uv layer used for normal maps and that uv layer exists on mesh then calculate tangents on it otherwise report warning
-                if nmap_uv_layer:
+                # save last uv layer that tangents were calculated on, so it won't be recalculated for each polygon
+                last_tangents_uv_layer = nmap_uv_layer
 
-                    if nmap_uv_layer in mesh.uv_layers:
-                        try:
-                            mesh.calc_tangents(uvmap=nmap_uv_layer)
-                        except RuntimeError:
-                            invalid_objects_for_tangents.add(mesh_obj.name)
-                    else:
-                        lprint("W Unable to calculate normal map tangents for object %r,\n\t   "
-                               "as it's missing UV layer with name: %r, expect problems!",
-                               (mesh_obj.name, nmap_uv_layer))
+                if nmap_uv_layer in mesh.uv_layers:
+                    try:
+                        mesh.calc_tangents(uvmap=nmap_uv_layer)
+                    except RuntimeError:
+                        invalid_objects_for_tangents.add(mesh_obj.name)
+                else:
+                    lprint("W Unable to calculate normal map tangents for object %r,\n\t   "
+                           "as it's missing UV layer with name: %r, expect problems!",
+                           (mesh_obj.name, nmap_uv_layer))
 
-            mesh_piece = mesh_pieces[pim_mat_name]
+            # construct piece dictonary key (can divide even one mesh to more if they have multiple materials)
+            if is_skin_used:  # if animated we try to merge as many pieces as possible
+                piece_key = pim_mat_name + "|" + part_name
+            else:  # if rigid just expot each mesh as own piece (conversion tools should take care about merging)
+                piece_key = pim_mat_name + "|" + part_name + "|" + str(mesh_i)
+
+            # create mesh piece object if max number of vertices is reached or no p piece for current piece dictonary key exists
+            if piece_key in mesh_pieces and mesh_pieces[piece_key].get_vertex_count() > 65536 - 3:
+
+                piece = mesh_pieces[piece_key]
+
+                # put current piece of current mesh to global list
+                pim_pieces.append(piece)
+
+                # add pieces of current mesh to part
+                pim_part = pim_parts[part_name]
+                pim_part.add_piece(piece)
+
+                del mesh_pieces[piece_key]
+                mesh_pieces[piece_key] = Piece(len(pim_pieces) + len(mesh_pieces), pim_materials[pim_mat_name])
+
+            elif piece_key not in mesh_pieces:
+
+                mesh_pieces[piece_key] = Piece(len(pim_pieces) + len(mesh_pieces), pim_materials[pim_mat_name])
+
+            mesh_piece = mesh_pieces[piece_key]
             """:type: Piece"""
 
             # get polygon loop indices for normals depending on mapped triangulated face
@@ -323,7 +354,10 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
                     tangent = None
 
                 # 6. There we go, vertex data collected! Now create internal vertex index, for triangle and skin stream construction
-                piece_vert_index = mesh_piece.add_vertex(vert_i, position, normal, uvs, uvs_aliases, vcol, tangent)
+                # Construct unique vertex index - donated by mesh and vertex index, as we may export more mesh objects into same piece,
+                # thus only vertex index wouldn't be unique representation.
+                unique_vert_i = str(mesh_i) + "|" + str(vert_i)
+                piece_vert_index = mesh_piece.add_vertex(unique_vert_i, position, normal, uvs, uvs_aliases, vcol, tangent)
 
                 # 7. Add vertex to triangle creation list
                 triangle_pvert_indices.append(piece_vert_index)
@@ -350,7 +384,7 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
                     elif bone_weights_sum < 1:
                         has_unnormalized_skin = True
 
-                # Addition - Terrain Points: save vertex to terrain points storage, if present in correct vertex group
+                # 9. Terrain Points: save vertex to terrain points storage, if present in correct vertex group
                 for group in mesh.vertices[vert_i].groups:
 
                     # if current object doesn't have vertex group found in mesh data, then ignore that group
@@ -401,26 +435,6 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
         _mesh_utils.cleanup_mesh(mesh)
         _mesh_utils.cleanup_mesh(mesh_for_normals)
 
-        # create part if it doesn't exists yet
-        part_name = used_parts.ensure_part(mesh_obj)
-        if part_name not in pim_parts:
-            pim_parts[part_name] = Part(part_name)
-
-        mesh_pieces = mesh_pieces.values()
-        for piece in mesh_pieces:
-
-            # now as pieces are created we can check for it's flaws
-            if piece.get_vertex_count() > 65536:
-                lprint("E Object %r has exceeded maximum vertex count (65536), expect errors during conversion!",
-                       (mesh_obj.name,))
-
-            # put pieces of current mesh to global list
-            pim_pieces.append(piece)
-
-            # add pieces of current mesh to part
-            pim_part = pim_parts[part_name]
-            pim_part.add_piece(piece)
-
         # report missing data for each object
         if len(missing_uv_layers) > 0:
             for uv_lay_name in missing_uv_layers:
@@ -439,6 +453,19 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
             lprint("W Object %r from SCS Root %r has unormalized skinning, exporting normalized weights!\n\t   "
                    "You can normalize weights by selecting object & executing 'Normalize All Vertex Groups'.",
                    (mesh_obj.name, root_object.name))
+
+    # add rest of the pieces to global list
+    for piece_key in mesh_pieces:
+
+        part_name = piece_key.split("|")[1]  # get part from piece key (<material name>|<part name>|(optional)<mesh index>)
+        piece = mesh_pieces[piece_key]
+
+        # put pieces of current mesh to global list
+        pim_pieces.append(piece)
+
+        # add pieces of current mesh to part
+        pim_part = pim_parts[part_name]
+        pim_part.add_piece(piece)
 
     # report missing data for whole model
     if len(missing_mappings_data) > 0:

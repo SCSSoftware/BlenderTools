@@ -16,11 +16,10 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2015: SCS Software
+# Copyright (C) 2017: SCS Software
 
-
+from math import tan, acos
 from mathutils import Vector
-
 from io_scs_tools.consts import PrefabLocators as _PL_consts
 from io_scs_tools.internals.structure import SectionData as _SectionData
 from io_scs_tools.utils.printout import lprint
@@ -124,6 +123,46 @@ class MapPoint:
             pip_map_points[str(i)] = map_point
 
     @staticmethod
+    def calc_segment_extensions(pip_map_points):
+        """Calculates segment extensions visual flags for given map points.
+
+        :param pip_map_points: iterable of map points
+        :type pip_map_points: collections.Iterable[MapPoint]
+        """
+
+        for mp in pip_map_points:
+
+            neighbours = mp.get_neighbours()
+
+            if len(neighbours) < 2:
+                continue
+
+            if mp.get_nav_flags() & _PL_consts.MPNF.NAV_NODE_START:
+                continue
+
+            for nb1_i, nb1 in enumerate(neighbours):
+
+                dir1 = (Vector(nb1.get_position()) - Vector(mp.get_position())).normalized()
+
+                for i in range(nb1_i + 1, len(neighbours)):
+
+                    nb2 = neighbours[i]
+                    dir2 = (Vector(mp.get_position()) - Vector(nb2.get_position())).normalized()
+                    mid_vec = (dir1 + dir2).normalized()
+
+                    mid_dot = min(1.0, max(-1.0, dir1.dot(mid_vec)))
+                    _tan = tan(acos(mid_dot))
+
+                    ext_flag = int(min(1.0, max(0.0, _tan)) * _PL_consts.MPVF.ROAD_EXT_VALUE_MASK)
+                    old_ext_flag = mp.get_visual_flags() & _PL_consts.MPVF.ROAD_EXT_VALUE_MASK
+
+                    if ext_flag and old_ext_flag:
+                        mp.set_visual_flag_and(~_PL_consts.MPVF.ROAD_EXT_VALUE_MASK)
+                        mp.set_visual_flag_or(min(ext_flag, old_ext_flag))
+                    else:
+                        mp.set_visual_flag_or(ext_flag)
+
+    @staticmethod
     def test_map_points(pip_map_points):
         """Test map points for validity and print out warnings/errors.
         This has to be called after all map points are created.
@@ -202,6 +241,22 @@ class MapPoint:
 
         MapPoint.__global_map_point_counter += 1
 
+    def set_visual_flag_and(self, value):
+        """Apply AND binary operator with given value
+
+        :param value: integer which should be applied with AND operator
+        :type value: int
+        """
+        self.__map_visual_flags &= value
+
+    def set_visual_flag_or(self, value):
+        """Apply OR binary operator with given value
+
+        :param value: integer which should be applied with OR operator
+        :type value: int
+        """
+        self.__map_visual_flags |= value
+
     def set_visual_flag(self, scs_props):
         """Sets visual flag to map point.
 
@@ -278,18 +333,19 @@ class MapPoint:
         self.__map_visual_flags = 0
 
         node_index_flag = 1 << node_index
+        nav_flags = (node_index_flag | _PL_consts.MPNF.NAV_NODE_START)
 
-        self.__map_nav_flags = (node_index_flag | _PL_consts.MPNF.NAV_NODE_START) | _PL_consts.MPNF.NAV_BASE
+        self.__map_nav_flags = nav_flags | _PL_consts.MPNF.NAV_BASE
 
         # setting road size and road offset masks from user created points
         self.__map_visual_flags = _PL_consts.MPVF.ROAD_SIZE_AUTO
 
         for orig_mp in original_points:
 
-            if orig_mp.get_nav_flags() & self.__map_nav_flags == self.__map_nav_flags:
+            if orig_mp.get_nav_flags() & nav_flags == nav_flags:
 
-                self.__map_visual_flags = orig_mp.get_nav_flags() & (_PL_consts.MPVF.ROAD_SIZE_MASK |
-                                                                     _PL_consts.MPVF.ROAD_OFFSET_MASK)
+                self.__map_visual_flags = orig_mp.get_visual_flags() & (_PL_consts.MPVF.ROAD_SIZE_MASK |
+                                                                        _PL_consts.MPVF.ROAD_OFFSET_MASK)
                 break
 
     def set_autogen_middle_flags(self, auto_gen_points):
@@ -318,8 +374,8 @@ class MapPoint:
                 # clear road size and offset mask bits
                 self.__map_visual_flags &= ~(_PL_consts.MPVF.ROAD_SIZE_MASK | _PL_consts.MPVF.ROAD_OFFSET_MASK)
 
-                self.__map_visual_flags |= road_size if road_size > nb_road_size else nb_road_size
-                self.__map_visual_flags |= offset if offset > nb_offset else nb_offset
+                self.__map_visual_flags |= max(nb_road_size, road_size)
+                self.__map_visual_flags |= max(nb_offset, offset)
 
         # if still not set set it as auto
         if self.__map_visual_flags == 0:
@@ -370,6 +426,14 @@ class MapPoint:
         :rtype: int
         """
         return self.__index
+
+    def get_position(self):
+        """Gets position of the map point
+
+        :return: position of map point
+        :rtype: tuple[float]
+        """
+        return self.__position
 
     def get_nav_flags(self):
         """Gets navigation flags of the map point.

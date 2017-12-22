@@ -174,7 +174,13 @@ def sort_out_game_objects_for_export(objects):
         scs_root_object = get_scs_root(obj)
         if scs_root_object:
             if scs_root_object in game_objects_dict:
-                game_objects_dict[scs_root_object].append(obj)
+
+                # object insertion sorting by name
+                i = 0
+                while i < len(game_objects_dict[scs_root_object]) and obj.name > game_objects_dict[scs_root_object][i].name:
+                    i += 1
+
+                game_objects_dict[scs_root_object].insert(i, obj)
             else:
                 game_objects_dict[scs_root_object] = [obj]
         else:

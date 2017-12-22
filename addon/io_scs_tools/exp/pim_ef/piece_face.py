@@ -89,20 +89,26 @@ class Face:
             for alias in uvs_aliases[i]:
                 stream.add_alias(alias)
 
-    def add_rgba(self, rgba):
+    def add_rgbas(self, rgbas, rgbas_names):
         """Adds next vertex colors to the end of the stream.
 
         NOTE: There is no check between length of stream and number of indicies present in face
 
-        :param rgba: next vertex vertex colors
-        :type rgba: tuple[float] | mathutils.Vector
+        :param rgbas: next vertex vertex colors
+        :type rgbas: tuple[tuple[float]] | tuple[mathutils.Vector]
+        :param rgbas_names: tuple or list of uv vertex color layer names used on vertex
+        :type rgbas_names: list[str] | tuple[str]
         """
 
-        if Stream.Types.RGBA not in self.__streams:
-            self.__streams[Stream.Types.RGBA] = Stream(Stream.Types.RGBA, -1, _MESH_consts.default_vcol)
+        for i, rgba in enumerate(rgbas):
 
-        stream = self.__streams[Stream.Types.RGBA]
-        stream.add_entry(rgba)
+            rgba_type = Stream.Types.RGBA + str(i)
+            if rgba_type not in self.__streams:
+                self.__streams[rgba_type] = Stream(Stream.Types.RGBA, i, rgbas_names[i])
+
+            stream = self.__streams[rgba_type]
+            """:type: Stream"""
+            stream.add_entry(rgba)
 
     def get_stream_count(self):
         """Gets count of all streams used in this face.

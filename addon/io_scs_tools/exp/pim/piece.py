@@ -138,7 +138,7 @@ class Piece:
     def add_vertex(self, vert_index, position, normal, uvs, uvs_aliases, rgba, tangent):
         """Adds new vertex to position and normal streams
         :param vert_index: original vertex index from Blender mesh
-        :type vert_index: int
+        :type vert_index: int | str
         :param position: vector or tuple of vertex position in SCS coordinates
         :type position: tuple | mathutils.Vector
         :param normal: vector or tuple of vertex normal in SCS coordinates
@@ -194,12 +194,12 @@ class Piece:
             stream.add_entry(rgba)
 
             vert_index_internal = stream.get_size() - 1  # streams has to be alligned so I can take last one for the index
-            self.__vertices_hash[vertex_hash] = (vert_index, vert_index_internal)
+            self.__vertices_hash[vertex_hash] = vert_index_internal
 
             self.__vertex_count = vert_index_internal + 1
             Piece.__global_vertex_count += 1
 
-        return self.__vertices_hash[vertex_hash][1]
+        return self.__vertices_hash[vertex_hash]
 
     def get_index(self):
         return self.__index

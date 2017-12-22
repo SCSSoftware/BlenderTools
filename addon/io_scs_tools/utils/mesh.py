@@ -22,6 +22,7 @@ import bpy
 import bmesh
 from collections import deque
 from io_scs_tools.consts import Mesh as _MESH_consts
+from io_scs_tools.consts import VertexColorTools as _VCT_consts
 from io_scs_tools.utils.printout import lprint
 from io_scs_tools.utils import convert as _convert
 
@@ -499,3 +500,87 @@ def cleanup_mesh(mesh):
     mesh.free_normals_split()
     if mesh.users == 0:
         bpy.data.meshes.remove(mesh, do_unlink=True)
+
+
+def vcoloring_rebake(mesh, vcolor_arrays, old_array_hash):
+    """Rebakes vertex colors from 4 vertex layers(color, decal, ao, ao2) to the vertex color layer
+    used by our shaders and exporter.
+
+    Function supports hashing so colors do not get rebaked in case that given old hash is the same as newly
+    calculated one.
+
+    Additionally function will resize arrays if they don't have proper size.
+
+    :param mesh: mesh on which we should rebake vertex colors
+    :type mesh: bpy.types.Mesh
+    :param vcolor_arrays: initialized arrays for saving loops colors when calculating. Should be 4 arrays of length: loop_count * 3.
+    :type vcolor_arrays: list[numpy.ndarray]
+    :param old_array_hash: hashed string of active vertex color array, used for determinating if colors have to be rebaked.
+    :type old_array_hash: str | None
+    :return: newly calculated hashed string of active vertex color array, that should be passed next time when rebake is called.
+    :rtype: str | None
+    """
+    mesh_vcolors = mesh.vertex_colors
+
+    # abort any baking if one of layers is missing or buffer arrays are not sufficitent
+    if _VCT_consts.ColoringLayersTypes.Color not in mesh_vcolors:
+        return None
+
+    if _VCT_consts.ColoringLayersTypes.Decal not in mesh_vcolors:
+        return None
+
+    if _VCT_consts.ColoringLayersTypes.AO not in mesh_vcolors:
+        return None
+
+    if _VCT_consts.ColoringLayersTypes.AO2 not in mesh_vcolors:
+        return None
+
+    if len(vcolor_arrays) != 4:
+        return None
+
+    # correct buffers size if needed
+    for i in range(0, 4):
+        if len(vcolor_arrays[i]) != len(mesh.loops) * 3:
+            vcolor_arrays[i].resize((len(mesh.loops) * 3,))
+
+    color_loops = mesh_vcolors[_VCT_consts.ColoringLayersTypes.Color].data
+    decal_loops = mesh_vcolors[_VCT_consts.ColoringLayersTypes.Decal].data
+    ao_loops = mesh_vcolors[_VCT_consts.ColoringLayersTypes.AO].data
+    ao2_loops = mesh_vcolors[_VCT_consts.ColoringLayersTypes.AO2].data
+
+    # ensure the layers used to bake to
+    if "Col" not in mesh_vcolors:
+        mesh_vcolors.new(name="Col")
+
+    if "Col_alpha" not in mesh_vcolors:
+        mesh_vcolors.new(name="Col_alpha")
+
+    # get vertex color data for hash calculation
+    if mesh_vcolors.active.name == _VCT_consts.ColoringLayersTypes.Color:
+        color_loops.foreach_get("color", vcolor_arrays[0])
+    elif mesh_vcolors.active.name == _VCT_consts.ColoringLayersTypes.Decal:
+        decal_loops.foreach_get("color", vcolor_arrays[0])
+    elif mesh_vcolors.active.name == _VCT_consts.ColoringLayersTypes.AO:
+        ao_loops.foreach_get("color", vcolor_arrays[0])
+    elif mesh_vcolors.active.name == _VCT_consts.ColoringLayersTypes.AO2:
+        ao2_loops.foreach_get("color", vcolor_arrays[0])
+
+    new_array_hash = hash(vcolor_arrays[0].tobytes())
+
+    # in case old and new hash are the same, do not rebake! This ensures smooth UI responsitivity in blender
+    if old_array_hash == new_array_hash:
+        return old_array_hash
+
+    color_loops.foreach_get("color", vcolor_arrays[0])
+    decal_loops.foreach_get("color", vcolor_arrays[1])
+    ao_loops.foreach_get("color", vcolor_arrays[2])
+    ao2_loops.foreach_get("color", vcolor_arrays[3])
+
+    vcolor_arrays[0] = vcolor_arrays[0] * vcolor_arrays[2] * vcolor_arrays[3] * 4.0
+    # alpha is donated only by decal layer color, thus we just comment it out
+    # vcolor_arrays[1] = vcolor_arrays[1]
+
+    mesh_vcolors["Col"].data.foreach_set("color", vcolor_arrays[0])
+    mesh_vcolors["Col_alpha"].data.foreach_set("color", vcolor_arrays[1])
+
+    return new_array_hash

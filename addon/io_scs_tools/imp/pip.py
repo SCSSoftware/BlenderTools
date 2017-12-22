@@ -24,6 +24,7 @@ from io_scs_tools.internals import inventory as _inventory
 from io_scs_tools.internals.containers import pix as _pix_container
 from io_scs_tools.internals.connections.wrappers import group as _group_connections_wrapper
 from io_scs_tools.utils import curve as _curve_utils
+from io_scs_tools.utils import name as _name_utils
 from io_scs_tools.utils import object as _object_utils
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
 from io_scs_tools.utils.printout import lprint
@@ -692,6 +693,8 @@ def load(filepath, terrain_points_trans):
 
             if node_name is None:
                 node_name = str('Node_Locator_' + str(node_index))
+            else:
+                node_name = _name_utils.get_unique(node_name, nodes_data.keys())
 
             node_direction = _curve_utils.set_direction(node_direction)
 
@@ -714,6 +717,8 @@ def load(filepath, terrain_points_trans):
 
             if sign_name is None:
                 sign_name = str('Sign_Locator_' + str(sign_index))
+            else:
+                sign_name = _name_utils.get_unique(sign_name, signs_data.keys())
 
             signs_data[sign_name] = (
                 sign_index,
@@ -731,6 +736,8 @@ def load(filepath, terrain_points_trans):
 
             if spawn_name is None:
                 spawn_name = str('Sign_Locator_' + str(spawn_index))
+            else:
+                spawn_name = _name_utils.get_unique(spawn_name,  spawn_points_data.keys())
 
             spawn_points_data[spawn_name] = (
                 spawn_index,
@@ -751,6 +758,8 @@ def load(filepath, terrain_points_trans):
 
             if tsem_name is None:
                 tsem_name = str('Semaphore_Locator_' + str(tsem_index))
+            else:
+                tsem_name = _name_utils.get_unique(tsem_name, traffic_lights_data.keys())
 
             if tsem_id is None:
                 tsem_id = -1

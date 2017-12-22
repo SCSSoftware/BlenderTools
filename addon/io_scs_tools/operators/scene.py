@@ -1003,9 +1003,8 @@ class ConversionHelper:
 
             elif platform == "darwin":  # Mac OS X
 
-                # NOTE: we are assuming that user installed wine as we did through easiest way:
-                # downloading winebottler and then just drag&drop to applications
-                wineconsole_path = "/Applications/Wine.app/Contents/Resources/bin/wineconsole"
+                # NOTE: we are assuming that user installed wine as it's written on: https://wiki.winehq.org/MacOS
+                wineconsole_path = "/Applications/Wine Stable.app/Contents/Resources/wine/bin/wineconsole"
 
                 if os.system("command -v wineconsole") == 0:
 
@@ -1013,10 +1012,12 @@ class ConversionHelper:
 
                 elif os.path.isfile(wineconsole_path):
 
+                    wineconsole_path = wineconsole_path.replace(" ", "\\ ")  # NOTE: Mac OS bash needs space escaping otherwise it doesn't work
                     command = [wineconsole_path + " " + os.path.join(main_path, "convert.cmd")]
 
                 else:
-                    self.report({'ERROR'}, "Conversion aborted! Please install at least Wine application from WineBottler, "
+                    self.report({'ERROR'}, "Conversion aborted!\n"
+                                           "Please install stable version of Wine application from 'winehq.org',\n"
                                            "it's required to run conversion tools on Mac OS X!")
                     return {'CANCELLED'}
 
@@ -1982,6 +1983,30 @@ class PaintjobTools:
             bm.free()
 
         @staticmethod
+        def prepare_uvs(obj, orig_uvs_name_2nd, orig_uvs_name_3rd):
+            """Prepare uvs for export by creating a copy of the ones used in SCS truckpaint material.
+
+            :param obj: Blender mesh object to be transformed
+            :type obj: bpy.types.Object
+            :param orig_uvs_name_2nd: name of the uv used in first paintjob slot from truckpaint material
+            :type orig_uvs_name_2nd: str
+            :param orig_uvs_name_3rd: name of the uv used in second paintjob slot from truckpaint material
+            :type orig_uvs_name_3rd: str
+            """
+
+            bm = bmesh.new()
+            bm.from_mesh(obj.data)
+
+            bm.loops.layers.uv.new(_PT_consts.uvs_name_2nd)
+            bm.loops.layers.uv[_PT_consts.uvs_name_2nd].copy_from(bm.loops.layers.uv[orig_uvs_name_2nd])
+
+            bm.loops.layers.uv.new(_PT_consts.uvs_name_3rd)
+            bm.loops.layers.uv[_PT_consts.uvs_name_3rd].copy_from(bm.loops.layers.uv[orig_uvs_name_3rd])
+
+            bm.to_mesh(obj.data)
+            bm.free()
+
+        @staticmethod
         def cleanup(*args):
             """Interprets given argumens as iterables holding blender object that shall be cleaned aka removed from datablocks.
             """
@@ -2105,8 +2130,9 @@ class PaintjobTools:
 
                 # rename paintjob uvs to our constant ones,
                 # so exporting at the end is easy as all objects will result in same uv layers names
-                curr_merged_object.data.uv_layers[curr_truckpaint_mat.scs_props.shader_texture_base_uv[1].value].name = _PT_consts.uvs_name_2nd
-                curr_merged_object.data.uv_layers[curr_truckpaint_mat.scs_props.shader_texture_base_uv[2].value].name = _PT_consts.uvs_name_3rd
+                self.prepare_uvs(curr_merged_object,
+                                 curr_truckpaint_mat.scs_props.shader_texture_base_uv[1].value,
+                                 curr_truckpaint_mat.scs_props.shader_texture_base_uv[2].value)
 
                 # remove all none needed & colliding data-blocks from object: materials, groups
                 while len(curr_merged_object.material_slots) > 0:
@@ -2895,9 +2921,9 @@ class PaintjobTools:
             ##################################
 
             # collect all possible projects for later search of model sii files
-            game_project_path = os.path.join(orig_project_path, os.pardir)  # search for game project path
+            game_project_path = _path_utils.readable_norm(os.path.join(orig_project_path, os.pardir))  # search for game project path
             if os.path.basename(game_project_path).startswith("dlc_") or os.path.basename(game_project_path).startswith("mod_"):
-                game_project_path = os.path.join(game_project_path, os.pardir)
+                game_project_path = _path_utils.readable_norm(os.path.join(game_project_path, os.pardir))
 
             project_paths = sorted(_path_utils.get_projects_paths(game_project_path), reverse=True)  # sort them so dlcs & mods have priority
             truck_def_subdir = os.path.join("def/vehicle/truck", brand_model_token)

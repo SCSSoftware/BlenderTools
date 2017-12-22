@@ -1,3 +1,23 @@
+# ##### BEGIN GPL LICENSE BLOCK #####
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+#
+# ##### END GPL LICENSE BLOCK #####
+
+# Copyright (C) 2015-2017: SCS Software
+
 from os import path
 from collections import OrderedDict
 from mathutils import Vector, Quaternion
@@ -356,6 +376,7 @@ def execute(dirpath, filename, name_suffix, prefab_locator_list, offset_matrix, 
 
             assert map_point.add_neighbour(__get_map_point__(pip_map_points, neighbour_name))
 
+    MapPoint.calc_segment_extensions(pip_map_points.values())
     MapPoint.test_map_points(pip_map_points.values())
     MapPoint.auto_generate_map_points(pip_map_points, pip_nodes)
 
@@ -403,6 +424,7 @@ def execute(dirpath, filename, name_suffix, prefab_locator_list, offset_matrix, 
 
                 is_start = c0_pos == 0 and c0_pos == c1_pos
                 is_end = c1_pos == 1 and c0_pos == c1_pos
+                is_split_sharp = False
 
                 if is_start:
                     inter_type = 0  # fork
@@ -433,6 +455,11 @@ def execute(dirpath, filename, name_suffix, prefab_locator_list, offset_matrix, 
                     c0_pos = c0.get_closest_point(intersect_p)
                     c1_pos = c1.get_closest_point(intersect_p)
 
+                    # calculate if split cross intersection is too sharp for allowing of smother traffic flow
+                    c0_dir = c0.get_curve_tangent_at_position(c0_pos)
+                    c1_dir = c1.get_curve_tangent_at_position(c1_pos)
+                    is_split_sharp = c0_dir.dot(c1_dir) >= _PL_consts.CURVE_SPLIT_CROSS_DOT
+
                     lprint("D Found cross intersection point: %r", (intersect_p,))
 
                 # creating intersection class instances
@@ -459,7 +486,7 @@ def execute(dirpath, filename, name_suffix, prefab_locator_list, offset_matrix, 
 
                 # always set flags on first entry in current intersection point list
                 # this way siblings count is getting updated properly
-                pip_intersections[inter_type][intersect_p_str][0].set_flags(is_start, is_end, new_siblings)
+                pip_intersections[inter_type][intersect_p_str][0].set_flags(is_start, is_end, is_split_sharp, new_siblings)
 
                 # update radius on all of intersection in the same intersecting point
                 for inter in pip_intersections[inter_type][intersect_p_str]:

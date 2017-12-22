@@ -104,7 +104,7 @@ class Piece:
 
         Piece.__global_piece_count += 1
 
-    def add_face(self, material, vert_indicies, vert_normals, vert_uvs, uvs_names, uvs_aliases, vert_rgbas):
+    def add_face(self, material, vert_indicies, vert_normals, vert_uvs, uvs_names, uvs_aliases, vert_rgbas, rgbas_names):
         """Adds new face to piece.
 
         :param material: material that should be used on for this piece
@@ -121,6 +121,8 @@ class Piece:
         :type uvs_aliases: list[str] | tuple[str]
         :param vert_rgbas: list of rgba vertex colors in SCS values
         :type vert_rgbas: list[tuple | mathutils.Color] | tuple[tuple | mathutils.Color]
+        :param rgbas_names: tuple or list of vertex color layer names used on vertex
+        :type rgbas_names: list[str] | tuple[str]
         :return: True if added; False otherwise
         :rtype: bool
         """
@@ -147,8 +149,8 @@ class Piece:
             # add uvs per vertex
             face.add_uvs(vert_uvs[i], uvs_names, uvs_aliases)
 
-            # add rgba per vertex
-            face.add_rgba(vert_rgbas[i])
+            # add rgbas per vertex
+            face.add_rgbas(vert_rgbas[i], rgbas_names)
 
         self.__faces.append(face)
         Piece.__global_face_count += 1

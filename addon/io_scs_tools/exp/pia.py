@@ -197,8 +197,8 @@ def _get_bone_channels(scs_root_obj, armature, scs_animation, action, export_sca
 
                 mat_sca = Matrix()
                 mat_sca[0] = (scale[0], 0, 0, 0)
-                mat_sca[1] = (0, scale[2], 0, 0)
-                mat_sca[2] = (0, 0, scale[1], 0)
+                mat_sca[1] = (0, scale[1], 0, 0)
+                mat_sca[2] = (0, 0, scale[2], 0)
                 mat_sca[3] = (0, 0, 0, 1)
 
             # BLENDER FRAME MATRIX

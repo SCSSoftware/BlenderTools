@@ -38,6 +38,11 @@ class Stream(_Stream):
 
         super().__init__(stream_type, index)
 
+        # exchange format support multiple vertex color layers
+        if stream_type == Stream.Types.RGBA:
+            self.__tag_index = index
+            self.__format = "FLOAT4"
+
         self.__name = name
 
     def get_as_section(self):

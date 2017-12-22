@@ -16,7 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2015: SCS Software
+# Copyright (C) 2015-2017: SCS Software
 
 from mathutils import Vector, Quaternion
 from io_scs_tools.consts import PrefabLocators as _PL_consts
@@ -76,7 +76,7 @@ class Curve:
                 invalid_curves.append(curve)
 
         if len(invalid_curves) > 0:
-            msg = ("W Connections with loose ends detected, expect problems in game.\n\t   "
+            msg = ("W Connections with loose ends or zero length detected, expect problems in game.\n\t   "
                    "Check connections with starting Navigation Points:\n\t   [")
 
             for curve in invalid_curves:
@@ -491,10 +491,10 @@ class Curve:
 
         while iterations > 0:
 
-            curr_p = _curve_utils.smooth_curve(curve_p1, curve_t1, curve_p2, curve_t2, interval[0])
+            curr_p = _curve_utils.smooth_curve_position(curve_p1, curve_t1, curve_p2, curve_t2, interval[0])
             p1_distance = _math_utils.get_distance(curr_p, point)
 
-            curr_p = _curve_utils.smooth_curve(curve_p1, curve_t1, curve_p2, curve_t2, interval[2])
+            curr_p = _curve_utils.smooth_curve_position(curve_p1, curve_t1, curve_p2, curve_t2, interval[2])
             p3_distance = _math_utils.get_distance(curr_p, point)
 
             if p1_distance < p3_distance:
@@ -505,6 +505,24 @@ class Curve:
             iterations -= 1
 
         return interval[1]
+
+    def get_curve_tangent_at_position(self, curve_position):
+        """Get direction of curve on given curve position.
+
+        NOTE: length of the curve must be already calculated.
+
+        :param curve_position: interval
+        :type curve_position: float
+        :return: curve tangent direction vector on given position
+        :rtype: mathutils.Vector
+        """
+
+        assert 0 <= curve_position <= 1
+
+        curve_p1, curve_t1 = self.get_start()
+        curve_p2, curve_t2 = self.get_end()
+
+        return _curve_utils.smooth_curve_tangent(curve_p1, curve_t1, curve_p2, curve_t2, curve_position)
 
     def is_inbound(self):
         """Returns true if this curve is starting curve.
@@ -524,7 +542,7 @@ class Curve:
         :rtype: bool
         """
 
-        return self.__leads_to_nodes > 0
+        return self.__leads_to_nodes > 0 and self.__length > 0
 
     def calc_leads_to_nodes_forward(self, ancestor_leads_to_nodes, already_visited=None):
         """Calculate leads to nodes recursive in forward direction.

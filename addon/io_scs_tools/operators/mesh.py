@@ -16,14 +16,19 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2015: SCS Software
+# Copyright (C) 2015-2017: SCS Software
 
 import bmesh
 import bpy
+import numpy
+from time import time
 from bpy.props import StringProperty, FloatProperty
 from io_scs_tools.consts import Mesh as _MESH_consts
 from io_scs_tools.consts import LampTools as _LT_consts
 from io_scs_tools.consts import VertexColorTools as _VCT_consts
+from io_scs_tools.utils import mesh as _mesh_utils
+from io_scs_tools.utils import view3d as _view3d_utils
+from io_scs_tools.utils.printout import lprint
 
 
 class LampTool:
@@ -311,5 +316,285 @@ class VertexColorTools:
                         # setting neutral value (0.5) to all colors
                         for vertex_col_data in obj.data.vertex_colors[curr_lay_name].data:
                             vertex_col_data.color = (0.5,) * 3
+
+            return {'FINISHED'}
+
+    class VertexColoringEdit(bpy.types.Operator):
+        bl_label = "VColoring - Edit"
+        bl_idname = "mesh.scs_vcoloring_edit"
+        bl_description = "Enters complex vertex paint edit mode, where user can edit one of 4 vertex color layers: color, decal, ao, ao2.\n" \
+                         "This layers are baked together by extra overlay functions designed for usage in map assets."
+        bl_options = {'REGISTER', 'INTERNAL', 'UNDO'}
+
+        layer_name = StringProperty(default="", description="Name of the layer to edit currently.")
+
+        __static_active_layer = _VCT_consts.ColoringLayersTypes.Color  # by default start editing color
+        """Stores currently active vertex color layer. Used for switching to other modes when user invokes this operator again."""
+        __static_is_active = False
+        """Flag indicating weather this operator is running already or not. To prevent multiple instances of this operator."""
+
+        __timer = None
+        """Storing timer reference for modal execution."""
+        __active_object_name = None
+        """Storing name of the currently active object for vertex painting, used to be able to abort operator if user selects other object."""
+        __active_object_mode = None
+        """Storing mode of currently active object, to be able to abort operator if user jumps out of vertex mode."""
+        __vcolors_buffer_arrays = []
+        """Used for storing vertex color layers data when rebaking. Should be array of 4 numpy ndarrays as we are rebaking from 4 layers."""
+        __old_vcolors_array_hash = None
+        """Storing hash value of active vertex color array values. Used to identify weather rebake should happen or not."""
+
+        def __get_active_object__(self):
+            """Returns operator cached active object.
+
+            :return: active object or None if object was somehow deleted
+            :rtype: bpy.types.Object | None
+            """
+            return bpy.data.objects[self.__active_object_name] if self.__active_object_name in bpy.data.objects else None
+
+        def initialize(self, context):
+            """Initialize operator with timer, active object data, creates needed vertex color layers and fills default values.
+
+            :param context: blender context
+            :type context: bpy.types.Context
+            :return: Blender operator return set
+            :rtype: set
+            """
+
+            wm = context.window_manager
+
+            self.__timer = wm.event_timer_add(0.15, context.window)
+            self.__active_object_name = context.active_object.name
+            self.__active_object_mode = context.active_object.mode
+
+            VertexColorTools.VertexColoringEdit.__static_is_active = True
+
+            wm.modal_handler_add(self)
+
+            # now ensure all needed vertex color layers are initialized with proper colors
+            mesh = self.__get_active_object__().data
+            for layer_name in _VCT_consts.ColoringLayersTypes.as_list():
+
+                if layer_name in mesh.vertex_colors:
+                    continue
+
+                vcolor = mesh.vertex_colors.new(name=layer_name)
+
+                buffer = None
+                if layer_name == _VCT_consts.ColoringLayersTypes.Color:
+                    buffer = numpy.array([0.5] * (len(mesh.loops) * 3))
+                elif layer_name == _VCT_consts.ColoringLayersTypes.Decal:
+                    buffer = numpy.array([1.0] * (len(mesh.loops) * 3))
+                elif layer_name == _VCT_consts.ColoringLayersTypes.AO:
+                    buffer = numpy.array([0.5] * (len(mesh.loops) * 3))
+                elif layer_name == _VCT_consts.ColoringLayersTypes.AO2:
+                    buffer = numpy.array([0.5] * (len(mesh.loops) * 3))
+
+                if buffer is not None:
+                    vcolor.data.foreach_set("color", buffer)
+
+            # initialize buffers and hash
+            self.__vcolors_buffer_arrays = [
+                numpy.array([0.0] * (len(mesh.loops) * 3)),
+                numpy.array([0.0] * (len(mesh.loops) * 3)),
+                numpy.array([0.0] * (len(mesh.loops) * 3)),
+                numpy.array([0.0] * (len(mesh.loops) * 3))
+            ]
+
+            self.__old_vcolors_array_hash = None
+
+            return {'RUNNING_MODAL'}
+
+        def switch_to_layer(self, layer_name):
+            """Make given vertex color layer as active.
+
+            :param layer_name: name of vertex color layer to which we want to switch
+            :type layer_name: str
+            :returns: True if layer was properly switch of it was already active, False if layer doesn't exists
+            :rtype: bool
+            """
+
+            obj_vcolors = self.__get_active_object__().data.vertex_colors
+
+            if layer_name not in obj_vcolors:
+                return False
+
+            if layer_name == obj_vcolors.active.name:
+                return True
+
+            obj_vcolors.active = obj_vcolors[layer_name]
+            lprint("D Changed active vertex layer to: %s" % layer_name)
+            return True
+
+        @classmethod
+        def abort(cls):
+
+            if cls.__static_is_active:
+                # just put it into object mode modal callback will automatically abort in that case
+                bpy.ops.object.mode_set(mode="OBJECT")
+
+        @classmethod
+        def poll(cls, context):
+
+            is_active_mesh = context.object is not None and context.object.type == "MESH"
+            valid_when_active = is_active_mesh and cls.__static_is_active and context.object.mode == "VERTEX_PAINT"
+            valid_when_inactive = is_active_mesh and not cls.__static_is_active and context.object.mode == "OBJECT"
+
+            return valid_when_active or valid_when_inactive
+
+        def modal(self, context, event):
+
+            active_obj = self.__get_active_object__()
+
+            active_object_changed = active_obj != context.active_object
+            is_object_mode_changed = self.__active_object_mode != context.active_object.mode
+
+            # allow changing into the edit mode as user might go there just to reselect
+            # masked faces on which he wants to paint
+            if is_object_mode_changed and context.active_object.mode == "EDIT" and not active_object_changed:
+                return {'PASS_THROUGH'}
+
+            # abort if:
+            # 1. active object mode has changed
+            # 2. if user changed active object
+            if is_object_mode_changed or active_object_changed:
+                self.cancel(context)
+                return {'CANCELLED'}
+
+            if event.type == "ESC" and event.value == "PRESS":
+                self.cancel(context)
+                return {'FINISHED'}
+
+            # always ensure to be in proper vertex color layer
+            self.switch_to_layer(self.__static_active_layer)
+
+            # do rebake only on timer event
+            if event.type == "TIMER":
+
+                start_time = time()
+                new_hash = _mesh_utils.vcoloring_rebake(active_obj.data, self.__vcolors_buffer_arrays, self.__old_vcolors_array_hash)
+                if new_hash is None:  # sth went really wrong, no sufficient data
+                    lprint("E VColoring rebake failed! Contact the developer...")
+                elif new_hash != self.__old_vcolors_array_hash:  # rebake happened
+                    self.__old_vcolors_array_hash = new_hash
+                    _view3d_utils.tag_redraw_all_view3d()  # trigger view update to see rebaked colors
+
+                    lprint("D VColoring real-time rebake took: %.4fs" % (time() - start_time))
+                else:  # checked active vertex color layer, but nothing had to be recalculated
+                    lprint("D VColoring checkup took: %.4fs" % (time() - start_time))
+
+            return {'PASS_THROUGH'}
+
+        def execute(self, context):
+
+            # user requested layer change
+            if self.layer_name != "" and self.layer_name in _VCT_consts.ColoringLayersTypes.as_list():
+                VertexColorTools.VertexColoringEdit.__static_active_layer = self.layer_name
+
+            # already active abort another one
+            if VertexColorTools.VertexColoringEdit.__static_is_active:
+                return {'CANCELLED'}
+
+            bpy.ops.object.mode_set(mode="VERTEX_PAINT")
+
+            # NOTE: We have to push undo event otherwise undo was just
+            # ignoring all the painting that has been done and
+            # aborted this operator. Practically undo was useless.
+            bpy.ops.ed.undo_push(message="[%s] - Switching to vertex paint mode" % self.bl_label)
+
+            return self.initialize(context)
+
+        def cancel(self, context):
+
+            active_obj = self.__get_active_object__()
+
+            # finish operator execution - go back to object mode
+            if active_obj.mode == "VERTEX_PAINT":
+                bpy.ops.object.mode_set(mode="OBJECT")
+
+            # one last time rebake
+            start_time = time()
+            new_hash = _mesh_utils.vcoloring_rebake(active_obj.data, self.__vcolors_buffer_arrays, self.__old_vcolors_array_hash)
+
+            if new_hash is None:
+                lprint("E VColoring rebake failed! Contact the developer...")
+            else:
+                lprint("D VColoring rebake on exit took: %.4fs" % (time() - start_time))
+
+            # cleanup
+            wm = context.window_manager
+            wm.event_timer_remove(self.__timer)
+
+            self.__timer = None
+            self.__active_object_name = None
+            self.__active_object_mode = None
+            self.__old_vcolors_array_hash = None
+            self.__vcolors_buffer_arrays = []
+
+            VertexColorTools.VertexColoringEdit.__static_is_active = False
+            lprint("D VColoring operator cleanup done, exiting now!")
+
+    class VertexColoringExit(bpy.types.Operator):
+        bl_label = "VColoring - Exit"
+        bl_idname = "mesh.scs_vcoloring_exit"
+        bl_description = "Exits complex vertex paint edit mode."
+        bl_options = {'REGISTER', 'INTERNAL'}
+
+        @classmethod
+        def poll(cls, context):
+            return VertexColorTools.VertexColoringEdit.poll(context)
+
+        def execute(self, context):
+            VertexColorTools.VertexColoringEdit.abort()
+            return {'FINISHED'}
+
+    class VertexColoringRebake(bpy.types.Operator):
+        bl_label = "VColoring - Rebake"
+        bl_idname = "mesh.scs_vcoloring_rebake"
+        bl_description = "Rebakes 4 vertex color layers (use it if you edited any of 4 extra vertex color layers by hand)."
+        bl_options = {'REGISTER', 'UNDO'}
+
+        @classmethod
+        def poll(cls, context):
+
+            if context.object is None or context.object.type != "MESH":
+                return False
+
+            has_needed_vcolors = (
+                _VCT_consts.ColoringLayersTypes.Color in context.object.data.vertex_colors and
+                _VCT_consts.ColoringLayersTypes.Decal in context.object.data.vertex_colors and
+                _VCT_consts.ColoringLayersTypes.AO in context.object.data.vertex_colors and
+                _VCT_consts.ColoringLayersTypes.AO2 in context.object.data.vertex_colors
+            )
+            return has_needed_vcolors
+
+        def execute(self, context):
+            mesh = context.active_object.data
+
+            start_time = time()
+
+            # prepare buffers
+            vcolors_buffer_arrays = [
+                numpy.array([0.0] * (len(mesh.loops) * 3)),
+                numpy.array([0.0] * (len(mesh.loops) * 3)),
+                numpy.array([0.0] * (len(mesh.loops) * 3)),
+                numpy.array([0.0] * (len(mesh.loops) * 3))
+            ]
+
+            # rebake
+            result = _mesh_utils.vcoloring_rebake(mesh, vcolors_buffer_arrays, None)
+            if result:
+
+                message = "I Successful! Vertex colors rebake took: %.4fs" % (time() - start_time)
+                lprint(message)
+                self.report({'INFO'}, message[2:])
+
+                _view3d_utils.tag_redraw_all_view3d()  # trigger view update to see rebaked colors
+
+            else:
+
+                message = "E Failed! This shouldn't happen, please contact the developer..."
+                lprint(message)
+                self.report({'ERROR'}, message[2:])
 
             return {'FINISHED'}

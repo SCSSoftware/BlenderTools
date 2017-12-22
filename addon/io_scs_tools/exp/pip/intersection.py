@@ -16,7 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2015: SCS Software
+# Copyright (C) 2015-2017: SCS Software
 
 from mathutils import Vector
 from io_scs_tools.consts import PrefabLocators as _PL_consts
@@ -99,6 +99,10 @@ class Intersection:
 
         length1 = curve1.get_length()
         length2 = curve2.get_length()
+
+        # prevent zero division error as curves can't really intersect if one of them doesn't really exist
+        if length1 == 0 or length2 == 0:
+            return None, -1, -1
 
         curve1_p1, curve1_t1 = curve1.get_start()
         curve1_p2, curve1_t2 = curve1.get_end()
@@ -190,8 +194,8 @@ class Intersection:
                     return 0
 
             # if everything is okay finally calculate curve points, distance and radius
-            curr_p1 = _curve_utils.smooth_curve(curve_p1[0], curve_t1[0], curve_p2[0], curve_t2[0], curr_pos[0] / curr_c[0].get_length())
-            curr_p2 = _curve_utils.smooth_curve(curve_p1[1], curve_t1[1], curve_p2[1], curve_t2[1], curr_pos[1] / curr_c[1].get_length())
+            curr_p1 = _curve_utils.smooth_curve_position(curve_p1[0], curve_t1[0], curve_p2[0], curve_t2[0], curr_pos[0] / curr_c[0].get_length())
+            curr_p2 = _curve_utils.smooth_curve_position(curve_p1[1], curve_t1[1], curve_p2[1], curve_t2[1], curr_pos[1] / curr_c[1].get_length())
 
             distance = _math_utils.get_distance(curr_p1, curr_p2)
             radius += steps[0]
@@ -227,7 +231,7 @@ class Intersection:
         """
         Intersection.__global_intersection_counter -= 1
 
-    def set_flags(self, is_start, is_end, siblings_increment):
+    def set_flags(self, is_start, is_end, is_split_sharp, siblings_increment):
         """Set flags upon given input for intersection.
 
         NOTE: set flags on first intersection only from the array of same intersections
@@ -236,6 +240,8 @@ class Intersection:
         :type is_start: bool
         :param is_end: True if this intersection is joint
         :type is_end: bool
+        :param is_split_sharp: True if this intersetion is split cross and has to sharp angle between curves
+        :type is_split_sharp: bool
         :param siblings_increment: number of sibling intersections ( same intersections different curve id)
         :type siblings_increment: int
         """
@@ -247,6 +253,9 @@ class Intersection:
 
         if is_end:
             self.__flags |= _PL_consts.PIF.TYPE_END
+
+        if is_split_sharp:
+            self.__flags |= _PL_consts.PIF.TYPE_CROSS_SHARP
 
         self.__tmp_sibling_count += siblings_increment
 
