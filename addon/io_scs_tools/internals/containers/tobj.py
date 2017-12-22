@@ -30,7 +30,7 @@ class TobjContainer:
     FILTER_TYPES = ("", "linear", "nearest")
     TARGET_TYPES = ("", "2d", "cube")
     COLOR_SPACE_TYPES = ("", "linear", "srgb")
-    USAGE_TYPES = ("", "default", "tsnormal", "ui")
+    USAGE_TYPES = ("", "default", "tsnormal", "ui", "projected")
 
     def __init__(self):
         """Constructs empty TOBJ container.
