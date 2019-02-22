@@ -480,6 +480,8 @@ def export(root_object, filepath, name_suffix, used_parts, used_materials):
                                     # print('         value: %s' % str(value))
                                     if format_prop == 'FLOAT':
                                         attribute_data.props.append((rec[0], ["&&", (value,)]))
+                                    elif format_prop == 'INT':
+                                        attribute_data.props.append((rec[0], ["ii", (value,)]))
                                     else:
                                         attribute_data.props.append((rec[0], ["i", tuple(value)]))
                             attribute_sections.append(attribute_data)
@@ -542,7 +544,7 @@ def export(root_object, filepath, name_suffix, used_parts, used_materials):
                             if attr_prop == "Format":
                                 format_value = attribute_dict[attr_prop]
 
-                            if attr_prop == "Value" and ("FLOAT" in format_value or "STRING" in format_value):
+                            if attr_prop == "Value" and ("FLOAT" in format_value or "STRING" in format_value or "INT" in format_value):
 
                                 tag_prop = attribute_dict["Tag"].replace("[", "").replace("]", "")
                                 if "aux" in tag_prop:

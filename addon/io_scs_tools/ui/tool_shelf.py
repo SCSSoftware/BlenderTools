@@ -435,7 +435,7 @@ class SCSVColoring(_ToolShelfBlDefs, Panel):
     def draw(self, context):
         layout = self.layout
         body_col = layout.column(align=True)
-        active_vcol_name = context.active_object.data.vertex_colors.active.name
+        active_vcol_name = context.vertex_paint_object.data.vertex_colors.active.name
 
         for layer_name in _VCT_consts.ColoringLayersTypes.as_list():
 

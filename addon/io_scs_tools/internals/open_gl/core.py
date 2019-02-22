@@ -417,6 +417,7 @@ def _draw_3dview_report(region):
     :type region: bpy.types.Region
     """
     pos = region.height - 62
+    show_scroll_controls = _Show3DViewReportOperator.is_scrolled()
 
     if _Show3DViewReportOperator.has_lines():
 
@@ -466,6 +467,7 @@ def _draw_3dview_report(region):
                 if pos - 60 < 0:
                     blf.position(0, 20, pos, 0)
                     blf.draw(0, "...")
+                    show_scroll_controls = True
                     break
 
                 blf.position(0, 20, pos, 0)
@@ -516,3 +518,39 @@ def _draw_3dview_report(region):
             # draw hide button text
             blf.position(0, hide_btn_text_pos[0], region.height - hide_btn_text_pos[1], 0)
             blf.draw(0, hide_btn_text)
+
+            # draw scroll controls
+            if show_scroll_controls:
+
+                # draw scroll up button
+                glColor3f(.4, .4, .4)
+                glBegin(GL_POLYGON)
+                glVertex3f(_OP_consts.View3DReport.SCROLLUP_BTN_AREA[0], region.height - _OP_consts.View3DReport.SCROLLUP_BTN_AREA[2], 0)
+                glVertex3f(_OP_consts.View3DReport.SCROLLUP_BTN_AREA[1], region.height - _OP_consts.View3DReport.SCROLLUP_BTN_AREA[2], 0)
+                glVertex3f(_OP_consts.View3DReport.SCROLLUP_BTN_AREA[1], region.height - _OP_consts.View3DReport.SCROLLUP_BTN_AREA[3], 0)
+                glVertex3f(_OP_consts.View3DReport.SCROLLUP_BTN_AREA[0], region.height - _OP_consts.View3DReport.SCROLLUP_BTN_AREA[3], 0)
+                glEnd()
+
+                # draw scroll down button
+                glBegin(GL_POLYGON)
+                glVertex3f(_OP_consts.View3DReport.SCROLLDOWN_BTN_AREA[0], region.height - _OP_consts.View3DReport.SCROLLDOWN_BTN_AREA[2], 0)
+                glVertex3f(_OP_consts.View3DReport.SCROLLDOWN_BTN_AREA[1], region.height - _OP_consts.View3DReport.SCROLLDOWN_BTN_AREA[2], 0)
+                glVertex3f(_OP_consts.View3DReport.SCROLLDOWN_BTN_AREA[1], region.height - _OP_consts.View3DReport.SCROLLDOWN_BTN_AREA[3], 0)
+                glVertex3f(_OP_consts.View3DReport.SCROLLDOWN_BTN_AREA[0], region.height - _OP_consts.View3DReport.SCROLLDOWN_BTN_AREA[3], 0)
+                glEnd()
+
+                # gather texts and positions
+                scrollup_btn_text_pos = _OP_consts.View3DReport.SCROLLUP_BTN_TEXT_POS[int(not _Show3DViewReportOperator.is_shown())]
+                scrollup_btn_text = _OP_consts.View3DReport.SCROLLUP_BTN_TEXT[int(not _Show3DViewReportOperator.is_shown())]
+
+                scrolldown_btn_text_pos = _OP_consts.View3DReport.SCROLLDOWN_BTN_TEXT_POS[int(not _Show3DViewReportOperator.is_shown())]
+                scrolldown_btn_text = _OP_consts.View3DReport.SCROLLDOWN_BTN_TEXT[int(not _Show3DViewReportOperator.is_shown())]
+
+                # draw scroll up button text
+                glColor3f(1, 1, 1)
+                blf.position(0, scrollup_btn_text_pos[0], region.height - scrollup_btn_text_pos[1], 0)
+                blf.draw(0, scrollup_btn_text)
+
+                # draw scroll down button text
+                blf.position(0, scrolldown_btn_text_pos[0], region.height - scrolldown_btn_text_pos[1], 0)
+                blf.draw(0, scrolldown_btn_text)

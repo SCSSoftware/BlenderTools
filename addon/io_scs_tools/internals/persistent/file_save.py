@@ -22,6 +22,7 @@ import bpy
 from bpy.app.handlers import persistent
 from io_scs_tools.internals.containers import config as _config_container
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
+from io_scs_tools.utils import ensure_scs_globals_save as _ensure_scs_globals_save
 
 
 @persistent
@@ -54,6 +55,9 @@ def pre_save(scene):
             for scs_anim in obj.scs_object_animation_inventory:
                 if scs_anim.action in bpy.data.actions:
                     bpy.data.actions[scs_anim.action].use_fake_user = True
+
+    # make sure to save world holding SCS globals
+    _ensure_scs_globals_save()
 
 
 @persistent

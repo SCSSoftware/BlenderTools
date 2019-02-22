@@ -211,6 +211,8 @@ class Looks:
                           "( Ctrl + Click to WT on other SCS Root Objects on same look, "
                           "Ctrl + Shift + Click to WT all looks of all SCS Root Objects )"
                           )
+        bl_options = {'REGISTER', 'UNDO'}
+
         property_str = StringProperty(
             description="String representing which property should be written through.",
             default="",
@@ -396,6 +398,7 @@ class Aliasing:
         bl_label = "Load Aliased Mat"
         bl_idname = "material.load_aliased_material"
         bl_description = "Load values from aliased material."
+        bl_options = {'REGISTER', 'UNDO'}
 
         @classmethod
         def poll(cls, context):
@@ -575,6 +578,7 @@ class Texture:
         bl_label = "Select Shader Texture File"
         bl_idname = "material.scs_select_shader_texture_filepath"
         bl_description = "Open a Texture file browser"
+        bl_options = {'REGISTER', 'UNDO'}
 
         shader_texture = bpy.props.StringProperty(options={'HIDDEN'})
         filepath = StringProperty(

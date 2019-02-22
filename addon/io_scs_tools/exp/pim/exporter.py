@@ -151,6 +151,9 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
             for scale_axis in parent.scale:
                 scale_sign *= scale_axis
 
+            for scale_axis in parent.delta_scale:
+                scale_sign *= scale_axis
+
             parent = parent.parent
 
         face_flip = scale_sign < 0

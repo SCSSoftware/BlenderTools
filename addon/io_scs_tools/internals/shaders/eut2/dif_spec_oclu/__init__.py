@@ -58,9 +58,6 @@ class DifSpecOclu(DifSpec):
         spec_mult_n = node_tree.nodes[DifSpec.SPEC_MULT_NODE]
         vcol_mult_n = node_tree.nodes[DifSpec.VCOLOR_MULT_NODE]
 
-        # delete existing
-        node_tree.nodes.remove(node_tree.nodes[DifSpec.OPACITY_NODE])
-
         # move existing
         for node in node_tree.nodes:
             if node.location.x > start_pos_x + pos_x_shift:
@@ -136,67 +133,3 @@ class DifSpecOclu(DifSpec):
             uv_layer = _MESH_consts.none_uv
 
         node_tree.nodes[DifSpecOclu.SEC_GEOM_NODE].uv_layer = uv_layer
-
-    @staticmethod
-    def set_alpha_test_flavor(node_tree, switch_on):
-        """Set alpha test flavor to this shader.
-
-        :param node_tree: node tree of current shader
-        :type node_tree: bpy.types.NodeTree
-        :param switch_on: flag indication if alpha test should be switched on or off
-        :type switch_on: bool
-        """
-
-        if switch_on and not blend_over.is_set(node_tree):
-            out_node = node_tree.nodes[DifSpec.OUT_MAT_NODE]
-            in_node = node_tree.nodes[DifSpec.VCOL_GROUP_NODE]
-
-            location = (out_node.location.x - 185 * 2, out_node.location.y - 500)
-
-            alpha_test.init(node_tree, location, in_node.outputs['Vertex Color Alpha'], out_node.inputs['Alpha'])
-        else:
-            alpha_test.delete(node_tree)
-
-    @staticmethod
-    def set_blend_over_flavor(node_tree, switch_on):
-        """Set blend over flavor to this shader.
-
-        :param node_tree: node tree of current shader
-        :type node_tree: bpy.types.NodeTree
-        :param switch_on: flag indication if blend over should be switched on or off
-        :type switch_on: bool
-        """
-
-        # remove alpha test flavor if it was set already. Because these two can not coexist
-        if alpha_test.is_set(node_tree):
-            DifSpec.set_alpha_test_flavor(node_tree, False)
-
-        out_node = node_tree.nodes[DifSpec.OUT_MAT_NODE]
-        in_node = node_tree.nodes[DifSpec.VCOL_GROUP_NODE]
-
-        if switch_on:
-            blend_over.init(node_tree, in_node.outputs['Vertex Color Alpha'], out_node.inputs['Alpha'])
-        else:
-            blend_over.delete(node_tree)
-
-    @staticmethod
-    def set_blend_add_flavor(node_tree, switch_on):
-        """Set blend add flavor to this shader.
-
-        :param node_tree: node tree of current shader
-        :type node_tree: bpy.types.NodeTree
-        :param switch_on: flag indication if blend add should be switched on or off
-        :type switch_on: bool
-        """
-
-        # remove alpha test flavor if it was set already. Because these two can not coexist
-        if alpha_test.is_set(node_tree):
-            DifSpec.set_alpha_test_flavor(node_tree, False)
-
-        out_node = node_tree.nodes[DifSpec.OUT_MAT_NODE]
-        in_node = node_tree.nodes[DifSpec.VCOL_GROUP_NODE]
-
-        if switch_on:
-            blend_add.init(node_tree, in_node.outputs['Vertex Color Alpha'], out_node.inputs['Alpha'])
-        else:
-            blend_add.delete(node_tree)

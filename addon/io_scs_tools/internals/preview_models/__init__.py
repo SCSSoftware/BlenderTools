@@ -99,12 +99,14 @@ def unlink(preview_model):
     bpy.context.scene.scs_cached_num_objects = len(bpy.context.scene.objects)
 
 
-def load(locator):
+def load(locator, deep_reload=False):
     """Makes a preview model for a locator and link it to it
     NOTE: locator preview model path must be set
 
     :param locator: locator object to which preview model should be set
     :type locator: bpy.types.Object
+    :param deep_reload: should model be reloaded completely? Use in case model mesh should be freshly loaded from disc
+    :type deep_reload: bool
     :return: True if preview model was set; False otherwise
     :rtype: bool
     """
@@ -131,7 +133,7 @@ def load(locator):
 
     if load_model:
 
-        unload(locator)
+        unload(locator, do_mesh_unlink=deep_reload)
 
         prem_name = str("prem_" + locator.name)
         obj = _get_model_mesh(locator, prem_name)
@@ -165,11 +167,13 @@ def load(locator):
         return False
 
 
-def unload(locator):
+def unload(locator, do_mesh_unlink=False):
     """Clears a preview model from a locator
 
     :param locator: locator object from which preview model should be deleted
     :type locator: bpy.types.Object
+    :param do_mesh_unlink: should mesh be unloaded too? Use it only when model should be reloaded
+    :type do_mesh_unlink: bool
     """
 
     for child in locator.children:
@@ -178,8 +182,14 @@ def unload(locator):
                 # first uncache it
                 _cache.delete_entry(child.name)
 
+                # delete object & mesh
+                mesh = child.data
+
                 bpy.context.scene.objects.unlink(child)
                 bpy.data.objects.remove(child, do_unlink=True)
+
+                if do_mesh_unlink:
+                    bpy.data.meshes.remove(mesh, do_unlink=True)
 
                 # update scene children count to prevent delete to be triggered
                 bpy.context.scene.scs_cached_num_objects = len(bpy.context.scene.objects)

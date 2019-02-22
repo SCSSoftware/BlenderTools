@@ -25,13 +25,21 @@ from io_scs_tools.internals.containers.parsers import sii as _sii_reader
 from io_scs_tools.internals.containers.writers import sii as _sii_writer
 
 
-def get_data_from_file(filepath):
-    """Returns entire data in data container from specified SII definition file."""
+def get_data_from_file(filepath, is_sui=False):
+    """Returns entire data in data container from specified SII definition file.
+
+    :param filepath: absolute file path where SII should be read from
+    :type filepath: str
+    :param is_sui: True if file should be read as SUI, in that case only one unit will be returned
+    :type is_sui: bool
+    :return: list of SII Units if parsing succeded; otherwise None
+    :rtype: list[io_scs_tools.internals.structure.UnitData] | None
+    """
 
     container = None
     if filepath:
         if os.path.isfile(filepath):
-            container = _sii_reader.parse_file(filepath)
+            container = _sii_reader.parse_file(filepath, is_sui=is_sui)
             if container:
                 if len(container) < 1:
                     lprint('D SII file "%s" is empty!', (_path_utils.readable_norm(filepath),))
@@ -136,7 +144,7 @@ def get_unit_property(container, prop, unit_instance=0):
     :param unit_instance: index of unit instance in container list that we are validating
     :type unit_instance: int
     :return: None if property is not found insde unit instance; otherwise value of the property
-    :rtype: None|object
+    :rtype: None|any
     """
 
     value = None
@@ -157,7 +165,7 @@ def get_direct_unit_property(unit, prop):
     :param prop: name of the property we are looking for
     :type prop: str
     :return: None if property is not found insde unit instance; otherwise value of the property
-    :rtype: None|object
+    :rtype: None|any
     """
 
     value = None

@@ -40,3 +40,15 @@ def get_scs_globals():
     :rtype: io_scs_tools.properties.world.GlobalSCSProps
     """
     return __get_world__().scs_globals
+
+
+def ensure_scs_globals_save():
+    """Function for ensuring that scs globals get's saved into the blend file,
+    even if world is unliked by the user.
+    """
+    world = __get_world__()
+
+    if world.users == 0:  # no users, use fake one
+        world.use_fake_user = True
+    elif world.users >= 2:  # multiple users, switch of fake one as data will get saved anyway
+        world.use_fake_user = False

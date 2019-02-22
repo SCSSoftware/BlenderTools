@@ -257,12 +257,11 @@ def _create_piece(
     context.window_manager.progress_update(0.5)
 
     # VERTEX COLOR
+    mesh_rgb_final = {}
     if mesh_rgba:
-        mesh_rgb_final = mesh_rgba
-    elif mesh_rgb:
-        mesh_rgb_final = mesh_rgb
-    else:
-        mesh_rgb_final = []
+        mesh_rgb_final.update(mesh_rgba)
+    if mesh_rgb:
+        mesh_rgb_final.update(mesh_rgb)
 
     for vc_layer_name in mesh_rgb_final:
         max_value = mesh_rgb_final[vc_layer_name][0][0][0] / 2

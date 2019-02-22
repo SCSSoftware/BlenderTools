@@ -759,7 +759,7 @@ def get_mesh(obj):
     if _get_scs_globals().export_output_type.startswith('EF'):
         if _get_scs_globals().export_apply_modifiers:
             if _get_scs_globals().export_exclude_edgesplit:
-                disabled_modifiers.append(disable_modifiers(obj, modifier_type_to_disable='EDGE_SPLIT'))
+                disabled_modifiers.extend(disable_modifiers(obj, modifier_type_to_disable='EDGE_SPLIT'))
             mesh = obj.to_mesh(scene, True, 'PREVIEW')
         else:
             mesh = obj.data
@@ -768,10 +768,10 @@ def get_mesh(obj):
             mesh = obj.to_mesh(scene, True, 'PREVIEW')
         else:
             if _get_scs_globals().export_include_edgesplit:
-                disabled_modifiers.append(disable_modifiers(obj, modifier_type_to_disable='EDGE_SPLIT', inverse=True))
+                disabled_modifiers.extend(disable_modifiers(obj, modifier_type_to_disable='EDGE_SPLIT', inverse=True))
                 mesh = obj.to_mesh(scene, True, 'PREVIEW')
             else:
-                disabled_modifiers.append(disable_modifiers(obj, modifier_type_to_disable='ANY', inverse=True))
+                disabled_modifiers.extend(disable_modifiers(obj, modifier_type_to_disable='ANY', inverse=True))
                 mesh = obj.to_mesh(scene, True, 'PREVIEW')
 
     restore_modifiers(obj, disabled_modifiers)

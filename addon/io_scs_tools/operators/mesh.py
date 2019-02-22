@@ -447,17 +447,21 @@ class VertexColorTools:
             active_obj = self.__get_active_object__()
 
             active_object_changed = active_obj != context.active_object
+
+            # abort immeadiatelly if active object was changed
+            if active_object_changed:
+                self.cancel(context)
+                return {'CANCELLED'}
+
             is_object_mode_changed = self.__active_object_mode != context.active_object.mode
 
             # allow changing into the edit mode as user might go there just to reselect
             # masked faces on which he wants to paint
-            if is_object_mode_changed and context.active_object.mode == "EDIT" and not active_object_changed:
+            if is_object_mode_changed and context.active_object.mode == "EDIT":
                 return {'PASS_THROUGH'}
 
-            # abort if:
-            # 1. active object mode has changed
-            # 2. if user changed active object
-            if is_object_mode_changed or active_object_changed:
+            # abort if active object mode has changed
+            if is_object_mode_changed:
                 self.cancel(context)
                 return {'CANCELLED'}
 
@@ -510,7 +514,10 @@ class VertexColorTools:
 
             # finish operator execution - go back to object mode
             if active_obj.mode == "VERTEX_PAINT":
-                bpy.ops.object.mode_set(mode="OBJECT")
+                override = context.copy()
+                override['mode'] = "OBJECT"
+                override['active_object'] = active_obj
+                bpy.ops.object.mode_set(override)
 
             # one last time rebake
             start_time = time()

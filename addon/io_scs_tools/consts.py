@@ -88,6 +88,24 @@ class Operators:
             (400, 45),  # used when report text is shown
             (415, 45)  # used when report text is hidden (aka condensed mode)
         )
+        SCROLLUP_BTN_AREA = (545, 585, 26, 54)
+        SCROLLUP_BTN_TEXT = (
+            "↑",  # used when report text is shown
+            ""  # used when report text is hidden (aka condensed mode)
+        )
+        SCROLLUP_BTN_TEXT_POS = (
+            (560, 45),  # used when report text is shown
+            (560, 45)  # used when report text is hidden (aka condensed mode)
+        )
+        SCROLLDOWN_BTN_AREA = (585, 625, 26, 54)
+        SCROLLDOWN_BTN_TEXT = (
+            "↓",  # used when report text is shown
+            ""  # used when report text is hidden (aka condensed mode)
+        )
+        SCROLLDOWN_BTN_TEXT_POS = (
+            (600, 45),  # used when report text is shown
+            (600, 45)  # used when report text is hidden (aka condensed mode)
+        )
 
 
 class Icons:
@@ -354,9 +372,12 @@ class PrefabLocators:
         UNLOAD_HARD_POS = 20
         UNLOAD_RIGID_POS = 21
         WEIGHT_CAT_POS = 22
+        COMPANY_UNLOAD_POS = 23
+        TRAILER_SPAWN = 24
+        LONG_TRAILER_POS = 25
 
     class TST:
-        """Constants representing type of traffic semaphores.        
+        """Constants representing type of traffic semaphores.
         """
         PROFILE = 0
         MODEL_ONLY = 1
@@ -474,6 +495,13 @@ class PaintjobTools:
     """Constants for paintjob tools.
     """
 
+    class VehicleTypes:
+        """Vehicle types, defining where vehicle will be placed in defs and model paths.
+        """
+        NONE = "none"
+        TRUCK = "truck"
+        TRAILER = "trailer_owned"
+
     uvs_name_2nd = "scs_paintjob_2nd"
     """2nd uvs layer name used during unification on export"""
     uvs_name_3rd = "scs_paintjob_3rd"
@@ -483,3 +511,79 @@ class PaintjobTools:
     """Name of the property for saving references paths to models inside a group data-block."""
     export_tag_obj_name = ".scs_export_group"
     """Name of the object inside the group which visibility tells us either group should be exported or no."""
+    model_variant_prop = ".scs_variant"
+    """Name of the property for saving variant of the model inside group encapsulating imported paintable model."""
+
+    id_mask_colors = (
+        (51, 0, 0),
+        (255, 136, 0),
+        (217, 202, 0),
+        (134, 179, 140),
+        (0, 190, 204),
+        (0, 31, 115),
+        (117, 70, 140),
+        (191, 96, 147),
+        (242, 61, 61),
+        (127, 68, 0),
+        (102, 95, 0),
+        (64, 255, 140),
+        (0, 204, 255),
+        (0, 0, 51),
+        (41, 0, 51),
+        (204, 0, 82),
+        (204, 102, 102),
+        (178, 137, 89),
+        (173, 179, 89),
+        (0, 77, 41),
+        (0, 41, 51),
+        (108, 108, 217),
+        (230, 128, 255),
+        (89, 0, 36),
+        (230, 172, 172),
+        (230, 203, 172),
+        (100, 102, 77),
+        (48, 191, 124),
+        (0, 170, 255),
+        (191, 191, 255),
+        (83, 0, 89),
+        (166, 124, 141),
+        (140, 49, 35),
+        (128, 113, 96),
+        (57, 77, 19),
+        (57, 77, 68),
+        (64, 106, 128),
+        (38, 38, 51),
+        (217, 0, 202),
+        (127, 0, 34),
+        (255, 115, 64),
+        (229, 172, 57),
+        (234, 255, 191),
+        (0, 51, 34),
+        (0, 68, 128),
+        (34, 0, 255),
+        (64, 32, 62),
+        (115, 57, 65),
+        (76, 34, 19),
+        (102, 77, 26),
+        (133, 204, 51),
+        (0, 255, 238),
+        (0, 27, 51),
+        (48, 0, 179),
+        (255, 191, 251),
+        (51, 26, 29),
+        (191, 156, 143),
+        (51, 38, 13),
+        (68, 255, 0),
+        (0, 115, 107),
+        (153, 180, 204),
+        (119, 54, 217),
+        (153, 0, 122),
+        (204, 112, 51),
+        (51, 47, 38),
+        (32, 128, 45),
+        (143, 191, 188),
+        (83, 116, 166),
+        (119, 105, 140),
+        (255, 64, 166)
+    )
+    """Array of unique colors for building ID mask texture."""

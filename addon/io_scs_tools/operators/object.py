@@ -1190,6 +1190,7 @@ class Locators:
             bl_label = "Fix SCS Hookup Names on Model Locators"
             bl_idname = "object.scs_fix_model_locator_hookups"
             bl_description = "Tries to convert existing pure hookup ids to valid hookup name (valid Hookup Library is required)."
+            bl_options = {'REGISTER', 'UNDO'}
 
             def execute(self, context):
                 lprint("D " + self.bl_label + "...")
@@ -1274,6 +1275,7 @@ class Locators:
                 bl_idname = "object.assign_terrain_points"
                 bl_description = str("Assigns terrain point to currently selected prefab Control Node "
                                      "(confirm requested if some vertices from this mesh are already assigned).")
+                bl_options = {'REGISTER', 'UNDO'}
 
                 vg_name = StringProperty()
                 """Name of the vertex group for terrain points. It consists of vertex group prefix and node index."""
@@ -1333,6 +1335,7 @@ class Locators:
                 bl_label = "Clear All Terrain Points"
                 bl_idname = "object.clear_all_terrain_points"
                 bl_description = "Clears all terrain points for currently selected prefab Control Node"
+                bl_options = {'REGISTER', 'UNDO'}
 
                 @classmethod
                 def poll(cls, context):
@@ -1788,6 +1791,7 @@ class Locators:
             bl_label = "Connect Prefab Locators"
             bl_idname = "object.connect_prefab_locators"
             bl_description = "To connect prefab locators two of them must be selected and they have to be same type"
+            bl_options = {'REGISTER', 'UNDO'}
 
             def execute(self, context):
 
@@ -1822,6 +1826,7 @@ class Locators:
             bl_label = "Disconnect Prefab Locators"
             bl_idname = "object.disconnect_prefab_locators"
             bl_description = "To disconnect navigation points two connected prefab locators must be selected"
+            bl_options = {'REGISTER', 'UNDO'}
 
             def execute(self, context):
 
@@ -2009,6 +2014,7 @@ class Locators:
             bl_label = "Select Preview Model (*.pim)"
             bl_idname = "object.select_preview_model_path"
             bl_description = "Open a file browser"
+            bl_options = {'REGISTER', 'UNDO'}
 
             filepath = StringProperty(
                 name="Preview Model File Path",
@@ -2062,6 +2068,7 @@ class SCSRoot:
         bl_idname = "object.create_scs_root_object"
         bl_description = "Create a new 'SCS Root Object' with initial setup. If any objects are selected," \
                          "they automatically become a part of the new 'SCS Game Object'."
+        bl_options = {'REGISTER', 'UNDO'}
 
         def execute(self, context):
             lprint('D Create New SCS Root Object...')
@@ -2074,6 +2081,7 @@ class SCSRoot:
         bl_idname = "object.create_scs_root_object_dialog"
         bl_description = "Create a new 'SCS Root Object' with initial setup.\nIf any objects are selected," \
                          "they automatically become a part of the new 'SCS Game Object'."
+        bl_options = {'REGISTER', 'UNDO'}
 
         def execute(self, context):
             lprint('D Create New SCS Root Object with Name dialog...')
@@ -2254,6 +2262,7 @@ class AddObject(bpy.types.Operator):
     bl_idname = "object.scs_add_object"
     bl_description = "Create SCS object of choosen type at 3D coursor position \n" \
                      "(when locator is created it will also be parented to SCS Root, if currently active)."
+    bl_options = {'REGISTER', 'UNDO'}
 
     # create function for retrieving items so custom icons can be used
     def new_object_type_items(self, context):

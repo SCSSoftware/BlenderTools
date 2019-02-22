@@ -401,13 +401,22 @@ def bm_make_vc_layer(pim_version, bm, vc_layer_name, vc_layer_data, multiplier=1
     :param vc_layer_data: Vertex Color Layer data
     :type vc_layer_data: list
     """
+    # only 5 and 7 versions are supported currently
+    assert (pim_version == 5 or pim_version == 7)
+
     color_lay = bm.loops.layers.color.new(vc_layer_name)
-    color_a_lay = bm.loops.layers.color.new(vc_layer_name + _MESH_consts.vcol_a_suffix)
+
+    vc_alpha_layer_name = vc_layer_name + _MESH_consts.vcol_a_suffix
+    if pim_version == 5 and len(vc_layer_data[0]) == 4:
+        color_a_lay = bm.loops.layers.color.new(vc_alpha_layer_name)
+    elif pim_version == 7 and len(vc_layer_data[0][0]) == 4:
+        color_a_lay = bm.loops.layers.color.new(vc_alpha_layer_name)
+
     for face_i, face in enumerate(bm.faces):
         f_v = [x.index for x in face.verts]
         for loop_i, loop in enumerate(face.loops):
-            alpha = 1.0
-            if pim_version < 6:
+            alpha = -1.0
+            if pim_version == 5:
                 if len(vc_layer_data[0]) == 3:
                     vcol = vc_layer_data[f_v[loop_i]]
                 else:
@@ -421,9 +430,12 @@ def bm_make_vc_layer(pim_version, bm, vc_layer_name, vc_layer_data, multiplier=1
                     alpha = vc_layer_data[face_i][loop_i][3]
 
             vcol = (vcol[0] / 2 / multiplier, vcol[1] / 2 / multiplier, vcol[2] / 2 / multiplier)
-            vcol_a = (alpha / 2 / multiplier,) * 3
             loop[color_lay] = vcol
-            loop[color_a_lay] = vcol_a
+
+            if alpha != -1.0:
+                assert color_a_lay
+                vcol_a = (alpha / 2 / multiplier,) * 3
+                loop[color_a_lay] = vcol_a
 
 
 def bm_delete_loose(mesh):

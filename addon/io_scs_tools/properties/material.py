@@ -673,6 +673,14 @@ class MaterialSCSTools(bpy.types.PropertyGroup):
         update=update_shader_attribute_tint_opacity
     )
 
+    shader_attribute_queue_bias = IntProperty(
+        name="Queue Bias",
+        description="SCS shader 'Queue Bias' value",
+        default=2,
+        options={'HIDDEN'},
+        update=__update_look__
+    )
+
     # TEXTURE: BASE
     shader_texture_base = StringProperty(
         name="Texture Base",

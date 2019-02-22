@@ -102,11 +102,17 @@ class Face:
 
         for i, rgba in enumerate(rgbas):
 
-            rgba_type = Stream.Types.RGBA + str(i)
-            if rgba_type not in self.__streams:
-                self.__streams[rgba_type] = Stream(Stream.Types.RGBA, i, rgbas_names[i])
+            if len(rgba) == 3:
+                stream_type = Stream.Types.RGB
+                vcol_type = Stream.Types.RGB + str(i)
+            else:
+                stream_type = Stream.Types.RGBA
+                vcol_type = Stream.Types.RGBA + str(i)
 
-            stream = self.__streams[rgba_type]
+            if vcol_type not in self.__streams:
+                self.__streams[vcol_type] = Stream(stream_type, i, rgbas_names[i])
+
+            stream = self.__streams[vcol_type]
             """:type: Stream"""
             stream.add_entry(rgba)
 

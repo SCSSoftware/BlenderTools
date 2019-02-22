@@ -248,7 +248,7 @@ def execute(dirpath, filename, name_suffix, prefab_locator_list, offset_matrix, 
         curve.set_flags(loc1.scs_props, False)
 
         curve.set_semaphore_id(int(loc0_scs_props.locator_prefab_np_traffic_semaphore))
-        curve.set_traffic_rule(loc1_scs_props.locator_prefab_np_traffic_rule)
+        curve.set_traffic_rule(loc0_scs_props.locator_prefab_np_traffic_rule)
 
         # set next/prev curves
         for next_key in curve_entry.next_curves:

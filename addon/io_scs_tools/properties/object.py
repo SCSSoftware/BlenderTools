@@ -535,7 +535,7 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
         """
         obj = context.object
 
-        if _preview_models.load(obj):
+        if _preview_models.load(obj, deep_reload=True):
 
             # fix selection because in case of actual loading model from file selection will be messed up
             obj.select = True
@@ -838,11 +838,14 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
         (_PL_consts.PSP.BUS_STATION, (str(_PL_consts.PSP.BUS_STATION), "Bus Station", "")),
         (_PL_consts.PSP.CAMERA_POINT, (str(_PL_consts.PSP.CAMERA_POINT), "Camera Point", "")),
         (_PL_consts.PSP.COMPANY_POS, (str(_PL_consts.PSP.COMPANY_POS), "Company Point", "")),
+        (_PL_consts.PSP.COMPANY_UNLOAD_POS, (str(_PL_consts.PSP.COMPANY_UNLOAD_POS), "Company Unload Point", "")),
         # (_PL_consts.PSP.CUSTOM, (str(_PL_consts.PSP.CUSTOM), "Custom", "")),
         (_PL_consts.PSP.GARAGE_POS, (str(_PL_consts.PSP.GARAGE_POS), "Garage Point", "")),
         (_PL_consts.PSP.GAS_POS, (str(_PL_consts.PSP.GAS_POS), "Gas Station", "")),
         # (_PL_consts.PSP.HOTEL, (str(_PL_consts.PSP.HOTEL), "Hotel", "")),
+        (_PL_consts.PSP.LONG_TRAILER_POS, (str(_PL_consts.PSP.LONG_TRAILER_POS), "Long Trailer", "")),
         # (_PL_consts.PSP.MEET_POS, (str(_PL_consts.PSP.MEET_POS), "Meet", "")),
+        (_PL_consts.PSP.TRAILER_SPAWN, (str(_PL_consts.PSP.TRAILER_SPAWN), "Owned Trailer", "")),
         (_PL_consts.PSP.PARKING, (str(_PL_consts.PSP.PARKING), "Parking", "")),
         (_PL_consts.PSP.RECRUITMENT_POS, (str(_PL_consts.PSP.RECRUITMENT_POS), "Recruitment", "")),
         (_PL_consts.PSP.SERVICE_POS, (str(_PL_consts.PSP.SERVICE_POS), "Service Station", "")),

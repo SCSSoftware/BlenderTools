@@ -97,6 +97,8 @@ class Show3DViewReport(bpy.types.Operator):
     """Used for saving progress message inside class to be able to retrieve it on open gl draw."""
     __static_abort = False
     """Used to propage abort message to all instances, so when abort is requested all instances will kill itself."""
+    __static_scroll_pos = 0
+    """Used to designate current scroll position in case not all warnings can be shown in 3D view."""
 
     esc_abort = 0
     """Used for staging ESC key press in operator:
@@ -164,6 +166,14 @@ class Show3DViewReport(bpy.types.Operator):
         lines = []
         lines.extend(Show3DViewReport.__static_progress_message_l)
         lines.extend(Show3DViewReport.__static_message_l)
+
+        # do scrolling
+
+        lines_to_scroll = Show3DViewReport.__static_scroll_pos
+        while lines_to_scroll > 0:
+            lines.pop(0)
+            lines_to_scroll = lines_to_scroll - 1
+
         return lines
 
     @staticmethod
@@ -199,6 +209,15 @@ class Show3DViewReport(bpy.types.Operator):
         """
         return (btn_area[0] < x < btn_area[1] and
                 btn_area[2] < y < btn_area[3])
+
+    @staticmethod
+    def is_scrolled():
+        """Tells if text is scrolled down.
+
+        :return: True if we are not on zero scroll position; False otherwise
+        :rtype: bool
+        """
+        return Show3DViewReport.__static_scroll_pos != 0
 
     def __init__(self):
         Show3DViewReport.__static_running_instances += 1
@@ -280,7 +299,19 @@ class Show3DViewReport(bpy.types.Operator):
                     if Show3DViewReport.is_in_btn_area(curr_x, curr_y, _OP_consts.View3DReport.HIDE_BTN_AREA):  # show/hide
 
                         Show3DViewReport.__static_is_shown = not Show3DViewReport.__static_is_shown
+                        _view3d_utils.tag_redraw_all_view3d()
+                        return {'RUNNING_MODAL'}
 
+                    # scrool up/down
+                    if Show3DViewReport.is_in_btn_area(curr_x, curr_y, _OP_consts.View3DReport.SCROLLUP_BTN_AREA):
+
+                        Show3DViewReport.__static_scroll_pos = max(Show3DViewReport.__static_scroll_pos - 5, 0)
+                        _view3d_utils.tag_redraw_all_view3d()
+                        return {'RUNNING_MODAL'}
+
+                    elif Show3DViewReport.is_in_btn_area(curr_x, curr_y, _OP_consts.View3DReport.SCROLLDOWN_BTN_AREA):
+
+                        Show3DViewReport.__static_scroll_pos = min(Show3DViewReport.__static_scroll_pos + 5, len(Show3DViewReport.__static_message_l))
                         _view3d_utils.tag_redraw_all_view3d()
                         return {'RUNNING_MODAL'}
 

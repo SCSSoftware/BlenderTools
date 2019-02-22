@@ -247,6 +247,8 @@ def _draw_shader_attribute(layout, mat, split_perc, attribute):
         item_space.prop(mat.scs_props, 'shader_attribute_tint', text='')
     elif tag == 'tint_opacity':
         item_space.prop(mat.scs_props, 'shader_attribute_tint_opacity', text='')
+    elif tag == 'queue_bias':
+        item_space.prop(mat.scs_props, 'shader_attribute_queue_bias', text='')
     elif tag.startswith("aux") and hasattr(mat.scs_props, "shader_attribute_" + tag):
 
         col = item_space.column().column(align=True)

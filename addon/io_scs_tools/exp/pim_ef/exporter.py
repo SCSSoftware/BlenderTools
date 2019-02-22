@@ -125,6 +125,9 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
             for scale_axis in parent.scale:
                 scale_sign *= scale_axis
 
+            for scale_axis in parent.delta_scale:
+                scale_sign *= scale_axis
+
             parent = parent.parent
 
         winding_order = 1
@@ -268,8 +271,7 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
                 rgbas.append(vcol)
                 rgbas_names[_MESH_consts.default_vcol] = True
 
-                # export rest of the vertex colors too, but do not apply extra multiplies of SCS exporter
-                # as rest of the layers are just artist layers
+                # export rest of the vertex colors too (also multiply with 2 and with vcol multiplicator)
                 for vcol_layer in mesh.vertex_colors:
 
                     # we already computed thoose so ignore them
@@ -277,7 +279,7 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
                         continue
 
                     color = vcol_layer.data[loop_i].color
-                    vcol = (color[0], color[1], color[2], 1.0)
+                    vcol = (color[0] * 2 * vcol_multi, color[1] * 2 * vcol_multi, color[2] * 2 * vcol_multi)
 
                     rgbas.append(vcol)
                     rgbas_names[vcol_layer.name] = True

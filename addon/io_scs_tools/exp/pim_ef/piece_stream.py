@@ -39,7 +39,10 @@ class Stream(_Stream):
         super().__init__(stream_type, index)
 
         # exchange format support multiple vertex color layers
-        if stream_type == Stream.Types.RGBA:
+        if stream_type == Stream.Types.RGB:
+            self.__tag_index = index
+            self.__format = "FLOAT3"
+        elif stream_type == Stream.Types.RGBA:
             self.__tag_index = index
             self.__format = "FLOAT4"
 

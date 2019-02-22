@@ -165,16 +165,18 @@ class UnitData(object):
 
         return prop_value
 
-    def get_prop(self, prop_name):
+    def get_prop(self, prop_name, default=None):
         """Gets properety from unit.
 
         :param prop_name: name of the property we are searching for
         :type prop_name: str
+        :param default: default value that should be returned if property not found
+        :type default: any
         :return: None if property not found, otherwise object representing it's data
         :rtype:  None|object
         """
 
         if prop_name not in self.props:
-            return None
+            return default
 
         return self.props[prop_name]

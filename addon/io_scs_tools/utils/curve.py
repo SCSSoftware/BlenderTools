@@ -383,6 +383,9 @@ def curves_intersect(curve1_p1, curve1_t1, curve1_p2, curve1_t2, length1,
             start2 = smooth_curve_position(curve2_p1, curve2_t1, curve2_p2, curve2_t2, pos2 / length2)
             end2 = smooth_curve_position(curve2_p1, curve2_t1, curve2_p2, curve2_t2, (pos2 + step2) / length2)
 
+            if abs(start1[1] - start2[1]) > 4.0 or abs(end1[1] - end2[1]) > 4.0:
+                continue
+
             denom = ((end2[2] - start2[2]) * (end1[0] - start1[0])) - ((end2[0] - start2[0]) * (end1[2] - start1[2]))
             nume_a = ((end2[0] - start2[0]) * (start1[2] - start2[2])) - ((end2[2] - start2[2]) * (start1[0] - start2[0]))
             nume_b = ((end1[0] - start1[0]) * (start1[2] - start2[2])) - ((end1[2] - start1[2]) * (start1[0] - start2[0]))

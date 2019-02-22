@@ -322,10 +322,35 @@ def _parse_unit(tokenizer):
             return None
 
 
-def parse_file(filepath, print_info=False):
+def _parse_bare_file(filepath, print_info=False):
+    if print_info:
+        print("** SII Parser ...")
+    unit = _UnitData("", "", is_headless=True)
+
+    file = open(filepath, mode="r", encoding="utf8")
+    lines = file.readlines()
+    file.close()
+
+    tokenizer = _Tokenizer(lines, filepath, [])
+
+    while 1:
+        if tokenizer.consume_token_if_match('eof', '') is not None:
+            if print_info:
+                print("** Bare SII Parser END")
+            return [unit]
+
+        if not _parse_unit_property(tokenizer, unit):
+            print("Unit property parsing failed")
+            return None
+
+
+def parse_file(filepath, is_sui=False, print_info=False):
     """
     Reads SCS SII definition file from disk, parse it and return its full content in a form of hierarchical structure.
     """
+
+    if is_sui:
+        return _parse_bare_file(filepath, print_info)
 
     if print_info:
         print("** SII Parser ...")

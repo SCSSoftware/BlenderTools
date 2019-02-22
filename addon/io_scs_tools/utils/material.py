@@ -307,7 +307,7 @@ def set_shader_data_to_material(material, section, is_import=False, override_bac
 
             created_attributes[attribute_type] = material.scs_props["shader_attribute_" + attribute_type]
 
-        elif attribute_type in ("shininess", "add_ambient", "reflection", "reflection2", "shadow_bias", "tint_opacity"):
+        elif attribute_type in ("shininess", "add_ambient", "reflection", "reflection2", "shadow_bias", "tint_opacity", "queue_bias"):
 
             if not old_value:
                 material.scs_props["shader_attribute_" + attribute_type] = attribute_data['Value'][0]

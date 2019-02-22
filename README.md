@@ -26,14 +26,14 @@ Installation and Usage:
 Addon is located in "addon/io_scs_tools" folder.
 Use standard Blender addon installation procedure for installing it.
 For more information visit wiki at
-"https://github.com/SCSSoftware/BlenderTools/wiki".
+"http://modding.scssoft.com/wiki/Documentation/Tools/SCS_Blender_Tools".
 
 
 Notes:
 ------
  - In case of trouble installing SCS Blender Tools make sure you're using
    compatible Blender version. SCS Blender Tools for Blender versions
-   prior 2.75 are not supported.
+   prior 2.73 are not supported.
 
 
 Help, questions, troubleshooting:
@@ -41,7 +41,7 @@ Help, questions, troubleshooting:
 If you encounter any problems or have questions regarding SCS Blender Tools,
 please visit forum at "http://forum.scssoft.com/viewforum.php?f=159" and
 don't hesitate to ask if your problem wasn't addressed already. Also
-don't miss the wiki ("https://github.com/SCSSoftware/BlenderTools/wiki")
+don't miss wiki ("http://modding.scssoft.com/wiki/Documentation/Tools/SCS_Blender_Tools")
 for many useful tips and docs.
 
 

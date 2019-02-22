@@ -1431,6 +1431,17 @@ Shader {
     }
 }
 Shader {
+    PresetName: "retroreflective"
+    Effect: "eut2.retroreflective"
+    Flavors: ( "NMAP_TS|NMAP_TS_UV|NMAP_TS_16|NMAP_TS_UV_16" "RETROREFLECTIVE_DIM_ALLDIR|RETROREFLECTIVE_PIKO_ALLDIR" "RETROREFLECTIVE_DECAL" )
+    Flags: 0
+    Texture {
+        Tag: "texture[X]:texture_base"
+        Value: ""
+        TexCoord: ( 0 )
+    }
+}
+Shader {
     PresetName: "shadowmap"
     Effect: "eut2.shadowmap"
     Flags: 0
@@ -1846,6 +1857,11 @@ Flavor {
 Flavor {
     Type: "DEPTH"
     Name: "decal"
+    Attribute {
+        Format: INT
+        Tag: "queue_bias"
+        Value: ( 0 )
+    }
 }
 Flavor {
     Type: "ENVMAP"
@@ -1962,6 +1978,18 @@ Flavor {
 Flavor {
     Type: "PAINT"
     Name: "paint"
+}
+Flavor {
+    Type: "RETROREFLECTIVE_DECAL"
+    Name: "decal.over"
+}
+Flavor {
+    Type: "RETROREFLECTIVE_DIM_ALLDIR"
+    Name: "dim.alldir"
+}
+Flavor {
+    Type: "RETROREFLECTIVE_PIKO_ALLDIR"
+    Name: "piko.alldir"
 }
 Flavor {
     Type: "TEXGEN0"

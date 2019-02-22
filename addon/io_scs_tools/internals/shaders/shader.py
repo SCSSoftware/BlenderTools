@@ -47,7 +47,7 @@ def setup_nodes(material, effect, attr_dict, tex_dict, recreate):
         flavors["alpha_test"] = material.use_transparency = True
         material.transparency_method = "Z_TRANSPARENCY"
 
-    if (effect.endswith(".over") or ".over." in effect) and ".over.dif" not in effect:
+    if (effect.endswith(".over") or ".over." in effect) and ".over.dif" not in effect and ".retroreflective" not in effect:
         flavors["blend_over"] = material.use_transparency = True
         material.transparency_method = "Z_TRANSPARENCY"
 
@@ -98,6 +98,10 @@ def setup_nodes(material, effect, attr_dict, tex_dict, recreate):
 
     if effect.endswith(".paint") or ".paint." in effect:
         flavors["paint"] = True
+
+    if effect.endswith(".decal.over") and ".retroreflective" in effect:
+        flavors["retroreflective_decal"] = material.use_transparency = True
+        material.transparency_method = "Z_TRANSPARENCY"
 
     __setup_nodes__(material, effect, attr_dict, tex_dict, {}, flavors, recreate)
 
