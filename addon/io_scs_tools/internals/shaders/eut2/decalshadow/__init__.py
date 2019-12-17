@@ -16,13 +16,12 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2015: SCS Software
+# Copyright (C) 2015-2019: SCS Software
+
+from io_scs_tools.internals.shaders.eut2.unlit_tex.a8 import UnlitTexA8
 
 
-from io_scs_tools.internals.shaders.eut2.unlit_vcol_tex import UnlitVcolTex
-
-
-class Decalshadow(UnlitVcolTex):
+class Decalshadow(UnlitTexA8):
     @staticmethod
     def get_name():
         """Get name of this shader file with full modules path."""
@@ -37,22 +36,7 @@ class Decalshadow(UnlitVcolTex):
         """
 
         # init parent
-        UnlitVcolTex.init(node_tree)
+        UnlitTexA8.init(node_tree)
 
         # enable hardcoded flavors: DEPTH, BLEND_OVER
-        UnlitVcolTex.set_blend_over_flavor(node_tree, True)
-
-    @staticmethod
-    def set_material(node_tree, material):
-        """Set output material for this shader.
-
-        :param node_tree: node tree of current shader
-        :type node_tree: bpy.types.NodeTree
-        :param material: blender material for used in this tree node as output
-        :type material: bpy.types.Material
-        """
-
-        UnlitVcolTex.set_material(node_tree, material)
-
-        material.use_transparency = True
-        material.transparency_method = "MASK"
+        UnlitTexA8.set_blend_over_flavor(node_tree, True)

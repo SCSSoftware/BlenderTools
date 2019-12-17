@@ -58,10 +58,9 @@ def _fill_bones_sections(scs_root_obj, armature_obj, used_bones, export_scale):
 
         # armature matrix stores transformation of armature object against scs root
         # and has to be added to all bones as they only armature space transformations
-        armature_mat = scs_root_obj.matrix_world.inverted() * armature_obj.matrix_world
+        armature_mat = scs_root_obj.matrix_world.inverted() @ armature_obj.matrix_world
 
-        bone_mat = (Matrix.Scale(export_scale, 4) * _convert_utils.scs_to_blend_matrix().inverted() *
-                    armature_mat * bone.matrix_local)
+        bone_mat = (Matrix.Scale(export_scale, 4) @ _convert_utils.scs_to_blend_matrix().inverted() @ armature_mat @ bone.matrix_local)
         section.data.append(("__bone__", bone.name, bone.parent, bone_mat.transposed()))
     return section
 

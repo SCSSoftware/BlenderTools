@@ -136,15 +136,12 @@ def _write_properties_and_data(fw, section, ind, print_info):
                 else:
                     weight_string = weight_string + "   " + str(i[0]).ljust(5, ' ') + float_to_hex_string(i[1])
 
-            clones_string = ""
+            vertex_indices_string = ""
             for i_i, i in enumerate(data_line[1][2]):
-                if i_i + 1 == len(data_line[1][2]):
-                    clones_string = clones_string + str(i[0]).ljust(5, ' ') + str(i[1])
-                else:
-                    clones_string = clones_string + str(i[0]).ljust(5, ' ') + str(i[1]).ljust(7, ' ')
+                vertex_indices_string = vertex_indices_string + str(i).ljust(6, ' ')
 
             fw('%s%sWeights: %s%s\n' % (ind, 8 * " ", str(len(data_line[1][1])).ljust(7, ' '), weight_string))
-            fw('%s%sClones: %s%s\n' % (ind, 8 * " ", str(len(data_line[1][2])).ljust(7, ' '), clones_string))
+            fw('%s%sVertexIndices: %s%s\n' % (ind, 8 * " ", str(len(data_line[1][2])).ljust(7, ' '), vertex_indices_string))
             fw('%s%s)\n' % (ind, 6 * " "))
         elif data_line[0] == "__matrix__":
             # print('MATRIX - data_line: %s' % str(data_line))

@@ -16,22 +16,24 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2013-2015: SCS Software
+# Copyright (C) 2013-2019: SCS Software
 
+import bmesh
 import bpy
 import os
+import tempfile
+from math import pi
 from io_scs_tools.consts import Material as _MAT_consts
 from io_scs_tools.imp import tobj as _tobj_imp
 from io_scs_tools.internals import inventory as _invetory
 from io_scs_tools.internals import shader_presets as _shader_presets
-from io_scs_tools.internals.containers import pix as _pix_container
 from io_scs_tools.internals.shaders import shader as _shader
 from io_scs_tools.utils import path as _path
 from io_scs_tools.utils.printout import lprint
 
 
-def get_texture(texture_path, texture_type, report_invalid=False):
-    """Creates and setup Texture and Image data on active Material.
+def get_texture_image(texture_path, texture_type, report_invalid=False):
+    """Creates and returns image for given texture path and type.
 
     :param texture_path: Texture path
     :type texture_path: str
@@ -39,7 +41,13 @@ def get_texture(texture_path, texture_type, report_invalid=False):
     :type texture_type: str
     :param report_invalid: flag indicating if invalid texture should be reported in 3d view
     :type report_invalid: bool
+    :return: loaded image datablock to be used in SCS material
+    :rtype: bpy.types.Image
     """
+
+    # get reflection image texture
+    if texture_path.endswith(".tobj") and texture_type == "reflection":
+        return get_reflection_image(texture_path, report_invalid=report_invalid)
 
     # CREATE TEXTURE/IMAGE ID NAME
     teximag_id_name = _path.get_filename(texture_path, with_ext=False)
@@ -76,29 +84,25 @@ def get_texture(texture_path, texture_type, report_invalid=False):
 
             return None
 
-    texture = None
+    image = None
     if abs_texture_filepath and os.path.isfile(abs_texture_filepath):
 
-        # find existing texture with this image
-        if teximag_id_name in bpy.data.textures:
+        # reuse existing image texture if possible
+        postfix = 0
+        postfixed_tex = teximag_id_name
+        while postfixed_tex in bpy.data.images:
 
-            # reuse existing image texture if possible
-            postfix = 0
-            postfixed_tex = teximag_id_name
-            while postfixed_tex in bpy.data.textures:
+            img_exists = postfixed_tex in bpy.data.images
+            if img_exists and _path.repair_path(bpy.data.images[postfixed_tex].filepath) == _path.repair_path(abs_texture_filepath):
+                image = bpy.data.images[postfixed_tex]
+                break
 
-                img_exists = bpy.data.textures[postfixed_tex].image is not None
-                if img_exists and _path.repair_path(bpy.data.textures[postfixed_tex].image.filepath) == _path.repair_path(abs_texture_filepath):
-                    texture = bpy.data.textures[postfixed_tex]
-                    break
+            postfix += 1
+            postfixed_tex = teximag_id_name + "." + str(postfix).zfill(3)
 
-                postfix += 1
-                postfixed_tex = teximag_id_name + "." + str(postfix).zfill(3)
+        # if image wasn't found create new one
+        if not image:
 
-        # if texture wasn't found create new one
-        if not texture:
-
-            texture = bpy.data.textures.new(teximag_id_name, 'IMAGE')
             image = None
 
             # reuse existing image if possible
@@ -117,6 +121,7 @@ def get_texture(texture_path, texture_type, report_invalid=False):
             if not image:
                 image = bpy.data.images.load(abs_texture_filepath)
                 image.name = teximag_id_name
+                image.alpha_mode = 'CHANNEL_PACKED'
 
                 # try to get relative path to the Blender file and set it to the image
                 if bpy.data.filepath != '':  # empty file path means blender file is not saved
@@ -128,28 +133,7 @@ def get_texture(texture_path, texture_type, report_invalid=False):
                     if rel_path:
                         image.filepath = rel_path
 
-            # finally link image to texture
-            texture.image = image
-            image.use_alpha = True
-
-        # set proper color space depending on texture type
-        if texture_type == "nmap":
-            # For TGA and DDS normal maps texture use Non-Color color space as it should be,
-            # but for 16-bits PNG normal maps texture Linear has to be used
-            # otherwise Blender completely messes up normals calculation
-            if texture.image.filepath.endswith(".tga") or texture.image.filepath.endswith(".dds"):
-                texture.image.colorspace_settings.name = "Non-Color"
-            elif texture.image.filepath.endswith(".png") and texture.image.is_float:
-                texture.image.colorspace_settings.name = "Linear"
-            else:
-                texture.image.colorspace_settings.name = "sRGB"
-        else:
-            texture.image.colorspace_settings.name = "sRGB"
-
-        # set usage of normal map if texture type is correct
-        texture.use_normal_map = (texture_type == "nmap")
-
-    if texture is None and texture_path.endswith(".tobj"):
+    if image is None and texture_path.endswith(".tobj"):
         if report_invalid:
             lprint("", report_warnings=-1, report_errors=-1)
 
@@ -159,7 +143,223 @@ def get_texture(texture_path, texture_type, report_invalid=False):
         if report_invalid:
             lprint("", report_warnings=1, report_errors=1)
 
-    return texture
+    return image
+
+
+def get_reflection_image(texture_path, report_invalid=False):
+    """Gets reflection image for given texture path.
+
+    1. gets all textures names and check existance
+    2. create image objects for all planes
+    3. setup scene, create planes, create camera projector and assign images
+    4. render & save image
+    5. cleanup & scene restoring
+    6. load temp image and pack it
+    7. set filepath to TOBJ
+
+    :param texture_path: Texture path
+    :type texture_path: str
+    :param report_invalid: flag indicating if invalid texture should be reported in 3d view
+    :type report_invalid: bool
+    :return: loaded image datablock to be used in SCS material
+    :rtype: bpy.types.Image
+    """
+
+    # CREATE TEXTURE/IMAGE ID NAME
+    teximag_id_name = _path.get_filename(texture_path, with_ext=False) + "_cubemap"
+
+    # CREATE ABSOLUTE FILEPATH
+    abs_tobj_filepath = _path.get_abs_path(texture_path)
+
+    # return None on non-existing TOBJ
+    if not abs_tobj_filepath or not os.path.isfile(abs_tobj_filepath):
+        return None
+
+    # check existance of this cubemap
+    if teximag_id_name in bpy.data.images:
+
+        if _path.get_abs_path(bpy.data.images[teximag_id_name].filepath) == abs_tobj_filepath:
+            return bpy.data.images[teximag_id_name]
+
+        bpy.data.images.remove(bpy.data.images[teximag_id_name])
+
+    # 1. get all textures file paths and check their existance
+
+    abs_texture_filepaths = _path.get_texture_paths_from_tobj(abs_tobj_filepath)
+
+    # should be a cubemap with six images
+    if len(abs_texture_filepaths) != 6:
+        return None
+
+    # all six images have to exist
+    for abs_texture_filepath in abs_texture_filepaths:
+
+        if abs_texture_filepath[-4:] not in (".tga", ".png", ".dds"):  # none supported file
+
+            if report_invalid:
+                lprint("", report_warnings=-1, report_errors=-1)
+
+            lprint("W Texture can't be displayed as TOBJ file: %r is referencing non texture file:\n\t   %r",
+                   (texture_path, _path.readable_norm(abs_texture_filepath)))
+
+            if report_invalid:
+                lprint("", report_warnings=1, report_errors=1)
+
+            return None
+
+        elif not os.path.isfile(abs_texture_filepath):  # none existing file
+
+            if report_invalid:
+                lprint("", report_warnings=-1, report_errors=-1)
+
+            # take care of none existing paths referenced in tobj texture names
+            lprint("W Texture can't be displayed as TOBJ file: %r is referencing non existing texture file:\n\t   %r",
+                   (texture_path, _path.readable_norm(abs_texture_filepath)))
+
+            if report_invalid:
+                lprint("", report_warnings=1, report_errors=1)
+
+            return None
+
+    # 2. create image objects for all planes
+
+    images = []
+    for abs_texture_filepath in abs_texture_filepaths:
+        images.append(bpy.data.images.load(abs_texture_filepath))
+
+    # 3. setup scene, create planes, create camera projector and assign images
+
+    old_scene = bpy.context.window.scene
+    tmp_scene = bpy.data.scenes.new("cubemap")
+    bpy.context.window.scene = tmp_scene
+
+    meshes = []
+    materials = []
+    objects = []
+    for i, plane in enumerate(("x+", "x-", "y+", "y-", "z+", "z-")):
+        # mesh creation
+        bm = bmesh.new(use_operators=True)
+
+        bmesh.ops.create_grid(bm, x_segments=1, y_segments=1, size=1, calc_uvs=True)
+
+        mesh = bpy.data.meshes.new(plane)
+        bm.to_mesh(mesh)
+        bm.free()
+
+        mesh.uv_layers.new()
+
+        meshes.append(mesh)
+
+        # material creation
+        material = bpy.data.materials.new(plane)
+        material.use_nodes = True
+        material.node_tree.nodes.clear()
+
+        out_node = material.node_tree.nodes.new("ShaderNodeOutputMaterial")
+        emission_node = material.node_tree.nodes.new("ShaderNodeEmission")
+        tex_node = material.node_tree.nodes.new("ShaderNodeTexImage")
+        tex_node.image = images[i]
+
+        material.node_tree.links.new(emission_node.inputs['Color'], tex_node.outputs['Color'])
+        material.node_tree.links.new(out_node.inputs['Surface'], emission_node.outputs['Emission'])
+
+        mesh.materials.append(material)
+
+        materials.append(material)
+
+        # object creation
+        obj = bpy.data.objects.new(mesh.name, mesh)
+        obj.location = (0,) * 3
+        obj.rotation_euler = (0,) * 3
+        if plane == "x+":
+            obj.rotation_euler.x = pi * 0.5
+            obj.location.y = 1
+        elif plane == "x-":
+            obj.rotation_euler.x = pi * 0.5
+            obj.rotation_euler.z = pi
+            obj.location.y = -1
+        elif plane == "y+":
+            obj.rotation_euler.x = pi
+            obj.rotation_euler.z = pi * 0.5
+            obj.location.z = 1
+        elif plane == "y-":
+            obj.rotation_euler.z = pi * 0.5
+            obj.location.z = -1
+        elif plane == "z+":
+            obj.rotation_euler.x = pi * 0.5
+            obj.rotation_euler.z = pi * 0.5
+            obj.location.x = -1
+        elif plane == "z-":
+            obj.rotation_euler.x = pi * 0.5
+            obj.rotation_euler.z = -pi * 0.5
+            obj.location.x = 1
+
+        tmp_scene.collection.objects.link(obj)
+        objects.append(obj)
+
+    # camera creation
+    camera = bpy.data.cameras.new("projector")
+    camera.type = "PANO"
+    camera.lens = 5
+    camera.sensor_width = 32
+    camera.cycles.panorama_type = "EQUIRECTANGULAR"
+    camera.cycles.latitude_min = -pi * 0.5
+    camera.cycles.latitude_max = pi * 0.5
+    camera.cycles.longitude_min = pi
+    camera.cycles.longitude_max = -pi
+
+    cam_obj = bpy.data.objects.new(camera.name, camera)
+    cam_obj.location = (0,) * 3
+    cam_obj.rotation_euler = (pi * 0.5, 0, 0)
+
+    tmp_scene.collection.objects.link(cam_obj)
+
+    # 4. render & save image
+
+    final_image_path = os.path.join(tempfile.gettempdir(), teximag_id_name + ".tga")
+
+    tmp_scene.render.engine = "CYCLES"
+    tmp_scene.cycles.samples = 1
+    tmp_scene.camera = cam_obj
+    tmp_scene.render.image_settings.file_format = "TARGA"
+    tmp_scene.render.image_settings.color_mode = "RGBA"
+    tmp_scene.render.resolution_percentage = 100
+    tmp_scene.render.resolution_x = images[0].size[0] * 4
+    tmp_scene.render.resolution_y = images[0].size[1] * 2
+    tmp_scene.render.filepath = final_image_path
+    bpy.ops.render.render(write_still=True, scene=tmp_scene.name)
+
+    # 5. cleanup & scene restoring
+
+    for obj in objects:
+        bpy.data.objects.remove(obj)
+
+    for mesh in meshes:
+        bpy.data.meshes.remove(mesh)
+
+    for material in materials:
+        bpy.data.materials.remove(material)
+
+    for image in images:
+        bpy.data.images.remove(image)
+
+    bpy.data.objects.remove(cam_obj)
+    bpy.data.cameras.remove(camera)
+
+    bpy.context.window.scene = old_scene
+    bpy.data.scenes.remove(tmp_scene)
+
+    # 6. load temp image and pack it
+
+    final_image = bpy.data.images.load(final_image_path)
+    final_image.name = teximag_id_name
+    final_image.alpha_mode = 'CHANNEL_PACKED'
+    final_image.pack()
+
+    # 7. set filepath to original image
+    final_image.filepath = abs_tobj_filepath
+
+    return final_image
 
 
 def get_material_from_context(context):
@@ -366,6 +566,7 @@ def set_shader_data_to_material(material, section, is_import=False, override_bac
 
     # apply used textures
     created_textures = {}
+    created_tex_settings = {}
     created_tex_mappings = []
     for tex_type in used_texture_types:
 
@@ -439,7 +640,7 @@ def set_shader_data_to_material(material, section, is_import=False, override_bac
         # because otherwise texture from previous look might be applied
         if (scs_texture_str != "" and getattr(material.scs_props, "shader_texture_" + tex_type, "") == "") or is_import:
             material.scs_props["shader_texture_" + tex_type] = scs_texture_str
-            created_textures[tex_type] = get_texture(scs_texture_str, tex_type)
+            created_textures[tex_type] = get_texture_image(scs_texture_str, tex_type)
 
             if is_import:
 
@@ -454,12 +655,19 @@ def set_shader_data_to_material(material, section, is_import=False, override_bac
         else:
 
             final_tex_str = getattr(material.scs_props, "shader_texture_" + tex_type, "")
-            created_textures[tex_type] = get_texture(final_tex_str, tex_type)
+            created_textures[tex_type] = get_texture_image(final_tex_str, tex_type)
 
             if is_import and not override_back_data:
 
                 if created_textures[tex_type] is None:
                     lprint("E Can't find texture nor TOBJ inside SCS Project Base Path: %r", (final_tex_str,))
+
+        # now try to retrive settings for the textures from TOBJ
+        if tex_type in created_textures and created_textures[tex_type]:
+            final_tex_str = getattr(material.scs_props, "shader_texture_" + tex_type, "")
+            tobj_abs_path = _path.get_tobj_path_from_shader_texture(final_tex_str)
+            settings, map_type = _tobj_imp.get_settings_and_type(tobj_abs_path)
+            created_tex_settings[tex_type] = settings
 
     # override shader data for identifying used attributes and textures in UI
     if override_back_data:
@@ -470,7 +678,7 @@ def set_shader_data_to_material(material, section, is_import=False, override_bac
         material["scs_shader_attributes"] = shader_data
 
     # setup nodes for 3D view visualization
-    _shader.setup_nodes(material, preset_effect, created_attributes, created_textures, override_back_data)
+    _shader.setup_nodes(material, preset_effect, created_attributes, created_textures, created_tex_settings, override_back_data)
 
     # setup uv mappings to nodes later trough dedicated function, so proper validation is made on tex coord bindings
     for mapping_data in created_tex_mappings:
@@ -504,6 +712,9 @@ def reload_tobj_settings(material, tex_type):
 
         setattr(material.scs_props, shader_texture_str + "_map_type", map_type)
         setattr(material.scs_props, shader_texture_str + "_tobj_load_time", str(os.path.getmtime(tobj_file)))
+
+        # apply reloaded settings to shader
+        _shader.set_texture_settings(material, tex_type, settings)
 
 
 def find_preset(material_effect, material_textures):
@@ -562,3 +773,65 @@ def find_preset(material_effect, material_textures):
             return preset_section.get_prop_value("PresetName"), preset_section
 
     return None, None
+
+
+def set_texture_settings_to_node(tex_node, settings):
+    """Sets TOBJ settings to given texture node and it's assigned image.
+
+    :param tex_node: texture image node to which settings should be applied
+    :type tex_node: bpy.types.ShaderNodeTexImage
+    :param settings: binary string of TOBJ settings gotten from tobj import
+    :type settings: str
+    """
+
+    image = tex_node.image
+
+    # linear colorspace
+    if settings[0] == "1" and image:
+        image.colorspace_settings.name = "Linear"
+    else:
+        image.colorspace_settings.name = "sRGB"
+
+    # tsnormal option
+    if settings[1] == "1" and image:
+        if image.filepath[-4:] in (".tga", ".dds"):
+            image.colorspace_settings.name = "Non-Color"
+        elif image.filepath[-4:] == ".png" and image.is_float:
+            image.colorspace_settings.name = "Linear"
+
+    # addr
+    if settings[2] == "1" and settings[3] == "1":
+        tex_node.extension = "REPEAT"
+    else:
+        tex_node.extension = "EXTEND"
+
+
+def has_valid_color_management(scene):
+    """Gets validity of color management for rendering SCS object.
+
+    :param scene: scene for which we are checking validity
+    :type scene: bpy.types.Scene
+    :return: True if scene colormanagement is valid; False otherwise
+    :rtype: bool
+    """
+
+    if not scene:
+        return False
+
+    display_settings = scene.display_settings
+    view_settings = scene.view_settings
+
+    is_proper_display_device = display_settings.display_device == "sRGB"
+    is_proper_view_transform = view_settings.view_transform == "Standard"
+    is_proper_look = view_settings.look == "None"
+    is_proper_exposure = view_settings.exposure == 0.0
+    is_proper_gamma = view_settings.gamma == 1.0
+
+    valid_color_management = (
+            is_proper_display_device and
+            is_proper_view_transform and
+            is_proper_look and
+            is_proper_exposure and
+            is_proper_gamma
+    )
+    return valid_color_management

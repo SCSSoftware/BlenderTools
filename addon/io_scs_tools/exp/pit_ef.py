@@ -214,6 +214,8 @@ def export(root_object, filepath, name_suffix, used_parts, used_materials):
                                     # print('         value: %s' % str(value))
                                     if format_prop == 'FLOAT':
                                         attribute_data.props.append((rec[0], ["&&", (value,)]))
+                                    elif format_prop == 'INT':
+                                        attribute_data.props.append((rec[0], ["ii", (value,)]))
                                     else:
                                         attribute_data.props.append((rec[0], ["i", tuple(value)]))
                             attribute_sections.append(attribute_data)

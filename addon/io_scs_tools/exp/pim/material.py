@@ -152,6 +152,7 @@ class Material:
         """
 
         section = _SectionData("Material")
+        section.props.append(("Index", self.__index))
         section.props.append(("Alias", self.__alias))
         section.props.append(("Effect", self.__effect))
 

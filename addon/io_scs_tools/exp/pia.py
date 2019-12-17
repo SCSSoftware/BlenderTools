@@ -97,7 +97,7 @@ def _get_bone_channels(scs_root_obj, armature, scs_animation, action, export_sca
 
     # armature matrix stores transformation of armature object against scs root
     # and has to be added to all bones as they only armature space transformations
-    armature_mat = scs_root_obj.matrix_world.inverted() * armature.matrix_world
+    armature_mat = scs_root_obj.matrix_world.inverted() @ armature.matrix_world
 
     invalid_data = False  # flag to indicate invalid data state
     curves_per_bone = OrderedDict()  # store all the curves we are interested in per bone names
@@ -143,10 +143,12 @@ def _get_bone_channels(scs_root_obj, armature, scs_animation, action, export_sca
         quat_rot_curves = bone_curves["quat_rotation"]
         sca_curves = bone_curves["scale"]
 
-        bone_rest_mat = armature_mat * bone.matrix_local
+        bone_rest_mat = armature_mat @ bone.matrix_local
         if bone.parent:
-            parent_bone_rest_mat = (Matrix.Scale(export_scale, 4) * _convert_utils.scs_to_blend_matrix().inverted() *
-                                    armature_mat * bone.parent.matrix_local)
+            parent_bone_rest_mat = (Matrix.Scale(export_scale, 4) @
+                                    _convert_utils.scs_to_blend_matrix().inverted() @
+                                    armature_mat @
+                                    bone.parent.matrix_local)
         else:
             parent_bone_rest_mat = Matrix()
 
@@ -202,7 +204,7 @@ def _get_bone_channels(scs_root_obj, armature, scs_animation, action, export_sca
                 mat_sca[3] = (0, 0, 0, 1)
 
             # BLENDER FRAME MATRIX
-            mat = mat_loc * mat_rot * mat_sca
+            mat = mat_loc @ mat_rot @ mat_sca
 
             # SCALE REMOVAL MATRIX
             rest_location, rest_rotation, rest_scale = bone_rest_mat.decompose()
@@ -218,8 +220,12 @@ def _get_bone_channels(scs_root_obj, armature, scs_animation, action, export_sca
             scale_matrix = Matrix.Scale(export_scale, 4)
 
             # COMPUTE SCS FRAME MATRIX
-            frame_matrix = (parent_bone_rest_mat.inverted() * _convert_utils.scs_to_blend_matrix().inverted() *
-                            scale_matrix.inverted() * bone_rest_mat * mat * scale_removal_matrix.inverted())
+            frame_matrix = (parent_bone_rest_mat.inverted() @
+                            _convert_utils.scs_to_blend_matrix().inverted() @
+                            scale_matrix.inverted() @
+                            bone_rest_mat @
+                            mat @
+                            scale_removal_matrix.inverted())
 
             # print('          actual_frame: %s - value: %s' % (actual_frame, frame_matrix))
             timings_stream.append(("__time__", scs_animation.length / total_frames), )

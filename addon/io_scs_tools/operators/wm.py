@@ -16,48 +16,48 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2013-2015: SCS Software
+# Copyright (C) 2013-2019: SCS Software
 
 
 import bpy
-from bgl import GL_NEAREST
+import os
 from bpy.props import StringProperty, BoolProperty, IntProperty
 from io_scs_tools.consts import Operators as _OP_consts
 from io_scs_tools.utils import view3d as _view3d_utils
 from io_scs_tools.utils import path as _path_utils
 
 
-class ShowWarningMessage(bpy.types.Operator):
+class SCS_TOOLS_OT_ShowMessageInPopup(bpy.types.Operator):
     bl_label = ""
     bl_description = "Click for additional information."
-    bl_idname = "wm.show_warning_message"
+    bl_idname = "wm.scs_tools_show_message_in_popup"
 
     static_message = ""
     """Used for saving message inside class to be able to retrieve it on popup draw."""
 
-    is_modal = BoolProperty(default=False)
-    icon = StringProperty(default="ERROR")
-    title = StringProperty(default="UNKWOWN")
-    message = StringProperty(default="NO MESSAGE")
-    width = IntProperty(default=300)
-    height = IntProperty(default=20)
+    is_modal: BoolProperty(default=False)
+    icon: StringProperty(default="ERROR")
+    title: StringProperty(default="UNKWOWN")
+    message: StringProperty(default="NO MESSAGE")
+    width: IntProperty(default=300)
+    height: IntProperty(default=20)
 
     @staticmethod
     def popup_draw(self, context):
-        lines = ShowWarningMessage.static_message.split("\n")
+        lines = SCS_TOOLS_OT_ShowMessageInPopup.static_message.split("\n")
         for line in lines:
-            self.layout.label(line)
+            self.layout.label(text=line)
 
     def draw(self, context):
-        row = self.layout.row().split(0.00001 * self.width)
-        row.label(" ")
+        row = self.layout.row().split(factor=0.00001 * self.width)
+        row.label(text=" ")
 
         col = row.column()
-        col.label(self.title, icon=self.icon)
+        col.label(text=self.title, icon=self.icon)
         col.separator()
         lines = self.message.split("\n")
         for line in lines:
-            col.label(line.strip())
+            col.label(text=line.strip())
         col.separator()
         col.separator()
 
@@ -70,7 +70,7 @@ class ShowWarningMessage(bpy.types.Operator):
 
     def invoke(self, context, event):
 
-        ShowWarningMessage.static_message = self.message
+        SCS_TOOLS_OT_ShowMessageInPopup.static_message = self.message
 
         if self.is_modal:
             return context.window_manager.invoke_props_dialog(self, width=self.width, height=self.height)
@@ -78,17 +78,19 @@ class ShowWarningMessage(bpy.types.Operator):
             return self.execute_popup(context)
 
 
-class Show3DViewReport(bpy.types.Operator):
+class SCS_TOOLS_OT_Show3DViewReport(bpy.types.Operator):
     bl_label = ""
     bl_description = "Click for additional information."
-    bl_idname = "wm.show_3dview_report"
+    bl_idname = "wm.scs_tools_show_3dview_report"
 
     __static_is_shown = True
     """Used for indicating collapsed state of reporter."""
     __static_hide_controls = False
     """Used for indicating controls visibility. Controls can be hidden if user shouldn't be able to abort report operator."""
-    __static_running_instances = 0
-    """Used for indication of already running operator."""
+    __static_main_instance = None
+    """Used for indication of main instance and abortion of the rest."""
+    __static_window_instance = None
+    """Used for indication on which window instance modal handler is currently added."""
     __static_title = ""
     """Used for saving BT version inside class to be able to retrieve it on open gl draw."""
     __static_message_l = []
@@ -99,6 +101,11 @@ class Show3DViewReport(bpy.types.Operator):
     """Used to propage abort message to all instances, so when abort is requested all instances will kill itself."""
     __static_scroll_pos = 0
     """Used to designate current scroll position in case not all warnings can be shown in 3D view."""
+    __static_x_offset = 0
+    __static_y_offset = 0
+    """Used to designate X and Y offset from corner of drawing region (compensation for header and tools panels dynamic width))"""
+    __static_is_out_of_bounds = False
+    """Used for indicating whether all lines could be drawn into the region."""
 
     esc_abort = 0
     """Used for staging ESC key press in operator:
@@ -107,11 +114,12 @@ class Show3DViewReport(bpy.types.Operator):
     2 - ESC was released, ESC is finally captured
     """
 
-    title = StringProperty(default="")
-    message = StringProperty(default="")
-    abort = BoolProperty(default=False)
-    hide_controls = BoolProperty(default=False)
-    is_progress_message = BoolProperty(default=False)
+    title: StringProperty(default="")
+    message: StringProperty(default="")
+    abort: BoolProperty(default=False)
+    hide_controls: BoolProperty(default=False)
+    is_progress_message: BoolProperty(default=False)
+    modal_handler_reassign: BoolProperty(default=False)
 
     @staticmethod
     def has_lines():
@@ -120,41 +128,51 @@ class Show3DViewReport(bpy.types.Operator):
         :return: True if there is any lines; False otherwise
         :rtype: bool
         """
-        return len(Show3DViewReport.__static_message_l) > 0 or len(Show3DViewReport.__static_progress_message_l) > 0
+        return len(SCS_TOOLS_OT_Show3DViewReport.__static_message_l) > 0 or len(SCS_TOOLS_OT_Show3DViewReport.__static_progress_message_l) > 0
 
     @staticmethod
-    def has_controls():
-        """Tells if report operator currently has enabled controls.
+    def has_controls(window):
+        """Tells if report operator currently has enabled controls and given window is the one having model handler added.
 
+        :param window: window on which we should check for controls
+        :type window: bpy.type.Window
         :return: True if controls are enabled; False otherwise
         :rtype: bool
         """
-        return not Show3DViewReport.__static_hide_controls
+        return window == SCS_TOOLS_OT_Show3DViewReport.__static_window_instance and not SCS_TOOLS_OT_Show3DViewReport.__static_hide_controls
 
     @staticmethod
-    def get_scs_logo_img_bindcode():
+    def get_scs_banner_img_data(window):
         """Loads image to blender data block, loads it to gl memory and gets bindcode address that can be used in
         bgl module for image drawing.
 
-        :return: bindcode of scs bt logo image
-        :rtype: int
+        :param window: window for which we should get banner image
+        :type window: bpy.type.Window
+        :return: (bindcode of scs banner image, width of scs banner image, height of scs banner image
+        :rtype: (int, int, int)
         """
 
-        if _OP_consts.View3DReport.BT_LOGO_IMG_NAME not in bpy.data.images:
+        if SCS_TOOLS_OT_Show3DViewReport.has_controls(window):
+            img_name = _OP_consts.View3DReport.BT_BANNER_WITH_CTRLS_IMG_NAME
+        else:
+            img_name = _OP_consts.View3DReport.BT_BANNER_IMG_NAME
 
-            img_path = _path_utils.get_addon_installation_paths()[0] + "/ui/icons/" + _OP_consts.View3DReport.BT_LOGO_IMG_NAME
+        if img_name not in bpy.data.images:
+
+            img_path = os.path.join(_path_utils.get_addon_installation_paths()[0], "ui", "banners", img_name)
             img = bpy.data.images.load(img_path, check_existing=True)
+            img.colorspace_settings.name = 'Raw'
 
         else:
 
-            img = bpy.data.images[_OP_consts.View3DReport.BT_LOGO_IMG_NAME]
+            img = bpy.data.images[img_name]
 
         # ensure that image is loaded in GPU memory aka has proper bindcode,
-        # we have to that each time because if operator is shown for long time blender might free it on his own
-        if img.bindcode[0] == 0:
-            img.gl_load(0, GL_NEAREST, GL_NEAREST)
+        # we have to that each time because if operator is shown for long time blender might free it on it's own
+        if img.bindcode == 0:
+            img.gl_load()
 
-        return img.bindcode[0]
+        return img.bindcode, img.size[0], img.size[1]
 
     @staticmethod
     def get_lines():
@@ -164,12 +182,12 @@ class Show3DViewReport(bpy.types.Operator):
         :rtype: list[str]
         """
         lines = []
-        lines.extend(Show3DViewReport.__static_progress_message_l)
-        lines.extend(Show3DViewReport.__static_message_l)
+        lines.extend(SCS_TOOLS_OT_Show3DViewReport.__static_progress_message_l)
+        lines.extend(SCS_TOOLS_OT_Show3DViewReport.__static_message_l)
 
         # do scrolling
 
-        lines_to_scroll = Show3DViewReport.__static_scroll_pos
+        lines_to_scroll = SCS_TOOLS_OT_Show3DViewReport.__static_scroll_pos
         while lines_to_scroll > 0:
             lines.pop(0)
             lines_to_scroll = lines_to_scroll - 1
@@ -183,7 +201,7 @@ class Show3DViewReport(bpy.types.Operator):
         :return: title which should be carrying info about Blender Tools version
         :rtype: str
         """
-        return Show3DViewReport.__static_title
+        return SCS_TOOLS_OT_Show3DViewReport.__static_title
 
     @staticmethod
     def is_shown():
@@ -192,7 +210,7 @@ class Show3DViewReport(bpy.types.Operator):
         :return: True if shown; False otherwise
         :rtype: bool
         """
-        return Show3DViewReport.__static_is_shown
+        return SCS_TOOLS_OT_Show3DViewReport.__static_is_shown
 
     @staticmethod
     def is_in_btn_area(x, y, btn_area):
@@ -207,8 +225,8 @@ class Show3DViewReport(bpy.types.Operator):
         :return: True if x and y are inside button area; False otherwise
         :rtype: bool
         """
-        return (btn_area[0] < x < btn_area[1] and
-                btn_area[2] < y < btn_area[3])
+        return (btn_area[0] < (x - SCS_TOOLS_OT_Show3DViewReport.__static_x_offset) < btn_area[1] and
+                btn_area[2] < (y - SCS_TOOLS_OT_Show3DViewReport.__static_y_offset) < btn_area[3])
 
     @staticmethod
     def is_scrolled():
@@ -217,32 +235,117 @@ class Show3DViewReport(bpy.types.Operator):
         :return: True if we are not on zero scroll position; False otherwise
         :rtype: bool
         """
-        return Show3DViewReport.__static_scroll_pos != 0
+        return SCS_TOOLS_OT_Show3DViewReport.__static_scroll_pos != 0 or SCS_TOOLS_OT_Show3DViewReport.__static_is_out_of_bounds
 
-    def __init__(self):
-        Show3DViewReport.__static_running_instances += 1
+    @staticmethod
+    def set_out_of_bounds(state):
+        """Sets state of the 3D view drawing buffer. If set to true it means, that not all lines could be displayed.
 
-    def __del__(self):
-        if Show3DViewReport.__static_running_instances > 0:
+        :param state: True if not all lines could be displayed; False otherwise
+        :type state: bool
+        """
+        SCS_TOOLS_OT_Show3DViewReport.__static_is_out_of_bounds = state
 
-            Show3DViewReport.__static_running_instances -= 1
+    @staticmethod
+    def set_btns_xy_offset(x, y):
+        """Sets offset for controls area inclusion calculation in is_in_btn_area method.
 
-        # if user disables add-on, destructor is called again, so cleanup static variables
-        if Show3DViewReport.__static_running_instances <= 0:
+        :param x: X offset in pixels designating left margin for drawing of our controls
+        :type x: int
+        :param y: Y offset in pixels designating top margin for drawing of our controls
+        :type y: int
+        """
+        SCS_TOOLS_OT_Show3DViewReport.__static_x_offset = x
+        SCS_TOOLS_OT_Show3DViewReport.__static_y_offset = y
 
-            Show3DViewReport.__static_title = ""
-            Show3DViewReport.__static_message_l.clear()
-            Show3DViewReport.__static_progress_message_l.clear()
+    @staticmethod
+    def discard_drawing_data():
+        """Discards drawing by cleaning static messages and removing banner image.
+        """
+
+        # free BT logo image resources
+        if _OP_consts.View3DReport.BT_BANNER_IMG_NAME in bpy.data.images:
+
+            img = bpy.data.images[_OP_consts.View3DReport.BT_BANNER_IMG_NAME]
+            img.gl_free()
+
+            bpy.data.images.remove(img, do_unlink=True)
+
+        SCS_TOOLS_OT_Show3DViewReport.__static_title = ""
+        SCS_TOOLS_OT_Show3DViewReport.__static_message_l.clear()
+        SCS_TOOLS_OT_Show3DViewReport.__static_progress_message_l.clear()
+
+        # trigger redraw so 3d view reports will be removed
+        _view3d_utils.tag_redraw_all_view3d()
+
+    @classmethod
+    def unregister(cls):
+        """Called on unregister of class.
+        """
+        SCS_TOOLS_OT_Show3DViewReport.discard_drawing_data()
+
+    def fill_drawing_data(self):
+        """Fills drawing data into static variables, so they can be used by drawing methods of open gl.
+        """
+
+        # reset flags in static variables
+        SCS_TOOLS_OT_Show3DViewReport.__static_is_shown = True
+        SCS_TOOLS_OT_Show3DViewReport.__static_hide_controls = self.hide_controls
+        SCS_TOOLS_OT_Show3DViewReport.__static_scroll_pos = 0
+
+        # assign title to static variable
+        SCS_TOOLS_OT_Show3DViewReport.__static_title = self.title
+
+        # split message by new lines
+        message_l = []
+        for line in self.message.split("\n"):
+
+            # remove tabulator simulated new lines from warnings and errors, written like: "\n\t     "
+            line = line.replace("\t     ", " " * 4)
+
+            # remove tabulator simulated empty space before warning or error line of summaries e.g "\t   > "
+            line = line.replace("\t   ", "")
+
+            message_l.append(line)
+
+        # properly assign parsed message list depending on progress flag
+        if self.is_progress_message:
+            SCS_TOOLS_OT_Show3DViewReport.__static_progress_message_l = message_l
+        else:
+            SCS_TOOLS_OT_Show3DViewReport.__static_message_l = message_l
+
+    def cancel(self, context):
+        # find oldest main window for possible re-call of the operator
+        oldest_main_window = None
+        if bpy.context.window_manager:
+            for window in bpy.context.window_manager.windows:
+                if not window.parent:
+                    oldest_main_window = window
+                    break
+
+        # when operator get's cancelled, either user closed blender or window itself, in which our operator was handled.
+        # Thus make sure to re-call on exisiting oldest main window, so that 3d view opearator "reopens"
+        if oldest_main_window and SCS_TOOLS_OT_Show3DViewReport.__static_window_instance != oldest_main_window:
+            override = bpy.context.copy()
+            override["window"] = oldest_main_window
+            bpy.ops.wm.scs_tools_show_3dview_report(override, 'INVOKE_DEFAULT', modal_handler_reassign=True)
+            _view3d_utils.tag_redraw_all_view3d()
+        else:
+            SCS_TOOLS_OT_Show3DViewReport.discard_drawing_data()
 
     def modal(self, context, event):
 
+        # if not main instance finish
+        if SCS_TOOLS_OT_Show3DViewReport.__static_main_instance != self:
+            return {'FINISHED'}
+
         # if global abort was requested finish this modal operator instance
-        if Show3DViewReport.__static_abort:
+        if SCS_TOOLS_OT_Show3DViewReport.__static_abort:
             return {'FINISHED'}
 
         # if operator doesn't have controls, then it can not be cancelled by user,
         # so we should simply pass trough
-        if not Show3DViewReport.has_controls():
+        if not SCS_TOOLS_OT_Show3DViewReport.has_controls(SCS_TOOLS_OT_Show3DViewReport.__static_window_instance):
             return {'PASS_THROUGH'}
 
         # handle ESC press
@@ -279,116 +382,90 @@ class Show3DViewReport(bpy.types.Operator):
                         # NOTE: there is two stage exit on ESC because user might hit ESC unintentionally.
                         # Plus in case some transformation was in progress (like translation) ESC will cancel it and
                         # in worst case only hide 3d view logging operator, if stage ESC handling fails to capture that
-                        if Show3DViewReport.__static_is_shown:
+                        if SCS_TOOLS_OT_Show3DViewReport.__static_is_shown:
 
-                            Show3DViewReport.__static_is_shown = False
+                            SCS_TOOLS_OT_Show3DViewReport.__static_is_shown = False
 
                             _view3d_utils.tag_redraw_all_view3d()
                             return {'RUNNING_MODAL'}
 
                         else:
 
-                            self.cancel(context)
+                            SCS_TOOLS_OT_Show3DViewReport.discard_drawing_data()
                             return {'FINISHED'}
 
                     # also exit/cancel operator if Close button area was clicked
-                    if Show3DViewReport.is_in_btn_area(curr_x, curr_y, _OP_consts.View3DReport.CLOSE_BTN_AREA):  # close
-                        self.cancel(context)
+                    if SCS_TOOLS_OT_Show3DViewReport.is_in_btn_area(curr_x, curr_y, _OP_consts.View3DReport.CLOSE_BTN_AREA):  # close
+                        SCS_TOOLS_OT_Show3DViewReport.discard_drawing_data()
                         return {'FINISHED'}
 
-                    if Show3DViewReport.is_in_btn_area(curr_x, curr_y, _OP_consts.View3DReport.HIDE_BTN_AREA):  # show/hide
+                    if SCS_TOOLS_OT_Show3DViewReport.is_in_btn_area(curr_x, curr_y, _OP_consts.View3DReport.HIDE_BTN_AREA):  # show/hide
 
-                        Show3DViewReport.__static_is_shown = not Show3DViewReport.__static_is_shown
+                        SCS_TOOLS_OT_Show3DViewReport.__static_is_shown = not SCS_TOOLS_OT_Show3DViewReport.__static_is_shown
                         _view3d_utils.tag_redraw_all_view3d()
                         return {'RUNNING_MODAL'}
 
-                    # scrool up/down
-                    if Show3DViewReport.is_in_btn_area(curr_x, curr_y, _OP_consts.View3DReport.SCROLLUP_BTN_AREA):
+                    # scroll up/down
+                    if SCS_TOOLS_OT_Show3DViewReport.is_shown() and SCS_TOOLS_OT_Show3DViewReport.is_scrolled():
 
-                        Show3DViewReport.__static_scroll_pos = max(Show3DViewReport.__static_scroll_pos - 5, 0)
-                        _view3d_utils.tag_redraw_all_view3d()
-                        return {'RUNNING_MODAL'}
+                        if SCS_TOOLS_OT_Show3DViewReport.is_in_btn_area(curr_x, curr_y, _OP_consts.View3DReport.SCROLLUP_BTN_AREA):
+                            new_position = SCS_TOOLS_OT_Show3DViewReport.__static_scroll_pos - 5
+                            min_position = 0
+                            SCS_TOOLS_OT_Show3DViewReport.__static_scroll_pos = max(new_position, min_position)
+                            _view3d_utils.tag_redraw_all_view3d()
+                            return {'RUNNING_MODAL'}
 
-                    elif Show3DViewReport.is_in_btn_area(curr_x, curr_y, _OP_consts.View3DReport.SCROLLDOWN_BTN_AREA):
-
-                        Show3DViewReport.__static_scroll_pos = min(Show3DViewReport.__static_scroll_pos + 5, len(Show3DViewReport.__static_message_l))
-                        _view3d_utils.tag_redraw_all_view3d()
-                        return {'RUNNING_MODAL'}
+                        if SCS_TOOLS_OT_Show3DViewReport.is_in_btn_area(curr_x, curr_y, _OP_consts.View3DReport.SCROLLDOWN_BTN_AREA):
+                            new_position = SCS_TOOLS_OT_Show3DViewReport.__static_scroll_pos + 5
+                            max_position = (
+                                    len(SCS_TOOLS_OT_Show3DViewReport.__static_message_l) +
+                                    len(SCS_TOOLS_OT_Show3DViewReport.__static_progress_message_l) - 1
+                            )
+                            SCS_TOOLS_OT_Show3DViewReport.__static_scroll_pos = min(new_position, max_position)
+                            _view3d_utils.tag_redraw_all_view3d()
+                            return {'RUNNING_MODAL'}
 
         return {'PASS_THROUGH'}
-
-    def cancel(self, context):
-
-        # free BT logo image resources
-        if _OP_consts.View3DReport.BT_LOGO_IMG_NAME in bpy.data.images:
-
-            img = bpy.data.images[_OP_consts.View3DReport.BT_LOGO_IMG_NAME]
-            img.gl_free()
-
-            bpy.data.images.remove(img, do_unlink=True)
-
-        Show3DViewReport.__static_message_l.clear()
-        Show3DViewReport.__static_progress_message_l.clear()
-
-        _view3d_utils.tag_redraw_all_view3d()
 
     def invoke(self, context, event):
 
         # propagate abort to all instances trough static variable
-        Show3DViewReport.__static_abort = self.abort
+        SCS_TOOLS_OT_Show3DViewReport.__static_abort = self.abort
 
         # if abort is requested just cancel operator
         if self.abort:
 
             if self.is_progress_message:
-                Show3DViewReport.__static_progress_message_l.clear()
+                SCS_TOOLS_OT_Show3DViewReport.__static_progress_message_l.clear()
 
-                if len(Show3DViewReport.__static_message_l) > 0:
-                    Show3DViewReport.__static_hide_controls = False
+                if len(SCS_TOOLS_OT_Show3DViewReport.__static_message_l) > 0:
+                    SCS_TOOLS_OT_Show3DViewReport.__static_hide_controls = False
                 else:
-                    self.cancel(context)
+                    SCS_TOOLS_OT_Show3DViewReport.discard_drawing_data()
             else:
-                self.cancel(context)
+                SCS_TOOLS_OT_Show3DViewReport.discard_drawing_data()
 
             return {'CANCELLED'}
 
-        # reset flags in static variables
-        Show3DViewReport.__static_is_shown = True
-        Show3DViewReport.__static_hide_controls = self.hide_controls
+        # use current instance as main
+        SCS_TOOLS_OT_Show3DViewReport.__static_main_instance = self
 
-        # assign title to static variable
-        Show3DViewReport.__static_title = self.title
+        # save window on which modal handler will be added,
+        # so we will be able to keep 3d view reports alive if user closes this window (see cancel method)
+        SCS_TOOLS_OT_Show3DViewReport.__static_window_instance = context.window
 
-        # split message by new lines
-        message_l = []
-        for line in self.message.split("\n"):
-
-            # remove tabulator simulated new lines from warnings and errors, written like: "\n\t     "
-            line = line.replace("\t     ", " " * 4)
-
-            # remove tabulator simulated empty space before warning or error line of summaries e.g "\t   > "
-            line = line.replace("\t   ", "")
-
-            message_l.append(line)
-
-        # properly assign parsed message list depending on progress flag
-        if self.is_progress_message:
-            Show3DViewReport.__static_progress_message_l = message_l
-        else:
-            Show3DViewReport.__static_message_l = message_l
-
-        # if report operator is already running don't add new modal handler
-        if Show3DViewReport.__static_running_instances > 1:
-            return {'CANCELLED'}
+        # data shouldn't be changed if we are reassiging modal handler
+        if not self.modal_handler_reassign:
+            self.fill_drawing_data()
 
         context.window_manager.modal_handler_add(self)
         return {'RUNNING_MODAL'}
 
 
-class ShowDeveloperErrors(bpy.types.Operator):
+class SCS_TOOLS_OT_ShowDeveloperErrors(bpy.types.Operator):
     bl_label = ""
     bl_description = "Show errors from stack. This was intended to be used only from batch import/export scripts."
-    bl_idname = "wm.show_dev_error_messages"
+    bl_idname = "wm.scs_tools_show_developer_errors"
 
     def execute(self, context):
         from io_scs_tools.utils.printout import dev_lprint
@@ -396,3 +473,20 @@ class ShowDeveloperErrors(bpy.types.Operator):
         dev_lprint()
 
         return {'FINISHED'}
+
+
+classes = (
+    SCS_TOOLS_OT_Show3DViewReport,
+    SCS_TOOLS_OT_ShowDeveloperErrors,
+    SCS_TOOLS_OT_ShowMessageInPopup
+)
+
+
+def register():
+    for cls in classes:
+        bpy.utils.register_class(cls)
+
+
+def unregister():
+    for cls in classes:
+        bpy.utils.unregister_class(cls)

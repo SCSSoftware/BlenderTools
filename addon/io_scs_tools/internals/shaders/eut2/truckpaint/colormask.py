@@ -16,7 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2015: SCS Software
+# Copyright (C) 2015-2019: SCS Software
 
 from io_scs_tools.internals.shaders.eut2.truckpaint import Truckpaint
 
@@ -42,5 +42,8 @@ class TruckpaintColormask(Truckpaint):
         blend_mix_n = node_tree.nodes[Truckpaint.BLEND_MIX_NODE]
         blend_mix_n.inputs['Fac'].default_value = 1.0
 
-        paint_mult_n = node_tree.nodes[Truckpaint.PAINT_MULT_NODE]
-        paint_mult_n.inputs['Fac'].default_value = 1.0
+        paint_diff_mult_n = node_tree.nodes[Truckpaint.PAINT_DIFFUSE_MULT_NODE]
+        paint_diff_mult_n.inputs['Fac'].default_value = 1.0
+
+        paint_spec_mult_n = node_tree.nodes[Truckpaint.PAINT_SPECULAR_MULT_NODE]
+        paint_spec_mult_n.inputs['Fac'].default_value = 1.0

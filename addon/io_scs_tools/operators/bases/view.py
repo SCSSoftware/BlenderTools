@@ -16,7 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2013-2014: SCS Software
+# Copyright (C) 2013-2019: SCS Software
 
 import bpy
 from bpy.props import IntProperty
@@ -37,22 +37,22 @@ class View:
     SHIFT_VIEW = _OP_consts.ViewType.shift_view
     CTRL_VIEW = _OP_consts.ViewType.ctrl_view
 
-    view_type = IntProperty(default=VIEWONLY)
+    view_type: IntProperty(default=VIEWONLY)
 
     @staticmethod
     def get_objects(context):
-        if context.scene.scs_props.visibility_tools_scope == "Global":
+        if context.workspace.scs_props.visibility_tools_scope == "Global":
 
             objects = context.scene.objects
 
         else:
 
-            scs_root_object = _object_utils.get_scs_root(context.scene.objects.active)
+            scs_root_object = _object_utils.get_scs_root(context.view_layer.objects.active)
             if scs_root_object:
                 objects = _object_utils.get_children(scs_root_object)
-                scs_root_object.hide = False
-                scs_root_object.select = True
-                bpy.context.scene.objects.active = scs_root_object
+                _object_utils.hide_set(scs_root_object, False)
+                _object_utils.select_set(scs_root_object, True)
+                bpy.context.view_layer.objects.active = scs_root_object
             else:  # fallback don't do anything
                 objects = []
 
@@ -70,7 +70,7 @@ class View:
         # define type of (de)selection
         if self.view_type == self.VIEWONLY:
             object_hide = False
-            bpy.ops.object.hide_objects_within_root()
+            bpy.ops.object.scs_tools_hide_objects_within_scs_root()
 
         elif self.view_type == self.SHIFT_VIEW:
             object_hide = False

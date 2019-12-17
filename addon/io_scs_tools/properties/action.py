@@ -16,7 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2013-2014: SCS Software
+# Copyright (C) 2013-2019: SCS Software
 
 import bpy
 from bpy.props import IntProperty
@@ -28,7 +28,7 @@ class ActionSCSTools(bpy.types.PropertyGroup):
     :return:
     """
 
-    anim_export_step = IntProperty(
+    anim_export_step: IntProperty(
         name="Export Step",
         description="Number of frames to step in action for each iteration trough exporting.",
         default=1,
@@ -37,3 +37,17 @@ class ActionSCSTools(bpy.types.PropertyGroup):
         options={'HIDDEN'},
         subtype='NONE',
     )
+
+
+classes = (
+    ActionSCSTools,
+)
+
+
+def register():
+    for cls in classes:
+        bpy.utils.register_class(cls)
+
+def unregister():
+    for cls in classes:
+        bpy.utils.unregister_class(cls)

@@ -31,7 +31,7 @@ def add(position, is_visible):
     """
     key = str(position)
     if key not in _terrain_points:
-        _terrain_points[key] = (position, (1, 1, 0) if is_visible else (0.5, 0.5, 0))
+        _terrain_points[key] = (position, (1, 1, 0, 1) if is_visible else (0.5, 0.5, 0, 1))
 
 
 def clear():

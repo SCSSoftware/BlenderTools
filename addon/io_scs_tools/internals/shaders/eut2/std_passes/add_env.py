@@ -16,14 +16,15 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2015: SCS Software
+# Copyright (C) 2015-2019: SCS Software
 
-
-from io_scs_tools.internals.shaders.eut2.std_node_groups import add_env
+from io_scs_tools.internals.shaders.eut2.std_node_groups import add_env_ng
+from io_scs_tools.internals.shaders.eut2.std_node_groups import refl_normal_ng
 from io_scs_tools.utils import convert as _convert_utils
 
 
 class StdAddEnv:
+    REFL_NORMAL_NODE = "ReflectionNormal"
     REFL_TEX_NODE = "ReflectionTex"
     ENV_COLOR_NODE = "EnvFactorColor"
     ADD_ENV_GROUP_NODE = "AddEnvGroup"
@@ -34,7 +35,7 @@ class StdAddEnv:
         return __name__
 
     @staticmethod
-    def add(node_tree, geom_n_name, spec_col_socket, alpha_socket, out_mat_normal_socket, output_socket):
+    def add(node_tree, geom_n_name, spec_col_socket, alpha_socket, final_normal_socket, output_socket):
         """Add add env pass to node tree with links.
 
         :param node_tree: node tree on which this shader should be created
@@ -45,8 +46,8 @@ class StdAddEnv:
         :type spec_col_socket: bpy.type.NodeSocket
         :param alpha_socket: socket from which alpha will be taken (if None it won't be used)
         :type alpha_socket: bpy.type.NodeSocket | None
-        :param out_mat_normal_socket: socket of output material node normal
-        :type out_mat_normal_socket: bpy.type.NodeSocket | None
+        :param final_normal_socket: socket of final normal, if not provided geometry normal is used
+        :type final_normal_socket: bpy.type.NodeSocket | None
         :param output_socket: output socket to which result will be given
         :type output_socket: bpy.type.NodeSocket
         """
@@ -59,53 +60,77 @@ class StdAddEnv:
         geometry_n = node_tree.nodes[geom_n_name]
 
         # node creation
-        refl_tex_n = node_tree.nodes.new("ShaderNodeTexture")
+        refl_normal_n = node_tree.nodes.new("ShaderNodeGroup")
+        refl_normal_n.name = refl_normal_n.label = StdAddEnv.REFL_NORMAL_NODE
+        refl_normal_n.location = (start_pos_x, start_pos_y + 2500)
+        refl_normal_n.node_tree = refl_normal_ng.get_node_group()
+
+        refl_tex_n = node_tree.nodes.new("ShaderNodeTexEnvironment")
         refl_tex_n.name = refl_tex_n.label = StdAddEnv.REFL_TEX_NODE
         refl_tex_n.location = (start_pos_x + pos_x_shift, start_pos_y + 2500)
+        refl_tex_n.width = 140
 
         env_col_n = node_tree.nodes.new("ShaderNodeRGB")
         env_col_n.name = env_col_n.label = StdAddEnv.ENV_COLOR_NODE
         env_col_n.location = (start_pos_x + pos_x_shift, start_pos_y + 2200)
 
-        add_env_gn = node_tree.nodes.new("ShaderNodeGroup")
-        add_env_gn.name = add_env_gn.label = StdAddEnv.ADD_ENV_GROUP_NODE
-        add_env_gn.location = (start_pos_x + pos_x_shift * 3, start_pos_y + 2300)
-        add_env_gn.node_tree = add_env.get_node_group()
-        add_env_gn.inputs['Apply Fresnel'].default_value = 1.0
-        add_env_gn.inputs['Fresnel Scale'].default_value = 0.9
-        add_env_gn.inputs['Fresnel Bias'].default_value = 0.2
-        add_env_gn.inputs['Base Texture Alpha'].default_value = 0.5
+        add_env_n = node_tree.nodes.new("ShaderNodeGroup")
+        add_env_n.name = add_env_n.label = StdAddEnv.ADD_ENV_GROUP_NODE
+        add_env_n.location = (start_pos_x + pos_x_shift * 3, start_pos_y + 2300)
+        add_env_n.node_tree = add_env_ng.get_node_group()
+        add_env_n.inputs['Apply Fresnel'].default_value = 1.0
+        add_env_n.inputs['Fresnel Scale'].default_value = 0.9
+        add_env_n.inputs['Fresnel Bias'].default_value = 0.2
+        add_env_n.inputs['Base Texture Alpha'].default_value = 0.5
+        add_env_n.inputs['Weighted Color'].default_value = (1.0,) * 4
+        add_env_n.inputs['Strength Multiplier'].default_value = 1.0
 
         # geometry links
-        node_tree.links.new(add_env_gn.inputs['Normal Vector'], geometry_n.outputs['Normal'])
-        node_tree.links.new(add_env_gn.inputs['View Vector'], geometry_n.outputs['View'])
-        node_tree.links.new(refl_tex_n.inputs['Vector'], geometry_n.outputs['Normal'])
+        node_tree.links.new(refl_normal_n.inputs['Incoming'], geometry_n.outputs['Incoming'])
+        node_tree.links.new(refl_normal_n.inputs['Normal'], geometry_n.outputs['Normal'])
+
+        node_tree.links.new(refl_tex_n.inputs['Vector'], refl_normal_n.outputs['Reflection Normal'])
+
+        node_tree.links.new(add_env_n.inputs['Normal Vector'], geometry_n.outputs['Normal'])
+        node_tree.links.new(add_env_n.inputs['Reflection Normal Vector'], refl_normal_n.outputs['Reflection Normal'])
 
         # if out material node is really material node and has normal output,
         # use it as this normal might include normal maps
-        if out_mat_normal_socket is not None:
-            node_tree.links.new(refl_tex_n.inputs['Vector'], out_mat_normal_socket)
+        if final_normal_socket is not None:
+            node_tree.links.new(refl_normal_n.inputs['Normal'], final_normal_socket)
+            node_tree.links.new(add_env_n.inputs['Normal Vector'], final_normal_socket)
 
-        node_tree.links.new(add_env_gn.inputs['Env Factor Color'], env_col_n.outputs['Color'])
-        node_tree.links.new(add_env_gn.inputs['Reflection Texture Color'], refl_tex_n.outputs['Color'])
+        node_tree.links.new(add_env_n.inputs['Env Factor Color'], env_col_n.outputs['Color'])
+        node_tree.links.new(add_env_n.inputs['Reflection Texture Color'], refl_tex_n.outputs['Color'])
 
-        node_tree.links.new(add_env_gn.inputs['Specular Color'], spec_col_socket)
-        if add_env_gn and alpha_socket:
-            node_tree.links.new(add_env_gn.inputs['Base Texture Alpha'], alpha_socket)
+        node_tree.links.new(add_env_n.inputs['Specular Color'], spec_col_socket)
+        if add_env_n and alpha_socket:
+            node_tree.links.new(add_env_n.inputs['Base Texture Alpha'], alpha_socket)
 
-        node_tree.links.new(output_socket, add_env_gn.outputs['Environment Addition Color'])
+        node_tree.links.new(output_socket, add_env_n.outputs['Environment Addition Color'])
 
     @staticmethod
-    def set_reflection_texture(node_tree, texture):
+    def set_reflection_texture(node_tree, image):
         """Set reflection texture on shader.
 
         :param node_tree: node tree of current shader
         :type node_tree: bpy.types.NodeTree
-        :param texture: texture object which should be used for reflection
-        :type texture: bpy.types.Texture
+        :param image: texture image object which should be used for reflection
+        :type image: bpy.types.Image
         """
 
-        node_tree.nodes[StdAddEnv.REFL_TEX_NODE].texture = texture
+        node_tree.nodes[StdAddEnv.REFL_TEX_NODE].image = image
+
+    @staticmethod
+    def set_reflection_texture_settings(node_tree, settings):
+        """Set reflection texture settings to shader.
+
+        :param node_tree: node tree of current shader
+        :type node_tree: bpy.types.NodeTree
+        :param settings: binary string of TOBJ settings gotten from tobj import
+        :type settings: str
+        """
+        pass  # reflection texture shouldn't use any custom settings
 
     @staticmethod
     def set_env_factor(node_tree, color):

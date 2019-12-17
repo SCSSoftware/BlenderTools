@@ -16,7 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2013-2014: SCS Software
+# Copyright (C) 2013-2019: SCS Software
 
 from io_scs_tools.internals.open_gl import primitive as _primitive
 from mathutils import Matrix
@@ -38,10 +38,10 @@ def draw_shape_box(mat, obj_scs_props, scs_globals):
     else:
         shift = -obj_scs_props.locator_collider_box_y / 2
 
-    mat1 = mat * Matrix.Translation((0.0, shift, 0.0)) * (
-        Matrix.Scale(obj_scs_props.locator_collider_box_x, 4, (1.0, 0.0, 0.0)) *
-        Matrix.Scale(obj_scs_props.locator_collider_box_y, 4, (0.0, 1.0, 0.0)) *
-        Matrix.Scale(obj_scs_props.locator_collider_box_z, 4, (0.0, 0.0, 1.0)))
+    mat1 = mat @ Matrix.Translation((0.0, shift, 0.0)) @ (
+            Matrix.Scale(obj_scs_props.locator_collider_box_x, 4, (1.0, 0.0, 0.0)) @
+            Matrix.Scale(obj_scs_props.locator_collider_box_y, 4, (0.0, 1.0, 0.0)) @
+            Matrix.Scale(obj_scs_props.locator_collider_box_z, 4, (0.0, 0.0, 1.0)))
 
     cube_vertices, cube_faces, cube_wire_lines = _primitive.get_box_data()
 
@@ -51,8 +51,8 @@ def draw_shape_box(mat, obj_scs_props, scs_globals):
                                    scs_globals.locator_coll_face_color,
                                    obj_scs_props.locator_collider_faces,
                                    obj_scs_props.locator_collider_wires,
-                                   cube_wire_lines,
-                                   scs_globals.locator_coll_wire_color)
+                                   wire_lines=cube_wire_lines,
+                                   wire_color=scs_globals.locator_coll_wire_color)
 
 
 def draw_shape_sphere(mat, obj_scs_props, scs_globals):
@@ -70,7 +70,7 @@ def draw_shape_sphere(mat, obj_scs_props, scs_globals):
         shift = 0.0
     else:
         shift = -obj_scs_props.locator_collider_dia / 2
-    mat1 = mat * Matrix.Translation((0.0, shift, 0.0)) * Matrix.Scale(obj_scs_props.locator_collider_dia, 4)
+    mat1 = mat @ Matrix.Translation((0.0, shift, 0.0)) @ Matrix.Scale(obj_scs_props.locator_collider_dia, 4)
 
     sphere_vertices, sphere_faces, sphere_wire_lines = _primitive.get_sphere_data()
 
@@ -80,8 +80,8 @@ def draw_shape_sphere(mat, obj_scs_props, scs_globals):
                                    scs_globals.locator_coll_face_color,
                                    obj_scs_props.locator_collider_faces,
                                    obj_scs_props.locator_collider_wires,
-                                   sphere_wire_lines,
-                                   scs_globals.locator_coll_wire_color)
+                                   wire_lines=sphere_wire_lines,
+                                   wire_color=scs_globals.locator_coll_wire_color)
 
 
 def draw_shape_capsule(mat, obj_scs_props, scs_globals):
@@ -99,23 +99,23 @@ def draw_shape_capsule(mat, obj_scs_props, scs_globals):
         shift = obj_scs_props.locator_collider_len / 2
     else:
         shift = 0.0
-    mat1 = Matrix.Translation((0.0, shift, 0.0)) * Matrix.Scale(obj_scs_props.locator_collider_dia, 4)
-    mat2 = Matrix.Translation((0.0, shift - obj_scs_props.locator_collider_len, 0.0)) * Matrix.Scale(obj_scs_props.locator_collider_dia, 4)
+    mat1 = Matrix.Translation((0.0, shift, 0.0)) @ Matrix.Scale(obj_scs_props.locator_collider_dia, 4)
+    mat2 = Matrix.Translation((0.0, shift - obj_scs_props.locator_collider_len, 0.0)) @ Matrix.Scale(obj_scs_props.locator_collider_dia, 4)
 
     capsule_vertices, capsule_faces, capsule_wire_lines = _primitive.get_capsule_data()
 
     face_transforms = []
-    vertices = (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
-                31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44)
+    vertices = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
+                31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44}
     face_transforms.append((mat1, vertices), )
-    vertices = (45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72,
-                73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89)
+    vertices = {45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72,
+                73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89}
     face_transforms.append((mat2, vertices), )
 
     wire_transforms = []
-    vertices = (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 26, 27, 28, 29, 30, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 59, 60, 61, 62, 63)
+    vertices = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 26, 27, 28, 29, 30, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 59, 60, 61, 62, 63}
     wire_transforms.append((mat1, vertices), )
-    vertices = (13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 31, 32, 33, 34, 35, 36, 37, 38, 39, 50, 51, 52, 53, 54, 55, 56, 57, 58)
+    vertices = {13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 31, 32, 33, 34, 35, 36, 37, 38, 39, 50, 51, 52, 53, 54, 55, 56, 57, 58}
     wire_transforms.append((mat2, vertices), )
 
     _primitive.draw_polygon_object(mat,
@@ -124,10 +124,10 @@ def draw_shape_capsule(mat, obj_scs_props, scs_globals):
                                    scs_globals.locator_coll_face_color,
                                    obj_scs_props.locator_collider_faces,
                                    obj_scs_props.locator_collider_wires,
-                                   capsule_wire_lines,
-                                   scs_globals.locator_coll_wire_color,
-                                   face_transforms,
-                                   wire_transforms)
+                                   wire_lines=capsule_wire_lines,
+                                   wire_color=scs_globals.locator_coll_wire_color,
+                                   face_transforms=face_transforms,
+                                   wire_transforms=wire_transforms)
 
 
 def draw_shape_cylinder(mat, obj_scs_props, scs_globals):
@@ -145,21 +145,21 @@ def draw_shape_cylinder(mat, obj_scs_props, scs_globals):
         shift = obj_scs_props.locator_collider_len / 2
     else:
         shift = 0.0
-    mat1 = Matrix.Translation((0.0, shift, 0.0)) * Matrix.Scale(obj_scs_props.locator_collider_dia, 4)
-    mat2 = Matrix.Translation((0.0, shift - obj_scs_props.locator_collider_len, 0.0)) * Matrix.Scale(obj_scs_props.locator_collider_dia, 4)
+    mat1 = Matrix.Translation((0.0, shift, 0.0)) @ Matrix.Scale(obj_scs_props.locator_collider_dia, 4)
+    mat2 = Matrix.Translation((0.0, shift - obj_scs_props.locator_collider_len, 0.0)) @ Matrix.Scale(obj_scs_props.locator_collider_dia, 4)
 
     cylinder_vertices, cylinder_faces, cylinder_wire_lines = _primitive.get_cylinder_data()
 
     face_transforms = []
-    vertices = (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11)
+    vertices = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}
     face_transforms.append((mat1, vertices), )
-    vertices = (12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23)
+    vertices = {12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23}
     face_transforms.append((mat2, vertices), )
 
     wire_transforms = []
-    vertices = (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 26, 28, 30, 32)
+    vertices = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 26, 28, 30, 32}
     wire_transforms.append((mat1, vertices), )
-    vertices = (13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 27, 29, 31, 33)
+    vertices = {13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 27, 29, 31, 33}
     wire_transforms.append((mat2, vertices), )
 
     _primitive.draw_polygon_object(mat,
@@ -168,10 +168,10 @@ def draw_shape_cylinder(mat, obj_scs_props, scs_globals):
                                    scs_globals.locator_coll_face_color,
                                    obj_scs_props.locator_collider_faces,
                                    obj_scs_props.locator_collider_wires,
-                                   cylinder_wire_lines,
-                                   scs_globals.locator_coll_wire_color,
-                                   face_transforms,
-                                   wire_transforms)
+                                   wire_lines=cylinder_wire_lines,
+                                   wire_color=scs_globals.locator_coll_wire_color,
+                                   face_transforms=face_transforms,
+                                   wire_transforms=wire_transforms)
 
 
 def draw_shape_convex(mat, obj_scs_props, scs_globals):
@@ -194,8 +194,7 @@ def draw_shape_convex(mat, obj_scs_props, scs_globals):
                                        scs_globals.locator_coll_face_color,
                                        obj_scs_props.locator_collider_faces,
                                        obj_scs_props.locator_collider_wires,
-                                       None,
-                                       scs_globals.locator_coll_wire_color)
+                                       wire_color=scs_globals.locator_coll_wire_color)
 
 
 def draw_collision_locator(obj, scs_globals):
@@ -208,7 +207,7 @@ def draw_collision_locator(obj, scs_globals):
     """
 
     tran, rot, sca = obj.matrix_world.decompose()
-    mat_orig = Matrix.Translation(tran).to_4x4() * rot.to_matrix().to_4x4()
+    mat_orig = Matrix.Translation(tran).to_4x4() @ rot.to_matrix().to_4x4()
 
     if obj.scs_props.locator_collider_type == 'Box':
         draw_shape_box(mat_orig, obj.scs_props, scs_globals)
@@ -220,3 +219,23 @@ def draw_collision_locator(obj, scs_globals):
         draw_shape_cylinder(mat_orig, obj.scs_props, scs_globals)
     if obj.scs_props.locator_collider_type == 'Convex':
         draw_shape_convex(mat_orig, obj.scs_props, scs_globals)
+
+
+def get_collision_locator_comprehensive_info(obj):
+    """Gets comprehensive info from collisiion locator.
+
+    :param obj: collision locator to get infos from
+    :type obj: bpy.types.Object
+    :return: formatted string ready to be drawn with blf.draw()
+    :rtype: str
+    """
+    textlines = ['"%s"' % obj.name,
+                 "%s - %s" % (obj.scs_props.locator_type, obj.scs_props.locator_collider_type),
+                 "Mass: %.2f" % obj.scs_props.locator_collider_mass]
+
+    # if obj.scs_props.locator_collider_centered:
+    # textlines.append("Locator Centered")
+    if obj.scs_props.locator_collider_margin != 0:
+        textlines.append("Margin: %.2f" % obj.scs_props.locator_collider_margin)
+
+    return "\n".join(textlines)

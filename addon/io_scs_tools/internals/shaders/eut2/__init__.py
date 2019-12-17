@@ -84,6 +84,10 @@ def get_shader(effect):
 
         from io_scs_tools.internals.shaders.eut2.retroreflective import Retroreflective as Shader
 
+    elif effect.startswith("unlit.tex.a8"):
+
+        from io_scs_tools.internals.shaders.eut2.unlit_tex.a8 import UnlitTexA8 as Shader
+
     elif effect.startswith("unlit.tex"):
 
         from io_scs_tools.internals.shaders.eut2.unlit_tex import UnlitTex as Shader

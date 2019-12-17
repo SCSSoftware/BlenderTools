@@ -8,7 +8,7 @@
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+# GNU General Public License for more details.<
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software Foundation,
@@ -16,14 +16,14 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2013-2014: SCS Software
+# Copyright (C) 2013-2019: SCS Software
 
 bl_info = {
     "name": "SCS Tools",
     "description": "Setup models, Import-Export SCS data format",
     "author": "Simon Lusenc (50keda), Milos Zajic (4museman)",
-    "version": (1, 12, "be00ed8"),
-    "blender": (2, 78, 0),
+    "version": (2, 0, "c95d7ac"),
+    "blender": (2, 81, 0),
     "location": "File > Import-Export",
     "wiki_url": "http://modding.scssoft.com/wiki/Documentation/Tools/SCS_Blender_Tools",
     "tracker_url": "http://forum.scssoft.com/viewforum.php?f=163",
@@ -40,36 +40,33 @@ from io_scs_tools.imp import pix as _pix_import
 from io_scs_tools.internals.callbacks import open_gl as _open_gl_callback
 from io_scs_tools.internals.callbacks import persistent as _persistent_callback
 from io_scs_tools.internals import icons as _icons
+from io_scs_tools.operators.bases.export import SCSExportHelper as _SCSExportHelper
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
-from io_scs_tools.utils.view3d import switch_layers_visibility as _switch_layers_visibility
 from io_scs_tools.utils.view3d import has_view3d_space as _has_view3d_space
 from io_scs_tools.utils.printout import lprint
-# importing all SCS Tools modules which creates panels in UI
-from io_scs_tools import ui
-from io_scs_tools import operators
 
 
-class ImportSCS(bpy.types.Operator, ImportHelper):
+class SCS_TOOLS_OT_Import(bpy.types.Operator, ImportHelper):
     """
     Load various SCS file formats containing geometries and numerous settings.
     """
-    bl_idname = "import_mesh.pim"
+    bl_idname = "scs_tools.import_pim"
     bl_label = "SCS Import"
     bl_description = "Load various SCS file formats containing geometries and numerous settings."
     bl_options = {'UNDO'}
 
-    files = CollectionProperty(name="File Path",
-                               description="File path used for importing the SCS files",
-                               type=bpy.types.OperatorFileListElement)
+    filename_ext = "*.pim;*.pim.ef;"
+    files: CollectionProperty(name="File Path",
+                              description="File path used for importing the SCS files",
+                              type=bpy.types.OperatorFileListElement)
 
-    scs_project_path_mode = BoolProperty(
+    scs_project_path_mode: BoolProperty(
         default=False,
         description="Set currently selected directory as SCS Project Path"
     )
 
-    directory = StringProperty()
-    filename_ext = "*.pim;*.pim.ef;"
-    filter_glob = StringProperty(default=filename_ext, options={'HIDDEN'})
+    directory: StringProperty()
+    filter_glob: StringProperty(default=filename_ext, options={'HIDDEN'})
 
     def check(self, context):
 
@@ -81,17 +78,15 @@ class ImportSCS(bpy.types.Operator, ImportHelper):
 
     def execute(self, context):
 
+        from io_scs_tools.internals.containers.config import AsyncPathsInit
+
         # if paths are still initializing report that to user and don't execute import
-        if operators.world.SCSPathsInitialization.is_running():
+        if AsyncPathsInit.is_running():
 
             self.report({'INFO'}, "Can't import yet, paths initialization is still in progress! Try again in few moments.")
 
-            # there is no way to keep current operator alive if we want to abort import sequence.
-            # That's why we call another import operator, which will end up with
-            # printing out above info and taking us back to import screen with file browser.
-            bpy.ops.import_mesh.pim('INVOKE_DEFAULT')
-
-            return {'FINISHED'}
+            # revoke to add new fileselect dialog otherwise this operator will finish
+            return self.invoke(context, None)
 
         if not _has_view3d_space(context.screen):
             message = "Cannot import SCS Models, no 3D viewport found! Make sure you have at least one 3D view visible."
@@ -150,6 +145,10 @@ class ImportSCS(bpy.types.Operator, ImportHelper):
         :return:
         """
 
+        from io_scs_tools.ui.shared import get_on_off_icon
+        from io_scs_tools.ui.shared import draw_common_settings
+        from io_scs_tools.internals.containers.config import AsyncPathsInit
+
         scs_globals = _get_scs_globals()
 
         # importer_version = round(import_pix.version(), 2)
@@ -158,181 +157,193 @@ class ImportSCS(bpy.types.Operator, ImportHelper):
         # SCS Project Path
         box1 = layout.box()
         layout_box_col = box1.column(align=True)
-        layout_box_col.label('SCS Project Base Path:', icon='FILE_FOLDER')
+        layout_box_col.label(text="SCS Project Base Path:", icon='FILE_FOLDER')
+        layout_box_col.separator()
 
         layout_box_row = layout_box_col.row(align=True)
         layout_box_row.alert = not os.path.isdir(scs_globals.scs_project_path)
-        layout_box_row.prop(scs_globals, 'scs_project_path', text='')
+        layout_box_row.prop(scs_globals, 'scs_project_path', text="")
 
         layout_box_row = layout_box_col.row(align=True)
-        layout_box_row.prop(self, "scs_project_path_mode", toggle=True, text="Set Current Dir as Project Base", icon='SCREEN_BACK')
+        layout_box_row.prop(self, "scs_project_path_mode", toggle=True, text="Set Current Dir as Project Base", icon='PASTEDOWN')
 
-        if operators.world.SCSPathsInitialization.is_running():  # report running path initialization operator
+        if AsyncPathsInit.is_running():  # report running path initialization operator
             layout_box_row = layout_box_col.row(align=True)
-            layout_box_row.label("Paths initialization in progress...")
-            layout_box_row.label("", icon='TIME')
+            layout_box_row.scale_y = 2
+            layout_box_row.label(text="Paths initialization in progress...")
+            layout_box_row.label(text="", icon='SORTTIME')
 
         # import settings
         box2 = layout.box()
-        col = box2.column(align=True)
+        col = box2.column()
 
-        col.row().prop(scs_globals, "import_scale")
-        col.row().separator()
-        col.row().prop(scs_globals, "import_preserve_path_for_export")
-        col.row().separator()
-        col.row().prop(scs_globals, "import_pim_file", toggle=True, icon="FILE_TICK" if scs_globals.import_pim_file else "X")
+        col.label(text="Import Options:", icon='SETTINGS')
+        col.separator()
+        col.prop(scs_globals, "import_scale")
+        col.prop(scs_globals, "import_preserve_path_for_export")
+        col.prop(scs_globals, "import_pim_file", toggle=True, icon=get_on_off_icon(scs_globals.import_pim_file))
         if scs_globals.import_pim_file:
-            col.row().prop(scs_globals, "import_use_normals")
-            col.row().prop(scs_globals, "import_use_welding")
+            col.prop(scs_globals, "import_use_normals")
+            col.prop(scs_globals, "import_use_welding")
             if scs_globals.import_use_welding:
-                col.row().prop(scs_globals, "import_welding_precision")
-        col.row().separator()
-        col.row().prop(scs_globals, "import_pit_file", toggle=True, icon="FILE_TICK" if scs_globals.import_pit_file else "X")
+                col.prop(scs_globals, "import_welding_precision")
+        col.prop(scs_globals, "import_pit_file", toggle=True, icon=get_on_off_icon(scs_globals.import_pit_file))
         if scs_globals.import_pit_file:
-            col.row().prop(scs_globals, "import_load_textures")
-        col.row().separator()
-        col.row().prop(scs_globals, "import_pic_file", toggle=True, icon="FILE_TICK" if scs_globals.import_pic_file else "X")
-        col.row().separator()
-        col.row().prop(scs_globals, "import_pip_file", toggle=True, icon="FILE_TICK" if scs_globals.import_pip_file else "X")
-        col.row().separator()
-        col.row(align=True).prop(scs_globals, "import_pis_file", toggle=True, icon="FILE_TICK" if scs_globals.import_pis_file else "X")
+            col.prop(scs_globals, "import_load_textures")
+        col.prop(scs_globals, "import_pic_file", toggle=True, icon=get_on_off_icon(scs_globals.import_pic_file))
+        col.prop(scs_globals, "import_pip_file", toggle=True, icon=get_on_off_icon(scs_globals.import_pip_file))
+        col.prop(scs_globals, "import_pis_file", toggle=True, icon=get_on_off_icon(scs_globals.import_pis_file))
         if scs_globals.import_pis_file:
-            col.row(align=True).prop(scs_globals, "import_bone_scale")
-            col.row().separator()
-            col.row().prop(scs_globals, "import_pia_file", toggle=True, icon="FILE_TICK" if scs_globals.import_pia_file else "X")
+            col.prop(scs_globals, "import_bone_scale")
+            col.prop(scs_globals, "import_pia_file", toggle=True, icon=get_on_off_icon(scs_globals.import_pia_file))
             if scs_globals.import_pia_file:
-                col.row().prop(scs_globals, "import_include_subdirs_for_pia")
+                col.prop(scs_globals, "import_include_subdirs_for_pia")
 
         # Common global settings
-        ui.shared.draw_common_settings(layout, log_level_only=True)
+        box3 = layout.box()
+        box3.label(text="Log Level:", icon='MOD_EXPLODE')
+        box3.prop(scs_globals, 'dump_level', text="")
 
 
-class ExportSCS(bpy.types.Operator, ExportHelper):
+class SCS_TOOLS_OT_Export(bpy.types.Operator, _SCSExportHelper, ExportHelper):
     """
     Export complex geometries to the SCS file formats.
     """
-    bl_idname = "export_mesh.pim"
+    bl_idname = "scs_tools.export_pim"
     bl_label = "SCS Export"
     bl_description = "Export complex geometries to the SCS file formats."
     bl_options = set()
 
     filename_ext = ".pim"
-    filter_glob = StringProperty(default=str("*" + filename_ext), options={'HIDDEN'})
-
-    layers_visibilities = []
-    """List for storing layers visibility in the init of operator"""
-
-    def __init__(self):
-        """Constructor used for showing all scene visibility layers.
-        This provides possibility to updates world matrixes even on hidden objects.
-        """
-        self.layers_visibilities = _switch_layers_visibility([], True)
-
-    def __del__(self):
-        """Destructor with reverting visible layers.
-        """
-        _switch_layers_visibility(self.layers_visibilities, False)
+    filter_glob: StringProperty(default=str("*" + filename_ext), options={'HIDDEN'})
 
     def execute(self, context):
-        lprint('D Export From Menu...')
-
-        from io_scs_tools import exp as _export
-        from io_scs_tools.utils import object as _object_utils
-
-        filepath = os.path.dirname(self.filepath)
-
-        # convert it to None, so export will ignore given menu file path and try to export to other none menu set paths
-        if self.filepath == "":
-            filepath = None
-
-        export_scope = _get_scs_globals().export_scope
-        init_obj_list = {}
-        if export_scope == "selection":
-            for obj in bpy.context.selected_objects:
-                root = _object_utils.get_scs_root(obj)
-                if root:
-                    if root != obj:  # add only selected children
-                        init_obj_list[obj.name] = obj
-                        init_obj_list[root.name] = root
-                    else:  # add every children if all are unselected
-                        children = _object_utils.get_children(obj)
-                        local_reselected_objs = []
-                        for child_obj in children:
-                            local_reselected_objs.append(child_obj)
-                            # if some child is selected this means we won't reselect nothing in this game object
-                            if child_obj.select:
-                                local_reselected_objs = []
-                                break
-
-                        for reselected_obj in local_reselected_objs:
-                            init_obj_list[reselected_obj.name] = reselected_obj
-
-            init_obj_list = tuple(init_obj_list.values())
-        elif export_scope == "scene":
-            init_obj_list = tuple(bpy.context.scene.objects)
-        elif export_scope == 'scenes':
-            init_obj_list = tuple(bpy.data.objects)
-
-        # check extension for EF format and properly assign it to name suffix
-        ef_name_suffix = ""
-        if _get_scs_globals().export_output_type == "EF":
-            ef_name_suffix = ".ef"
-
-        try:
-            result = _export.batch_export(self, init_obj_list, name_suffix=ef_name_suffix, menu_filepath=filepath)
-        except Exception as e:
-
-            result = {"CANCELLED"}
-            context.window.cursor_modal_restore()
-
-            trace_str = traceback.format_exc().replace("\n", "\n\t   ")
-            lprint("E Unexpected %r accured during batch export:\n\t   %s",
-                   (type(e).__name__, trace_str),
-                   report_errors=1,
-                   report_warnings=1)
-
-        return result
+        return self.execute_export(context, True)
 
     def draw(self, context):
+        from io_scs_tools.ui.shared import draw_export_panel
+
         box0 = self.layout.box()
-        row = box0.row()
-        row.prop(_get_scs_globals(), 'export_scope', expand=True)
-        ui.shared.draw_export_panel(self.layout)
+        box0.use_property_split = True
+        box0.use_property_decorate = False
+
+        box0.label(text="Export Options:", icon='SETTINGS')
+        box0.prop(_get_scs_globals(), 'export_scope', expand=True)
+
+        draw_export_panel(box0, ignore_extra_boxes=True)
 
 
-class SCSAddObject(bpy.types.Menu):
-    bl_idname = "INFO_MT_SCS_add_object"
-    bl_label = "SCS Object"
-    bl_description = "Creates menu for adding SCS objects."
+class SCS_TOOLS_MT_AddObject(bpy.types.Menu):
+    bl_label = "Add"
+    bl_description = "Creates menu for adding SCS objects"
 
     def draw(self, context):
-        self.layout.operator_enum("object.scs_add_object", "new_object_type")
+        self.layout.operator_enum("object.scs_tools_add_object", "new_object_type")
+
+
+class SCS_TOOLS_MT_ObjectsMisc(bpy.types.Menu):
+    bl_label = "Objects Misc"
+    bl_description = "Creates menu for SCS objects miscellaneous actions"
+
+    def draw(self, context):
+        self.layout.operator("object.scs_tools_fix_model_locator_hookups")
+
+
+class SCS_TOOLS_MT_MaterialsMisc(bpy.types.Menu):
+    bl_label = "Materials Misc"
+    bl_description = "Creates menu for SCS materials miscellaneous actions"
+
+    def draw(self, context):
+        self.layout.operator("material.scs_tools_reload_materials")
+        self.layout.operator("material.scs_tools_merge_materials")
+        self.layout.operator("material.scs_tools_adapt_color_management")
+
+
+class SCS_TOOLS_MT_MainMenu(bpy.types.Menu):
+    bl_label = "SCS Tools"
+    bl_description = "Global menu for accessing all SCS Blender Tools features in one place"
+
+    __static_popovers = {
+        "sidebar": [],
+        "props": [],
+        "output": []
+    }
+
+    @staticmethod
+    def append_sidebar_entry(menu_item_name, panel_id):
+        SCS_TOOLS_MT_MainMenu.__static_popovers["sidebar"].append((menu_item_name, panel_id))
+
+    @staticmethod
+    def append_props_entry(menu_item_name, panel_id):
+        SCS_TOOLS_MT_MainMenu.__static_popovers["props"].append((menu_item_name, panel_id))
+
+    @staticmethod
+    def append_output_entry(menu_item_name, panel_id):
+        SCS_TOOLS_MT_MainMenu.__static_popovers["output"].append((menu_item_name, panel_id))
+
+    @classmethod
+    def unregister(cls):
+        for category in SCS_TOOLS_MT_MainMenu.__static_popovers:
+            SCS_TOOLS_MT_MainMenu.__static_popovers[category].clear()
+
+    def draw(self, context):
+        layout = self.layout
+
+        column = layout.column()
+
+        # sub-menus
+        column.menu(SCS_TOOLS_MT_AddObject.__name__)
+        column.menu(SCS_TOOLS_MT_ObjectsMisc.__name__)
+        column.menu(SCS_TOOLS_MT_MaterialsMisc.__name__)
+
+        # popovers by category
+        for category in SCS_TOOLS_MT_MainMenu.__static_popovers:
+            column.separator()
+            for menu_item_name, panel_id in SCS_TOOLS_MT_MainMenu.__static_popovers[category]:
+                column.popover(panel_id, text=menu_item_name)
 
 
 def add_menu_func(self, context):
-    self.layout.menu("INFO_MT_SCS_add_object", text="SCS Object", icon_value=_icons.get_icon(_ICONS_consts.Types.scs_logo_orange))
+    self.layout.menu(SCS_TOOLS_MT_AddObject.__name__, text="SCS Object", icon_value=_icons.get_icon(_ICONS_consts.Types.scs_object_menu))
     self.layout.separator()
 
 
 def menu_func_import(self, context):
-    self.layout.operator(ImportSCS.bl_idname, text="SCS Formats (.pim)")
+    self.layout.operator(SCS_TOOLS_OT_Import.bl_idname, text="SCS Game Object (.pim)",
+                         icon_value=_icons.get_icon(_ICONS_consts.Types.scs_object_menu))
 
 
 def menu_func_export(self, context):
-    self.layout.operator(ExportSCS.bl_idname, text="SCS Formats (.pim)")
+    self.layout.operator(SCS_TOOLS_OT_Export.bl_idname, text="SCS Game Object(s) (.pim)",
+                         icon_value=_icons.get_icon(_ICONS_consts.Types.scs_object_menu))
+
+
+def menu_scs_tools(self, context):
+    self.layout.menu(SCS_TOOLS_MT_MainMenu.__name__)
+
+
+classes = (
+    SCS_TOOLS_OT_Import,
+    SCS_TOOLS_OT_Export,
+    SCS_TOOLS_MT_AddObject,
+    SCS_TOOLS_MT_ObjectsMisc,
+    SCS_TOOLS_MT_MaterialsMisc,
+    SCS_TOOLS_MT_MainMenu
+
+)
 
 
 # #################################################
 
 def register():
-    from . import properties
-
-    bpy.utils.register_module(__name__)
-
     # CUSTOM ICONS INITIALIZATION
-    _icons.init()
+    _icons.register()
 
-    # PROPERTIES REGISTRATION
+    # REGISTRATION OF OUR PROPERTIES
+    from io_scs_tools.properties import register as props_register
+    props_register()
+
+    # PROPERTIES REGISTRATION INTO EXISTING CLASSES
     bpy.types.Object.scs_object_look_inventory = CollectionProperty(
         type=properties.object.ObjectLooksInventoryItem
     )
@@ -349,10 +360,10 @@ def register():
         type=properties.object.ObjectAnimationInventoryItem
     )
 
-    bpy.types.World.scs_globals = PointerProperty(
-        name="SCS Tools Global Variables",
-        type=properties.world.GlobalSCSProps,
-        description="SCS Tools global variables",
+    bpy.types.WorkSpace.scs_props = PointerProperty(
+        name="SCS Tools Workspace Variables",
+        type=properties.workspace.WorkspaceSCSProps,
+        description="SCS Tools workspace variables"
     )
 
     bpy.types.Object.scs_props = PointerProperty(
@@ -385,26 +396,31 @@ def register():
         description="SCS Tools Action variables",
     )
 
-    # REGISTER DYNAMIC PROPERTIES
-    properties.object_dynamic.register()
-    properties.scene_dynamic.register()
+    # REGISTER UI
+    from io_scs_tools.ui import register as ui_register
+    ui_register()
+
+    # REGISTER OPERATORS
+    from io_scs_tools.operators import register as ops_register
+    ops_register()
+
+    # MAIN MODULE REGISTRATION
+    for cls in classes:
+        bpy.utils.register_class(cls)
+
+    # MENU REGISTRATION
+    bpy.types.TOPBAR_MT_editor_menus.append(menu_scs_tools)
+    bpy.types.TOPBAR_MT_file_import.append(menu_func_import)
+    bpy.types.TOPBAR_MT_file_export.append(menu_func_export)
+    bpy.types.VIEW3D_MT_add.prepend(add_menu_func)
 
     # PERSISTENT HANDLERS
     _persistent_callback.enable()
 
-    # MENU REGISTRATION
-    bpy.types.INFO_MT_file_import.append(menu_func_import)
-    bpy.types.INFO_MT_file_export.append(menu_func_export)
-    bpy.types.INFO_MT_add.prepend(add_menu_func)
-
 
 def unregister():
-    bpy.utils.unregister_module(__name__)
-
-    # REMOVE MENU ENTRIES
-    bpy.types.INFO_MT_file_export.remove(menu_func_export)
-    bpy.types.INFO_MT_file_import.remove(menu_func_import)
-    bpy.types.INFO_MT_add.remove(add_menu_func)
+    # DELETE CUSTOM ICONS
+    _icons.unregister()
 
     # REMOVE OPENGL HANDLERS
     _open_gl_callback.disable()
@@ -412,18 +428,40 @@ def unregister():
     # REMOVE PERSISTENT HANDLERS
     _persistent_callback.disable()
 
+    # REMOVE MENU ENTRIES
+    bpy.types.TOPBAR_MT_editor_menus.remove(menu_scs_tools)
+    bpy.types.TOPBAR_MT_file_import.remove(menu_func_export)
+    bpy.types.TOPBAR_MT_file_export.remove(menu_func_import)
+    bpy.types.VIEW3D_MT_add.remove(add_menu_func)
+
+    # REMOVE MAIN MODULE CLASSES
+    for cls in classes:
+        bpy.utils.unregister_class(cls)
+
+    # UNREGISTER OPERATORS
+    from io_scs_tools.operators import unregister as ops_unregister
+    ops_unregister()
+
+    # UNREGISTER UI
+    from io_scs_tools.ui import unregister as ui_unregister
+    ui_unregister()
+
     # REMOVE PROPERTIES FROM DATA
     del bpy.types.Action.scs_props
     del bpy.types.Material.scs_props
     del bpy.types.Mesh.scs_props
     del bpy.types.Scene.scs_props
     del bpy.types.Object.scs_props
-    del bpy.types.World.scs_globals
+    del bpy.types.WorkSpace.scs_props
 
     del bpy.types.Object.scs_object_look_inventory
     del bpy.types.Object.scs_object_part_inventory
     del bpy.types.Object.scs_object_variant_inventory
     del bpy.types.Object.scs_object_animation_inventory
+
+    # UNREGISTER PROPS
+    from io_scs_tools.properties import unregister as props_unregister
+    props_unregister()
 
 
 if __name__ == "__main__":

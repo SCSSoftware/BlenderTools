@@ -16,7 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2013-2014: SCS Software
+# Copyright (C) 2013-2019: SCS Software
 
 from time import time
 
@@ -24,8 +24,7 @@ import bpy
 from bpy.app.handlers import persistent
 from io_scs_tools.internals import looks as _looks
 from io_scs_tools.internals import preview_models as _preview_models
-from io_scs_tools.internals.connections.wrappers import group as _connections_group_wrapper
-from io_scs_tools.internals.shaders import update_shaders as _update_shaders
+from io_scs_tools.internals.connections.wrappers import collection as _connections_wrapper
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
 from io_scs_tools.utils import object as _object_utils
 from io_scs_tools.utils import view3d as _view3d_utils
@@ -40,14 +39,60 @@ class _Timer:
     """Marking object update iterations during stalling."""
     data_updated = 0
     """Marking object data update iteration during stalling."""
+    scene_updated = 0
+    """Marking scene update iterations during stalling."""
+    collections_updated = 0
+    """Margin collection update iterations during stalling."""
 
     @staticmethod
     def can_execute():
+        """Gets execution status of timer.
+
+        :return: True if timer tick was reached; False otherwise
+        :rtype: bool
+        """
+
         if time() - _Timer._last_execute_time > _Timer._interval:
             _Timer._last_execute_time = time()
             return True
         else:
             return False
+
+    @staticmethod
+    def increment_updated_ids(depsgraph):
+        """Increments update states of MESH, OBJECT, SCENE and COLLECTION ids from given depsgraph.
+
+        :param depsgraph: depsgraph from which update states should be read
+        :type depsgraph: bpy.types.Depsgraph
+        """
+        if depsgraph.id_type_updated('MESH'):
+            _Timer.data_updated += 1
+
+        if depsgraph.id_type_updated('OBJECT'):
+            _Timer.updated += 1
+
+        if depsgraph.id_type_updated('SCENE'):
+            _Timer.scene_updated += 1
+
+        if depsgraph.id_type_updated('COLLECTION'):
+            _Timer.collections_updated += 1
+
+    @staticmethod
+    def get_and_reset_updated_states():
+        """Gets and resets update states.
+
+        :return: tuple of updated ids (mesh, objects, scenes, collections)
+        :rtype: bool, bool, bool, bool
+        """
+
+        is_updated = _Timer.updated > 0
+        is_data_updated = _Timer.data_updated > 0
+        is_scene_updated = _Timer.scene_updated > 0
+        is_collections_updated = _Timer.collections_updated > 0
+
+        _Timer.updated = _Timer.data_updated = _Timer.scene_updated = _Timer.collections_updated = 0
+
+        return is_updated, is_data_updated, is_scene_updated, is_collections_updated
 
 
 @persistent
@@ -58,44 +103,25 @@ def object_data_check(scene):
 
     active_obj = bpy.context.active_object
     selected_objs = bpy.context.selected_objects
+    depsgraph = bpy.context.view_layer.depsgraph
 
     # skip persistent check if import is in the process
     if _get_scs_globals().import_in_progress:
         return
 
-    # CHECK FOR DATA CHANGE UPON SELECTION
-    if active_obj:
-
-        if active_obj.is_updated_data:
-            _Timer.data_updated += 1
-
-        if active_obj.is_updated:
-            _Timer.updated += 1
-
-        elif len(selected_objs) > 0:
-            # search for any updated object
-            for sel_obj in selected_objs[:2]:
-                if sel_obj.is_updated:
-                    _Timer.updated += 1
-                    break
-    if _Timer.updated > 0:
-        _connections_group_wrapper.switch_to_update()
+    # CHECK FOR DATA CHANGE UPON DEPSGRAPH
+    _Timer.increment_updated_ids(depsgraph)
 
     # BREAK EXECUTION IF TIMER SAYS SO
     if not _Timer.can_execute():
         return
 
-    # DO ANY SHADER RELATED TIME UPDATES WHEN ANIMATION PLAYBACK IS ACTIVE
-    if bpy.context.screen and bpy.context.screen.is_animation_playing:
-        _update_shaders()
-
     # GET UPDATE STATES
-    updated = _Timer.updated > 0
-    data_updated = _Timer.data_updated > 0
-    _Timer.updated = _Timer.data_updated = 0
+    objs_updated, meshes_updated, scenes_updated, collections_updated = _Timer.get_and_reset_updated_states()
 
-    if not updated:
-        _connections_group_wrapper.switch_to_stall()
+    # PREVIEW MODELS CHECKS
+    if objs_updated or scenes_updated or collections_updated:
+        _preview_models.fix_visibilites()
 
     # NEW/COPY
     if len(scene.objects) > scene.scs_cached_num_objects:
@@ -109,7 +135,7 @@ def object_data_check(scene):
             real_sel_objs = selected_objs.copy()
             for sel_obj in selected_objs:
                 for child in sel_obj.children:
-                    if child.select:
+                    if child.select_get():
                         real_sel_objs.append(child)
 
             if real_sel_objs[0].scs_props.object_identity != "":
@@ -172,7 +198,7 @@ def object_data_check(scene):
                 _fix_children(bpy.data.objects[old_name])
 
                 # switching names causes invalid connections data so recalculate curves for these objects
-                _connections_group_wrapper.force_recalculate([bpy.data.objects[old_name], bpy.data.objects[new_name]])
+                _connections_wrapper.force_recalculate([bpy.data.objects[old_name], bpy.data.objects[new_name]])
 
             lprint("D ---> RENAME of the active object!")
             return
@@ -206,7 +232,7 @@ def object_data_check(scene):
             return
 
         # UNPARENT
-        if not active_obj.select and not active_obj.parent and active_obj.scs_props.parent_identity != "":
+        if not active_obj.select_get() and not active_obj.parent and active_obj.scs_props.parent_identity != "":
 
             _fix_ex_parent(active_obj)
             active_obj.scs_props.parent_identity = ""
@@ -236,7 +262,7 @@ def object_data_check(scene):
             return
 
         # MATERIAL ASSIGNEMENT ACTION
-        if data_updated or updated:
+        if meshes_updated or objs_updated:
 
             mats_ids = {}
             new_mats = {}
@@ -338,7 +364,7 @@ def __objects_copy__(old_objects, new_objects):
     """
 
     # try to copy connections for new objects
-    _connections_group_wrapper.copy_check(old_objects, new_objects)
+    _connections_wrapper.copy_check(old_objects, new_objects)
     _view3d_utils.tag_redraw_all_view3d()
 
     # also check for any preview models which should be also copied to new ones
@@ -356,10 +382,10 @@ def __objects_delete__(unparented_objects):
     """
 
     # fix connections recalculations for unparented
-    _connections_group_wrapper.force_recalculate(unparented_objects)
+    _connections_wrapper.force_recalculate(unparented_objects)
     _view3d_utils.tag_redraw_all_view3d()
 
-    # delete unused previe models
+    # delete unused preview models
     for obj in bpy.data.objects:
         if obj.type == 'MESH':
             if "scs_props" in obj.data and obj.data.scs_props.locator_preview_model_path != "" and not obj.parent:
@@ -377,7 +403,7 @@ def __object_rename__(old_name, new_name):
     """
 
     # send rename notify into connections storage
-    if _connections_group_wrapper.rename_locator(old_name, new_name):
+    if _connections_wrapper.rename_locator(old_name, new_name):
         _view3d_utils.tag_redraw_all_view3d()
 
     # send rename notify to preview models
@@ -406,7 +432,7 @@ def _fix_children(obj):
     """Fixes ex children which wrer caused by re/unparenting.
     It takes children of given object and resets their parent to
     given object.
-    
+
     :param obj: SCS Blender object which children should be fixed
     :type obj: bpy.types.Object
     """

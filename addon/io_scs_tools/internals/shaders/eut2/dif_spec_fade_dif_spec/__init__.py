@@ -16,12 +16,12 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2015: SCS Software
-
+# Copyright (C) 2015-2019: SCS Software
 
 from io_scs_tools.internals.shaders.eut2.dif_spec import DifSpec
 from io_scs_tools.internals.shaders.eut2.dif_spec_fade_dif_spec import detail_nmap
 from io_scs_tools.internals.shaders.eut2.dif_spec_fade_dif_spec import detail_setup_ng
+from io_scs_tools.utils import material as _material_utils
 
 
 class DifSpecFadeDifSpec(DifSpec):
@@ -53,9 +53,8 @@ class DifSpecFadeDifSpec(DifSpec):
         # init parent
         DifSpec.init(node_tree, disable_remap_alpha=True)
 
-        geom_n = node_tree.nodes[DifSpec.GEOM_NODE]
+        first_uv_n = node_tree.nodes[DifSpec.UVMAP_NODE]
         base_tex_n = node_tree.nodes[DifSpec.BASE_TEX_NODE]
-        opacity_n = node_tree.nodes[DifSpec.OPACITY_NODE]
         spec_mult_n = node_tree.nodes[DifSpec.SPEC_MULT_NODE]
         vcol_mult_n = node_tree.nodes[DifSpec.VCOLOR_MULT_NODE]
 
@@ -69,15 +68,15 @@ class DifSpecFadeDifSpec(DifSpec):
         uv_scale_n.name = uv_scale_n.label = DifSpecFadeDifSpec.UV_SCALE_NODE
         uv_scale_n.location = (start_pos_x - pos_x_shift, start_pos_y + 1200)
 
-        detail_uv_scaling_n = node_tree.nodes.new("ShaderNodeMixRGB")
+        detail_uv_scaling_n = node_tree.nodes.new("ShaderNodeVectorMath")
         detail_uv_scaling_n.name = detail_uv_scaling_n.label = DifSpecFadeDifSpec.DETAIL_UV_SCALING_NODE
         detail_uv_scaling_n.location = (start_pos_x, start_pos_y + 1200)
-        detail_uv_scaling_n.blend_type = "MULTIPLY"
-        detail_uv_scaling_n.inputs['Fac'].default_value = 1.0
+        detail_uv_scaling_n.operation = "MULTIPLY"
 
-        detail_tex_n = node_tree.nodes.new("ShaderNodeTexture")
+        detail_tex_n = node_tree.nodes.new("ShaderNodeTexImage")
         detail_tex_n.name = detail_tex_n.label = DifSpecFadeDifSpec.DETAIL_TEX_NODE
         detail_tex_n.location = (start_pos_x + pos_x_shift, start_pos_y + 1200)
+        detail_tex_n.width = 140
 
         detail_setup_group_n = node_tree.nodes.new("ShaderNodeGroup")
         detail_setup_group_n.name = detail_setup_group_n.label = DifSpecFadeDifSpec.DETAIL_SETUP_GNODE
@@ -95,38 +94,49 @@ class DifSpecFadeDifSpec(DifSpec):
         base_detail_mix_n.blend_type = "MIX"
 
         # links creation
-        node_tree.links.new(detail_uv_scaling_n.inputs['Color1'], geom_n.outputs['UV'])
-        node_tree.links.new(detail_uv_scaling_n.inputs['Color2'], uv_scale_n.outputs[0])
+        node_tree.links.new(detail_uv_scaling_n.inputs[0], first_uv_n.outputs['UV'])
+        node_tree.links.new(detail_uv_scaling_n.inputs[1], uv_scale_n.outputs[0])
 
         # geom pass
-        node_tree.links.new(detail_tex_n.inputs['Vector'], detail_uv_scaling_n.outputs['Color'])
+        node_tree.links.new(detail_tex_n.inputs['Vector'], detail_uv_scaling_n.outputs[0])
 
         # pass 1
         node_tree.links.new(base_detail_mix_a_n.inputs['Fac'], detail_setup_group_n.outputs['Blend Factor'])
-        node_tree.links.new(base_detail_mix_a_n.inputs['Color1'], base_tex_n.outputs['Value'])
-        node_tree.links.new(base_detail_mix_a_n.inputs['Color2'], detail_tex_n.outputs['Value'])
+        node_tree.links.new(base_detail_mix_a_n.inputs['Color1'], base_tex_n.outputs['Alpha'])
+        node_tree.links.new(base_detail_mix_a_n.inputs['Color2'], detail_tex_n.outputs['Alpha'])
 
         node_tree.links.new(base_detail_mix_n.inputs['Fac'], detail_setup_group_n.outputs['Blend Factor'])
         node_tree.links.new(base_detail_mix_n.inputs['Color1'], base_tex_n.outputs['Color'])
         node_tree.links.new(base_detail_mix_n.inputs['Color2'], detail_tex_n.outputs['Color'])
 
         # pass 2
-        node_tree.links.new(spec_mult_n.inputs['Color2'], base_detail_mix_a_n.outputs['Color'])
+        node_tree.links.new(spec_mult_n.inputs[1], base_detail_mix_a_n.outputs['Color'])
 
         # pass 3
-        node_tree.links.new(vcol_mult_n.inputs['Color2'], base_detail_mix_n.outputs['Color'])
+        node_tree.links.new(vcol_mult_n.inputs[1], base_detail_mix_n.outputs['Color'])
 
     @staticmethod
-    def set_detail_texture(node_tree, texture):
+    def set_detail_texture(node_tree, image):
         """Set detail texture to shader.
 
         :param node_tree: node tree of current shader
         :type node_tree: bpy.types.NodeTree
-        :param texture: texture which should be assignet to detail texture node
-        :type texture: bpy.types.Texture
+        :param image: texture image which should be assigned to detail texture node
+        :type image: bpy.types.Texture
         """
 
-        node_tree.nodes[DifSpecFadeDifSpec.DETAIL_TEX_NODE].texture = texture
+        node_tree.nodes[DifSpecFadeDifSpec.DETAIL_TEX_NODE].image = image
+
+    @staticmethod
+    def set_detail_texture_settings(node_tree, settings):
+        """Set detail texture settings to shader.
+
+        :param node_tree: node tree of current shader
+        :type node_tree: bpy.types.NodeTree
+        :param settings: binary string of TOBJ settings gotten from tobj import
+        :type settings: str
+        """
+        _material_utils.set_texture_settings_to_node(node_tree.nodes[DifSpecFadeDifSpec.DETAIL_TEX_NODE], settings)
 
     @staticmethod
     def set_detail_uv(node_tree, uv_layer):
@@ -158,30 +168,43 @@ class DifSpecFadeDifSpec(DifSpec):
                 if node.location.x <= 185 and (min_y is None or min_y > node.location.y):
                     min_y = node.location.y
 
-            out_mat_n = node_tree.nodes[DifSpec.OUT_MAT_NODE]
+            out_mat_n = node_tree.nodes[DifSpec.LIGHTING_EVAL_NODE]
             uv_scale_n = node_tree.nodes[DifSpecFadeDifSpec.UV_SCALE_NODE]
             detail_setup_group_n = node_tree.nodes[DifSpecFadeDifSpec.DETAIL_SETUP_GNODE]
+            geom_n = node_tree.nodes[DifSpecFadeDifSpec.GEOM_NODE]
 
             location = (out_mat_n.location.x - 185, min_y - 400)
 
             detail_nmap.init(node_tree, location,
                              uv_scale_n.outputs[0],
                              detail_setup_group_n.outputs['Detail Strength'],
-                             out_mat_n.inputs['Normal'])
+                             out_mat_n.inputs['Normal Vector'],
+                             geom_n.outputs['Normal'])
         else:
             detail_nmap.delete(node_tree)
 
     @staticmethod
-    def set_nmap_texture(node_tree, texture):
+    def set_nmap_texture(node_tree, image):
         """Set normal map texture to shader.
 
         :param node_tree: node tree of current shader
         :type node_tree: bpy.types.NodeTree
-        :param texture: texture which should be assignet to nmap texture node
-        :type texture: bpy.types.Texture
+        :param image: texture image which should be assignet to nmap texture node
+        :type image: bpy.types.Texture
         """
 
-        detail_nmap.set_texture(node_tree, texture)
+        detail_nmap.set_texture(node_tree, image)
+
+    @staticmethod
+    def set_nmap_texture_settings(node_tree, settings):
+        """Set normal map texture settings to shader.
+
+        :param node_tree: node tree of current shader
+        :type node_tree: bpy.types.NodeTree
+        :param settings: binary string of TOBJ settings gotten from tobj import
+        :type settings: str
+        """
+        detail_nmap.set_texture_settings(node_tree, settings)
 
     @staticmethod
     def set_nmap_uv(node_tree, uv_layer):
@@ -206,6 +229,17 @@ class DifSpecFadeDifSpec(DifSpec):
         """
 
         detail_nmap.set_detail_texture(node_tree, texture)
+
+    @staticmethod
+    def set_nmap_detail_texture_settings(node_tree, settings):
+        """Set detail normal map texture settings to shader.
+
+        :param node_tree: node tree of current shader
+        :type node_tree: bpy.types.NodeTree
+        :param settings: binary string of TOBJ settings gotten from tobj import
+        :type settings: str
+        """
+        detail_nmap.set_detail_texture_settings(node_tree, settings)
 
     @staticmethod
     def set_nmap_detail_uv(node_tree, uv_layer):

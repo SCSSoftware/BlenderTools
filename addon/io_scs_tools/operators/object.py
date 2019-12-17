@@ -16,13 +16,13 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2013-2014: SCS Software
+# Copyright (C) 2013-2019: SCS Software
 
 
 import bmesh
 import bpy
 import re
-from bpy.props import BoolProperty, StringProperty, IntProperty
+from bpy.props import BoolProperty, StringProperty, IntProperty, EnumProperty
 from io_scs_tools.consts import Look as _LOOK_consts
 from io_scs_tools.consts import Part as _PART_consts
 from io_scs_tools.consts import Variant as _VARIANT_consts
@@ -31,15 +31,15 @@ from io_scs_tools.consts import Icons as _ICONS_consts
 from io_scs_tools.internals import inventory as _inventory
 from io_scs_tools.internals import looks as _looks
 from io_scs_tools.internals.icons import get_icon as _get_icon
-from io_scs_tools.internals.connections.wrappers import group as _connection_group_wrapper
+from io_scs_tools.internals.connections.wrappers import collection as _connections_wrapper
 from io_scs_tools.internals.open_gl.storage import terrain_points as _terrain_points_storage
 from io_scs_tools.operators.bases.selection import Selection as _BaseSelectionOperator
 from io_scs_tools.operators.bases.view import View as _BaseViewOperator
 from io_scs_tools.properties.object import ObjectSCSTools as _ObjectSCSTools
 from io_scs_tools.utils.printout import lprint
 from io_scs_tools.utils import convert as _convert_utils
-from io_scs_tools.utils import object as _object_utils
 from io_scs_tools.utils import name as _name_utils
+from io_scs_tools.utils import object as _object_utils
 from io_scs_tools.utils import material as _material_utils
 from io_scs_tools.utils import view3d as _view3d_utils
 from io_scs_tools.utils import path as _path_utils
@@ -52,66 +52,110 @@ class ConvexCollider:
     Wrapper class for better navigation in file
     """
 
-    class MakeConvex(bpy.types.Operator):
+    class SCS_TOOLS_OT_MakeConvexMesh(bpy.types.Operator):
         bl_label = "Make Convex From Selection"
-        bl_idname = "object.make_convex"
+        bl_idname = "object.scs_tools_make_convex_mesh"
         bl_description = "Create convex hull from selected objects"
         bl_options = {'REGISTER', 'UNDO'}
 
         def execute(self, context):
             lprint('D Make Convex Geometry From Selection...')
-            objects, active_object = _object_utils.pick_objects_from_selection(self, needs_active_obj=True, obj_type='MESH')
+            objects, active_object = _object_utils.pick_objects_from_selection(self, needs_active_obj=False, obj_type='MESH')
             if objects:
-                geoms, convex_props, resulting_convex_object = _object_utils.create_convex_data(objects, create_hull=True)
-                _object_utils.make_objects_selected((resulting_convex_object,))
+                _, _, resulting_convex_object = _object_utils.create_convex_data(objects, return_hull_object=True)
+
+                if not resulting_convex_object:
+                    self.report({'WARNING'}, "Could not create convex mesh, selected object seems to form a flat surface!")
+                    return {'CANCELLED'}
+
+                _object_utils.make_objects_selected((resulting_convex_object,), active_object=resulting_convex_object)
             return {'FINISHED'}
 
-    class ConvertToConvexLocator(bpy.types.Operator):
+    class SCS_TOOLS_OT_ConvertMeshToConvexLocator(bpy.types.Operator):
         bl_label = "Convert Meshes to Convex Collider"
-        bl_idname = "object.convert_meshes_to_convex_locator"
+        bl_idname = "object.scs_tools_convert_meshes_to_convex_locator"
         bl_description = "Convert selection to Convex Collision Locator"
         bl_options = {'REGISTER', 'UNDO'}
 
-        delete_mesh_objects = BoolProperty(
+        show_face_count_only: BoolProperty(
+            default=False
+        )
+
+        desired_face_count: IntProperty(
+            name="Desired Face Count",
+            description="Desired number of triangles that convex locator should have (less is better for game engine).",
+            max=256,
+            min=6,
+            step=1,
+            default=64
+        )
+
+        delete_mesh_objects: BoolProperty(
             name="Delete Original Geometries",
             description="Delete all original Mesh Objects",
             default=False,
         )
-        individual_objects = BoolProperty(
+        individual_objects: BoolProperty(
             name="Individual Objects",
             description="Make convex Locator from every individual Mesh Object in selection",
             default=False,
         )
 
+        def draw(self, context):
+            layout = self.layout
+            layout.use_property_split = True
+            layout.use_property_decorate = False
+
+            layout.prop(self, "desired_face_count")
+            layout.prop(self, "delete_mesh_objects")
+            layout.prop(self, "individual_objects")
+
         def execute(self, context):
             # print('Convert Selection to Convex Collision Locator...')
-            objects, active_object = _object_utils.pick_objects_from_selection(self, needs_active_obj=True, obj_type='MESH')
+            objects, active_object = _object_utils.pick_objects_from_selection(self, needs_active_obj=False, obj_type='MESH')
             if objects:
                 if self.individual_objects:
                     new_objects = []
                     for obj in objects:
                         parent = obj.parent
-                        geoms, convex_props, resulting_convex_object = _object_utils.create_convex_data((obj,), create_hull=False)
-                        locator = _object_utils.create_collider_convex_locator(geoms, convex_props, (obj,), self.delete_mesh_objects)
+                        geom, convex_props, _ = _object_utils.create_convex_data((obj,), max_face_count=self.desired_face_count)
+
+                        if not geom:
+                            self.report({'WARNING'}, "Could not create convex mesh for %r, selected object seems to be a flat surface!" % obj.name)
+                            continue
+
+                        locator = _object_utils.create_collider_convex_locator(geom, convex_props, (obj,), self.delete_mesh_objects)
                         if locator:
                             locator.parent = parent
                             new_objects.append(locator)
                     if new_objects:
                         _object_utils.make_objects_selected(new_objects)
                 else:
-                    geoms, convex_props, resulting_convex_object = _object_utils.create_convex_data(objects, create_hull=False)
+                    geom, convex_props, _ = _object_utils.create_convex_data(objects, max_face_count=self.desired_face_count)
+
+                    if not geom:
+                        self.report({'WARNING'}, "Could not create convex mesh, selected object(s) seems to form a flat surface!")
+                        return {'CANCELLED'}
+
                     parent = active_object.parent
-                    locator = _object_utils.create_collider_convex_locator(geoms, convex_props, objects, self.delete_mesh_objects)
+                    paernt_inverse_mat = active_object.matrix_parent_inverse
+                    locator = _object_utils.create_collider_convex_locator(geom, convex_props, objects, self.delete_mesh_objects)
                     if locator:
                         locator.parent = parent
                         # make sure to apply parent inverse matrix so object is oriented as origin object
-                        locator.matrix_parent_inverse = active_object.matrix_parent_inverse
+                        locator.matrix_parent_inverse = paernt_inverse_mat
                         _object_utils.make_objects_selected((locator,))
             return {'FINISHED'}
 
-    class ConvertFromConvex(bpy.types.Operator):
+        def invoke(self, context, event):
+            if self.show_face_count_only:
+                return context.window_manager.invoke_props_dialog(self)
+            else:
+                return self.execute(context)
+
+    class SCS_TOOLS_OT_ConvertConvexLocatorToMesh(bpy.types.Operator):
         bl_label = "Convert Convex Collider to Mesh"
-        bl_idname = "object.convert_convex_locator_to_mesh"
+        bl_idname = "object.scs_tools_convert_convex_locator_to_mesh"
         bl_description = "Convert Convex Collision Locator to Mesh Object"
         bl_options = {'REGISTER', 'UNDO'}
 
@@ -135,17 +179,7 @@ class ConvexCollider:
                 # else:
                 # self.report({'ERROR_INVALID_CONTEXT'}, "No Collision Convex Locator in selection to operate on!")
             if new_active_object:
-                bpy.context.scene.objects.active = new_active_object
-            return {'FINISHED'}
-
-    class UpdateConvex(bpy.types.Operator):
-        bl_label = "Update Convex Collider"
-        bl_idname = "object.update_convex"
-        bl_description = "Update Convex Collision Locator"
-
-        def execute(self, context):
-            lprint('D Update Convex Collider Locator...')
-            _object_utils.update_convex_hull_margins(bpy.context.active_object)
+                bpy.context.view_layer.objects.active = new_active_object
             return {'FINISHED'}
 
 
@@ -154,17 +188,17 @@ class Look:
     Wrapper class for better navigation in file
     """
 
-    class AddLookOperator(bpy.types.Operator):
+    class SCS_TOOLS_OT_AddLook(bpy.types.Operator):
         """Add SCS Look to actual SCS Game Object."""
         bl_label = "Add SCS Look"
-        bl_idname = "object.add_scs_look"
+        bl_idname = "object.scs_tools_add_look"
         bl_description = "Add new SCS Look to SCS Game Object"
 
-        look_name = StringProperty(
+        look_name: StringProperty(
             default=_LOOK_consts.default_name,
             description="Name of the new look"
         )
-        instant_apply = BoolProperty(
+        instant_apply: BoolProperty(
             default=True,
             description="Flag indicating if new look should also be applied directly"
                         "(used on import when applying of each look is useless)"
@@ -206,10 +240,10 @@ class Look:
 
             return {'FINISHED'}
 
-    class RemoveActiveLookOperator(bpy.types.Operator):
+    class SCS_TOOLS_OT_RemoveActiveLook(bpy.types.Operator):
         """Remove SCS Look to actual SCS Game Object."""
         bl_label = "Remove Active SCS Look"
-        bl_idname = "object.remove_scs_look"
+        bl_idname = "object.scs_tools_remove_active_look"
         bl_description = "Remove active SCS Look from SCS Game Object"
 
         @classmethod
@@ -251,13 +285,13 @@ class Part:
     Wrapper class for better navigation in file
     """
 
-    class SelectObjectsInPart(bpy.types.Operator, _BaseSelectionOperator):
+    class SCS_TOOLS_OT_DeSelectObjectsWithPart(bpy.types.Operator, _BaseSelectionOperator):
         """Switch select state for objects of given SCS Part."""
         bl_label = "Select/Deselect All Objects In Part"
-        bl_idname = "object.switch_part_selection"
+        bl_idname = "object.scs_tools_de_select_objects_with_part"
         bl_description = "Switch selection for all objects in SCS Part" + _BaseSelectionOperator.bl_base_description
 
-        part_index = IntProperty()
+        part_index: IntProperty()
 
         def select_active_parts(self, objects, active_scs_part, outside_game_objects=False):
 
@@ -268,17 +302,22 @@ class Part:
                     if outside_game_objects:
                         if _object_utils.get_scs_root(obj):
                             continue
+
+                    if not obj.visible_get():  # ignore invisible objects
+                        continue
+
                     if obj.scs_props.scs_part == active_scs_part:
 
                         # set actual select state if it's not set yet
                         if actual_select_state is None:
 
-                            actual_select_state = not obj.select
+                            actual_select_state = not obj.select_get()
+                            # deselect all in case any other object types were selected before
                             bpy.ops.object.select_all(action='DESELECT')
 
-                        obj.select = actual_select_state
+                        _object_utils.select_set(obj, actual_select_state)
                     elif self.select_type not in (self.SHIFT_SELECT, self.CTRL_SELECT):
-                        obj.select = False
+                        _object_utils.select_set(obj, False)
             return
 
         def execute(self, context):
@@ -303,13 +342,13 @@ class Part:
 
             return {'FINISHED'}
 
-    class ViewObjectsInPart(bpy.types.Operator, _BaseViewOperator):
+    class SCS_TOOLS_OT_SwitchObjectsWithPart(bpy.types.Operator, _BaseViewOperator):
         """Switch view state for all objects of given Part."""
         bl_label = "View/Hide Objects In Part"
-        bl_idname = "object.switch_part_visibility"
+        bl_idname = "object.scs_tools_switch_part_visibility"
         bl_description = "Switch view state for all objects in SCS Part" + _BaseViewOperator.bl_base_description
 
-        part_index = IntProperty()
+        part_index: IntProperty()
 
         def view_active_part(self, objects, active_scs_part, outside_game_objects=False):
 
@@ -325,13 +364,13 @@ class Part:
                         # set actual hide state if it's not set yet
                         if actual_hide_state is None:
 
-                            actual_hide_state = not obj.hide
+                            actual_hide_state = not obj.hide_get()
 
-                        obj.hide = actual_hide_state
+                        _object_utils.hide_set(obj, actual_hide_state)
 
                     elif self.view_type == self.VIEWONLY:
 
-                        obj.hide = True
+                        _object_utils.hide_set(obj, True)
 
             return
 
@@ -356,10 +395,10 @@ class Part:
 
             return {'FINISHED'}
 
-    class AddPartOperator(bpy.types.Operator):
+    class SCS_TOOLS_OT_AddPart(bpy.types.Operator):
         """Add SCS Part to actual SCS Game Object."""
         bl_label = "Add SCS Part"
-        bl_idname = "object.add_scs_part"
+        bl_idname = "object.scs_tools_add_part"
         bl_description = "Add new SCS Part to SCS Game Object"
 
         @classmethod
@@ -395,10 +434,10 @@ class Part:
 
             return {'FINISHED'}
 
-    class RemoveActivePartOperator(bpy.types.Operator):
+    class SCS_TOOLS_OT_RemoveActivePart(bpy.types.Operator):
         """Remove SCS Part to actual SCS Game Object."""
         bl_label = "Remove Active SCS Part"
-        bl_idname = "object.remove_scs_part"
+        bl_idname = "object.scs_tools_remove_active_part"
         bl_description = "Remove active SCS Part from SCS Game Object (will be removed if none of the object uses it)"
 
         @classmethod
@@ -454,10 +493,52 @@ class Part:
 
             return {'FINISHED'}
 
-    class CleanPartsOperator(bpy.types.Operator):
+    class SCS_TOOLS_OT_MoveActivePart(bpy.types.Operator):
+        """Move SCS Part in SCS Game Object down or up."""
+        bl_label = "Move Active SCS Part"
+        bl_idname = "object.scs_tools_move_active_part"
+        bl_description = "Move active SCS Part from SCS Game Object up/down for one place"
+
+        move_direction: StringProperty(
+            name="Move Direction",
+            default=_OP_consts.InventoryMoveType.move_down,
+        )
+
+        @classmethod
+        def poll(cls, context):
+            if _object_utils.get_scs_root(context.active_object):
+                return True
+            else:
+                return False
+
+        def execute(self, context):
+            lprint('D Move SCS Part from SCS Game Object up/down for one place...')
+
+            active_object = context.active_object
+            scs_root_object = _object_utils.get_scs_root(active_object)
+            active_scs_part = scs_root_object.scs_props.active_scs_part
+            part_inventory = scs_root_object.scs_object_part_inventory
+
+            if 0 <= active_scs_part < len(part_inventory):
+
+                if self.move_direction == _OP_consts.InventoryMoveType.move_down:
+                    new_active_idx = _inventory.move_down(part_inventory, active_scs_part)
+                elif self.move_direction == _OP_consts.InventoryMoveType.move_up:
+                    new_active_idx = _inventory.move_up(part_inventory, active_scs_part)
+                else:
+                    self.report({'ERROR'}, "Invalid move direction! Aborting part moving!")
+                    return {'CANCELLED'}
+
+                scs_root_object.scs_props.active_scs_part = new_active_idx
+            else:
+                lprint("W No active 'SCS Part' to move!")
+
+            return {'FINISHED'}
+
+    class SCS_TOOLS_OT_CleanUnusedParts(bpy.types.Operator):
         """Removes all unused SCS Parts from SCS Game Object."""
         bl_label = "Clean SCS Parts"
-        bl_idname = "object.clean_scs_parts"
+        bl_idname = "object.scs_tools_clean_unused_parts"
         bl_description = "Removes all unused SCS Parts from SCS Game Object"
 
         @classmethod
@@ -513,10 +594,10 @@ class Part:
 
             return {'FINISHED'}
 
-    class AssignPartOperator(bpy.types.Operator):
+    class SCS_TOOLS_OT_AssignPart(bpy.types.Operator):
         """Assign active SCS Part to selected objects."""
         bl_label = "Assign SCS Part"
-        bl_idname = "object.assign_scs_part"
+        bl_idname = "object.scs_tools_assign_part"
         bl_description = "Assign active SCS Part to selected objects"
 
         @classmethod
@@ -561,10 +642,10 @@ class Part:
 
             return {"FINISHED"}
 
-    class PrintPartsOperator(bpy.types.Operator):
+    class SCS_TOOLS_OT_PrintParts(bpy.types.Operator):
         """Print SCS Parts to actual SCS Game Object."""
         bl_label = "Print SCS Part"
-        bl_idname = "object.print_scs_parts"
+        bl_idname = "object.scs_tools_print_parts"
         bl_description = "Print SCS Parts to actual SCS Game Object"
 
         @classmethod
@@ -586,13 +667,13 @@ class Variant:
     Wrapper class for better navigation in file
     """
 
-    class SelectObjectsInVariant(bpy.types.Operator, _BaseSelectionOperator):
+    class SCS_TOOLS_OT_DeSelectObjectsWithVariant(bpy.types.Operator, _BaseSelectionOperator):
         """Switch selection for all objects in Variant."""
         bl_label = "Select/Deselect All Objects In Variant"
-        bl_idname = "object.switch_variant_selection"
+        bl_idname = "object.scs_tools_de_select_objects_with_variant"
         bl_description = "Switch selection for all objects in SCS Variant" + _BaseSelectionOperator.bl_base_description
 
-        variant_index = IntProperty()
+        variant_index: IntProperty()
 
         def execute(self, context):
             lprint("D " + self.bl_label + "...")
@@ -606,30 +687,35 @@ class Variant:
 
                 children = _object_utils.get_children(scs_root_object)
                 for obj in children:
+
+                    if not obj.visible_get():  # ignore invisible objects
+                        continue
+
                     if obj.scs_props.scs_part in parts:
 
                         # set actual select state if it's not set yet
                         if actual_select_state is None:
 
-                            actual_select_state = not obj.select
+                            actual_select_state = not obj.select_get()
+                            # deselect all in case any object from other variants or outside root were selected
                             bpy.ops.object.select_all(action='DESELECT')
 
-                        obj.select = actual_select_state
+                        _object_utils.select_set(obj, actual_select_state)
                     elif self.select_type not in (self.SHIFT_SELECT, self.CTRL_SELECT):
-                        obj.select = False
+                        _object_utils.select_set(obj, False)
             else:
 
                 lprint("W Given index for 'SCS Variant' is out of bounds: %i", (self.variant_index,))
 
             return {'FINISHED'}
 
-    class ViewObjectsInVariant(bpy.types.Operator, _BaseViewOperator):
+    class SCS_TOOLS_OT_SwitchObjectsWithVariant(bpy.types.Operator, _BaseViewOperator):
         """Switch view state for all objects of given Variant."""
         bl_label = "View/Hide Objects In Variant"
-        bl_idname = "object.switch_variant_visibility"
+        bl_idname = "object.scs_tools_switch_objects_with_variant"
         bl_description = "Switch view state for all objects in SCS Variant" + _BaseViewOperator.bl_base_description
 
-        variant_index = IntProperty()
+        variant_index: IntProperty()
 
         def execute(self, context):
             lprint("D " + self.bl_label + "...")
@@ -647,21 +733,21 @@ class Variant:
                     if obj.scs_props.scs_part in parts:
 
                         if actual_hide_state is None:
-                            actual_hide_state = not obj.hide
+                            actual_hide_state = not obj.hide_get()
 
-                        obj.hide = actual_hide_state
+                        _object_utils.hide_set(obj, actual_hide_state)
                     elif self.view_type == self.VIEWONLY:
-                        obj.hide = True
+                        _object_utils.hide_set(obj, True)
             else:
 
                 lprint("W Given index for 'SCS Variant' is out of bounds: %i", (self.variant_index,))
 
             return {'FINISHED'}
 
-    class AddVariantOperator(bpy.types.Operator):
+    class SCS_TOOLS_OT_AddVariant(bpy.types.Operator):
         """Add SCS Variant to actual SCS Game Object."""
         bl_label = "Add SCS Variant"
-        bl_idname = "object.add_scs_variant"
+        bl_idname = "object.scs_tools_add_variant"
         bl_description = "Add new SCS Variant to SCS Game Object"
 
         @classmethod
@@ -694,10 +780,10 @@ class Variant:
 
             return {'FINISHED'}
 
-    class RemoveActiveVariantOperator(bpy.types.Operator):
+    class SCS_TOOLS_OT_RemoveActiveVariant(bpy.types.Operator):
         """Remove SCS Variant to actual SCS Game Object."""
         bl_label = "Remove Active SCS Variant"
-        bl_idname = "object.remove_scs_variant"
+        bl_idname = "object.scs_tools_remove_active_variant"
         bl_description = "Remove active SCS Variant from SCS Game Object"
 
         @classmethod
@@ -728,10 +814,52 @@ class Variant:
 
             return {'FINISHED'}
 
-    class PrintVariantsOperator(bpy.types.Operator):
+    class SCS_TOOLS_OT_MoveActiveVariant(bpy.types.Operator):
+        """Move SCS Variant in SCS Game Object down or up."""
+        bl_label = "Move Active SCS Variant"
+        bl_idname = "object.scs_tools_move_active_variant"
+        bl_description = "Move active SCS Variant from SCS Game Object up/down for one place"
+
+        move_direction: StringProperty(
+            name="Move Direction",
+            default=_OP_consts.InventoryMoveType.move_down,
+        )
+
+        @classmethod
+        def poll(cls, context):
+            if _object_utils.get_scs_root(context.active_object):
+                return True
+            else:
+                return False
+
+        def execute(self, context):
+            lprint('D Move SCS Variant from SCS Game Object up/down for one place...')
+
+            active_object = context.active_object
+            scs_root_object = _object_utils.get_scs_root(active_object)
+            active_scs_variant = scs_root_object.scs_props.active_scs_variant
+            variant_inventory = scs_root_object.scs_object_variant_inventory
+
+            if 0 <= active_scs_variant < len(variant_inventory):
+
+                if self.move_direction == _OP_consts.InventoryMoveType.move_down:
+                    new_active_idx = _inventory.move_down(variant_inventory, active_scs_variant)
+                elif self.move_direction == _OP_consts.InventoryMoveType.move_up:
+                    new_active_idx = _inventory.move_up(variant_inventory, active_scs_variant)
+                else:
+                    self.report({'ERROR'}, "Invalid move direction! Aborting variant moving!")
+                    return {'CANCELLED'}
+
+                scs_root_object.scs_props.active_scs_variant = new_active_idx
+            else:
+                lprint("W No active 'SCS Variant' to move!")
+
+            return {'FINISHED'}
+
+    class SCS_TOOLS_OT_PrintVariants(bpy.types.Operator):
         """Print SCS Variants to actual SCS Game Object."""
         bl_label = "Print SCS Variant"
-        bl_idname = "object.print_scs_variants"
+        bl_idname = "object.scs_tools_print_variants"
         bl_description = "Print SCS Variants to actual SCS Game Object"
 
         @classmethod
@@ -761,10 +889,10 @@ class ModelObjects:
     Wrapper class for better navigation in file
     """
 
-    class SelectModelObjects(bpy.types.Operator):
+    class SCS_TOOLS_OT_SelectModelObjects(bpy.types.Operator):
         """Selects all model objects."""
         bl_label = "Select Model Objects"
-        bl_idname = "object.select_model_objects"
+        bl_idname = "object.scs_tools_select_model_objects"
         bl_description = "Select model objects"
 
         def execute(self, context):
@@ -772,15 +900,15 @@ class ModelObjects:
             for obj in context.scene.objects:
                 has_shadow, has_glass, has_static_collision, is_other = _material_utils.get_material_info(obj)
                 if is_other:
-                    obj.select = True
+                    _object_utils.select_set(obj, True)
                 else:
-                    obj.select = False
+                    _object_utils.select_set(obj, False)
             return {'FINISHED'}
 
-    class ViewModelObjects(bpy.types.Operator, _BaseViewOperator):
+    class SCS_TOOLS_OT_SwitchModelObjects(bpy.types.Operator, _BaseViewOperator):
         """Switch visibility of model objects."""
-        bl_label = "Switch Visibility of Model Objects"
-        bl_idname = "object.switch_model_objects_visibility"
+        bl_label = "View Model Objects"
+        bl_idname = "object.scs_tools_switch_model_objects"
         bl_description = "View only model objects" + _BaseViewOperator.bl_base_description
 
         def execute(self, context):
@@ -795,20 +923,20 @@ class ModelObjects:
                     # set actual hide state if it's not set yet
                     if actual_hide_state is None:
 
-                        actual_hide_state = not obj.hide
+                        actual_hide_state = not obj.hide_get()
 
-                    obj.hide = actual_hide_state
+                    _object_utils.hide_set(obj, actual_hide_state)
 
                 elif self.view_type == self.VIEWONLY:
 
-                    obj.hide = True
+                    _object_utils.hide_set(obj, True)
 
             return {'FINISHED'}
 
-    class SearchDegeneratedPolys(bpy.types.Operator):
+    class SCS_TOOLS_OT_SearchDegeneratedPolys(bpy.types.Operator):
         """Switch visibility of model objects."""
         bl_label = "SCS Geometry Check"
-        bl_idname = "object.scs_geometry_check"
+        bl_idname = "object.scs_tools_search_degenerated_polys"
         bl_description = "Searches selected objects for degenerated polygons which should be removed before exporting for game!"
 
         EPSILON = 0.001 * 0.01
@@ -885,7 +1013,7 @@ class ModelObjects:
                     e.select = False
 
                 for i, v in enumerate(obj.data.vertices):
-                    v.select = i in degen_verts
+                    v.select = (i in degen_verts)
 
                 if len(degen_verts) > 0:
                     degen_objs.append(obj.name)
@@ -909,10 +1037,10 @@ class ShadowCasters:
     Wrapper class for better navigation in file
     """
 
-    class SelectShadowCasters(bpy.types.Operator):
+    class SCS_TOOLS_OT_SelectShadowCasters(bpy.types.Operator):
         """Selects all shadow casters."""
         bl_label = "Select Shadow Casters"
-        bl_idname = "object.select_shadow_casters"
+        bl_idname = "object.scs_tools_select_shadow_casters"
         bl_description = "Select shadow casters"
 
         def execute(self, context):
@@ -920,15 +1048,15 @@ class ShadowCasters:
             for obj in context.scene.objects:
                 has_shadow, has_glass, has_static_collision, is_other = _material_utils.get_material_info(obj)
                 if has_shadow:
-                    obj.select = True
+                    _object_utils.select_set(obj, True)
                 else:
-                    obj.select = False
+                    _object_utils.select_set(obj, False)
             return {'FINISHED'}
 
-    class ViewShadowCasters(bpy.types.Operator, _BaseViewOperator):
+    class SCS_TOOL_OT_SwitchShadowCasters(bpy.types.Operator, _BaseViewOperator):
         """Switch visibility of shadow casters only."""
-        bl_label = "Switch Visibility of Shadow Casters"
-        bl_idname = "object.switch_shadow_casters_visibility"
+        bl_label = "View Shadow Casters"
+        bl_idname = "object.scs_tools_switch_shadow_casters"
         bl_description = "View only Shadow Casters" + _BaseViewOperator.bl_base_description
 
         def execute(self, context):
@@ -943,24 +1071,24 @@ class ShadowCasters:
                     # set actual hide state if it's not set yet
                     if actual_hide_state is None:
 
-                        actual_hide_state = not obj.hide
+                        actual_hide_state = not obj.hide_get()
 
                     # when hiding ignore flavored shadow casters
                     if actual_hide_state is True and has_shadow and is_other:
                         continue
 
-                    obj.hide = actual_hide_state
+                    _object_utils.hide_set(obj, actual_hide_state)
 
                 elif self.view_type == self.VIEWONLY:
 
-                    obj.hide = True
+                    _object_utils.hide_set(obj, True)
 
             return {'FINISHED'}
 
-    class ShadowCasterObjectsInWireframes(bpy.types.Operator):
+    class SCS_TOOLS_OT_ShowShadowCastersAsWire(bpy.types.Operator):
         """Shadow Caster objects in wireframes."""
         bl_label = "Shadow Caster Objects In Wireframes"
-        bl_idname = "object.shadow_caster_objects_in_wireframes"
+        bl_idname = "object.scs_tools_show_shadow_casters_as_wire"
         bl_description = "Display all shadow caster objects as wireframes"
 
         def execute(self, context):
@@ -968,14 +1096,14 @@ class ShadowCasters:
             for obj in context.scene.objects:
                 has_shadow, has_glass, has_static_collision, is_other = _material_utils.get_material_info(obj)
                 if has_shadow:
-                    obj.draw_type = 'WIRE'
+                    obj.display_type = 'WIRE'
                     obj.show_all_edges = True
             return {'FINISHED'}
 
-    class ShadowCasterObjectsTextured(bpy.types.Operator):
+    class SCS_TOOLS_OT_ShowShadowCasterAsTextured(bpy.types.Operator):
         """Shadow Caster objects textured."""
         bl_label = "Shadow Caster Objects Textured"
-        bl_idname = "object.shadow_caster_objects_textured"
+        bl_idname = "object.scs_tools_show_shadow_casters_as_textured"
         bl_description = "Display all shadow caster objects textured"
 
         def execute(self, context):
@@ -983,7 +1111,7 @@ class ShadowCasters:
             for obj in context.scene.objects:
                 has_shadow, has_glass, has_static_collision, is_other = _material_utils.get_material_info(obj)
                 if has_shadow:
-                    obj.draw_type = 'TEXTURED'
+                    obj.display_type = 'TEXTURED'
             return {'FINISHED'}
 
 
@@ -992,10 +1120,10 @@ class Glass:
     Wrapper class for better navigation in file
     """
 
-    class SelectGlassObjects(bpy.types.Operator):
+    class SCS_TOOLS_OT_SelectGlassObjects(bpy.types.Operator):
         """Selects all glass objects."""
         bl_label = "Select Glass Objects"
-        bl_idname = "object.select_glass_objects"
+        bl_idname = "object.scs_tools_select_glass_objects"
         bl_description = "Select glass objects"
 
         def execute(self, context):
@@ -1003,15 +1131,15 @@ class Glass:
             for obj in context.scene.objects:
                 has_shadow, has_glass, has_static_collision, is_other = _material_utils.get_material_info(obj)
                 if has_glass:
-                    obj.select = True
+                    _object_utils.select_set(obj, True)
                 else:
-                    obj.select = False
+                    _object_utils.select_set(obj, False)
             return {'FINISHED'}
 
-    class ViewGlassObjects(bpy.types.Operator, _BaseViewOperator):
+    class SCS_TOOLS_OT_SwitchGlassObjects(bpy.types.Operator, _BaseViewOperator):
         """Switch visibility of glass objects."""
-        bl_label = "Switch Visibility of Glass Objects"
-        bl_idname = "object.switch_glass_objects_visibility"
+        bl_label = "View Glass Objects"
+        bl_idname = "object.scs_tools_switch_glass_objects"
         bl_description = "View only glass objects" + _BaseViewOperator.bl_base_description
 
         def execute(self, context):
@@ -1026,20 +1154,20 @@ class Glass:
                     # set actual hide state if it's not set yet
                     if actual_hide_state is None:
 
-                        actual_hide_state = not obj.hide
+                        actual_hide_state = not obj.hide_get()
 
-                    obj.hide = actual_hide_state
+                    _object_utils.hide_set(obj, actual_hide_state)
 
                 elif self.view_type == self.VIEWONLY:
 
-                    obj.hide = True
+                    _object_utils.hide_set(obj, True)
 
             return {'FINISHED'}
 
-    class GlassObjectsInWireframes(bpy.types.Operator):
+    class SCS_TOOLS_OT_ShowGlassObjectsAsWire(bpy.types.Operator):
         """Glass objects in wireframes."""
         bl_label = "Glass Objects In Wireframes"
-        bl_idname = "object.glass_objects_in_wireframes"
+        bl_idname = "object.scs_tools_show_glass_objects_as_wire"
         bl_description = "Display all glass objects as wireframes"
 
         def execute(self, context):
@@ -1047,14 +1175,14 @@ class Glass:
             for obj in context.scene.objects:
                 has_shadow, has_glass, has_static_collision, is_other = _material_utils.get_material_info(obj)
                 if has_glass:
-                    obj.draw_type = 'WIRE'
+                    obj.display_type = 'WIRE'
                     obj.show_all_edges = True
             return {'FINISHED'}
 
-    class GlassObjectsTextured(bpy.types.Operator):
+    class SCS_TOOLS_OT_ShowGlassObjectsAsTextured(bpy.types.Operator):
         """Glass objects textured."""
         bl_label = "Glass Objects Textured"
-        bl_idname = "object.glass_objects_textured"
+        bl_idname = "object.scs_tools_show_glass_objects_as_textured"
         bl_description = "Display all glass objects textured"
 
         def execute(self, context):
@@ -1062,7 +1190,7 @@ class Glass:
             for obj in context.scene.objects:
                 has_shadow, has_glass, has_static_collision, is_other = _material_utils.get_material_info(obj)
                 if has_glass:
-                    obj.draw_type = 'TEXTURED'
+                    obj.display_type = 'TEXTURED'
             return {'FINISHED'}
 
 
@@ -1071,26 +1199,26 @@ class Collision:
     Wrapper class for better navigation in file
     """
 
-    class SelectCollisionObjects(bpy.types.Operator):
-        """Selects all glass objects."""
-        bl_label = "Select static collision objects"
-        bl_idname = "object.select_substance_objects"
+    class SCS_TOOLS_OT_SelectStaticCollisionObjects(bpy.types.Operator):
+        """Selects all static collision objects."""
+        bl_label = "Select Static Collision Objects"
+        bl_idname = "object.scs_tools_select_static_collision_objects"
         bl_description = "Select objects with material using physics substance"
 
         def execute(self, context):
-            lprint('D Select Glass Objects...')
+            lprint('D Select Static Collision Objects...')
             for obj in context.scene.objects:
                 has_shadow, has_glass, has_static_collision, is_other = _material_utils.get_material_info(obj)
                 if has_static_collision:
-                    obj.select = True
+                    _object_utils.select_set(obj, True)
                 else:
-                    obj.select = False
+                    _object_utils.select_set(obj, False)
             return {'FINISHED'}
 
-    class ViewCollisionObjects(bpy.types.Operator, _BaseViewOperator):
-        """Switch visibility of glass objects."""
-        bl_label = "Switch Visibility of static collision objects"
-        bl_idname = "object.switch_substance_objects_visibility"
+    class SCS_TOOLS_OT_SwitchStaticCollisionObjects(bpy.types.Operator, _BaseViewOperator):
+        """Switch visibility of static collision objects."""
+        bl_label = "View Static Collision Objects"
+        bl_idname = "object.scs_tools_switch_static_collision_objects"
         bl_description = "View only objects which SCS Part is prefixed with 'coll', marking it as static collision object" + \
                          _BaseViewOperator.bl_base_description
 
@@ -1106,13 +1234,13 @@ class Collision:
                     # set actual hide state if it's not set yet
                     if actual_hide_state is None:
 
-                        actual_hide_state = not obj.hide
+                        actual_hide_state = not obj.hide_get()
 
-                    obj.hide = actual_hide_state
+                    _object_utils.hide_set(obj, actual_hide_state)
 
                 elif self.view_type == self.VIEWONLY:
 
-                    obj.hide = True
+                    _object_utils.hide_set(obj, True)
 
             return {'FINISHED'}
 
@@ -1127,27 +1255,27 @@ class Locators:
         Wrapper class for better navigation in file
         """
 
-        class SelectModelLocators(bpy.types.Operator):
+        class SCS_TOOLS_OT_SelectModelLocators(bpy.types.Operator):
             """Selects all model locators."""
             bl_label = "Select Model Locators"
-            bl_idname = "object.select_model_locators"
+            bl_idname = "object.scs_tools_select_model_locators"
             bl_description = "Select model locators"
 
             def execute(self, context):
                 lprint('D Select Model Locators...')
                 for obj in context.scene.objects:
                     if obj.scs_props.locator_type == 'Model':
-                        obj.select = True
+                        _object_utils.select_set(obj, True)
                     else:
-                        obj.select = False
+                        _object_utils.select_set(obj, False)
                 return {'FINISHED'}
 
-        class SelectLocatorsWithSameHookup(bpy.types.Operator):
+        class SCS_TOOLS_OT_SelectModelLocatorsWithSameHookup(bpy.types.Operator):
             bl_label = "Select Locators With Same Hookup"
-            bl_idname = "object.select_model_locators_with_same_hookup"
+            bl_idname = "object.scs_tools_select_model_locators_with_same_hookup"
             bl_description = "Select all visible model locators with the same hookup value as this one."
 
-            source_object = StringProperty(
+            source_object: StringProperty(
                 default=""
             )
 
@@ -1165,16 +1293,16 @@ class Locators:
 
                 for obj in context.visible_objects:
                     if obj.scs_props.locator_type == 'Model' and obj.scs_props.locator_model_hookup == src_obj.scs_props.locator_model_hookup:
-                        obj.select = True
+                        _object_utils.select_set(obj, True)
                     else:
-                        obj.select = False
+                        _object_utils.select_set(obj, False)
 
                 return {"FINISHED"}
 
-        class ViewModelLocators(bpy.types.Operator, _BaseViewOperator):
+        class SCS_TOOLS_OT_SwitchModelLocators(bpy.types.Operator, _BaseViewOperator):
             """Switch visibility of model locators."""
-            bl_label = "Switch Visibility of Model Locators"
-            bl_idname = "object.switch_model_locators_visibility"
+            bl_label = "View Model Locators"
+            bl_idname = "object.scs_tools_switch_model_locators"
             bl_description = "View only model locators" + _BaseViewOperator.bl_base_description
 
             def execute(self, context):
@@ -1186,9 +1314,9 @@ class Locators:
                                             hide_state=actual_hide_state, view_only=self.view_type == self.VIEWONLY)
                 return {'FINISHED'}
 
-        class FixHookups(bpy.types.Operator):
+        class SCS_TOOLS_OT_FixModelLocatorHookups(bpy.types.Operator):
             bl_label = "Fix SCS Hookup Names on Model Locators"
-            bl_idname = "object.scs_fix_model_locator_hookups"
+            bl_idname = "object.scs_tools_fix_model_locator_hookups"
             bl_description = "Tries to convert existing pure hookup ids to valid hookup name (valid Hookup Library is required)."
             bl_options = {'REGISTER', 'UNDO'}
 
@@ -1237,10 +1365,10 @@ class Locators:
             Wrapper class for better navigation in file
             """
 
-            class SelectPrefabNodeLocators(bpy.types.Operator):
+            class SCS_TOOLS_OT_SelectPrefabNodeLocators(bpy.types.Operator):
                 """Selects all prefab control node locators."""
                 bl_label = "Select Prefab Control Node Locators"
-                bl_idname = "object.select_prefab_nodes"
+                bl_idname = "object.scs_tools_select_prefab_node_locators"
                 bl_description = "Select prefab control node locators"
 
                 def execute(self, context):
@@ -1248,17 +1376,17 @@ class Locators:
                     for obj in context.scene.objects:
                         if obj.scs_props.locator_type == 'Prefab':
                             if obj.scs_props.locator_prefab_type == 'Control Node':
-                                obj.select = True
+                                _object_utils.select_set(obj, True)
                             else:
-                                obj.select = False
+                                _object_utils.select_set(obj, False)
                         else:
-                            obj.select = False
+                            _object_utils.select_set(obj, False)
                     return {'FINISHED'}
 
-            class ViewPrefabNodeLocators(bpy.types.Operator, _BaseViewOperator):
+            class SCS_TOOLS_OT_SwitchPrefabNodeLocators(bpy.types.Operator, _BaseViewOperator):
                 """Switch visibility of prefab control node locators."""
-                bl_label = "Switch Visibility of Prefab Control Node Locators"
-                bl_idname = "object.switch_prefab_nodes_visibility"
+                bl_label = "View Prefab Control Node Locators"
+                bl_idname = "object.scs_tools_switch_prefab_node_locators"
                 bl_description = "View only prefab control node locators" + _BaseViewOperator.bl_base_description
 
                 def execute(self, context):
@@ -1270,14 +1398,14 @@ class Locators:
                                                 hide_state=actual_hide_state, view_only=self.view_type == self.VIEWONLY)
                     return {'FINISHED'}
 
-            class AssignTerrainPoints(bpy.types.Operator):
+            class SCS_TOOLS_OT_AssignTerrainPoints(bpy.types.Operator):
                 bl_label = "Assign Terrain Points"
-                bl_idname = "object.assign_terrain_points"
+                bl_idname = "object.scs_tools_assign_terrain_points"
                 bl_description = str("Assigns terrain point to currently selected prefab Control Node "
                                      "(confirm requested if some vertices from this mesh are already assigned).")
                 bl_options = {'REGISTER', 'UNDO'}
 
-                vg_name = StringProperty()
+                vg_name: StringProperty()
                 """Name of the vertex group for terrain points. It consists of vertex group prefix and node index."""
 
                 @classmethod
@@ -1291,7 +1419,7 @@ class Locators:
 
                     # ensure vertex group for current node
                     if self.vg_name not in active_obj.vertex_groups:
-                        active_obj.vertex_groups.new(self.vg_name)
+                        active_obj.vertex_groups.new(name=self.vg_name)
 
                     vg_instance = active_obj.vertex_groups[self.vg_name]
 
@@ -1331,9 +1459,9 @@ class Locators:
                     else:
                         return wm.invoke_confirm(self, event)  # ask user for overwrite
 
-            class ClearTerrainPointsOperator(bpy.types.Operator):
+            class SCS_TOOLS_OT_ClearTerrainPoints(bpy.types.Operator):
                 bl_label = "Clear All Terrain Points"
-                bl_idname = "object.clear_all_terrain_points"
+                bl_idname = "object.scs_tools_clear_terrain_points"
                 bl_description = "Clears all terrain points for currently selected prefab Control Node"
                 bl_options = {'REGISTER', 'UNDO'}
 
@@ -1353,8 +1481,8 @@ class Locators:
                     lprint("D " + self.bl_label + "...")
 
                     # make sure to abort possible preview operator
-                    if bpy.ops.object.abort_preview_terrain_points.poll():
-                        bpy.ops.object.abort_preview_terrain_points()
+                    if bpy.ops.object.scs_tools_abort_terrain_points_preview.poll():
+                        bpy.ops.object.scs_tools_abort_terrain_points_preview()
 
                     # if user is in assigning terrain points mode then node locator is other object
                     if context.active_object.mode == "EDIT":
@@ -1393,12 +1521,12 @@ class Locators:
 
                     return {'FINISHED'}
 
-            class PreviewTerrainPoints(bpy.types.Operator):
+            class SCS_TOOLS_OT_PreviewTerrainPoints(bpy.types.Operator):
                 bl_label = "Preview Terrain Points"
-                bl_idname = "object.preview_terrain_points"
+                bl_idname = "object.scs_tools_preview_terrain_points"
                 bl_description = "Preview terrain points for currently selected prefab Control Node "
 
-                preview_all = BoolProperty(
+                preview_all: BoolProperty(
                     name="PreviewAll",
                     description="If False only terrain points from visible meshes are shown. Otherwise all terrain points are shown.",
                     default=False
@@ -1426,7 +1554,7 @@ class Locators:
                     for sibling in _object_utils.get_siblings(node_loc_obj):
 
                         # ignore none mesh siblings or hidden siblings if previewing only visible
-                        if sibling.type != "MESH" or (not self.preview_all and (sibling.hide or sibling not in context.visible_objects)):
+                        if sibling.type != "MESH" or (not self.preview_all and (sibling.hide_get() or sibling not in context.visible_objects)):
                             continue
 
                         for vertex_group in sibling.vertex_groups:
@@ -1458,9 +1586,10 @@ class Locators:
                                             co = v.co
 
                                         # finally add terrain point if it has correct vertex group
-                                        _terrain_points_storage.add(sibling.matrix_world * co, not sibling.hide)
+                                        _terrain_points_storage.add(sibling.matrix_world @ co, not sibling.hide_get())
 
-                    # force view refresh
+                    # tag active object updated & force view refresh
+                    context.active_object.update_tag(refresh={'OBJECT'})
                     _view3d_utils.tag_redraw_all_view3d_and_props()
 
                     # cache active object matrix for possible terrain points desync check
@@ -1485,7 +1614,7 @@ class Locators:
 
                 def modal(self, context, event):
 
-                    is_aborted = Locators.Prefab.ControlNodes.PreviewTerrainPoints.abort
+                    is_aborted = Locators.Prefab.ControlNodes.SCS_TOOLS_OT_PreviewTerrainPoints.abort
                     active_object_changed = self.__active_object != context.active_object
                     is_object_mode_changed = self.__active_object_mode != context.active_object.mode
                     is_transformed = self.__active_object_matrix and self.__active_object_matrix != str(context.active_object.matrix_world)
@@ -1519,13 +1648,13 @@ class Locators:
 
                     # set event timer which will take care of aborting
                     wm = context.window_manager
-                    self.__timer = wm.event_timer_add(0.25, context.window)
+                    self.__timer = wm.event_timer_add(time_step=0.25, window=context.window)
                     self.__active_object = context.active_object
                     self.__active_object_mode = context.active_object.mode
                     self.__active_object_matrix = str(context.active_object.matrix_world)
 
-                    Locators.Prefab.ControlNodes.PreviewTerrainPoints.is_active = True
-                    Locators.Prefab.ControlNodes.PreviewTerrainPoints.abort = False
+                    Locators.Prefab.ControlNodes.SCS_TOOLS_OT_PreviewTerrainPoints.is_active = True
+                    Locators.Prefab.ControlNodes.SCS_TOOLS_OT_PreviewTerrainPoints.abort = False
 
                     # use modal execution to abort operator if it gets aborted somehow
                     wm.modal_handler_add(self)
@@ -1533,8 +1662,11 @@ class Locators:
 
                 def cancel(self, context):
 
-                    # clear terrain points storage and force redraw
+                    # clear terrain points storage
                     _terrain_points_storage.clear()
+
+                    # tag active object updated & force view refresh
+                    self.__active_object.update_tag(refresh={'OBJECT'})
                     _view3d_utils.tag_redraw_all_view3d_and_props()
 
                     wm = context.window_manager
@@ -1544,19 +1676,19 @@ class Locators:
                     self.__active_object = None
                     self.__active_object_matrix = None
 
-                    Locators.Prefab.ControlNodes.PreviewTerrainPoints.is_active = False
+                    Locators.Prefab.ControlNodes.SCS_TOOLS_OT_PreviewTerrainPoints.is_active = False
 
-            class AbortPreviewTerrainPointsOperator(bpy.types.Operator):
+            class SCS_TOOLS_OT_AbortTerrainPointsPreview(bpy.types.Operator):
                 bl_label = "Abort Preview Terrain Points"
-                bl_idname = "object.abort_preview_terrain_points"
+                bl_idname = "object.scs_tools_abort_terrain_points_preview"
                 bl_description = "Abort preview of terrain points for currently selected prefab Control Node "
 
                 @classmethod
                 def poll(cls, context):
-                    return Locators.Prefab.ControlNodes.PreviewTerrainPoints.is_active
+                    return Locators.Prefab.ControlNodes.SCS_TOOLS_OT_PreviewTerrainPoints.is_active
 
                 def execute(self, context):
-                    Locators.Prefab.ControlNodes.PreviewTerrainPoints.abort = True
+                    Locators.Prefab.ControlNodes.SCS_TOOLS_OT_PreviewTerrainPoints.abort = True
                     return {'FINISHED'}
 
         class Signs:
@@ -1564,10 +1696,10 @@ class Locators:
             Wrapper class for better navigation in file
             """
 
-            class SelectPrefabSignLocators(bpy.types.Operator):
+            class SCS_TOOLS_OT_SelectPrefabSignLocators(bpy.types.Operator):
                 """Selects all prefab sign locators."""
                 bl_label = "Select Prefab Sign Locators"
-                bl_idname = "object.select_prefab_signs"
+                bl_idname = "object.scs_tools_select_prefab_sign_locators"
                 bl_description = "Select prefab sign locators"
 
                 def execute(self, context):
@@ -1575,17 +1707,17 @@ class Locators:
                     for obj in context.scene.objects:
                         if obj.scs_props.locator_type == 'Prefab':
                             if obj.scs_props.locator_prefab_type == 'Sign':
-                                obj.select = True
+                                _object_utils.select_set(obj, True)
                             else:
-                                obj.select = False
+                                _object_utils.select_set(obj, False)
                         else:
-                            obj.select = False
+                            _object_utils.select_set(obj, False)
                     return {'FINISHED'}
 
-            class ViewPrefabSignLocators(bpy.types.Operator, _BaseViewOperator):
+            class SCS_TOOLS_OT_SwitchPrefabSignLocators(bpy.types.Operator, _BaseViewOperator):
                 """Switch visibility of prefab sign locators."""
-                bl_label = "Switch Visibility of Prefab Sign Locators"
-                bl_idname = "object.switch_prefab_signs_visibility"
+                bl_label = "View Prefab Sign Locators"
+                bl_idname = "object.scs_tools_switch_prefab_sign_locators"
                 bl_description = "View only prefab sign locators" + _BaseViewOperator.bl_base_description
 
                 def execute(self, context):
@@ -1602,10 +1734,10 @@ class Locators:
             Wrapper class for better navigation in file
             """
 
-            class SelectPrefabSpawnLocators(bpy.types.Operator):
+            class SCS_TOOLS_OT_SelectPrefabSpawnLocators(bpy.types.Operator):
                 """Selects all prefab spawn locators."""
                 bl_label = "Select Prefab Spawn Locators"
-                bl_idname = "object.select_prefab_spawns"
+                bl_idname = "object.scs_tools_select_prefab_spawn_locators"
                 bl_description = "Select prefab spawn locators"
 
                 def execute(self, context):
@@ -1613,17 +1745,17 @@ class Locators:
                     for obj in context.scene.objects:
                         if obj.scs_props.locator_type == 'Prefab':
                             if obj.scs_props.locator_prefab_type == 'Spawn Point':
-                                obj.select = True
+                                _object_utils.select_set(obj, True)
                             else:
-                                obj.select = False
+                                _object_utils.select_set(obj, False)
                         else:
-                            obj.select = False
+                            _object_utils.select_set(obj, False)
                     return {'FINISHED'}
 
-            class ViewPrefabSpawnLocators(bpy.types.Operator, _BaseViewOperator):
+            class SCS_TOOLS_OT_SwitchPrefabSpawnLocators(bpy.types.Operator, _BaseViewOperator):
                 """Switch visiblity of prefab spawn locators."""
-                bl_label = "Switch Visibility of Prefab Spawn Locators"
-                bl_idname = "object.switch_prefab_spawns_visibility"
+                bl_label = "View Prefab Spawn Locators"
+                bl_idname = "object.scs_tools_switch_prefab_spawn_locators"
                 bl_description = "View only prefab spawn locators" + _BaseViewOperator.bl_base_description
 
                 def execute(self, context):
@@ -1640,10 +1772,10 @@ class Locators:
             Wrapper class for better navigation in file
             """
 
-            class SelectPrefabTrafficLocators(bpy.types.Operator):
+            class SCS_TOOLS_OT_SelectPrefabTrafficLocators(bpy.types.Operator):
                 """Selects all prefab traffic locators."""
                 bl_label = "Select Prefab Traffic Locators"
-                bl_idname = "object.select_prefab_traffics"
+                bl_idname = "object.scs_tools_select_prefab_traffic_locators"
                 bl_description = "Select prefab traffic locators"
 
                 def execute(self, context):
@@ -1651,17 +1783,17 @@ class Locators:
                     for obj in context.scene.objects:
                         if obj.scs_props.locator_type == 'Prefab':
                             if obj.scs_props.locator_prefab_type == 'Traffic Semaphore':
-                                obj.select = True
+                                _object_utils.select_set(obj, True)
                             else:
-                                obj.select = False
+                                _object_utils.select_set(obj, False)
                         else:
-                            obj.select = False
+                            _object_utils.select_set(obj, False)
                     return {'FINISHED'}
 
-            class ViewPrefabTrafficLocators(bpy.types.Operator, _BaseViewOperator):
+            class SCS_TOOLS_OT_SwitchPrefabTrafficLocators(bpy.types.Operator, _BaseViewOperator):
                 """Switch visibility of prefab traffic locators."""
-                bl_label = "Switch Visibility of Prefab Traffic Locators"
-                bl_idname = "object.switch_prefab_traffics_visibility"
+                bl_label = "View Prefab Traffic Locators"
+                bl_idname = "object.scs_tools_switch_prefab_traffic_locators"
                 bl_description = "View only prefab traffic locators" + _BaseViewOperator.bl_base_description
 
                 def execute(self, context):
@@ -1678,10 +1810,10 @@ class Locators:
             Wrapper class for better navigation in file
             """
 
-            class SelectPrefabNavigationLocators(bpy.types.Operator):
+            class SCS_TOOLS_OT_SelectPrefabNavLocators(bpy.types.Operator):
                 """Selects all prefab navigation locators."""
                 bl_label = "Select Prefab Navigation Locators"
-                bl_idname = "object.select_prefab_navigations"
+                bl_idname = "object.scs_tools_select_prefab_nav_locators"
                 bl_description = "Select prefab navigation locators"
 
                 def execute(self, context):
@@ -1689,17 +1821,17 @@ class Locators:
                     for obj in context.scene.objects:
                         if obj.scs_props.locator_type == 'Prefab':
                             if obj.scs_props.locator_prefab_type == 'Navigation Point':
-                                obj.select = True
+                                _object_utils.select_set(obj, True)
                             else:
-                                obj.select = False
+                                _object_utils.select_set(obj, False)
                         else:
-                            obj.select = False
+                            _object_utils.select_set(obj, False)
                     return {'FINISHED'}
 
-            class ViewPrefabNavigationLocators(bpy.types.Operator, _BaseViewOperator):
+            class SCS_TOOLS_OT_SwitchPrefabNavLocators(bpy.types.Operator, _BaseViewOperator):
                 """Switch visibility of prefab navigation locators."""
-                bl_label = "Switch Visibility of Prefab Navigation Locators"
-                bl_idname = "object.switch_prefab_navigations_visibility"
+                bl_label = "View Prefab Navigation Locators"
+                bl_idname = "object.scs_tools_switch_prefab_nav_locators"
                 bl_description = "View only prefab navigation locators" + _BaseViewOperator.bl_base_description
 
                 def execute(self, context):
@@ -1716,10 +1848,10 @@ class Locators:
             Wrapper class for better navigation in file
             """
 
-            class SelectPrefabMapLocators(bpy.types.Operator):
+            class SCS_TOOLS_OT_SelectPrefabMapLocators(bpy.types.Operator):
                 """Selects all prefab map locators."""
                 bl_label = "Select Prefab Map Locators"
-                bl_idname = "object.select_prefab_maps"
+                bl_idname = "object.scs_tools_select_prefab_map_locators"
                 bl_description = "Select prefab map locators"
 
                 def execute(self, context):
@@ -1727,17 +1859,17 @@ class Locators:
                     for obj in context.scene.objects:
                         if obj.scs_props.locator_type == 'Prefab':
                             if obj.scs_props.locator_prefab_type == 'Map Point':
-                                obj.select = True
+                                _object_utils.select_set(obj, True)
                             else:
-                                obj.select = False
+                                _object_utils.select_set(obj, False)
                         else:
-                            obj.select = False
+                            _object_utils.select_set(obj, False)
                     return {'FINISHED'}
 
-            class ViewPrefabMapLocators(bpy.types.Operator, _BaseViewOperator):
+            class SCS_TOOLS_OT_SwitchPrefabMapLocators(bpy.types.Operator, _BaseViewOperator):
                 """Switch visibility of prefab map locators."""
-                bl_label = "Switch Visibility of Prefab Map Locators"
-                bl_idname = "object.switch_prefab_maps_visibility"
+                bl_label = "View Prefab Map Locators"
+                bl_idname = "object.scs_tools_switch_prefab_map_locators"
                 bl_description = "View only prefab map locators" + _BaseViewOperator.bl_base_description
 
                 def execute(self, context):
@@ -1754,10 +1886,10 @@ class Locators:
             Wrapper class for better navigation in file
             """
 
-            class SelectPrefabTriggerLocators(bpy.types.Operator):
+            class SCS_TOOLS_OT_SelectPrefabTriggerLocators(bpy.types.Operator):
                 """Selects all prefab trigger locators."""
                 bl_label = "Select Prefab Trigger Locators"
-                bl_idname = "object.select_prefab_triggers"
+                bl_idname = "object.scs_tools_select_prefab_trigger_locators"
                 bl_description = "Select prefab trigger locators"
 
                 def execute(self, context):
@@ -1765,17 +1897,17 @@ class Locators:
                     for obj in context.scene.objects:
                         if obj.scs_props.locator_type == 'Prefab':
                             if obj.scs_props.locator_prefab_type == 'Trigger Point':
-                                obj.select = True
+                                _object_utils.select_set(obj, True)
                             else:
-                                obj.select = False
+                                _object_utils.select_set(obj, False)
                         else:
-                            obj.select = False
+                            _object_utils.select_set(obj, False)
                     return {'FINISHED'}
 
-            class ViewPrefabTriggerLocators(bpy.types.Operator, _BaseViewOperator):
+            class SCS_TOOLS_OT_SwitchPrefabTriggerLocators(bpy.types.Operator, _BaseViewOperator):
                 """Switch visibility of prefab trigger locators."""
-                bl_label = "Switch Visibility of Prefab Trigger Locators"
-                bl_idname = "object.switch_prefab_triggers_visibility"
+                bl_label = "View Prefab Trigger Locators"
+                bl_idname = "object.scs_tools_switch_prefab_trigger_locators"
                 bl_description = "View only prefab trigger locators" + _BaseViewOperator.bl_base_description
 
                 def execute(self, context):
@@ -1787,9 +1919,9 @@ class Locators:
                                                 hide_state=actual_hide_state, view_only=self.view_type == self.VIEWONLY)
                     return {'FINISHED'}
 
-        class ConnectPrefabLocators(bpy.types.Operator):
+        class SCS_TOOLS_OT_ConnectPrefabLocators(bpy.types.Operator):
             bl_label = "Connect Prefab Locators"
-            bl_idname = "object.connect_prefab_locators"
+            bl_idname = "object.scs_tools_connect_prefab_locators"
             bl_description = "To connect prefab locators two of them must be selected and they have to be same type"
             bl_options = {'REGISTER', 'UNDO'}
 
@@ -1807,7 +1939,9 @@ class Locators:
                         self.report({'ERROR'}, "Selected objects are not correct prefab locators or they are not the same type.")
                         return {'FINISHED'}
 
-                    if _connection_group_wrapper.create_connection(obj0, obj1):
+                    if _connections_wrapper.create_connection(obj0, obj1):
+                        obj0.update_tag(refresh={'OBJECT'})
+                        obj1.update_tag(refresh={'OBJECT'})
                         _view3d_utils.tag_redraw_all_view3d()
                     else:
                         msg = str("Failed, because of one of following reasons:\n"
@@ -1822,44 +1956,46 @@ class Locators:
 
                 return {'FINISHED'}
 
-        class DisconnectPrefabLocators(bpy.types.Operator):
+        class SCS_TOOLS_OT_DisconnectPrefabLocators(bpy.types.Operator):
             bl_label = "Disconnect Prefab Locators"
-            bl_idname = "object.disconnect_prefab_locators"
+            bl_idname = "object.scs_tools_disconnect_prefab_locators"
             bl_description = "To disconnect navigation points two connected prefab locators must be selected"
             bl_options = {'REGISTER', 'UNDO'}
 
             def execute(self, context):
 
                 if len(context.selected_objects) == 2:
-                    obj0_name = context.selected_objects[0].name
-                    obj1_name = context.selected_objects[1].name
+                    obj0 = context.selected_objects[0]
+                    obj1 = context.selected_objects[1]
 
-                    if _connection_group_wrapper.delete_connection(obj0_name, obj1_name):
+                    if _connections_wrapper.delete_connection(obj0.name, obj1.name):
+                        obj0.update_tag(refresh={'OBJECT'})
+                        obj1.update_tag(refresh={'OBJECT'})
                         _view3d_utils.tag_redraw_all_view3d()
                     else:
                         self.report({'ERROR'}, "Connection between selected objects doesn't exists!")
 
                 return {'FINISHED'}
 
-        class SelectPrefabLocators(bpy.types.Operator):
+        class SCS_TOOLS_OT_SelectPrefabLocators(bpy.types.Operator):
             """Selects all prefab locators."""
             bl_label = "Select Prefab Locators"
-            bl_idname = "object.select_prefab_locators"
+            bl_idname = "object.scs_tools_select_prefab_locators"
             bl_description = "Select prefab locators"
 
             def execute(self, context):
                 lprint('D Select Prefab Locators...')
                 for obj in context.scene.objects:
                     if obj.scs_props.locator_type == 'Prefab':
-                        obj.select = True
+                        _object_utils.select_set(obj, True)
                     else:
-                        obj.select = False
+                        _object_utils.select_set(obj, False)
                 return {'FINISHED'}
 
-        class ViewPrefabLocators(bpy.types.Operator, _BaseViewOperator):
+        class SCS_TOOLS_OT_SwitchPrefabLocators(bpy.types.Operator, _BaseViewOperator):
             """Switch visibility of prefab locators."""
-            bl_label = "Switch Visibility of Prefab Locators"
-            bl_idname = "object.switch_prefab_locators_visibility"
+            bl_label = "View Prefab Locators"
+            bl_idname = "object.scs_tools_switch_prefab_locators"
             bl_description = "View only prefab locators" + _BaseViewOperator.bl_base_description
 
             def execute(self, context):
@@ -1876,25 +2012,25 @@ class Locators:
         Wrapper class for better navigation in file
         """
 
-        class SelectCollisionLocators(bpy.types.Operator):
+        class SCS_TOOLS_OT_SelectCollisionLocators(bpy.types.Operator):
             """Selects all collision locators."""
             bl_label = "Select Collision Locators"
-            bl_idname = "object.select_collision_locators"
+            bl_idname = "object.scs_tools_select_collision_locators"
             bl_description = "Select collision locators"
 
             def execute(self, context):
                 lprint('D Select Collision Locators...')
                 for obj in context.scene.objects:
                     if obj.scs_props.locator_type == 'Collision':
-                        obj.select = True
+                        _object_utils.select_set(obj, True)
                     else:
-                        obj.select = False
+                        _object_utils.select_set(obj, False)
                 return {'FINISHED'}
 
-        class ViewCollisionLocators(bpy.types.Operator, _BaseViewOperator):
+        class SCS_TOOLS_OT_SwitchCollisionLocators(bpy.types.Operator, _BaseViewOperator):
             """Switch visibility of collision locators."""
-            bl_label = "Switch Visibility of Collision Locators"
-            bl_idname = "object.switch_collision_locators_visibility"
+            bl_label = "View Collision Locators"
+            bl_idname = "object.scs_tools_switch_collision_locators"
             bl_description = "View only collision locators" + _BaseViewOperator.bl_base_description
 
             def execute(self, context):
@@ -1906,10 +2042,10 @@ class Locators:
                                             hide_state=actual_hide_state, view_only=self.view_type == self.VIEWONLY)
                 return {'FINISHED'}
 
-        class AllCollisionLocatorsWire(bpy.types.Operator):
+        class SCS_TOOLS_OT_EnableCollisionLocatorsWire(bpy.types.Operator):
             """All Collision Locators Wireframes ON."""
             bl_label = "All Collision Locators Wireframes ON"
-            bl_idname = "object.all_collision_locators_wires"
+            bl_idname = "object.scs_tools_enable_collision_locators_wire"
             bl_description = "Turn ON wireframes draw in all collision locators"
 
             def execute(self, context):
@@ -1918,12 +2054,16 @@ class Locators:
                     if obj.type == 'EMPTY':
                         if obj.scs_props.locator_type == 'Collision':
                             obj.scs_props.locator_collider_wires = True
+                            obj.update_tag(refresh={'OBJECT'})
+
+                # force view refresh
+                _view3d_utils.tag_redraw_all_view3d()
                 return {'FINISHED'}
 
-        class NoCollisionLocatorsWire(bpy.types.Operator):
+        class SCS_TOOLS_OT_DisableCollisionLocatorsWire(bpy.types.Operator):
             """All Collision Locators Wireframes OFF."""
             bl_label = "All Collision Locators Wireframes OFF"
-            bl_idname = "object.no_collision_locators_wires"
+            bl_idname = "object.scs_tools_disable_collision_locators_wire"
             bl_description = "Turn OFF wireframes draw in all collision locators"
 
             def execute(self, context):
@@ -1932,12 +2072,16 @@ class Locators:
                     if obj.type == 'EMPTY':
                         if obj.scs_props.locator_type == 'Collision':
                             obj.scs_props.locator_collider_wires = False
+                            obj.update_tag(refresh={'OBJECT'})
+
+                # force view refresh
+                _view3d_utils.tag_redraw_all_view3d()
                 return {'FINISHED'}
 
-        class AllCollisionLocatorsFaces(bpy.types.Operator):
+        class SCS_TOOLS_OT_EnableCollisionLocatorsFaces(bpy.types.Operator):
             """All Collision Locators Faces ON."""
             bl_label = "All Collision Locators Faces ON"
-            bl_idname = "object.all_collision_locators_faces"
+            bl_idname = "object.scs_tools_enable_collision_locators_faces"
             bl_description = "Turn ON faces draw in all collision locators"
 
             def execute(self, context):
@@ -1946,12 +2090,16 @@ class Locators:
                     if obj.type == 'EMPTY':
                         if obj.scs_props.locator_type == 'Collision':
                             obj.scs_props.locator_collider_faces = True
+                            obj.update_tag(refresh={'OBJECT'})
+
+                # force view refresh
+                _view3d_utils.tag_redraw_all_view3d()
                 return {'FINISHED'}
 
-        class NoCollisionLocatorsFaces(bpy.types.Operator):
+        class SCS_TOOLS_OT_DisableCollisionLocatorsFaces(bpy.types.Operator):
             """All Collision Locators Faces OFF."""
             bl_label = "All Collision Locators Faces OFF"
-            bl_idname = "object.no_collision_locators_faces"
+            bl_idname = "object.scs_tools_disable_collision_locators_faces"
             bl_description = "Turn OFF faces draw in all collision locators"
 
             def execute(self, context):
@@ -1960,6 +2108,10 @@ class Locators:
                     if obj.type == 'EMPTY':
                         if obj.scs_props.locator_type == 'Collision':
                             obj.scs_props.locator_collider_faces = False
+                            obj.update_tag(refresh={'OBJECT'})
+
+                # force view refresh
+                _view3d_utils.tag_redraw_all_view3d()
                 return {'FINISHED'}
 
     class Commons:
@@ -1967,25 +2119,25 @@ class Locators:
         Wrapper class for better navigation in file
         """
 
-        class SelectAllLocators(bpy.types.Operator):
+        class SCS_TOOLS_OT_SelectAllLocators(bpy.types.Operator):
             """Selects all locators."""
             bl_label = "Select All Locators"
-            bl_idname = "object.select_all_locators"
+            bl_idname = "object.scs_tools_select_all_locators"
             bl_description = "Select all locators"
 
             def execute(self, context):
                 lprint('D Select All Locators...')
                 for obj in context.scene.objects:
                     if obj.scs_props.locator_type != 'None':
-                        obj.select = True
+                        _object_utils.select_set(obj, True)
                     else:
-                        obj.select = False
+                        _object_utils.select_set(obj, False)
                 return {'FINISHED'}
 
-        class ViewAllLocators(bpy.types.Operator, _BaseViewOperator):
+        class SCS_TOOLS_OT_SwitchAllLocators(bpy.types.Operator, _BaseViewOperator):
             """Switch visibility all locators."""
-            bl_label = "Switch Visibility of All Locators"
-            bl_idname = "object.switch_all_locators_visibility"
+            bl_label = "View All Locators"
+            bl_idname = "object.scs_tools_switch_all_locators"
             bl_description = "View only all locators" + _BaseViewOperator.bl_base_description
 
             def execute(self, context):
@@ -1999,30 +2151,30 @@ class Locators:
                         # set actual hide state if it's not set yet
                         if actual_hide_state is None:
 
-                            actual_hide_state = not obj.hide
+                            actual_hide_state = not obj.hide_get()
 
-                        obj.hide = actual_hide_state
+                        _object_utils.hide_set(obj, actual_hide_state)
 
                     elif self.view_type == self.VIEWONLY:
 
-                        obj.hide = True
+                        _object_utils.hide_set(obj, True)
 
                 return {'FINISHED'}
 
-        class PreviewModelPath(bpy.types.Operator):
+        class SCS_TOOLS_OT_SelectPreviewModelPath(bpy.types.Operator):
             """Operator for setting a relative path to Preview model file."""
             bl_label = "Select Preview Model (*.pim)"
-            bl_idname = "object.select_preview_model_path"
+            bl_idname = "object.scs_tools_select_preview_model_path"
             bl_description = "Open a file browser"
             bl_options = {'REGISTER', 'UNDO'}
 
-            filepath = StringProperty(
+            filepath: StringProperty(
                 name="Preview Model File Path",
                 description="Relative path to a Preview model file",
                 # maxlen=1024,
                 subtype='FILE_PATH',
             )
-            filter_glob = StringProperty(default="*.pim", options={'HIDDEN'})
+            filter_glob: StringProperty(default="*.pim", options={'HIDDEN'})
 
             def execute(self, context):
                 """Set Traffic Semaphore Profile directory paths."""
@@ -2045,52 +2197,134 @@ class SCSRoot:
     Wrapper class for better navigation in file
     """
 
-    class AddSCSRootObjectDialogOperator(bpy.types.Operator):
-        """Makes a dialog window allowing specifying a new Part name and adds it into Part list."""
-        bl_idname = "object.add_scs_root_object_dialog_operator"
-        bl_label = "Add SCS Root Dialog"
-        bl_description = "Create dialog for adding new scs root (shouldn't be executed by user)"
-        bl_options = {"INTERNAL"}
-
-        scs_root_object_string = StringProperty(name="Name for a new 'SCS Root Object':")
-
-        def execute(self, context):
-            context.active_object.name = _name_utils.remove_diacritic(self.scs_root_object_string)
-            return {'FINISHED'}
-
-        def invoke(self, context, event):
-            self.scs_root_object_string = context.active_object.name
-            return context.window_manager.invoke_props_dialog(self)
-
-    class CreateSCSRootObject(bpy.types.Operator):
+    class SCS_TOOLS_OT_CreateSCSRoot(bpy.types.Operator):
         """Create New SCS Root Object."""
         bl_label = "Add New SCS Root Object"
-        bl_idname = "object.create_scs_root_object"
+        bl_idname = "object.scs_tools_create_scs_root"
         bl_description = "Create a new 'SCS Root Object' with initial setup. If any objects are selected," \
                          "they automatically become a part of the new 'SCS Game Object'."
         bl_options = {'REGISTER', 'UNDO'}
 
+        use_dialog: BoolProperty(name="Use Dialog", default=False)
+        scs_root_object_string: StringProperty(name="Name", default="game_object")
+
+        def draw(self, context):
+            layout = self.layout
+            layout.prop(self, "scs_root_object_string")
+
         def execute(self, context):
             lprint('D Create New SCS Root Object...')
-            _object_utils.make_scs_root_object(context, dialog=False)
+
+            # 1. save selected objects for re-parenting
+            objs_to_reparent = set(context.selected_objects)
+
+            # 2. smart objects deselect, un-parent and keep transformations, so objects stays on same place when re-parenting to new root
+            if context.selected_objects:
+
+                # make sure we have active object
+                context.view_layer.objects.active = context.selected_objects[0]
+
+                # collect objects to deselect if it's a child of any selected parent to maintain multilevel inheritance on re-parent
+                objs_to_deselect = set()
+                for obj in context.selected_objects:
+                    if not obj.parent:
+                        continue
+
+                    # search for any selected parent, add it to deselect list and break if found
+                    parent = obj.parent
+                    while parent:
+                        if parent.select_get():
+                            objs_to_deselect.add(obj)
+                            break
+
+                        parent = parent.parent
+
+                for obj in objs_to_deselect:
+                    obj.select_set(False)
+
+                # now collect parents that soon will be ex-parents
+                ex_parents = set()
+                for obj in context.selected_objects:
+                    if obj.parent:
+                        ex_parents.add(obj.parent)
+
+                # un-parent
+                bpy.ops.object.parent_clear(type='CLEAR_KEEP_TRANSFORM')
+
+                # fix ex parents
+                for obj in ex_parents:
+                    obj.scs_cached_num_children = len(obj.children)
+
+                    ex_parent_scs_root = _object_utils.get_scs_root(obj)
+                    if ex_parent_scs_root:
+                        _looks.clean_unused(ex_parent_scs_root)
+
+            # 3. add scs root empty object, set it's properties and fix scene objects count to avoid callback of new object
+            name = _name_utils.get_unique(self.scs_root_object_string, bpy.data.objects)
+            new_scs_root = bpy.data.objects.new(name, None)
+            new_scs_root.empty_display_size = 5.0
+            new_scs_root.empty_display_type = "ARROWS"
+            new_scs_root.show_name = True
+            new_scs_root.location = context.scene.cursor.location
+
+            new_scs_root.scs_props.object_identity = new_scs_root.name
+            new_scs_root.scs_props.scs_root_object_export_enabled = True
+            new_scs_root.scs_props.empty_object_type = 'SCS_Root'
+
+            context.view_layer.active_layer_collection.collection.objects.link(new_scs_root)
+            context.view_layer.objects.active = new_scs_root
+            new_scs_root.select_set(True)
+
+            context.scene.scs_cached_num_objects = len(context.scene.objects)
+
+            # 4. re-parent objects to scs root object
+            part_inventory = new_scs_root.scs_object_part_inventory
+            if objs_to_reparent:
+
+                new_scs_root_mats = []
+                for obj in objs_to_reparent:
+                    obj_has_old_parent = obj.parent and obj.parent not in objs_to_reparent
+                    obj_needs_new_parent = obj_has_old_parent or not obj.parent
+
+                    # select and avoid parent loop check callback with set parent identity and new children number
+                    if obj_needs_new_parent:
+                        obj.select_set(True)
+                        obj.scs_props.parent_identity = new_scs_root.name
+                        obj.scs_cached_num_children = len(obj.children)
+
+                    # collect new materials from all objects which will belong to new scs root
+                    for slot in obj.material_slots:
+                        if slot.material and slot.material not in new_scs_root_mats:
+                            new_scs_root_mats.append(slot.material)
+
+                _looks.add_materials(new_scs_root, new_scs_root_mats)
+
+                bpy.ops.object.parent_set(type='OBJECT', keep_transform=False)
+                bpy.ops.object.select_all(action='DESELECT')
+                new_scs_root.select_set(True)
+
+                # fix children count to prevent persistent to hook up
+                new_scs_root.scs_cached_num_children = len(new_scs_root.children)
+
+                # fix (recollect) parts on new scs root
+                for part_name in _object_utils.collect_parts_on_root(new_scs_root):
+                    _inventory.add_item(part_inventory, part_name)
+
+            # 5. if no part from re-parenting make default one, as scs root can't exists without part
+            if len(part_inventory) == 0:
+                _inventory.add_item(part_inventory, _PART_consts.default_name)
+
             return {'FINISHED'}
 
-    class CreateSCSRootObjectDialog(bpy.types.Operator):
-        """Create New SCS Root Object."""
-        bl_label = "Add New SCS Root Object"
-        bl_idname = "object.create_scs_root_object_dialog"
-        bl_description = "Create a new 'SCS Root Object' with initial setup.\nIf any objects are selected," \
-                         "they automatically become a part of the new 'SCS Game Object'."
-        bl_options = {'REGISTER', 'UNDO'}
+        def invoke(self, context, event):
+            if self.use_dialog:
+                return context.window_manager.invoke_props_dialog(self)
+            else:
+                return self.execute(context)
 
-        def execute(self, context):
-            lprint('D Create New SCS Root Object with Name dialog...')
-            _object_utils.make_scs_root_object(context, dialog=True)
-            return {'FINISHED'}
-
-    class HideObjects(bpy.types.Operator):
+    class SCS_TOOLS_OT_HideObjectsWithinSCSRoot(bpy.types.Operator):
         bl_label = "Hide objects within current SCS Game Object"
-        bl_idname = "object.hide_objects_within_root"
+        bl_idname = "object.scs_tools_hide_objects_within_scs_root"
         bl_description = "Hide all the objects in active layers within current SCS Game Object"
 
         def execute(self, context):
@@ -2101,14 +2335,14 @@ class SCSRoot:
             if scs_root_object:
                 for obj in _object_utils.get_children(scs_root_object):
                     if obj.type in ('EMPTY', 'MESH') and obj.scs_props.empty_object_type != 'SCS_Root':
-                        obj.hide = True
+                        _object_utils.hide_set(obj, True)
 
             return {'FINISHED'}
 
-    class ViewAllObjects(bpy.types.Operator):
+    class SCS_TOOLS_OT_ViewAllObjectsWithinSCSRoot(bpy.types.Operator):
         """Shows all the objects within current SCS Root object."""
         bl_label = "View All Objects Within SCS Root"
-        bl_idname = "object.view_all_objects_within_root"
+        bl_idname = "object.scs_tools_view_all_objects_within_scs_root"
         bl_description = "Shows all the objects within current SCS Root object"
 
         @classmethod
@@ -2123,16 +2357,16 @@ class SCSRoot:
             if scs_root_object:
                 for obj in _object_utils.get_children(scs_root_object):
                     if obj.type in ('EMPTY', 'MESH') and obj.scs_props.empty_object_type != 'SCS_Root':
-                        obj.hide = False
+                        _object_utils.hide_set(obj, False)
 
-            scs_root_object.hide = False
+                _object_utils.hide_set(scs_root_object, False)
 
             return {'FINISHED'}
 
-    class InvertVisibility(bpy.types.Operator):
+    class SCS_TOOLS_OT_InvertVisibilityWithinSCSRoot(bpy.types.Operator):
         """Invert visibility of the objects within current SCS Root object."""
         bl_label = "Invert Visibility Within SCS Root"
-        bl_idname = "object.invert_visibility_within_root"
+        bl_idname = "object.scs_tools_invert_visibility_within_scs_root"
         bl_description = "Invert visibility of the objects within current SCS Root object"
 
         @classmethod
@@ -2146,20 +2380,29 @@ class SCSRoot:
             scs_root_object = _object_utils.get_scs_root(active_object)
 
             if scs_root_object:
-                for obj in _object_utils.get_children(scs_root_object):
+                children = _object_utils.get_children(scs_root_object)
+                for obj in children:
                     if obj.type in ('EMPTY', 'MESH') and obj.scs_props.empty_object_type != 'SCS_Root':
-                        if obj.hide:
-                            obj.hide = False
-                            bpy.context.scene.objects.active = obj
+                        if obj.hide_get():
+                            _object_utils.hide_set(obj, False)
                         else:
-                            obj.hide = True
+                            _object_utils.hide_set(obj, True)
+
+                # force first visible or root as active so user can invert visibility again,
+                # as active object got hidden and therfore this operator would be disabled
+                for obj in children:
+                    if obj.visible_get():
+                        bpy.context.view_layer.objects.active = obj
+                        break
+                else:
+                    bpy.context.view_layer.objects.active = scs_root_object
 
             return {'FINISHED'}
 
-    class Isolate(bpy.types.Operator):
+    class SCS_TOOLS_OT_IsolateObjectsWithinSCSRoot(bpy.types.Operator):
         """Isolate all of the objects within current SCS Root object."""
         bl_label = "Isolate Objects Within SCS Root"
-        bl_idname = "object.isolate_objects_within_root"
+        bl_idname = "object.scs_tools_isolate_objects_within_scs_root"
         bl_description = "Isolate all of the objects within current SCS Root object"
 
         @classmethod
@@ -2176,15 +2419,70 @@ class SCSRoot:
                 children = _object_utils.get_children(scs_root_object)
                 for obj in bpy.context.scene.objects:
                     if obj in children:
-                        obj.hide = False
-                        obj.select = True
+                        _object_utils.hide_set(obj, False)
+                        _object_utils.select_set(obj, True)
                     else:
-                        obj.hide = True
-                        obj.select = False
+                        _object_utils.hide_set(obj, True)
+                        _object_utils.select_set(obj, False)
 
-                scs_root_object.hide = False
-                scs_root_object.select = True
-                bpy.context.scene.objects.active = scs_root_object
+                _object_utils.hide_set(scs_root_object, False)
+                scs_root_object.select_set(True)
+                bpy.context.view_layer.objects.active = scs_root_object
+
+            return {'FINISHED'}
+
+    class SCS_TOOLS_OT_RelocateSCSRoot(bpy.types.Operator):
+        """Re-locates SCS Root object to active object position and rotation, while keeping it's children untransformed."""
+        bl_label = "Relocate Roots"
+        bl_idname = "object.scs_tools_relocate_scs_roots"
+        bl_description = "Re-locates SCS Root object to active object position and rotation, while keeping it's children untransformed."
+
+        selected_objects = None
+
+        @classmethod
+        def poll(cls, context):
+            return context.active_object and context.selected_objects
+
+        def execute(self, context):
+            lprint("D " + self.bl_label + "...")
+
+            active_object = context.active_object
+
+            # get desired location/rotation and calculate translation diff
+            new_location = active_object.matrix_world.translation
+            new_rotation_matrix = active_object.matrix_world.to_quaternion().to_matrix().to_4x4()
+
+            relocated_roots_count = 0
+            for root_obj in context.selected_objects:
+
+                # ignore non-root objects and active one
+                if root_obj.type != "EMPTY" or root_obj.scs_props.empty_object_type != "SCS_Root" or root_obj == active_object:
+                    continue
+
+                # calc translation diff
+                trans_diff = new_location - root_obj.matrix_world.translation
+
+                # 1. gather original world matrices of children
+                children_matrices = {}
+                for child_obj in root_obj.children:
+                    children_matrices[child_obj] = child_obj.matrix_world.to_4x4()  # do 4x4 for a copy of original
+
+                # 2. apply translation diff and rotation to root
+                root_obj.matrix_world.translation = root_obj.matrix_world.translation + trans_diff
+                inverse_rot_matrix = root_obj.matrix_world.to_quaternion().inverted().to_matrix().to_4x4()
+                root_obj.matrix_world = root_obj.matrix_world @ inverse_rot_matrix @ new_rotation_matrix
+
+                # 3. apply original transformation matrices back to children
+                for child_obj in root_obj.children:
+                    child_obj.matrix_world = children_matrices[child_obj]
+
+                # 4. refresh counter
+                relocated_roots_count += 1
+
+            if relocated_roots_count == 0:
+                self.report({'WARNING'}, "No SCS Root Objects detected in selection. No relocation done!")
+            else:
+                self.report({'INFO'}, "Successfully relocated %i SCS Root objects." % relocated_roots_count)
 
             return {'FINISHED'}
 
@@ -2194,10 +2492,10 @@ class Animation:
     Wrapper class for better navigation in file
     """
 
-    class AddSCSAnimationOperator(bpy.types.Operator):
+    class SCS_TOOLS_OT_AddAnimation(bpy.types.Operator):
         """Add SCS Animation to actual SCS Game Object."""
         bl_label = "Add SCS Animation"
-        bl_idname = "object.add_scs_animation"
+        bl_idname = "object.scs_tools_add_animation"
         bl_description = "Add SCS Animation to actual SCS Game Object"
 
         @classmethod
@@ -2216,10 +2514,10 @@ class Animation:
 
             return {'FINISHED'}
 
-    class RemoveSCSAnimationOperator(bpy.types.Operator):
+    class SCS_TOOLS_OT_RemoveAnimation(bpy.types.Operator):
         """Remove SCS Animation to actual SCS Game Object."""
         bl_label = "Remove SCS Animation"
-        bl_idname = "object.remove_scs_animation"
+        bl_idname = "object.scs_tools_remove_animation"
         bl_description = "Remove SCS Animation to actual SCS Game Object"
 
         @classmethod
@@ -2249,6 +2547,13 @@ class Animation:
 
                     lprint('S inventory[%i] - REMOVE item[%i] %r...', (len(inventory), active_scs_anim_i, active_scs_anim.name))
                     inventory.remove(active_scs_anim_i)
+
+                    # select active animation after remove if there is any left
+                    if len(inventory) > 0:
+                        if active_scs_anim_i - 1 >= 0:
+                            scs_root_object.scs_props.active_scs_animation = active_scs_anim_i - 1  # one up
+                        else:
+                            scs_root_object.scs_props.active_scs_animation = 0  # first
                 else:
                     lprint("W No active 'SCS Animation' in list!")
             else:
@@ -2256,10 +2561,10 @@ class Animation:
             return {'FINISHED'}
 
 
-class AddObject(bpy.types.Operator):
+class SCS_TOOLS_OT_AddObject(bpy.types.Operator):
     """Creates and links locator or SCS Root to the scenes."""
     bl_label = "Add SCS Object"
-    bl_idname = "object.scs_add_object"
+    bl_idname = "object.scs_tools_add_object"
     bl_description = "Create SCS object of choosen type at 3D coursor position \n" \
                      "(when locator is created it will also be parented to SCS Root, if currently active)."
     bl_options = {'REGISTER', 'UNDO'}
@@ -2285,17 +2590,17 @@ class AddObject(bpy.types.Operator):
             ),
         ]
 
-    new_object_type = bpy.props.EnumProperty(
+    new_object_type: EnumProperty(
         items=new_object_type_items
     )
 
-    prefab_type = bpy.props.EnumProperty(
+    prefab_type: EnumProperty(
         name="Prefab Locator Type",
         description="Defines type of new prefab locator.",
         items=_ObjectSCSTools.locator_prefab_type_items
     )
 
-    collider_type = bpy.props.EnumProperty(
+    collider_type: EnumProperty(
         name="Collision Locator Type",
         description="Defines type of new collision locator.",
         items=_ObjectSCSTools.locator_collider_type_items
@@ -2325,17 +2630,18 @@ class AddObject(bpy.types.Operator):
 
         if self.new_object_type == "Root Object":
 
-            bpy.ops.object.create_scs_root_object()
+            bpy.ops.object.scs_tools_create_scs_root()
 
         else:
 
+            cursor = context.scene.cursor
             if self.new_object_type == "Prefab Locator":
-                new_loc = _object_utils.create_locator_empty("pl", context.scene.cursor_location, data_type="Prefab", blend_coords=True)
+                new_loc = _object_utils.create_locator_empty("pl", cursor.location, data_type="Prefab", blend_coords=True)
                 new_loc.scs_props.locator_prefab_type = self.prefab_type
             elif self.new_object_type == "Model Locator":
-                new_loc = _object_utils.create_locator_empty("ml", context.scene.cursor_location, data_type="Model", blend_coords=True)
+                new_loc = _object_utils.create_locator_empty("ml", cursor.location, data_type="Model", blend_coords=True)
             else:
-                new_loc = _object_utils.create_locator_empty("cl", context.scene.cursor_location, data_type="Collision", blend_coords=True)
+                new_loc = _object_utils.create_locator_empty("cl", cursor.location, data_type="Collision", blend_coords=True)
                 new_loc.scs_props.locator_collider_type = self.collider_type
 
             # if previous active object was SCS root then automatically parent new locator to it
@@ -2345,15 +2651,19 @@ class AddObject(bpy.types.Operator):
                 bpy.ops.object.select_all(action='DESELECT')
 
                 # 2. prepare selection for parenting: select new locator, scs root and set scs root as active object
-                new_loc.select = True
-                active_obj.select = True
-                context.scene.objects.active = active_obj
+                new_loc.select_set(True)
+                active_obj.select_set(True)
+                context.view_layer.objects.active = active_obj
 
                 # 3. execute parenting (selected -> active)
                 bpy.ops.object.parent_set(type='OBJECT', keep_transform=True)
 
-                # 4. switch active to new locator so user can continue working on it
-                context.scene.objects.active = new_loc
+            # deselect all again & select only new object
+            bpy.ops.object.select_all(action='DESELECT')
+            new_loc.select_set(True)
+
+            # switch active to new locator so user can continue working on it
+            context.view_layer.objects.active = new_loc
 
         return {'FINISHED'}
 
@@ -2366,12 +2676,114 @@ class AddObject(bpy.types.Operator):
         return self.execute(context)
 
 
-class BlankOperator(bpy.types.Operator):
+class SCS_TOOLS_OT_BlankOperator(bpy.types.Operator):
     """Blank Operator."""
     bl_label = "Blank Operator"
-    bl_idname = "object.blank_operator"
+    bl_idname = "object.scs_tools_blank_operator"
     bl_description = "Blank operator"
 
     def execute(self, context):
         print('Blank Operator...')
         return {'FINISHED'}
+
+
+classes = (
+    Animation.SCS_TOOLS_OT_AddAnimation,
+    Animation.SCS_TOOLS_OT_RemoveAnimation,
+
+    Collision.SCS_TOOLS_OT_SelectStaticCollisionObjects,
+    Collision.SCS_TOOLS_OT_SwitchStaticCollisionObjects,
+
+    ConvexCollider.SCS_TOOLS_OT_ConvertConvexLocatorToMesh,
+    ConvexCollider.SCS_TOOLS_OT_ConvertMeshToConvexLocator,
+    ConvexCollider.SCS_TOOLS_OT_MakeConvexMesh,
+
+    Glass.SCS_TOOLS_OT_ShowGlassObjectsAsWire,
+    Glass.SCS_TOOLS_OT_ShowGlassObjectsAsTextured,
+    Glass.SCS_TOOLS_OT_SelectGlassObjects,
+    Glass.SCS_TOOLS_OT_SwitchGlassObjects,
+
+    Locators.Collision.SCS_TOOLS_OT_EnableCollisionLocatorsFaces,
+    Locators.Collision.SCS_TOOLS_OT_EnableCollisionLocatorsWire,
+    Locators.Collision.SCS_TOOLS_OT_DisableCollisionLocatorsFaces,
+    Locators.Collision.SCS_TOOLS_OT_DisableCollisionLocatorsWire,
+    Locators.Collision.SCS_TOOLS_OT_SelectCollisionLocators,
+    Locators.Collision.SCS_TOOLS_OT_SwitchCollisionLocators,
+    Locators.Commons.SCS_TOOLS_OT_SelectPreviewModelPath,
+    Locators.Commons.SCS_TOOLS_OT_SelectAllLocators,
+    Locators.Commons.SCS_TOOLS_OT_SwitchAllLocators,
+    Locators.Model.SCS_TOOLS_OT_FixModelLocatorHookups,
+    Locators.Model.SCS_TOOLS_OT_SelectModelLocatorsWithSameHookup,
+    Locators.Model.SCS_TOOLS_OT_SelectModelLocators,
+    Locators.Model.SCS_TOOLS_OT_SwitchModelLocators,
+    Locators.Prefab.ControlNodes.SCS_TOOLS_OT_AbortTerrainPointsPreview,
+    Locators.Prefab.ControlNodes.SCS_TOOLS_OT_AssignTerrainPoints,
+    Locators.Prefab.ControlNodes.SCS_TOOLS_OT_ClearTerrainPoints,
+    Locators.Prefab.ControlNodes.SCS_TOOLS_OT_PreviewTerrainPoints,
+    Locators.Prefab.ControlNodes.SCS_TOOLS_OT_SelectPrefabNodeLocators,
+    Locators.Prefab.ControlNodes.SCS_TOOLS_OT_SwitchPrefabNodeLocators,
+    Locators.Prefab.MapPoints.SCS_TOOLS_OT_SelectPrefabMapLocators,
+    Locators.Prefab.MapPoints.SCS_TOOLS_OT_SwitchPrefabMapLocators,
+    Locators.Prefab.NavigationPoints.SCS_TOOLS_OT_SelectPrefabNavLocators,
+    Locators.Prefab.NavigationPoints.SCS_TOOLS_OT_SwitchPrefabNavLocators,
+    Locators.Prefab.Signs.SCS_TOOLS_OT_SelectPrefabSignLocators,
+    Locators.Prefab.Signs.SCS_TOOLS_OT_SwitchPrefabSignLocators,
+    Locators.Prefab.SpawnPoints.SCS_TOOLS_OT_SelectPrefabSpawnLocators,
+    Locators.Prefab.SpawnPoints.SCS_TOOLS_OT_SwitchPrefabSpawnLocators,
+    Locators.Prefab.TrafficLights.SCS_TOOLS_OT_SelectPrefabTrafficLocators,
+    Locators.Prefab.TrafficLights.SCS_TOOLS_OT_SwitchPrefabTrafficLocators,
+    Locators.Prefab.TriggerPoints.SCS_TOOLS_OT_SelectPrefabTriggerLocators,
+    Locators.Prefab.TriggerPoints.SCS_TOOLS_OT_SwitchPrefabTriggerLocators,
+    Locators.Prefab.SCS_TOOLS_OT_ConnectPrefabLocators,
+    Locators.Prefab.SCS_TOOLS_OT_DisconnectPrefabLocators,
+    Locators.Prefab.SCS_TOOLS_OT_SelectPrefabLocators,
+    Locators.Prefab.SCS_TOOLS_OT_SwitchPrefabLocators,
+
+    Look.SCS_TOOLS_OT_AddLook,
+    Look.SCS_TOOLS_OT_RemoveActiveLook,
+
+    ModelObjects.SCS_TOOLS_OT_SearchDegeneratedPolys,
+    ModelObjects.SCS_TOOLS_OT_SelectModelObjects,
+    ModelObjects.SCS_TOOLS_OT_SwitchModelObjects,
+
+    Part.SCS_TOOLS_OT_AddPart,
+    Part.SCS_TOOLS_OT_AssignPart,
+    Part.SCS_TOOLS_OT_CleanUnusedParts,
+    Part.SCS_TOOLS_OT_PrintParts,
+    Part.SCS_TOOLS_OT_RemoveActivePart,
+    Part.SCS_TOOLS_OT_MoveActivePart,
+    Part.SCS_TOOLS_OT_DeSelectObjectsWithPart,
+    Part.SCS_TOOLS_OT_SwitchObjectsWithPart,
+
+    SCSRoot.SCS_TOOLS_OT_CreateSCSRoot,
+    SCSRoot.SCS_TOOLS_OT_HideObjectsWithinSCSRoot,
+    SCSRoot.SCS_TOOLS_OT_InvertVisibilityWithinSCSRoot,
+    SCSRoot.SCS_TOOLS_OT_IsolateObjectsWithinSCSRoot,
+    SCSRoot.SCS_TOOLS_OT_ViewAllObjectsWithinSCSRoot,
+    SCSRoot.SCS_TOOLS_OT_RelocateSCSRoot,
+
+    ShadowCasters.SCS_TOOLS_OT_SelectShadowCasters,
+    ShadowCasters.SCS_TOOLS_OT_ShowShadowCastersAsWire,
+    ShadowCasters.SCS_TOOLS_OT_ShowShadowCasterAsTextured,
+    ShadowCasters.SCS_TOOL_OT_SwitchShadowCasters,
+
+    Variant.SCS_TOOLS_OT_AddVariant,
+    Variant.SCS_TOOLS_OT_PrintVariants,
+    Variant.SCS_TOOLS_OT_RemoveActiveVariant,
+    Variant.SCS_TOOLS_OT_DeSelectObjectsWithVariant,
+    Variant.SCS_TOOLS_OT_SwitchObjectsWithVariant,
+    Variant.SCS_TOOLS_OT_MoveActiveVariant,
+
+    SCS_TOOLS_OT_AddObject,
+    SCS_TOOLS_OT_BlankOperator,
+)
+
+
+def register():
+    for cls in classes:
+        bpy.utils.register_class(cls)
+
+
+def unregister():
+    for cls in classes:
+        bpy.utils.unregister_class(cls)

@@ -219,7 +219,7 @@ Shader {
 Shader {
     PresetName: "dif"
     Effect: "eut2.dif"
-    Flavors: ( "FLAT" "SHADOW" "PAINT" "TEXGEN0" "TEXMTX0" "ALPHA" "DEPTH" "BLEND_OVER|BLEND_ADD" )
+    Flavors: ( "FLAT" "SHADOW" "PAINT" "TEXGEN0" "TEXMTX0" "ALPHA" "DEPTH" "BLEND_OVER|BLEND_MULT|BLEND_ADD" )
     Flags: 0
     Attribute {
         Format: FLOAT3
@@ -256,7 +256,7 @@ Shader {
     PresetName: "dif.anim"
     Effect: "eut2.dif.anim"
     # NOTE: intentionally disabled TEXGEN0 flavor as it conflicts with usage of aux[0] attribute
-    Flavors: ( "ALPHA" "DEPTH" "BLEND_OVER|BLEND_ADD" )
+    Flavors: ( "ALPHA" "BLEND_OVER|BLEND_MULT|BLEND_ADD" )
     Flags: 0
     Attribute {
         Format: FLOAT3
@@ -303,7 +303,7 @@ Shader {
 Shader {
     PresetName: "dif.lum"
     Effect: "eut2.dif.lum"
-    Flavors: ( "LUMMULVCOL" "SHADOW" "PAINT" "TEXGEN0" "ALPHA" "DEPTH" "BLEND_OVER|BLEND_ADD" )
+    Flavors: ( "LUMMULVCOL" "SHADOW" "PAINT" "TEXGEN0" "ALPHA" "DEPTH" "BLEND_OVER|BLEND_MULT|BLEND_ADD" )
     Flags: 0
     Attribute {
         Format: FLOAT3
@@ -339,7 +339,7 @@ Shader {
 Shader {
     PresetName: "dif.lum.spec"
     Effect: "eut2.dif.lum.spec"
-    Flavors: ( "SHADOW" "PAINT" "TEXGEN0" "INVERTLUM" "LUMMULVCOL" "ASAFEW" "ALPHA" "DEPTH" "BLEND_OVER|BLEND_ADD" )
+    Flavors: ( "SHADOW" "PAINT" "TEXGEN0" "INVERTLUM" "LUMMULVCOL" "ASAFEW" "ALPHA" "DEPTH" "BLEND_OVER|BLEND_MULT|BLEND_ADD" )
     Flags: 0
     Attribute {
         Format: FLOAT3
@@ -381,7 +381,7 @@ Shader {
 Shader {
     PresetName: "dif.spec"
     Effect: "eut2.dif.spec"
-    Flavors: ( "NMAP_TS|NMAP_TS_UV|NMAP_TS_16|NMAP_TS_UV_16" "SHADOW" "PAINT" "TEXGEN0" "ASAFEW" "ALPHA" "DEPTH" "BLEND_OVER|BLEND_ADD" )
+    Flavors: ( "NMAP_TS|NMAP_TS_UV|NMAP_TS_16|NMAP_TS_UV_16" "SHADOW" "PAINT" "TEXGEN0" "ASAFEW" "ALPHA" "DEPTH" "BLEND_OVER|BLEND_MULT|BLEND_ADD" )
     Flags: 0
     Attribute {
         Format: FLOAT3
@@ -417,7 +417,7 @@ Shader {
 Shader {
     PresetName: "dif.spec.add.env"
     Effect: "eut2.dif.spec.add.env"
-    Flavors: ( "INDENV" "NMAP_TS|NMAP_TS_UV|NMAP_TS_16|NMAP_TS_UV_16" "SHADOW" "PAINT" "TEXGEN0" "INVERTOPAC" "ALPHA" "DEPTH" "BLEND_OVER|BLEND_ADD" )
+    Flavors: ( "INDENV" "NMAP_TS|NMAP_TS_UV|NMAP_TS_16|NMAP_TS_UV_16" "SHADOW" "PAINT" "TEXGEN0" "INVERTOPAC" "ALPHA" "DEPTH" "BLEND_OVER|BLEND_MULT|BLEND_ADD" )
     Flags: 0
     Attribute {
         Format: FLOAT3
@@ -468,7 +468,7 @@ Shader {
 Shader {
     PresetName: "dif.spec.add.env.nofresnel"
     Effect: "eut2.dif.spec.add.env.nofresnel"
-    Flavors: ( "NMAP_TS|NMAP_TS_UV|NMAP_TS_16|NMAP_TS_UV_16" "SHADOW" "PAINT" "TEXGEN0" "ALPHA" "DEPTH" "BLEND_OVER|BLEND_ADD" )
+    Flavors: ( "NMAP_TS|NMAP_TS_UV|NMAP_TS_16|NMAP_TS_UV_16" "SHADOW" "PAINT" "TEXGEN0" "ALPHA" "DEPTH" "BLEND_OVER|BLEND_MULT|BLEND_ADD" )
     Flags: 0
     Attribute {
         Format: FLOAT3
@@ -514,7 +514,7 @@ Shader {
 Shader {
     PresetName: "dif.spec.fade.dif.spec"
     Effect: "eut2.dif.spec.fade.dif.spec"
-    Flavors: ( "NMAP_DETAIL|NMAP_UV_DETAIL" "SHADOW" "ALPHA" "DEPTH" "BLEND_OVER|BLEND_ADD" )
+    Flavors: ( "NMAP_DETAIL|NMAP_UV_DETAIL" "SHADOW" "ALPHA" )
     Flags: 0
     Attribute {
         Format: FLOAT3
@@ -658,7 +658,7 @@ Shader {
 Shader {
     PresetName: "dif.spec.mult.dif.spec.iamod.dif.spec"
     Effect: "eut2.dif.spec.mult.dif.spec.iamod.dif.spec"
-    Flavors: ( "NMAP_TS|NMAP_TS_UV|NMAP_TS_16|NMAP_TS_UV_16" "DEPTH" "BLEND_OVER|BLEND_ADD" )
+    Flavors: ( "NMAP_TS|NMAP_TS_UV|NMAP_TS_16|NMAP_TS_UV_16" )
     Flags: 0
     Attribute {
         Format: FLOAT3
@@ -903,7 +903,7 @@ Shader {
 Shader {
     PresetName: "dif.spec.weight"
     Effect: "eut2.dif.spec.weight"
-    Flavors: ( "SHADOW" "PAINT" "TEXGEN0" "ASAFEW" "ALPHA" "DEPTH" "BLEND_OVER|BLEND_ADD" )
+    Flavors: ( "SHADOW" "PAINT" "TEXGEN0" "ASAFEW" "ALPHA" "DEPTH" "BLEND_OVER|BLEND_MULT|BLEND_ADD" )
     Flags: 0
     Attribute {
         Format: FLOAT3
@@ -939,7 +939,7 @@ Shader {
 Shader {
     PresetName: "dif.spec.weight.add.env"
     Effect: "eut2.dif.spec.weight.add.env"
-    Flavors: ( "NMAP_TS|NMAP_TS_UV|NMAP_TS_16|NMAP_TS_UV_16" "SHADOW" "PAINT" "TEXGEN0" "ALPHA" "DEPTH" "BLEND_OVER|BLEND_ADD" )
+    Flavors: ( "NMAP_TS|NMAP_TS_UV|NMAP_TS_16|NMAP_TS_UV_16" "SHADOW" "PAINT" "TEXGEN0" "ALPHA" "DEPTH" "BLEND_OVER|BLEND_MULT|BLEND_ADD" )
     Flags: 0
     Attribute {
         Format: FLOAT3
@@ -990,7 +990,7 @@ Shader {
 Shader {
     PresetName: "dif.spec.weight.mult2"
     Effect: "eut2.dif.spec.weight.mult2"
-    Flavors: ( "SHADOW" "TEXGEN0" "ALPHA" "DEPTH" "BLEND_OVER|BLEND_ADD" )
+    Flavors: ( "SHADOW" "TEXGEN0" "ALPHA" )
     Flags: 0
     Attribute {
         Format: FLOAT3
@@ -1037,7 +1037,7 @@ Shader {
 Shader {
     PresetName: "dif.spec.weight.mult2.weight2"
     Effect: "eut2.dif.spec.weight.mult2.weight2"
-    Flavors: ( "SHADOW" "TEXGEN0" "TEXGEN1" "DEPTH" "BLEND_OVER|BLEND_ADD" )
+    Flavors: ( "SHADOW" "TEXGEN0" "TEXGEN1" )
     Flags: 0
     Attribute {
         Format: FLOAT3
@@ -1105,7 +1105,7 @@ Shader {
 Shader {
     PresetName: "dif.spec.weight.weight.dif.spec.weight"
     Effect: "eut2.dif.spec.weight.weight.dif.spec.weight"
-    Flavors: ( "SHADOW" "TEXGEN0" "TEXGEN1" "ALPHA" "DEPTH" "BLEND_OVER|BLEND_ADD" )
+    Flavors: ( "SHADOW" "TEXGEN0" "TEXGEN1" "ALPHA" )
     Flags: 0
     Attribute {
         Format: FLOAT3
@@ -1157,7 +1157,7 @@ Shader {
 Shader {
     PresetName: "dif.weight.dif"
     Effect: "eut2.dif.weight.dif"
-    Flavors: ( "SHADOW" "PAINT" "TEXGEN0" "TEXGEN1" "ALPHA" "DEPTH" "BLEND_OVER|BLEND_ADD" )
+    Flavors: ( "SHADOW" "PAINT" "TEXGEN0" "TEXGEN1" "ALPHA" "DEPTH" "BLEND_OVER|BLEND_MULT|BLEND_ADD" )
     Flags: 0
     Attribute {
         Format: FLOAT3
@@ -1579,7 +1579,7 @@ Shader {
 Shader {
     PresetName: "unlit.tex"
     Effect: "eut2.unlit.tex"
-    Flavors: ( "PAINT" "ALPHA" "DEPTH" "BLEND_OVER|BLEND_ADD" )
+    Flavors: ( "PAINT" "ALPHA" "DEPTH" "BLEND_OVER|BLEND_MULT|BLEND_ADD" )
     Flags: 0
     Attribute {
         Format: FLOAT3
@@ -1634,6 +1634,11 @@ Shader {
     }
     Attribute {
         Format: FLOAT3
+        Tag: "fresnel"
+        Value: ( 0.2 0.9 )
+    }
+    Attribute {
+        Format: FLOAT3
         Tag: "aux[0]"
         FriendlyTag: "Distances (Near, Far, Scramble)"
         Value: ( 100.0 200.0 2.0 )
@@ -1661,6 +1666,12 @@ Shader {
         Tag: "aux[4]"
         FriendlyTag: "Layer1 (Yaw, Speed, ScaleX, ScaleY)"
         Value: ( 20.0, 0.05, 2.0, 2.0 )
+    }
+    Attribute {
+        Format: FLOAT
+        Tag: "aux[5]"
+        FriendlyTag: "Enable world reflection"
+        Value: ( 0.0 )
     }
     Texture {
         Tag: "texture[X]:texture_layer0"

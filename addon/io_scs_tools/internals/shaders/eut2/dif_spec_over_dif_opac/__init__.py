@@ -16,15 +16,16 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2015: SCS Software
+# Copyright (C) 2015-2019: SCS Software
 
 from io_scs_tools.consts import Mesh as _MESH_consts
 from io_scs_tools.internals.shaders.eut2.dif_spec import DifSpec
 from io_scs_tools.internals.shaders.flavors import tg1
+from io_scs_tools.utils import material as _material_utils
 
 
 class DifSpecOverDifOpac(DifSpec):
-    SEC_GEOM_NODE = "SecGeomety"
+    SEC_UVMAP_NODE = "SecUVMap"
     OVER_TEX_NODE = "OverTex"
     OVER_MIX_NODE = "OverMix"
 
@@ -57,16 +58,17 @@ class DifSpecOverDifOpac(DifSpec):
         opacity_mult_n.location.y -= 200
 
         # nodes creation
-        sec_geom_n = node_tree.nodes.new("ShaderNodeGeometry")
-        sec_geom_n.name = DifSpecOverDifOpac.SEC_GEOM_NODE
-        sec_geom_n.label = DifSpecOverDifOpac.SEC_GEOM_NODE
-        sec_geom_n.location = (start_pos_x - pos_x_shift, start_pos_y + 1200)
-        sec_geom_n.uv_layer = _MESH_consts.none_uv
+        sec_uv_n = node_tree.nodes.new("ShaderNodeUVMap")
+        sec_uv_n.name = DifSpecOverDifOpac.SEC_UVMAP_NODE
+        sec_uv_n.label = DifSpecOverDifOpac.SEC_UVMAP_NODE
+        sec_uv_n.location = (start_pos_x - pos_x_shift, start_pos_y + 1200)
+        sec_uv_n.uv_map = _MESH_consts.none_uv
 
-        over_tex_n = node_tree.nodes.new("ShaderNodeTexture")
+        over_tex_n = node_tree.nodes.new("ShaderNodeTexImage")
         over_tex_n.name = DifSpecOverDifOpac.OVER_TEX_NODE
         over_tex_n.label = DifSpecOverDifOpac.OVER_TEX_NODE
         over_tex_n.location = (start_pos_x + pos_x_shift, start_pos_y + 1200)
+        over_tex_n.width = 140
 
         over_mix_node = node_tree.nodes.new("ShaderNodeMixRGB")
         over_mix_node.name = DifSpecOverDifOpac.OVER_MIX_NODE
@@ -75,13 +77,13 @@ class DifSpecOverDifOpac(DifSpec):
         over_mix_node.blend_type = "MIX"
 
         # links creation
-        node_tree.links.new(over_tex_n.inputs['Vector'], sec_geom_n.outputs['UV'])
+        node_tree.links.new(over_tex_n.inputs['Vector'], sec_uv_n.outputs['UV'])
 
-        node_tree.links.new(over_mix_node.inputs['Fac'], over_tex_n.outputs['Value'])
+        node_tree.links.new(over_mix_node.inputs['Fac'], over_tex_n.outputs['Alpha'])
         node_tree.links.new(over_mix_node.inputs['Color1'], base_tex_n.outputs['Color'])
         node_tree.links.new(over_mix_node.inputs['Color2'], over_tex_n.outputs['Color'])
 
-        node_tree.links.new(vcol_mult_n.inputs['Color2'], over_mix_node.outputs['Color'])
+        node_tree.links.new(vcol_mult_n.inputs[1], over_mix_node.outputs['Color'])
 
     @staticmethod
     def set_aux1(node_tree, aux_property):
@@ -110,16 +112,27 @@ class DifSpecOverDifOpac(DifSpec):
         pass  # NOTE: reflection2 attribute doesn't change anything in rendered material, so pass it
 
     @staticmethod
-    def set_over_texture(node_tree, texture):
+    def set_over_texture(node_tree, image):
         """Set overlying texture to shader.
 
         :param node_tree: node tree of current shader
         :type node_tree: bpy.types.NodeTree
-        :param texture: texture which should be assigned to over texture node
-        :type texture: bpy.types.Texture
+        :param image: texture image which should be assigned to over texture node
+        :type image: bpy.types.Texture
         """
 
-        node_tree.nodes[DifSpecOverDifOpac.OVER_TEX_NODE].texture = texture
+        node_tree.nodes[DifSpecOverDifOpac.OVER_TEX_NODE].image = image
+
+    @staticmethod
+    def set_over_texture_settings(node_tree, settings):
+        """Set overlying texture settings to shader.
+
+        :param node_tree: node tree of current shader
+        :type node_tree: bpy.types.NodeTree
+        :param settings: binary string of TOBJ settings gotten from tobj import
+        :type settings: str
+        """
+        _material_utils.set_texture_settings_to_node(node_tree.nodes[DifSpecOverDifOpac.OVER_TEX_NODE], settings)
 
     @staticmethod
     def set_over_uv(node_tree, uv_layer):
@@ -134,7 +147,7 @@ class DifSpecOverDifOpac(DifSpec):
         if uv_layer is None or uv_layer == "":
             uv_layer = _MESH_consts.none_uv
 
-        node_tree.nodes[DifSpecOverDifOpac.SEC_GEOM_NODE].uv_layer = uv_layer
+        node_tree.nodes[DifSpecOverDifOpac.SEC_UVMAP_NODE].uv_map = uv_layer
 
     @staticmethod
     def set_tg1_flavor(node_tree, switch_on):
@@ -148,13 +161,13 @@ class DifSpecOverDifOpac(DifSpec):
 
         if switch_on and not tg1.is_set(node_tree):
 
-            out_node = node_tree.nodes[DifSpecOverDifOpac.SEC_GEOM_NODE]
+            out_node = node_tree.nodes[DifSpecOverDifOpac.GEOM_NODE]
             in_node = node_tree.nodes[DifSpecOverDifOpac.OVER_TEX_NODE]
 
             out_node.location.x -= 185
             location = (out_node.location.x + 185, out_node.location.y)
 
-            tg1.init(node_tree, location, out_node.outputs["Global"], in_node.inputs["Vector"])
+            tg1.init(node_tree, location, out_node.outputs["Position"], in_node.inputs["Vector"])
 
         elif not switch_on:
 

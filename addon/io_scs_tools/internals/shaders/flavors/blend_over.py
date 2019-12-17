@@ -16,27 +16,22 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2015: SCS Software
+# Copyright (C) 2015-2019: SCS Software
 
 
 FLAVOR_ID = "blend_over"
 
 
-def init(node_tree, alpha_from, alpha_to):
+def init(node_tree):
     """Initialize blend over.
 
     :param node_tree: node tree on which blend over will be used
     :type node_tree: bpy.types.NodeTree
-    :param alpha_from: node socket from which blend over should be applierd
-    :type alpha_from: bpy.types.NodeSocket
-    :param alpha_to: node socket to which result of blend over should be send
-    :type alpha_to: bpy.types.NodeSocket
     """
 
-    # links creation
-    node_tree.links.new(alpha_to, alpha_from)
-
-    node_tree[FLAVOR_ID] = True
+    # FIXME: move to old system after: https://developer.blender.org/T68406 is resolved
+    flavor_frame = node_tree.nodes.new(type="NodeFrame")
+    flavor_frame.name = flavor_frame.label = FLAVOR_ID
 
 
 def delete(node_tree):
@@ -46,8 +41,8 @@ def delete(node_tree):
     :type node_tree: bpy.types.NodeTree
     """
 
-    if FLAVOR_ID in node_tree:
-        del node_tree[FLAVOR_ID]
+    if FLAVOR_ID in node_tree.nodes:
+        node_tree.nodes.remove(node_tree.nodes[FLAVOR_ID])
 
 
 def is_set(node_tree):
@@ -58,4 +53,4 @@ def is_set(node_tree):
     :return: True if flavor exists; False otherwise
     :rtype: bool
     """
-    return FLAVOR_ID in node_tree and node_tree[FLAVOR_ID]
+    return FLAVOR_ID in node_tree.nodes

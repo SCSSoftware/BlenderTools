@@ -16,11 +16,12 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2015: SCS Software
+# Copyright (C) 2015-2019: SCS Software
+
+from io_scs_tools.internals.shaders.eut2.none import NNone
 
 
-class MlaaWeight:
-    OUTPUT_NODE = "Output"
+class MlaaWeight(NNone):
 
     @staticmethod
     def get_name():
@@ -35,26 +36,9 @@ class MlaaWeight:
         :type node_tree: bpy.types.NodeTree
         """
 
-        start_pos_x = 0
-        start_pos_y = 0
+        # init parent
+        NNone.init(node_tree)
 
-        # node creation
-        output_n = node_tree.nodes.new("ShaderNodeOutput")
-        output_n.name = MlaaWeight.OUTPUT_NODE
-        output_n.label = MlaaWeight.OUTPUT_NODE
-        output_n.location = (start_pos_x, start_pos_y)
-
-    @staticmethod
-    def set_material(node_tree, material):
-        """Set output material for this shader.
-
-        :param node_tree: node tree of current shader
-        :type node_tree: bpy.types.NodeTree
-        :param material: blender material for used in this tree node as output
-        :type material: bpy.types.Material
-        """
-
-        material.use_transparency = True
-        material.transparency_method = "MASK"
-
-        node_tree.nodes[MlaaWeight.OUTPUT_NODE].inputs['Alpha'].default_value = 0
+        # change emissive color
+        shader_n = node_tree.nodes[NNone.SHADER_NODE]
+        shader_n.inputs['Emissive Color'].default_value = (0.0,) * 3 + (1.0,)

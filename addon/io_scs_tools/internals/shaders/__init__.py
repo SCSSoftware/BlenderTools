@@ -20,16 +20,23 @@
 
 
 from io_scs_tools.internals.shaders.eut2.dif_anim import anim_blend_factor_ng
+from io_scs_tools.internals.shaders.eut2.water import water_stream_ng
 from io_scs_tools.internals.shaders.eut2.truckpaint import Truckpaint
 from io_scs_tools.internals.shaders.flavors import paint
 
 
-def update_shaders():
+def update_shaders(scene):
     """Update any time changes in shaders.
+
+    :param scene: scene in which time for shaders is being updated
+    :type scene: bpy.types.Scene
     """
 
     # update animation blend factor group node
-    anim_blend_factor_ng.update_time()
+    anim_blend_factor_ng.update_time(scene)
+
+    # update water streams
+    water_stream_ng.update_time(scene)
 
 
 def set_base_paint_color(node_tree, color):

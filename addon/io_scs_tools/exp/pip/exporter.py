@@ -16,7 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2015-2017: SCS Software
+# Copyright (C) 2015-2019: SCS Software
 
 from os import path
 from collections import OrderedDict
@@ -33,7 +33,7 @@ from io_scs_tools.exp.pip.sign import Sign
 from io_scs_tools.exp.pip.spawn_point import SpawnPoint
 from io_scs_tools.exp.pip.trigger_point import TriggerPoint
 from io_scs_tools.internals.containers import pix as _pix_container
-from io_scs_tools.internals.connections.wrappers import group as _connections_group_wrapper
+from io_scs_tools.internals.connections.wrappers import collection as _connections_wrapper
 from io_scs_tools.utils.convert import get_scs_transformation_components as _get_scs_transformation_components
 from io_scs_tools.utils.name import tokenize_name as _tokenize_name
 from io_scs_tools.utils.printout import lprint
@@ -156,7 +156,7 @@ def execute(dirpath, filename, name_suffix, prefab_locator_list, offset_matrix, 
     """
 
     # CLEANUP CONNECTIONS DATA
-    _connections_group_wrapper.cleanup_on_export()
+    _connections_wrapper.cleanup_on_export()
 
     print("\n************************************")
     print("**      SCS PIP Exporter          **")
@@ -200,8 +200,8 @@ def execute(dirpath, filename, name_suffix, prefab_locator_list, offset_matrix, 
         curr_node_i = int(locator_scs_props.locator_prefab_con_node_index)
         if curr_node_i not in pip_nodes:
 
-            pos, rot, scale = _get_scs_transformation_components(offset_matrix.inverted() * locator.matrix_world)
-            rot = Quaternion(rot) * Vector((0, 0, -1))
+            pos, rot, scale = _get_scs_transformation_components(offset_matrix.inverted() @ locator.matrix_world)
+            rot = Quaternion(rot) @ Vector((0, 0, -1))
 
             # create node with position and direction
             cn = Node(curr_node_i, pos, rot)
@@ -223,7 +223,7 @@ def execute(dirpath, filename, name_suffix, prefab_locator_list, offset_matrix, 
                    "Check Control Nodes in SCS Game Object with Root: %r", (filename,))
 
     # curves creation
-    curves_dict = _connections_group_wrapper.get_curves(nav_point_locs.values())
+    curves_dict = _connections_wrapper.get_curves(nav_point_locs.values())
     for key, curve_entry in curves_dict.items():
 
         loc0 = nav_point_locs[curves_dict[key].start]
@@ -236,9 +236,9 @@ def execute(dirpath, filename, name_suffix, prefab_locator_list, offset_matrix, 
         # create curve and set properties
         curve = __get_curve__(pip_curves, curve_entry.index, loc0.name)
 
-        pos, rot, scale = _get_scs_transformation_components(offset_matrix.inverted() * loc0.matrix_world)
+        pos, rot, scale = _get_scs_transformation_components(offset_matrix.inverted() @ loc0.matrix_world)
         curve.set_start(pos, rot)
-        pos, rot, scale = _get_scs_transformation_components(offset_matrix.inverted() * loc1.matrix_world)
+        pos, rot, scale = _get_scs_transformation_components(offset_matrix.inverted() @ loc1.matrix_world)
         curve.set_end(pos, rot)
 
         curve.set_input_boundaries(loc0_scs_props)
@@ -300,7 +300,7 @@ def execute(dirpath, filename, name_suffix, prefab_locator_list, offset_matrix, 
         # create sign and set properties
         sign = Sign(locator.name, used_parts.ensure_part(locator))
 
-        pos, rot, scale = _get_scs_transformation_components(offset_matrix.inverted() * locator.matrix_world)
+        pos, rot, scale = _get_scs_transformation_components(offset_matrix.inverted() @ locator.matrix_world)
         sign.set_position(pos)
         sign.set_rotation(rot)
 
@@ -321,7 +321,7 @@ def execute(dirpath, filename, name_suffix, prefab_locator_list, offset_matrix, 
         # create spawn point and set properties
         spawn_point = SpawnPoint(locator.name)
 
-        pos, rot, scale = _get_scs_transformation_components(offset_matrix.inverted() * locator.matrix_world)
+        pos, rot, scale = _get_scs_transformation_components(offset_matrix.inverted() @ locator.matrix_world)
         spawn_point.set_position(pos)
         spawn_point.set_rotation(rot)
 
@@ -338,7 +338,7 @@ def execute(dirpath, filename, name_suffix, prefab_locator_list, offset_matrix, 
         # create semaphore and set properties
         semaphore = Semaphore(int(locator_scs_props.locator_prefab_tsem_type))
 
-        pos, rot, scale = _get_scs_transformation_components(offset_matrix.inverted() * locator.matrix_world)
+        pos, rot, scale = _get_scs_transformation_components(offset_matrix.inverted() @ locator.matrix_world)
         semaphore.set_position(pos)
         semaphore.set_rotation(rot)
 
@@ -367,12 +367,12 @@ def execute(dirpath, filename, name_suffix, prefab_locator_list, offset_matrix, 
         # create map point and set properties
         map_point = __get_map_point__(pip_map_points, locator.name)
 
-        pos, rot, scale = _get_scs_transformation_components(offset_matrix.inverted() * locator.matrix_world)
+        pos, rot, scale = _get_scs_transformation_components(offset_matrix.inverted() @ locator.matrix_world)
         map_point.set_position(pos)
 
         map_point.set_flags(locator_scs_props)
 
-        for neighbour_name in _connections_group_wrapper.get_neighbours(locator):
+        for neighbour_name in _connections_wrapper.get_neighbours(locator):
 
             assert map_point.add_neighbour(__get_map_point__(pip_map_points, neighbour_name))
 
@@ -389,7 +389,7 @@ def execute(dirpath, filename, name_suffix, prefab_locator_list, offset_matrix, 
         # create trigger point and set properties
         trigger_point = __get_trigger_point__(pip_trigger_points, locator.name)
 
-        pos, rot, scale = _get_scs_transformation_components(offset_matrix.inverted() * locator.matrix_world)
+        pos, rot, scale = _get_scs_transformation_components(offset_matrix.inverted() @ locator.matrix_world)
         trigger_point.set_position(pos)
 
         if ":" in locator_scs_props.locator_prefab_tp_action:
@@ -402,7 +402,7 @@ def execute(dirpath, filename, name_suffix, prefab_locator_list, offset_matrix, 
         trigger_point.set_reset_delay(locator_scs_props.locator_prefab_tp_reset_delay)
         trigger_point.set_flags(locator_scs_props)
 
-        for neighbour_name in _connections_group_wrapper.get_neighbours(locator):
+        for neighbour_name in _connections_wrapper.get_neighbours(locator):
 
             assert trigger_point.add_neighbour(__get_trigger_point__(pip_trigger_points, neighbour_name))
 

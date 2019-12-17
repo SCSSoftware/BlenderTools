@@ -16,7 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2015-2017: SCS Software
+# Copyright (C) 2015-2019: SCS Software
 
 from mathutils import Vector, Quaternion
 from io_scs_tools.consts import PrefabLocators as _PL_consts
@@ -57,8 +57,8 @@ class Curve:
             pos1, dir1 = curve.get_end(cartes_tang=False)
 
             for i in range(4):  # converge to actual length with four iterations
-                curr_dir0 = Vector(dir0 * Vector((0, 0, -1)) * Curve.__NODE_DIR_LEN_COEF * curve.get_length())
-                curr_dir1 = Vector(dir1 * Vector((0, 0, -1)) * Curve.__NODE_DIR_LEN_COEF * curve.get_length())
+                curr_dir0 = Vector(dir0 @ Vector((0, 0, -1)) * Curve.__NODE_DIR_LEN_COEF * curve.get_length())
+                curr_dir1 = Vector(dir1 @ Vector((0, 0, -1)) * Curve.__NODE_DIR_LEN_COEF * curve.get_length())
 
                 new_length = _curve_utils.compute_smooth_curve_length(pos0, curr_dir0, pos1, curr_dir1, _PL_consts.CURVE_MEASURE_STEPS)
                 curve.set_length(new_length)
@@ -343,7 +343,7 @@ class Curve:
         position, rotation = self.__bezier.get_start()
 
         if cartes_tang:
-            rotation = rotation * Vector((0, 0, -1)) * Curve.__NODE_DIR_LEN_COEF * self.get_length()
+            rotation = rotation @ Vector((0, 0, -1)) * Curve.__NODE_DIR_LEN_COEF * self.get_length()
 
         return position, rotation
 
@@ -361,7 +361,7 @@ class Curve:
         position, rotation = self.__bezier.get_end()
 
         if cartes_tang:
-            rotation = rotation * Vector((0, 0, -1)) * Curve.__NODE_DIR_LEN_COEF * self.get_length()
+            rotation = rotation @ Vector((0, 0, -1)) * Curve.__NODE_DIR_LEN_COEF * self.get_length()
 
         return position, rotation
 

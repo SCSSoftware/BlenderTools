@@ -18,7 +18,6 @@
 
 # Copyright (C) 2015: SCS Software
 
-
 from io_scs_tools.internals.shaders.eut2.light_tex import LightTex
 
 

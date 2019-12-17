@@ -16,14 +16,35 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2013-2014: SCS Software
+# Copyright (C) 2013-2019: SCS Software
 
 from io_scs_tools.properties import action
+from io_scs_tools.properties import addon_preferences
+from io_scs_tools.properties import dynamic
 from io_scs_tools.properties import material
 from io_scs_tools.properties import mesh
 from io_scs_tools.properties import object
 from io_scs_tools.properties import scene
-from io_scs_tools.properties import world
+from io_scs_tools.properties import workspace
 
-from io_scs_tools.properties.dynamic import scene as scene_dynamic
-from io_scs_tools.properties.dynamic import object as object_dynamic
+
+def register():
+    action.register()
+    addon_preferences.register()
+    dynamic.register()
+    material.register()
+    mesh.register()
+    object.register()
+    scene.register()
+    workspace.register()
+
+
+def unregister():
+    action.unregister()
+    addon_preferences.unregister()
+    dynamic.unregister()
+    material.unregister()
+    mesh.unregister()
+    object.unregister()
+    scene.unregister()
+    workspace.unregister()

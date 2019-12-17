@@ -16,7 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2013-2017: SCS Software
+# Copyright (C) 2013-2019: SCS Software
 
 """
 Constants for data group of map and navigation curves
@@ -31,8 +31,8 @@ class ConnectionsStorage:
     """Constants related for storage of connections used in custom drawing
     """
 
-    group_name = ".scs_connection_storage"
-    """Name of bpy.data.group which will be used for storing Custom Property for connections dictionary"""
+    collection_name = ".scs_connection_storage"
+    """Name of bpy.data.collection which will be used for storing Custom Property for connections dictionary"""
     custom_prop_name = "scs_locator_connections"
     """Name of the Blender Custom Property where dictionary for connections will be stored"""
 
@@ -67,50 +67,34 @@ class Operators:
     class View3DReport:
         """Constants related to 3D view report operator.
         """
-        # constants defining BT logo image and texts/positions of close/hide controls
-        BT_LOGO_IMG_NAME = ".scs_bt_logo.png"
-        BT_LOGO_AREA = (20, 217, 30, 50)
-        CLOSE_BTN_AREA = (230, 370, 26, 54)
-        CLOSE_BTN_TEXT = (
-            "[Click] Close",  # used when report text is shown
-            "[Click/ESC] Close"  # used when report text is hidden (aka condensed mode)
-        )
-        CLOSE_BTN_TEXT_POS = (
-            (260, 45),  # used when report text is shown
-            (240, 45)  # used when report text is hidden (aka condensed mode)
-        )
-        HIDE_BTN_AREA = (385, 530, 26, 54)
-        HIDE_BTN_TEXT = (
-            "[Click/ESC] Hide",  # used when report text is shown
-            "[Click] Show"  # used when report text is hidden (aka condensed mode)
-        )
-        HIDE_BTN_TEXT_POS = (
-            (400, 45),  # used when report text is shown
-            (415, 45)  # used when report text is hidden (aka condensed mode)
-        )
-        SCROLLUP_BTN_AREA = (545, 585, 26, 54)
-        SCROLLUP_BTN_TEXT = (
-            "↑",  # used when report text is shown
-            ""  # used when report text is hidden (aka condensed mode)
-        )
-        SCROLLUP_BTN_TEXT_POS = (
-            (560, 45),  # used when report text is shown
-            (560, 45)  # used when report text is hidden (aka condensed mode)
-        )
-        SCROLLDOWN_BTN_AREA = (585, 625, 26, 54)
-        SCROLLDOWN_BTN_TEXT = (
-            "↓",  # used when report text is shown
-            ""  # used when report text is hidden (aka condensed mode)
-        )
-        SCROLLDOWN_BTN_TEXT_POS = (
-            (600, 45),  # used when report text is shown
-            (600, 45)  # used when report text is hidden (aka condensed mode)
-        )
+        # constants defining BT banner image and texts/positions of close/hide controls
+        BT_BANNER_IMG_NAME = ".scs_bt_banner.png"
+        BT_BANNER_WITH_CTRLS_IMG_NAME = ".scs_bt_banner_with_ctrls.png"
+        CLOSE_BTN_AREA = (270, 290, -25, -5)
+        CLOSE_BTN_TEXT_POS = (272, -9)
+        CLOSE_BTN_TEXT = "×"
+        HIDE_BTN_AREA = (245, 265, -25, -5)
+        HIDE_BTN_TEXT_POS = (250, -5)
+        HIDE_BTN_TEXT = "–"
+        SCROLLUP_BTN_AREA = (225, 240, -25, -5)
+        SCROLLUP_BTN_TEXT_POS = (226, -9)
+        SCROLLUP_BTN_TEXT = "↑"
+        SCROLLDOWN_BTN_AREA = (205, 220, -25, -5)
+        SCROLLDOWN_BTN_TEXT_POS = (206, -9)
+        SCROLLDOWN_BTN_TEXT = "↓"
+
+    class InventoryMoveType:
+        """Constants related to moving type in operators for inventories items moving.
+        """
+        move_down = "down"
+        move_up = "up"
 
 
 class Icons:
     """Constants related to loading of custom icons.
     """
+
+    default_icon_theme = "white"
 
     class Types:
         """This class saves names of all custom icons for Blender Tools.
@@ -136,8 +120,8 @@ class Icons:
         loc_collider_cylinder = ".19_collider_cylinder.png"
         loc_collider_convex = ".20_collider_convex.png"
         scs_root = ".21_scs_root_object.png"
+        scs_object_menu = ".22_scs_object_menu.png"
         scs_logo = ".icon_scs_bt_logo.png"
-        scs_logo_orange = ".icon_scs_bt_logo_orange.png"
 
         @staticmethod
         def as_list():
@@ -151,7 +135,7 @@ class Icons:
                     Icons.Types.loc_prefab_navigation, Icons.Types.loc_prefab_map, Icons.Types.loc_prefab_trigger,
                     Icons.Types.loc_collider_box, Icons.Types.loc_collider_sphere, Icons.Types.loc_collider_capsule,
                     Icons.Types.loc_collider_cylinder, Icons.Types.loc_collider_convex, Icons.Types.scs_root,
-                    Icons.Types.scs_logo_orange, Icons.Types.scs_logo]
+                    Icons.Types.scs_object_menu, Icons.Types.scs_logo]
 
 
 class Part:
@@ -186,6 +170,8 @@ class Material:
     """Unset value of material substance (used for identifying if this value in material was set)"""
     node_group_prefix = ".SCS_NG_"
     """Prefix for naming node groups used by SCS materials"""
+    prevm_material_name = ".scs_prevm"
+    """Name of the material used on SCS preview models."""
 
 
 class Colors:
@@ -193,8 +179,8 @@ class Colors:
     """
     gamma = 2.2
     """Gamma value used by Blender for correcting display colors."""
-    saturation = 1.15
-    """Amount of saturation for vertex colors in nodes."""
+    prevm_color = (0.36, 0.29, 0.57, 1)
+    """Color array used for preview models."""
 
 
 class LampTools:
@@ -474,21 +460,19 @@ class ConvHlpr:
 
 
 class SCSLigthing:
-    """Constants for scs lighting scene. Lighting scene is created from sun profile loaded from SII file.
+    """Constants for scs lighting.
     """
     scene_name = ".scs_lighting"
     """Name of lighting scene. It should be prefixed with dot to be partially hidden in scene selection theme."""
 
-    ambient_lamps = (
-        (".scs_ambient_z+", (pi, 0, 0), 0.5),
-        (".scs_ambient_z-", (0, 0, 0), 1.1)
-    )
-    """Ambient lamps definitions. Each lamp is defined as (name, direction, energy_factor).
-    There has to be 6 hemi lamps to point in each direction, which should reassemble ambient lights.
-    Energy factor in each of lamps tells percent of given light by that ambient lamp."""
+    sun_lamp_name = ".scs_sun"
+    """Name of scs sun object in the lighting scene."""
 
-    diffuse_lamp_name = ".scs_diffuse"
-    specular_lamp_name = ".scs_specular"
+    default_ambient = (0.3,) * 3
+    default_diffuse = (0.9,) * 3
+    default_specular = (0.5,) * 3
+    default_env = 1.0
+    """Default lighting values used when scs lighting is disabled, gotten from effect/eut/defaults.sii"""
 
 
 class PaintjobTools:
@@ -587,3 +571,10 @@ class PaintjobTools:
         (255, 64, 166)
     )
     """Array of unique colors for building ID mask texture."""
+
+
+class Cache:
+    dir_name = "blender_scs_blender_tools"
+    """Name of the directory inside tmp directory, that will be used for cache storage."""
+    max_size = 40 * 1024 * 1024  # 40MB
+    """Maximum size of tmp directory cache."""

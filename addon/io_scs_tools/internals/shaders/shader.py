@@ -16,13 +16,13 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2015: SCS Software
+# Copyright (C) 2015-2019: SCS Software
 
 import bpy
 from io_scs_tools.utils.printout import lprint
 
 
-def setup_nodes(material, effect, attr_dict, tex_dict, recreate):
+def setup_nodes(material, effect, attr_dict, tex_dict, tex_settings_dict, recreate):
     """Setup material nodes to correctly present given shader from game engine.
 
     :param material: blender material which should be set for proper 3D view visualization
@@ -33,28 +33,22 @@ def setup_nodes(material, effect, attr_dict, tex_dict, recreate):
     :type attr_dict: dict
     :param tex_dict: shader textures which should be set on given material; entry: (texture_type: texture object)
     :type tex_dict: dict
+    :param tex_settings_dict: shader texture settings which should be set on given material; entry: (texture_type: TOBJ settings string)
+    :type tex_settings_dict: dict
     :param recreate: flag indicating if shader nodes should be recreated. Should be triggered if effect name changes.
     :type recreate: bool
     """
 
-    # disable transparency when resetting material
-    if recreate:
-        material.use_transparency = False
-
     # gather possible flavors from effect name
     flavors = {}
     if effect.endswith(".a") or ".a." in effect:
-        flavors["alpha_test"] = material.use_transparency = True
-        material.transparency_method = "Z_TRANSPARENCY"
+        flavors["alpha_test"] = True
 
-    if (effect.endswith(".over") or ".over." in effect) and ".over.dif" not in effect and ".retroreflective" not in effect:
-        flavors["blend_over"] = material.use_transparency = True
-        material.transparency_method = "Z_TRANSPARENCY"
+    if (effect.endswith(".over") or ".over." in effect) and effect.rfind(".over") != effect.rfind(".over.dif") and ".retroreflective" not in effect:
+        flavors["blend_over"] = True
 
     if (effect.endswith(".mult") or ".mult." in effect) and ".mult.dif" not in effect and ".mult2" not in effect:
-
-        flavors["blend_mult"] = material.use_transparency = True
-        material.transparency_method = "Z_TRANSPARENCY"
+        flavors["blend_mult"] = True
 
     if effect.endswith(".tg0") or ".tg0." in effect:
         flavors["tg0"] = True
@@ -63,8 +57,7 @@ def setup_nodes(material, effect, attr_dict, tex_dict, recreate):
         flavors["tg1"] = True
 
     if (effect.endswith(".add") or ".add." in effect) and effect.rfind(".add.env") != effect.rfind(".add"):
-        flavors["blend_add"] = material.use_transparency = True
-        material.transparency_method = "MASK"
+        flavors["blend_add"] = True
 
     if effect.endswith(".tsnmapuv") or ".tsnmapuv." in effect:
         flavors["nmap"] = True
@@ -100,10 +93,9 @@ def setup_nodes(material, effect, attr_dict, tex_dict, recreate):
         flavors["paint"] = True
 
     if effect.endswith(".decal.over") and ".retroreflective" in effect:
-        flavors["retroreflective_decal"] = material.use_transparency = True
-        material.transparency_method = "Z_TRANSPARENCY"
+        flavors["retroreflective_decal"] = True
 
-    __setup_nodes__(material, effect, attr_dict, tex_dict, {}, flavors, recreate)
+    __setup_nodes__(material, effect, attr_dict, tex_dict, tex_settings_dict, {}, flavors, recreate)
 
 
 def set_attribute(material, attr_type, attr_value):
@@ -116,20 +108,33 @@ def set_attribute(material, attr_type, attr_value):
     :param attr_value: value which should be set to attribute in shader
     :type attr_value: object
     """
-    __setup_nodes__(material, material.scs_props.mat_effect_name, {attr_type: attr_value}, {}, {}, {}, False)
+    __setup_nodes__(material, material.scs_props.mat_effect_name, {attr_type: attr_value}, {}, {}, {}, {}, False)
 
 
-def set_texture(material, tex_type, texture):
+def set_texture(material, tex_type, image):
     """Set texture of given type to material.
 
     :param material: blender material
     :type material: bpy.types.Material
     :param tex_type: type of SCS texture (one of: bpy.types.Material.scs_props.get_texture_types().keys())
     :type tex_type: str
-    :param texture: blender texture object
-    :type texture: bpy.types.Texture
+    :param image: blender texture image object
+    :type image: bpy.types.Image
     """
-    __setup_nodes__(material, material.scs_props.mat_effect_name, {}, {tex_type: texture}, {}, {}, False)
+    __setup_nodes__(material, material.scs_props.mat_effect_name, {}, {tex_type: image}, {}, {}, {}, False)
+
+
+def set_texture_settings(material, tex_type, settings):
+    """Set texture settings of given type to material.
+
+    :param material: blender material
+    :type material: bpy.types.Material
+    :param tex_type: type of SCS texture (one of: bpy.types.Material.scs_props.get_texture_types().keys())
+    :type tex_type: str
+    :param settings: binary string of TOBJ settings gotten from tobj import
+    :type settings: str
+    """
+    __setup_nodes__(material, material.scs_props.mat_effect_name, {}, {}, {tex_type: settings}, {}, {}, False)
 
 
 def set_uv(material, tex_type, uv_layer, tex_coord):
@@ -168,10 +173,10 @@ def set_uv(material, tex_type, uv_layer, tex_coord):
                 is_valid_input = False
 
     if is_valid_input:
-        __setup_nodes__(material, material.scs_props.mat_effect_name, {}, {}, {tex_type: uv_layer}, {}, False)
+        __setup_nodes__(material, material.scs_props.mat_effect_name, {}, {}, {}, {tex_type: uv_layer}, {}, False)
 
 
-def __setup_nodes__(material, effect, attr_dict, tex_dict, uvs_dict, flavors_dict, recreate):
+def __setup_nodes__(material, effect, attr_dict, tex_dict, tex_settings_dict, uvs_dict, flavors_dict, recreate):
     """Wrapping setup of nodes for given material in central function.
      It properly setup nodes for 3D view visualization in real time.
 
@@ -183,6 +188,8 @@ def __setup_nodes__(material, effect, attr_dict, tex_dict, uvs_dict, flavors_dic
     :type attr_dict: dict
     :param tex_dict: shader textures which should be set on given material; entry: (texture_type: texture object)
     :type tex_dict: dict
+    :param tex_settings_dict: shader texture settings which should be set on given material; entry: (texture_type: TOBJ settings string)
+    :type tex_settings_dict: dict
     :param uvs_dict: shader uv layers which should be set on given material; entry: (texture_type: string of uv layer)
     :type uvs_dict: dict
     :param flavors_dict: shader flavors which should be set on given material; entry: (flavor_type: flavor_data)
@@ -195,7 +202,7 @@ def __setup_nodes__(material, effect, attr_dict, tex_dict, uvs_dict, flavors_dic
     shader_module = __get_shader__(effect, recreate, material.name)
 
     # prepare material if it's not prepared yet
-    if not material.node_tree:
+    if not material.node_tree or not material.use_nodes:
         material.use_nodes = True
 
     node_tree = material.node_tree
@@ -204,7 +211,6 @@ def __setup_nodes__(material, effect, attr_dict, tex_dict, uvs_dict, flavors_dic
     if recreate:
         __clean_node_tree__(node_tree)
         shader_module.init(node_tree)
-        shader_module.set_material(node_tree, material)
 
     # set flavors first so any attributes changing flavor part of shader can take effect
     for flavor_type in flavors_dict:
@@ -222,7 +228,7 @@ def __setup_nodes__(material, effect, attr_dict, tex_dict, uvs_dict, flavors_dic
         else:
             lprint("D Unsupported set_attribute with type %r called on shader %r", (attr_type, shader_module.get_name()))
 
-    # set textures, uv layers, flavors and vertex color
+    # set textures, texture settings, uv layers and flavors
     for tex_type in tex_dict:
         shader_set_texture = getattr(shader_module, "set_" + tex_type + "_texture", None)
         if shader_set_texture:
@@ -230,12 +236,23 @@ def __setup_nodes__(material, effect, attr_dict, tex_dict, uvs_dict, flavors_dic
         else:
             lprint("D Unsupported set_texture with type %r called on shader %r", (tex_type, shader_module.get_name()))
 
+    for tex_type in tex_settings_dict:
+        shader_set_texture_settings = getattr(shader_module, "set_" + tex_type + "_texture_settings", None)
+        if shader_set_texture_settings:
+            shader_set_texture_settings(node_tree, tex_settings_dict[tex_type])
+        else:
+            lprint("D Unsupported set_texture_settings with type %r called on shader %r", (tex_type, shader_module.get_name()))
+
     for tex_type in uvs_dict:
         shader_set_uv = getattr(shader_module, "set_" + tex_type + "_uv", None)
         if shader_set_uv:
             shader_set_uv(node_tree, uvs_dict[tex_type])
         else:
             lprint("D Unsupported set_uv with type %r called on shader %r", (tex_type, shader_module.get_name()))
+
+    # finalize shader on recreate (set material blending method, backface culling etc.)
+    if recreate:
+        shader_module.finalize(node_tree, material)
 
 
 def __clean_node_tree__(node_tree):
@@ -247,8 +264,10 @@ def __clean_node_tree__(node_tree):
 
     # clean nodes and custom props
     node_tree.nodes.clear()
-    for key in node_tree.keys():
-        del node_tree[key]
+
+    # FIXME: enable it again after: https://developer.blender.org/T68406 is resolved!
+    # for key in node_tree.keys():
+    #     del node_tree[key]
 
 
 def __get_shader__(effect, report_not_found, mat_name):

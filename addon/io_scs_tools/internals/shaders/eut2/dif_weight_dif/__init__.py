@@ -16,19 +16,20 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2015: SCS Software
-
+# Copyright (C) 2015-2019: SCS Software
 
 from io_scs_tools.consts import Mesh as _MESH_consts
 from io_scs_tools.internals.shaders.eut2.dif import Dif
 from io_scs_tools.internals.shaders.flavors import alpha_test
 from io_scs_tools.internals.shaders.flavors import blend_over
 from io_scs_tools.internals.shaders.flavors import blend_add
+from io_scs_tools.internals.shaders.flavors import blend_mult
 from io_scs_tools.internals.shaders.flavors import tg1
+from io_scs_tools.utils import material as _material_utils
 
 
 class DifWeightDif(Dif):
-    SEC_GEOM_NODE = "SecGeom"
+    SEC_UVMAP_NODE = "SecUVMap"
     OVER_TEX_NODE = "OverTex"
     SPEC_MULT_NODE = "SpecMultiplier"
     BASE_OVER_MIX_NODE = "BaseOverMix"
@@ -57,27 +58,28 @@ class DifWeightDif(Dif):
         vcol_group_n = node_tree.nodes[Dif.VCOL_GROUP_NODE]
         base_tex_n = node_tree.nodes[Dif.BASE_TEX_NODE]
         spec_col_n = node_tree.nodes[Dif.SPEC_COL_NODE]
+        vcol_scale_n = node_tree.nodes[Dif.VCOLOR_SCALE_NODE]
         vcol_mult_n = node_tree.nodes[Dif.VCOLOR_MULT_NODE]
-        out_mat_n = node_tree.nodes[Dif.OUT_MAT_NODE]
+        compose_lighting_n = node_tree.nodes[Dif.COMPOSE_LIGHTING_NODE]
 
         # delete existing
         node_tree.nodes.remove(node_tree.nodes[Dif.OPACITY_NODE])
 
         # node creation
-        sec_geom_n = node_tree.nodes.new("ShaderNodeGeometry")
-        sec_geom_n.name = sec_geom_n.label = DifWeightDif.SEC_GEOM_NODE
-        sec_geom_n.location = (start_pos_x - pos_x_shift, start_pos_y + 1200)
-        sec_geom_n.uv_layer = _MESH_consts.none_uv
+        sec_uv_n = node_tree.nodes.new("ShaderNodeUVMap")
+        sec_uv_n.name = sec_uv_n.label = DifWeightDif.SEC_UVMAP_NODE
+        sec_uv_n.location = (start_pos_x - pos_x_shift, start_pos_y + 1100)
+        sec_uv_n.uv_map = _MESH_consts.none_uv
 
-        over_tex_n = node_tree.nodes.new("ShaderNodeTexture")
+        over_tex_n = node_tree.nodes.new("ShaderNodeTexImage")
         over_tex_n.name = over_tex_n.label = DifWeightDif.OVER_TEX_NODE
         over_tex_n.location = (start_pos_x + pos_x_shift, start_pos_y + 1200)
+        over_tex_n.width = 140
 
-        spec_mult_n = node_tree.nodes.new("ShaderNodeMixRGB")
+        spec_mult_n = node_tree.nodes.new("ShaderNodeVectorMath")
         spec_mult_n.name = spec_mult_n.label = DifWeightDif.SPEC_MULT_NODE
         spec_mult_n.location = (start_pos_x + pos_x_shift * 4, start_pos_y + 1900)
-        spec_mult_n.blend_type = "MULTIPLY"
-        spec_mult_n.inputs['Fac'].default_value = 1
+        spec_mult_n.operation = "MULTIPLY"
 
         base_over_mix_n = node_tree.nodes.new("ShaderNodeMixRGB")
         base_over_mix_n.name = base_over_mix_n.label = DifWeightDif.BASE_OVER_MIX_NODE
@@ -85,7 +87,7 @@ class DifWeightDif(Dif):
         base_over_mix_n.blend_type = "MIX"
 
         # links creation
-        node_tree.links.new(over_tex_n.inputs['Vector'], sec_geom_n.outputs['UV'])
+        node_tree.links.new(over_tex_n.inputs['Vector'], sec_uv_n.outputs['UV'])
 
         # pass 1
         node_tree.links.new(base_over_mix_n.inputs['Fac'], vcol_group_n.outputs['Vertex Color Alpha'])
@@ -93,13 +95,53 @@ class DifWeightDif(Dif):
         node_tree.links.new(base_over_mix_n.inputs['Color2'], over_tex_n.outputs['Color'])
 
         # pass 2
-        node_tree.links.new(spec_mult_n.inputs['Color1'], spec_col_n.outputs['Color'])
-        node_tree.links.new(spec_mult_n.inputs['Color2'], vcol_group_n.outputs['Vertex Color'])
+        node_tree.links.new(spec_mult_n.inputs[0], spec_col_n.outputs[0])
+        node_tree.links.new(spec_mult_n.inputs[1], vcol_scale_n.outputs[0])
 
-        node_tree.links.new(vcol_mult_n.inputs['Color2'], base_over_mix_n.outputs['Color'])
+        node_tree.links.new(vcol_mult_n.inputs[1], base_over_mix_n.outputs['Color'])
 
         # pass to material
-        node_tree.links.new(out_mat_n.inputs['Spec'], spec_mult_n.outputs['Color'])
+        node_tree.links.new(compose_lighting_n.inputs['Specular Color'], spec_mult_n.outputs[0])
+        node_tree.links.new(compose_lighting_n.inputs['Alpha'], base_tex_n.outputs['Alpha'])
+
+    @staticmethod
+    def finalize(node_tree, material):
+        """Finalize node tree and material settings. Should be called as last.
+
+        :param node_tree: node tree on which this shader should be finalized
+        :type node_tree: bpy.types.NodeTree
+        :param material: material used for this shader
+        :type material: bpy.types.Material
+        """
+
+        material.use_backface_culling = True
+        material.blend_method = "OPAQUE"
+
+        # set proper blend method
+        if alpha_test.is_set(node_tree):
+            material.blend_method = "CLIP"
+            material.alpha_threshold = 0.05
+
+            # add alpha test pass if multiply blend enabled, where alphed pixels shouldn't be multiplied as they are discarded
+            if blend_mult.is_set(node_tree):
+                compose_lighting_n = node_tree.nodes[Dif.COMPOSE_LIGHTING_NODE]
+
+                # alpha test pass has to get fully opaque input, thus remove transparency linkage
+                if compose_lighting_n.inputs['Alpha'].links:
+                    node_tree.links.remove(compose_lighting_n.inputs['Alpha'].links[0])
+
+                shader_from = compose_lighting_n.outputs['Shader']
+                alpha_from = node_tree.nodes[Dif.BASE_TEX_NODE].outputs[0]
+                shader_to = compose_lighting_n.outputs['Shader'].links[0].to_socket
+
+                alpha_test.add_pass(node_tree, shader_from, alpha_from, shader_to)
+
+        if blend_add.is_set(node_tree):
+            material.blend_method = "BLEND"
+        if blend_mult.is_set(node_tree):
+            material.blend_method = "BLEND"
+        if blend_over.is_set(node_tree):
+            material.blend_method = "BLEND"
 
     @staticmethod
     def set_reflection2(node_tree, value):
@@ -114,16 +156,27 @@ class DifWeightDif(Dif):
         pass  # NOTE: reflection attribute doesn't change anything in rendered material, so pass it
 
     @staticmethod
-    def set_over_texture(node_tree, texture):
+    def set_over_texture(node_tree, image):
         """Set over texture to shader.
 
         :param node_tree: node tree of current shader
         :type node_tree: bpy.types.NodeTree
-        :param texture: texture which should be assignet to over texture node
-        :type texture: bpy.types.Texture
+        :param image: texture image which should be assignet to over texture node
+        :type image: bpy.types.Texture
         """
 
-        node_tree.nodes[DifWeightDif.OVER_TEX_NODE].texture = texture
+        node_tree.nodes[DifWeightDif.OVER_TEX_NODE].image = image
+
+    @staticmethod
+    def set_over_texture_settings(node_tree, settings):
+        """Set over texture settings to shader.
+
+        :param node_tree: node tree of current shader
+        :type node_tree: bpy.types.NodeTree
+        :param settings: binary string of TOBJ settings gotten from tobj import
+        :type settings: str
+        """
+        _material_utils.set_texture_settings_to_node(node_tree.nodes[DifWeightDif.OVER_TEX_NODE], settings)
 
     @staticmethod
     def set_over_uv(node_tree, uv_layer):
@@ -138,70 +191,7 @@ class DifWeightDif(Dif):
         if uv_layer is None or uv_layer == "":
             uv_layer = _MESH_consts.none_uv
 
-        node_tree.nodes[DifWeightDif.SEC_GEOM_NODE].uv_layer = uv_layer
-
-    @staticmethod
-    def set_alpha_test_flavor(node_tree, switch_on):
-        """Set alpha test flavor to this shader.
-
-        :param node_tree: node tree of current shader
-        :type node_tree: bpy.types.NodeTree
-        :param switch_on: flag indication if alpha test should be switched on or off
-        :type switch_on: bool
-        """
-
-        if switch_on and not blend_over.is_set(node_tree):
-            out_node = node_tree.nodes[Dif.OUT_MAT_NODE]
-            in_node = node_tree.nodes[Dif.BASE_TEX_NODE]
-            location = (out_node.location.x - 185 * 2, out_node.location.y - 500)
-
-            alpha_test.init(node_tree, location, in_node.outputs['Value'], out_node.inputs['Alpha'])
-        else:
-            alpha_test.delete(node_tree)
-
-    @staticmethod
-    def set_blend_over_flavor(node_tree, switch_on):
-        """Set blend over flavor to this shader.
-
-        :param node_tree: node tree of current shader
-        :type node_tree: bpy.types.NodeTree
-        :param switch_on: flag indication if blend over should be switched on or off
-        :type switch_on: bool
-        """
-
-        # remove alpha test flavor if it was set already. Because these two can not coexist
-        if alpha_test.is_set(node_tree):
-            DifWeightDif.set_alpha_test_flavor(node_tree, False)
-
-        out_node = node_tree.nodes[Dif.OUT_MAT_NODE]
-        in_node = node_tree.nodes[Dif.BASE_TEX_NODE]
-
-        if switch_on:
-            blend_over.init(node_tree, in_node.outputs['Value'], out_node.inputs['Alpha'])
-        else:
-            blend_over.delete(node_tree)
-
-    @staticmethod
-    def set_blend_add_flavor(node_tree, switch_on):
-        """Set blend add flavor to this shader.
-
-        :param node_tree: node tree of current shader
-        :type node_tree: bpy.types.NodeTree
-        :param switch_on: flag indication if blend add should be switched on or off
-        :type switch_on: bool
-        """
-
-        # remove alpha test flavor if it was set already. Because these two can not coexist
-        if alpha_test.is_set(node_tree):
-            DifWeightDif.set_alpha_test_flavor(node_tree, False)
-
-        out_node = node_tree.nodes[Dif.OUT_MAT_NODE]
-        in_node = node_tree.nodes[Dif.BASE_TEX_NODE]
-
-        if switch_on:
-            blend_add.init(node_tree, in_node.outputs['Value'], out_node.inputs['Alpha'])
-        else:
-            blend_add.delete(node_tree)
+        node_tree.nodes[DifWeightDif.SEC_UVMAP_NODE].uv_map = uv_layer
 
     @staticmethod
     def set_tg1_flavor(node_tree, switch_on):
@@ -215,13 +205,13 @@ class DifWeightDif(Dif):
 
         if switch_on and not tg1.is_set(node_tree):
 
-            out_node = node_tree.nodes[DifWeightDif.SEC_GEOM_NODE]
+            out_node = node_tree.nodes[Dif.GEOM_NODE]
             in_node = node_tree.nodes[DifWeightDif.OVER_TEX_NODE]
 
             out_node.location.x -= 185
             location = (out_node.location.x + 185, out_node.location.y)
 
-            tg1.init(node_tree, location, out_node.outputs["Global"], in_node.inputs["Vector"])
+            tg1.init(node_tree, location, out_node.outputs["Position"], in_node.inputs["Vector"])
 
         elif not switch_on:
 

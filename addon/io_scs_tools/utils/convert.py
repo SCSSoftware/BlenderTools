@@ -16,7 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2013-2014: SCS Software
+# Copyright (C) 2013-2019: SCS Software
 
 import struct
 import math
@@ -25,6 +25,7 @@ from io_scs_tools.consts import Colors as _COL_consts
 from io_scs_tools.utils.printout import lprint
 from io_scs_tools.utils import math as _math_utils
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
+from io_scs_tools.utils import get_scs_inventories as _get_scs_inventories
 
 
 def linear_to_srgb(value):
@@ -32,7 +33,7 @@ def linear_to_srgb(value):
     NOTE: taken from game code
 
     :param value: list of floats or float
-    :type value: float | list[float]
+    :type value: float | collections.Iterable[float]
     :return: converted color
     :rtype: float | list[float]
     """
@@ -49,6 +50,36 @@ def linear_to_srgb(value):
         else:
             a = 0.055
             vals[i] = (v ** (1.0 / 2.4) * (1.0 + a)) - a
+
+    if is_float:
+        return vals[0]
+    else:
+        return vals
+
+
+def srgb_to_linear(value):
+    """Converts srgb color to linear colorspace. Function can convert single float or list of floats.
+    NOTE: taken from game code
+
+    :param value: list of floats or float
+    :type value: float | collections.Iterable[float]
+    :return: converted color
+    :rtype: float | list[float]
+    """
+
+    is_float = isinstance(value, float)
+    if is_float:
+        vals = [value]
+    else:
+        vals = list(value)
+
+    for i, v in enumerate(vals):
+
+        if v <= 0.04045:
+            vals[i] = v / 12.92
+        else:
+            a = 0.055
+            vals[i] = ((v + a) / (1.0 + a)) ** 2.4
 
     if is_float:
         return vals[0]
@@ -75,7 +106,7 @@ def pre_gamma_corrected_col(color):
     return c
 
 
-def to_node_color(color):
+def to_node_color(color, from_linear=False):
     """Gets color ready for assigning to Blender nodes.
     1. Sets minimal HSV value attribute for rendering
     2. Applies pre gamma correction
@@ -83,11 +114,17 @@ def to_node_color(color):
 
     :param color: color to be converted for usage in node
     :type color: mathutils.Color | collections.Iterable[float]
+    :param from_linear: should color first be converted from linear space?
+    :type from_linear: bool
     :return: RGBA as tuple of floats
     :rtype: tuple[float]
     """
 
-    c = Color(color[:3])  # copy color so changes won't reflect on original passed color object
+    srgb_color = color
+    if from_linear:
+        srgb_color = linear_to_srgb(color)
+
+    c = Color(srgb_color[:3])  # copy color so changes won't reflect on original passed color object
 
     c = pre_gamma_corrected_col(c)
 
@@ -173,7 +210,7 @@ def hex_string_to_float(string):
     :return: Float value or Error string
     :rtype: float or str
     """
-    if type(string) is str:
+    if isinstance(string, str):
         if string[0] == '&':
             if len(string) == 9:
                 byte = bytearray.fromhex(string[1:])
@@ -210,7 +247,7 @@ def convert_location_to_scs(location, offset_matrix=Matrix()):
     :rtype: Vector
     """
     scs_globals = _get_scs_globals()
-    return Matrix.Scale(scs_globals.export_scale, 4) * scs_to_blend_matrix().inverted() * (offset_matrix.inverted() * location)
+    return Matrix.Scale(scs_globals.export_scale, 4) @ scs_to_blend_matrix().inverted() @ (offset_matrix.inverted() @ location)
 
 
 def change_to_scs_xyz_coordinates(vec, scale):
@@ -235,7 +272,7 @@ def change_to_blender_quaternion_coordinates(rot):
     :rtype: Quaternion
     """
     quat = Quaternion((rot[0], rot[1], rot[2], rot[3]))
-    return (scs_to_blend_matrix() * quat.to_matrix().to_4x4() * scs_to_blend_matrix().inverted()).to_quaternion()
+    return (scs_to_blend_matrix() @ quat.to_matrix().to_4x4() @ scs_to_blend_matrix().inverted()).to_quaternion()
 
 
 def change_to_scs_quaternion_coordinates(rot):
@@ -247,7 +284,7 @@ def change_to_scs_quaternion_coordinates(rot):
     :rtype: Quaternion
     """
     quat = Quaternion((rot[0], rot[1], rot[2], rot[3]))
-    return (scs_to_blend_matrix().inverted() * quat.to_matrix().to_4x4() * scs_to_blend_matrix()).to_quaternion()
+    return (scs_to_blend_matrix().inverted() @ quat.to_matrix().to_4x4() @ scs_to_blend_matrix()).to_quaternion()
 
 
 def change_to_scs_uv_coordinates(uvs):
@@ -293,7 +330,7 @@ def mat3_to_vec_roll(mat):
     # print('  mat_3x3[2]:\n%s' % str(mat_3x3.col[2]))
 
     zero_angle_matrix = vec_roll_to_mat3(axis, 0)
-    delta_matrix = zero_angle_matrix.inverted() * mat_3x3
+    delta_matrix = zero_angle_matrix.inverted() @ mat_3x3
     angle = math.atan2(delta_matrix.col[2][0], delta_matrix.col[2][2])
     return axis, angle
 
@@ -329,7 +366,7 @@ def vec_roll_to_mat3(axis, roll):
         b_matrix[3] = (0, 0, 0, 1)
 
     roll_matrix = Matrix.Rotation(roll, 4, nor)
-    return (roll_matrix * b_matrix).to_3x3()
+    return (roll_matrix @ b_matrix).to_3x3()
 
 
 def str_to_int(str_value):
@@ -358,7 +395,7 @@ def hookup_id_to_hookup_name(hookup_id):
     :rtype: str
     """
     hookup_name = hookup_id
-    for rec in _get_scs_globals().scs_hookup_inventory:
+    for rec in _get_scs_inventories().hookups:
         rec_id = rec.name.split(':', 1)[1].strip()
         if rec_id == hookup_id:
             hookup_name = rec.name

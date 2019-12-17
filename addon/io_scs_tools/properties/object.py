@@ -16,7 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2013-2014: SCS Software
+# Copyright (C) 2013-2019: SCS Software
 
 import bpy
 from bpy.props import (StringProperty,
@@ -68,8 +68,8 @@ class ObjectLooksInventoryItem(bpy.types.PropertyGroup):
             if new_name != self.name:
                 self.name = new_name
 
-    name = StringProperty(name="Look Name", default=_LOOK_consts.default_name, update=name_update)
-    id = IntProperty(name="Unique ID of this look")
+    name: StringProperty(name="Look Name", default=_LOOK_consts.default_name, update=name_update)
+    id: IntProperty(name="Unique ID of this look")
 
 
 class ObjectPartInventoryItem(bpy.types.PropertyGroup):
@@ -126,14 +126,14 @@ class ObjectPartInventoryItem(bpy.types.PropertyGroup):
         # backup current name for checking children on next renaming
         self["scs_part_old_name"] = self.name
 
-    name = StringProperty(name="Part Name", default=_PART_consts.default_name, update=name_update)
+    name: StringProperty(name="Part Name", default=_PART_consts.default_name, update=name_update)
 
 
-class ObjectVariantPartInclusion(bpy.types.PropertyGroup):
+class ObjectVariantPartInclusionItem(bpy.types.PropertyGroup):
     """
     Variant to Part references, which gets saved within "SceneVariantInventory" into *.blend file.
     """
-    include = BoolProperty(name="Part is included in the Variant", default=False)
+    include: BoolProperty(name="Part is included in the Variant", default=False)
 
 
 class ObjectVariantInventoryItem(bpy.types.PropertyGroup):
@@ -165,8 +165,8 @@ class ObjectVariantInventoryItem(bpy.types.PropertyGroup):
             if new_name != self.name:
                 self.name = new_name
 
-    name = StringProperty(name="Variant Name", default=_VARIANT_consts.default_name, update=name_update)
-    parts = CollectionProperty(type=ObjectVariantPartInclusion)
+    name: StringProperty(name="Variant Name", default=_VARIANT_consts.default_name, update=name_update)
+    parts: CollectionProperty(type=ObjectVariantPartInclusionItem)
 
 
 class ObjectAnimationInventoryItem(bpy.types.PropertyGroup):
@@ -226,34 +226,34 @@ class ObjectAnimationInventoryItem(bpy.types.PropertyGroup):
             else:
                 active_object.animation_data.action = None
 
-    name = StringProperty(name="Animation Name", default=_VARIANT_consts.default_name)
-    export = BoolProperty(
+    name: StringProperty(name="Animation Name", default=_VARIANT_consts.default_name)
+    export: BoolProperty(
         name="Export Inclusion",
         description="Include this SCS animation on Export and write it as SCS Animation file (PIA)",
         default=True,
     )
-    action = StringProperty(
+    action: StringProperty(
         name="Animation Action",
         description="Action used for this SCS animation",
         default="",
         options={'HIDDEN'},
         update=anim_action_update
     )
-    anim_start = IntProperty(
+    anim_start: IntProperty(
         name="Animation Start",
         description="Action start frame for this SCS animation",
         default=1,
         options={'HIDDEN'},
         update=anim_range_update
     )
-    anim_end = IntProperty(
+    anim_end: IntProperty(
         name="Animation End",
         description="Action end frame for this SCS animation",
         default=250,
         options={'HIDDEN'},
         update=anim_range_update
     )
-    length = FloatProperty(
+    length: FloatProperty(
         name="Animation Length",
         description="Total length of this SCS Animation (in seconds)",
         default=10.0,
@@ -272,8 +272,8 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
     """
 
     # HELPER VARIABLES
-    locators_orig_draw_size = FloatProperty(name="Locator Original Draw Size")
-    locators_orig_draw_type = StringProperty(name="Locator Original Draw Type")
+    locators_orig_display_size: FloatProperty(name="Locator Original Display Size")
+    locators_orig_display_type: StringProperty(name="Locator Original Display Type")
 
     def empty_object_type_items(self, context):
         """Returns object type items in real time, because of accessing to custom icons.
@@ -289,16 +289,16 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
         if context.object:
 
             if self.empty_object_type == "SCS_Root":
-                context.object.empty_draw_size = 5.0
-                context.object.empty_draw_type = "ARROWS"
+                context.object.empty_display_size = 5.0
+                context.object.empty_display_type = "ARROWS"
                 context.object.show_name = True
             else:
-                context.object.empty_draw_size = 1.0
-                context.object.empty_draw_type = "PLAIN_AXES"
+                context.object.empty_display_size = 1.0
+                context.object.empty_display_type = "PLAIN_AXES"
                 context.object.show_name = False
 
     # EMPTY OBJECT TYPE
-    empty_object_type = EnumProperty(
+    empty_object_type: EnumProperty(
         name="SCS Object Type",
         description="Settings for Special SCS Objects",
         items=empty_object_type_items,
@@ -306,24 +306,24 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
     )
 
     # SCS SKELETON OBJECTS
-    scs_skeleton_custom_export_dirpath = StringProperty(
+    scs_skeleton_custom_export_dirpath: StringProperty(
         name="Skeleton Custom Export Path",
         description="Custom export file path for skeleton PIS file (if empty skeleton is exported beside PIM file).",
         default="",
     )
-    scs_skeleton_custom_name = StringProperty(
+    scs_skeleton_custom_name: StringProperty(
         name="Skeleton Custom Name",
         description="Custom name for SCS Skeleton PIS file (if empty name of skeleton file is the same as PIM file).",
         default="",
     )
 
     # SCS GAME OBJECTS
-    scs_root_object_export_enabled = BoolProperty(
+    scs_root_object_export_enabled: BoolProperty(
         name="Export",
         description="Enable / disable export of all object's children as single 'SCS Game Object'",
         default=True,
     )
-    scs_root_animated = EnumProperty(
+    scs_root_animated: EnumProperty(
         name="Animation Output",
         description="Animation Output",
         items=(
@@ -332,24 +332,24 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
         ),
         default='rigid',
     )
-    scs_root_object_allow_custom_path = BoolProperty(
+    scs_root_object_allow_custom_path: BoolProperty(
         name="Allow Custom Export File Path",
         description="Allow use of custom export file path for this 'SCS Game Object'",
         default=False,
     )
-    scs_root_object_export_filepath = StringProperty(
+    scs_root_object_export_filepath: StringProperty(
         name="Custom Export File Path",
         description="Custom export file path for this 'SCS Game Object'",
         default="//",
         # subtype="FILE_PATH",
         subtype='NONE',
     )
-    scs_root_object_allow_anim_custom_path = BoolProperty(
+    scs_root_object_allow_anim_custom_path: BoolProperty(
         name="Allow Custom Animations Export File Path",
         description="Allow use of custom export file path for animations of this 'SCS Game Object'",
         default=False,
     )
-    scs_root_object_anim_export_filepath = StringProperty(
+    scs_root_object_anim_export_filepath: StringProperty(
         name="Custom Animations Export File Path",
         description="Custom export file path for animations of this 'SCS Game Object'",
         default="//",
@@ -395,7 +395,7 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
     def active_scs_part_set(self, value):
         self["active_scs_part_value"] = value
 
-    active_scs_part = IntProperty(
+    active_scs_part: IntProperty(
         name="Active SCS Part",
         description="Active SCS Part for current SCS Root Object",
         default=0,
@@ -426,14 +426,14 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
                 if scs_root:
                     _looks.apply_active_look(scs_root)
 
-    active_scs_look = IntProperty(
+    active_scs_look: IntProperty(
         name="Active SCS Look",
         description="Active SCS Look for current SCS Game Object",
         options={'HIDDEN'},
         get=get_active_scs_look,
         set=set_active_scs_look
     )
-    active_scs_variant = IntProperty(
+    active_scs_variant: IntProperty(
         name="Active SCS Variant",
         description="Active SCS Variant for current SCS Game Object",
         default=0,
@@ -493,7 +493,7 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
             print('Wrong Animation index %i/%i!' % (active_scs_anim_i, len(scs_object_anim_inventory)))
         return None
 
-    active_scs_animation = IntProperty(
+    active_scs_animation: IntProperty(
         name="Active SCS Animation",
         description="Active SCS Animation for current SCS Game Object",
         default=0,
@@ -504,7 +504,7 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
         update=active_scs_animation_update,
     )
 
-    scs_part = StringProperty(
+    scs_part: StringProperty(
         name="SCS Part",
         description="SCS Part for active object (type a new name to create new SCS Part)",
         default=_PART_consts.default_name,
@@ -512,13 +512,13 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
         subtype='NONE',
     )
 
-    object_identity = StringProperty(
+    object_identity: StringProperty(
         name="Object Identity",
         default="",
         options={'HIDDEN'},
         subtype='NONE',
     )
-    parent_identity = StringProperty(
+    parent_identity: StringProperty(
         name="Parent Identity",
         default="",
         options={'HIDDEN'},
@@ -538,8 +538,8 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
         if _preview_models.load(obj, deep_reload=True):
 
             # fix selection because in case of actual loading model from file selection will be messed up
-            obj.select = True
-            bpy.context.scene.objects.active = obj
+            obj.select_set(True)
+            bpy.context.view_layer.objects.active = obj
 
         else:
 
@@ -560,7 +560,7 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
             _preview_models.unload(obj)
         return None
 
-    locator_preview_model_path = StringProperty(
+    locator_preview_model_path: StringProperty(
         name="Preview Model",
         description="Preview model filepath",
         default="",
@@ -568,13 +568,13 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
         subtype='NONE',
         update=locator_preview_model_path_update,
     )
-    locator_show_preview_model = BoolProperty(
+    locator_show_preview_model: BoolProperty(
         name="Show Preview Model",
         description="Show preview model",
         default=True,
         update=locator_show_preview_model_update,
     )
-    locator_preview_model_present = BoolProperty(
+    locator_preview_model_present: BoolProperty(
         name="Preview Model Exists",
         default=False,
     )
@@ -587,16 +587,16 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
 
             if "scs_props" in child.data and child.data.scs_props.locator_preview_model_path != "":
 
-                child.draw_type = obj.scs_props.locator_preview_model_type
+                child.display_type = obj.scs_props.locator_preview_model_type
 
-    locator_preview_model_type = EnumProperty(
+    locator_preview_model_type: EnumProperty(
         name="Draw Type",
         description="Maximum draw type to display preview model with in viewport",
         items=(
             # ('TEXTURED', "Textured", "Draw the preview model with textures (if textures are enabled in the viewport)", 'TEXTURE_SHADED', 0),
-            ('SOLID', "Solid", "Draw the preview model as a solid (if solid drawing is enabled in the viewport)", 'SOLID', 1),
-            ('WIRE', "Wire", "Draw the bounds of the preview model", 'WIRE', 2),
-            ('BOUNDS', "Bounds", "Draw the preview model with textures (if textures are enabled in the viewport)", 'BBOX', 3),
+            ('SOLID', "Solid", "Draw the preview model as a solid (if solid drawing is enabled in the viewport)", 'SHADING_SOLID', 1),
+            ('WIRE', "Wire", "Draw the bounds of the preview model", 'SHADING_WIRE', 2),
+            ('BOUNDS', "Bounds", "Draw the preview model with textures (if textures are enabled in the viewport)", 'SHADING_BBOX', 3),
         ),
         default='WIRE',
         update=locator_preview_model_type_update
@@ -651,14 +651,14 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
                 obj.scs_props.scs_part = _PART_consts.default_name
 
     # SCS LOCATORS
-    locator_type = EnumProperty(
+    locator_type: EnumProperty(
         name="Type",
         description="Locator type",
         items=locator_type_items,
         update=locator_type_update,
     )
     # LOCATORS - MODELS
-    locator_model_hookup = StringProperty(
+    locator_model_hookup: StringProperty(
         name="Hookup",
         description="Hookup",
         default="",
@@ -675,27 +675,27 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
         ]
 
     # LOCATORS - COLLIDERS
-    locator_collider_type = EnumProperty(
+    locator_collider_type: EnumProperty(
         name="Collider Type",
         description="Collider locator type",
         items=locator_collider_type_items,
     )
-    locator_collider_wires = BoolProperty(
+    locator_collider_wires: BoolProperty(
         name="Collider Wireframes",
         description="Display wireframes for this collider",
         default=True,
     )
-    locator_collider_faces = BoolProperty(
+    locator_collider_faces: BoolProperty(
         name="Collider Faces",
         description="Display faces for this collider",
         default=True,
     )
-    locator_collider_centered = BoolProperty(
+    locator_collider_centered: BoolProperty(
         name="Locator Centered",
         description="Make locator centered",
         default=False,
     )
-    locator_collider_mass = FloatProperty(
+    locator_collider_mass: FloatProperty(
         name="Mass Weight",
         description="Mass of the element",
         default=1.0,
@@ -704,7 +704,7 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
         unit='NONE',
     )
     # TODO: MATERIAL could be probably loaded from file ".../root/maya/shared/AEModelLocatorTemplate.mel"
-    locator_collider_material = EnumProperty(
+    locator_collider_material: EnumProperty(
         name="Material",
         description="Collider's physical material",
         items=(
@@ -713,7 +713,7 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
         default='und',
     )
     # LOCATORS - COLLIDER - BOX
-    locator_collider_box_x = FloatProperty(
+    locator_collider_box_x: FloatProperty(
         name="Box X Dimension",
         description="Box X dimension",
         default=1.0,
@@ -722,7 +722,7 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
         subtype='NONE',
         unit='NONE',
     )
-    locator_collider_box_y = FloatProperty(
+    locator_collider_box_y: FloatProperty(
         name="Box Y Dimension",
         description="Box Y dimension",
         default=1.0,
@@ -731,7 +731,7 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
         subtype='NONE',
         unit='NONE',
     )
-    locator_collider_box_z = FloatProperty(
+    locator_collider_box_z: FloatProperty(
         name="Box Z Dimension",
         description="Box Z dimension",
         default=1.0,
@@ -741,7 +741,7 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
         unit='NONE',
     )
     # LOCATORS - COLLIDER - SPHERE, CAPSULE, CYLINDER
-    locator_collider_dia = FloatProperty(
+    locator_collider_dia: FloatProperty(
         name="Diameter",
         description="Collider diameter",
         default=2.0,
@@ -750,7 +750,7 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
         subtype='NONE',
         unit='NONE',
     )
-    locator_collider_len = FloatProperty(
+    locator_collider_len: FloatProperty(
         name="Length",
         description="Collider length",
         default=2.0,
@@ -772,7 +772,7 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
         if context.active_object:
             _object_utils.update_convex_hull_margins(context.active_object)
 
-    locator_collider_margin = FloatProperty(
+    locator_collider_margin: FloatProperty(
         name="Collision Margin",
         description="Collision margin of the element",
         default=0.0,
@@ -781,7 +781,7 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
         unit='NONE',
         update=locator_collider_margin_update
     )
-    locator_collider_vertices = IntProperty(
+    locator_collider_vertices: IntProperty(
         name="Number of Convex Hull Vertices",
         description="Number of convex hull vertices",
         default=0,
@@ -806,7 +806,7 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
         self.locator_type_update(context)
 
     # LOCATORS - PREFABS
-    locator_prefab_type = EnumProperty(
+    locator_prefab_type: EnumProperty(
         name="Prefab Type",
         description="Prefab locator type",
         items=locator_prefab_type_items,
@@ -816,7 +816,7 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
     enum_con_node_index_items = OrderedDict()
     for i in range(_PL_consts.PREFAB_NODE_COUNT_MAX):
         enum_con_node_index_items[i] = (str(i), str(i), "")
-    locator_prefab_con_node_index = EnumProperty(
+    locator_prefab_con_node_index: EnumProperty(
         name="Node Index",
         description="Node index",
         items=enum_con_node_index_items.values(),
@@ -824,8 +824,8 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
     )
     # LOCATORS - PREFAB - SIGNS
     # Following String property is fed from SIGN MODEL data list, which is usually loaded from
-    # "//base/def/world/sign.sii" file and stored at "scs_globals.scs_sign_model_inventory".
-    locator_prefab_sign_model = StringProperty(
+    # "//base/def/world/sign.sii" file and stored at "scs_inventories.sign_models".
+    locator_prefab_sign_model: StringProperty(
         name="Sign Model",
         description="Sign model",
         default="",
@@ -861,7 +861,7 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
         (_PL_consts.PSP.WEIGHT_CAT_POS, (str(_PL_consts.PSP.WEIGHT_CAT_POS), "Weight Station CAT", "")),
     ])
     # LOCATORS - PREFAB - SPAWN POINTS
-    locator_prefab_spawn_type = EnumProperty(
+    locator_prefab_spawn_type: EnumProperty(
         name="Spawn Type",
         description="Spawn type",
         items=enum_spawn_type_items.values(),
@@ -871,15 +871,15 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
     enum_tsem_id_items = OrderedDict([(-1, ('-1', "None", ""))])
     for i in range(_PL_consts.TSEM_COUNT_MAX):
         enum_tsem_id_items[i] = (str(i), str(i), "")
-    locator_prefab_tsem_id = EnumProperty(
+    locator_prefab_tsem_id: EnumProperty(
         name="ID",
         description="ID",
         items=enum_tsem_id_items.values(),
         default='-1',
     )
     # Following String property is fed from TRAFFIC SEMAPHORE PROFILES data list, which is usually loaded from
-    # "//base/def/world/semaphore_profile.sii" file and stored at "scs_globals.scs_tsem_profile_inventory".
-    locator_prefab_tsem_profile = StringProperty(
+    # "//base/def/world/semaphore_profile.sii" file and stored at "scs_inventories.tsem_profiles".
+    locator_prefab_tsem_profile: StringProperty(
         name="Profile",
         description="Traffic Semaphore Profile",
         default="",
@@ -898,41 +898,41 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
         (_PL_consts.TST.BARRIER_DISTANCE, (str(_PL_consts.TST.BARRIER_DISTANCE), "Barrier - Distance Activated", "")),
         (_PL_consts.TST.BARRIER_AUTOMATIC, (str(_PL_consts.TST.BARRIER_AUTOMATIC), "Barrier - Automatic", "")),
     ])
-    locator_prefab_tsem_type = EnumProperty(
+    locator_prefab_tsem_type: EnumProperty(
         name="Type",
         description="Type",
         items=enum_tsem_type_items.values(),
         default=str(_PL_consts.TST.PROFILE),
     )
-    locator_prefab_tsem_gs = FloatProperty(
+    locator_prefab_tsem_gs: FloatProperty(
         name="G",
         description="Time interval/Distance for Green light",
         default=15.0,
         min=-1.0,
         options={'HIDDEN'},
     )
-    locator_prefab_tsem_os1 = FloatProperty(
+    locator_prefab_tsem_os1: FloatProperty(
         name="O",
         description="Time interval/Distance for after-green Orange light",
         default=2.0,
         min=-1.0,
         options={'HIDDEN'},
     )
-    locator_prefab_tsem_rs = FloatProperty(
+    locator_prefab_tsem_rs: FloatProperty(
         name="R",
         description="Time interval/Distance for Red light",
         default=23.0,
         min=-1.0,
         options={'HIDDEN'},
     )
-    locator_prefab_tsem_os2 = FloatProperty(
+    locator_prefab_tsem_os2: FloatProperty(
         name="O",
         description="Time interval/Distance for after-red Orange light",
         default=2.0,
         min=-1.0,
         options={'HIDDEN'},
     )
-    locator_prefab_tsem_cyc_delay = FloatProperty(
+    locator_prefab_tsem_cyc_delay: FloatProperty(
         name="Cycle Delay",
         description="Number of seconds by which the whole traffic semaphore cycle is shifted.",
         default=0.0,
@@ -942,22 +942,22 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
         unit='NONE',
     )
     # LOCATORS - PREFAB - NAVIGATION POINTS
-    locator_prefab_np_low_probab = BoolProperty(
+    locator_prefab_np_low_probab: BoolProperty(
         name="Low Probability",
         description="Low probability",
         default=False,
     )
-    locator_prefab_np_add_priority = BoolProperty(
+    locator_prefab_np_add_priority: BoolProperty(
         name="Additive Priority",
         description="Additive priority",
         default=False,
     )
-    locator_prefab_np_limit_displace = BoolProperty(
+    locator_prefab_np_limit_displace: BoolProperty(
         name="Limit Displacement",
         description="Limit displacement",
         default=False,
     )
-    locator_prefab_np_allowed_veh = EnumProperty(
+    locator_prefab_np_allowed_veh: EnumProperty(
         name="Allowed Vehicles",
         description="Allowed vehicles",
         items=(
@@ -968,7 +968,7 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
         ),
         default=str(_PL_consts.PNCF.ALLOWED_VEHICLES_MASK),
     )
-    locator_prefab_np_blinker = EnumProperty(
+    locator_prefab_np_blinker: EnumProperty(
         name="Blinker",
         description="Blinker",
         items=(
@@ -986,7 +986,7 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
     for i in range(_PL_consts.PREFAB_LANE_COUNT_MAX):
         ii = _PL_consts.PREFAB_LANE_COUNT_MAX + 1 + i
         enum_np_boundary_items[ii] = (str(ii), "Output - Lane " + str(i), "")
-    locator_prefab_np_boundary = EnumProperty(
+    locator_prefab_np_boundary: EnumProperty(
         name="Boundary",
         description="Boundary",
         items=enum_np_boundary_items.values(),
@@ -995,7 +995,7 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
     enum_np_boundary_node_items = OrderedDict()
     for i in range(_PL_consts.PREFAB_NODE_COUNT_MAX):
         enum_np_boundary_node_items[i] = (str(i), str(i), "")
-    locator_prefab_np_boundary_node = EnumProperty(
+    locator_prefab_np_boundary_node: EnumProperty(
         name="Boundary Node",
         description="Boundary node index",
         items=enum_np_boundary_node_items.values(),
@@ -1004,15 +1004,15 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
     enum_np_traffic_semaphore_items = OrderedDict([(-1, ('-1', "None", ""))])
     for i in range(_PL_consts.TSEM_COUNT_MAX):
         enum_np_traffic_semaphore_items[i] = (str(i), str(i), "")
-    locator_prefab_np_traffic_semaphore = EnumProperty(
+    locator_prefab_np_traffic_semaphore: EnumProperty(
         name="Traffic Semaphore",
         description="Traffic semaphore ID",
         items=enum_np_traffic_semaphore_items.values(),
         default='-1',
     )
     # Following String property is fed from TRAFFIC SEMAPHORE PROFILES data list, which is usually loaded from
-    # "//base/def/world/traffic_rules.sii" file and stored at "scs_globals.scs_traffic_rules_inventory".
-    locator_prefab_np_traffic_rule = StringProperty(
+    # "//base/def/world/traffic_rules.sii" file and stored at "scs_inventories.traffic_rules".
+    locator_prefab_np_traffic_rule: StringProperty(
         name="Traffic Rule",
         description="Traffic rule",
         default="",
@@ -1039,7 +1039,7 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
 
         enum_np_priority_modifier_items[i] = (str(i), name, "")
 
-    locator_prefab_np_priority_modifier = EnumProperty(
+    locator_prefab_np_priority_modifier: EnumProperty(
         name="Priority Modifier",
         description="Priority modifier",
         items=enum_np_priority_modifier_items.values(),
@@ -1047,23 +1047,23 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
     )
 
     # LOCATORS - PREFAB - MAP POINTS
-    locator_prefab_mp_road_over = BoolProperty(
+    locator_prefab_mp_road_over: BoolProperty(
         name="Road Over",
         description="The game tries to draw map point with this flag on top of all other map points",
         default=False,
     )
-    locator_prefab_mp_no_outline = BoolProperty(
+    locator_prefab_mp_no_outline: BoolProperty(
         name="No Outline",
         description="Don't draw the black outline (useful for 'drawing' buildings etc.)",
         default=False,
     )
-    locator_prefab_mp_no_arrow = BoolProperty(
+    locator_prefab_mp_no_arrow: BoolProperty(
         name="No Arrow",
         description="Prevents drawing of a green navigation arrow "
                     "(useful for prefabs with more than 2 nodes, where path is clear also without an arrow)",
         default=False,
     )
-    locator_prefab_mp_prefab_exit = BoolProperty(
+    locator_prefab_mp_prefab_exit: BoolProperty(
         name="Prefab Exit",
         description="Mark the approximate location of the prefab exit "
                     "(useful for company prefabs where navigation will navigate from/to this point",
@@ -1115,7 +1115,7 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
             "Polygon", "The map point is used to draw a polygon instead of a road."
         )),
     ])
-    locator_prefab_mp_road_size = EnumProperty(
+    locator_prefab_mp_road_size: EnumProperty(
         name="Road Size",
         description="Size and type of the road for this map point",
         items=enum_mp_road_size_items.values(),
@@ -1132,7 +1132,7 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
         (_PL_consts.MPVF.ROAD_OFFSET_25, (str(_PL_consts.MPVF.ROAD_OFFSET_25), "25 m", "")),
         # (_PL_consts.MPVF.ROAD_OFFSET_LANE, (str(_PL_consts.MPVF.ROAD_OFFSET_LANE), "", "")),
     ])
-    locator_prefab_mp_road_offset = EnumProperty(
+    locator_prefab_mp_road_offset: EnumProperty(
         name="Road Offset",
         description="The center offset between the road lanes",
         items=enum_mp_road_offset_items.values(),
@@ -1144,7 +1144,7 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
         (_PL_consts.MPVF.CUSTOM_COLOR2, (str(_PL_consts.MPVF.CUSTOM_COLOR2), "Dark", "Used for buildings")),
         (_PL_consts.MPVF.CUSTOM_COLOR3, (str(_PL_consts.MPVF.CUSTOM_COLOR3), "Green", "Used for grass and inaccessible areas")),
     ])
-    locator_prefab_mp_custom_color = EnumProperty(
+    locator_prefab_mp_custom_color: EnumProperty(
         name="Custom Color",
         description="Colorizes map points when drawing them as polygons",
         items=enum_mp_custom_color_items.values(),
@@ -1154,7 +1154,7 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
     for i in range(_PL_consts.PREFAB_NODE_COUNT_MAX):
         enum_mp_assigned_node_items[1 << i] = (str(1 << i), str(i), "")
     enum_mp_assigned_node_items[_PL_consts.MPNF.NAV_NODE_ALL] = (str(_PL_consts.MPNF.NAV_NODE_ALL), "All", "")
-    locator_prefab_mp_assigned_node = EnumProperty(
+    locator_prefab_mp_assigned_node: EnumProperty(
         name="Assigned Node",
         description="Must be set to corresponding prefab Control Node for start/end map points "
                     "(for no navigation at all use 'All' option on all map points)",
@@ -1164,7 +1164,7 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
     enum_mp_dest_nodes_items = OrderedDict()
     for i in range(_PL_consts.PREFAB_NODE_COUNT_MAX):
         enum_mp_dest_nodes_items[i] = (str(i), str(i), "Leads to Control Node with index %s" % i)
-    locator_prefab_mp_dest_nodes = EnumProperty(
+    locator_prefab_mp_dest_nodes: EnumProperty(
         name="Destination Nodes",
         description="Describes Control Nodes to which this map point can lead "
                     "(only set if one of neighbour map points has more than 2 connected map points)",
@@ -1174,13 +1174,13 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
     )
 
     # LOCATORS - PREFAB - TRIGGER POINTS
-    locator_prefab_tp_action = StringProperty(
+    locator_prefab_tp_action: StringProperty(
         name="Action",
         description="Action",
         default="",
         subtype='NONE',
     )
-    locator_prefab_tp_range = FloatProperty(
+    locator_prefab_tp_range: FloatProperty(
         name="Range",
         description="Range of the trigger point. In case trigger point is Sphere Trigger "
                     "this is used as it's range otherwise it's used for up/down range.",
@@ -1190,7 +1190,7 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
         subtype='NONE',
         unit='NONE',
     )
-    locator_prefab_tp_reset_delay = FloatProperty(
+    locator_prefab_tp_reset_delay: FloatProperty(
         name="Reset Delay",
         description="Reset delay",
         default=0.0,
@@ -1199,23 +1199,43 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
         subtype='NONE',
         unit='NONE',
     )
-    locator_prefab_tp_sphere_trigger = BoolProperty(
+    locator_prefab_tp_sphere_trigger: BoolProperty(
         name="Sphere Trigger",
         description="Sphere trigger",
         default=False,
     )
-    locator_prefab_tp_partial_activ = BoolProperty(
+    locator_prefab_tp_partial_activ: BoolProperty(
         name="Partial Activation",
         description="Partial activation",
         default=False,
     )
-    locator_prefab_tp_onetime_activ = BoolProperty(
+    locator_prefab_tp_onetime_activ: BoolProperty(
         name="One-Time Activation",
         description="One-time activation",
         default=False,
     )
-    locator_prefab_tp_manual_activ = BoolProperty(
+    locator_prefab_tp_manual_activ: BoolProperty(
         name="Manual Activation",
         description="Manual activation",
         default=False,
     )
+
+
+classes = (
+    ObjectAnimationInventoryItem,
+    ObjectLooksInventoryItem,
+    ObjectPartInventoryItem,
+    ObjectVariantPartInclusionItem,
+    ObjectVariantInventoryItem,
+    ObjectSCSTools,
+)
+
+
+def register():
+    for cls in classes:
+        bpy.utils.register_class(cls)
+
+
+def unregister():
+    for cls in classes:
+        bpy.utils.unregister_class(cls)

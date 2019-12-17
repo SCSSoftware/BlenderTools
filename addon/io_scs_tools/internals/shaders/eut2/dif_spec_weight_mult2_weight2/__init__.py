@@ -16,18 +16,18 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2015: SCS Software
-
+# Copyright (C) 2015-2019: SCS Software
 
 from io_scs_tools.consts import Mesh as _MESH_consts
 from io_scs_tools.internals.shaders.eut2.dif_spec_weight_mult2 import DifSpecWeightMult2
-from io_scs_tools.internals.shaders.eut2.std_node_groups import mult2_mix
+from io_scs_tools.internals.shaders.eut2.std_node_groups import mult2_mix_ng
 from io_scs_tools.internals.shaders.flavors import tg1
 from io_scs_tools.utils import convert as _convert_utils
+from io_scs_tools.utils import material as _material_utils
 
 
 class DifSpecWeightMult2Weight2(DifSpecWeightMult2):
-    THRD_GEOM_NODE = "ThrdGeometry"
+    SEC_UVMAP_NODE = "ThrdGeometry"
     SEC_UV_SCALE_NODE = "SecUVScale"
     SEC_SPEC_COLOR_NODE = "SecSpecularColor"
     SPEC_COLOR_MIX_NODE = "SpecularColorMix"
@@ -62,8 +62,8 @@ class DifSpecWeightMult2Weight2(DifSpecWeightMult2):
         # init parent
         DifSpecWeightMult2.init(node_tree)
 
+        first_uv_n = node_tree.nodes[DifSpecWeightMult2.UVMAP_NODE]
         base_tex_n = node_tree.nodes[DifSpecWeightMult2.BASE_TEX_NODE]
-        geom_n = node_tree.nodes[DifSpecWeightMult2.GEOM_NODE]
         spec_col_n = node_tree.nodes[DifSpecWeightMult2.SPEC_COL_NODE]
         vcol_group_n = node_tree.nodes[DifSpecWeightMult2.VCOL_GROUP_NODE]
         mult2_mix_gn = node_tree.nodes[DifSpecWeightMult2.MULT2_MIX_GROUP_NODE]
@@ -80,40 +80,42 @@ class DifSpecWeightMult2Weight2(DifSpecWeightMult2):
                 node.location.x += pos_x_shift
 
         # nodes creation
-        thrd_geom_n = node_tree.nodes.new("ShaderNodeGeometry")
-        thrd_geom_n.name = thrd_geom_n.label = DifSpecWeightMult2Weight2.THRD_GEOM_NODE
-        thrd_geom_n.location = (start_pos_x - pos_x_shift * 3, start_pos_y + 600)
-        thrd_geom_n.uv_layer = _MESH_consts.none_uv
+        sec_uv_n = node_tree.nodes.new("ShaderNodeUVMap")
+        sec_uv_n.name = sec_uv_n.label = DifSpecWeightMult2Weight2.SEC_UVMAP_NODE
+        sec_uv_n.location = (start_pos_x - pos_x_shift * 3, start_pos_y + 600)
+        sec_uv_n.uv_map = _MESH_consts.none_uv
 
         sec_uv_scale_n = node_tree.nodes.new("ShaderNodeMapping")
         sec_uv_scale_n.name = sec_uv_scale_n.label = DifSpecWeightMult2Weight2.SEC_UV_SCALE_NODE
-        sec_uv_scale_n.location = (start_pos_x - pos_x_shift * 2, start_pos_y + 600)
+        sec_uv_scale_n.location = (start_pos_x - pos_x_shift, start_pos_y + 600)
         sec_uv_scale_n.vector_type = "POINT"
-        sec_uv_scale_n.translation = sec_uv_scale_n.rotation = (0.0,) * 3
-        sec_uv_scale_n.scale = (1.0,) * 3
-        sec_uv_scale_n.use_min = sec_uv_scale_n.use_max = False
+        sec_uv_scale_n.inputs['Location'].default_value = sec_uv_scale_n.inputs['Rotation'].default_value = (0.0,) * 3
+        sec_uv_scale_n.inputs['Scale'].default_value = (1.0,) * 3
+        sec_uv_scale_n.width = 140
 
         sec_spec_col_n = node_tree.nodes.new("ShaderNodeRGB")
         sec_spec_col_n.name = sec_spec_col_n.label = DifSpecWeightMult2Weight2.SEC_SPEC_COLOR_NODE
         sec_spec_col_n.location = (start_pos_x + pos_x_shift, start_pos_y + 2100)
 
-        base_1_tex_n = node_tree.nodes.new("ShaderNodeTexture")
+        base_1_tex_n = node_tree.nodes.new("ShaderNodeTexImage")
         base_1_tex_n.name = base_1_tex_n.label = DifSpecWeightMult2Weight2.BASE_1_TEX_NODE
         base_1_tex_n.location = (start_pos_x + pos_x_shift, start_pos_y + 900)
+        base_1_tex_n.width = 140
 
-        mult_1_tex_n = node_tree.nodes.new("ShaderNodeTexture")
+        mult_1_tex_n = node_tree.nodes.new("ShaderNodeTexImage")
         mult_1_tex_n.name = mult_1_tex_n.label = DifSpecWeightMult2Weight2.MULT_1_TEX_NODE
         mult_1_tex_n.location = (start_pos_x + pos_x_shift, start_pos_y + 600)
+        mult_1_tex_n.width = 140
 
         spec_col_mix_n = node_tree.nodes.new("ShaderNodeMixRGB")
         spec_col_mix_n.name = spec_col_mix_n.label = DifSpecWeightMult2Weight2.SPEC_COLOR_MIX_NODE
-        spec_col_mix_n.location = (start_pos_x + pos_x_shift * 3, start_pos_y + 2000)
+        spec_col_mix_n.location = (start_pos_x + pos_x_shift * 3, start_pos_y + 2100)
         spec_col_mix_n.blend_type = "MIX"
 
-        sec_mult2_mix_gn = node_tree.nodes.new("ShaderNodeGroup")
-        sec_mult2_mix_gn.name = sec_mult2_mix_gn.label = DifSpecWeightMult2Weight2.SEC_MULT2_MIX_GROUP_NODE
-        sec_mult2_mix_gn.location = (start_pos_x + pos_x_shift * 3, start_pos_y + 800)
-        sec_mult2_mix_gn.node_tree = mult2_mix.get_node_group()
+        sec_mult2_mix_n = node_tree.nodes.new("ShaderNodeGroup")
+        sec_mult2_mix_n.name = sec_mult2_mix_n.label = DifSpecWeightMult2Weight2.SEC_MULT2_MIX_GROUP_NODE
+        sec_mult2_mix_n.location = (start_pos_x + pos_x_shift * 3, start_pos_y + 800)
+        sec_mult2_mix_n.node_tree = mult2_mix_ng.get_node_group()
 
         combined_a_mix_n = node_tree.nodes.new("ShaderNodeMixRGB")
         combined_a_mix_n.name = combined_a_mix_n.label = DifSpecWeightMult2Weight2.COMBINED_ALPHA_MIX_NODE
@@ -126,36 +128,36 @@ class DifSpecWeightMult2Weight2(DifSpecWeightMult2):
         combined_mix_n.blend_type = "MIX"
 
         # links creation
-        node_tree.links.new(sec_uv_scale_n.inputs["Vector"], thrd_geom_n.outputs["UV"])
-        node_tree.links.new(base_tex_n.inputs["Vector"], geom_n.outputs["UV"])
+        node_tree.links.new(sec_uv_scale_n.inputs["Vector"], sec_uv_n.outputs["UV"])
+        node_tree.links.new(base_tex_n.inputs["Vector"], first_uv_n.outputs["UV"])
 
         node_tree.links.new(mult_1_tex_n.inputs["Vector"], sec_uv_scale_n.outputs["Vector"])
-        node_tree.links.new(base_1_tex_n.inputs["Vector"], thrd_geom_n.outputs["UV"])
+        node_tree.links.new(base_1_tex_n.inputs["Vector"], sec_uv_n.outputs["UV"])
 
         # pass 1
         node_tree.links.new(spec_col_mix_n.inputs["Fac"], vcol_group_n.outputs["Vertex Color Alpha"])
         node_tree.links.new(spec_col_mix_n.inputs["Color1"], spec_col_n.outputs["Color"])
         node_tree.links.new(spec_col_mix_n.inputs["Color2"], sec_spec_col_n.outputs["Color"])
 
-        node_tree.links.new(sec_mult2_mix_gn.inputs["Base Alpha"], base_1_tex_n.outputs["Value"])
-        node_tree.links.new(sec_mult2_mix_gn.inputs["Base Color"], base_1_tex_n.outputs["Color"])
-        node_tree.links.new(sec_mult2_mix_gn.inputs["Mult Alpha"], mult_1_tex_n.outputs["Value"])
-        node_tree.links.new(sec_mult2_mix_gn.inputs["Mult Color"], mult_1_tex_n.outputs["Color"])
+        node_tree.links.new(sec_mult2_mix_n.inputs["Base Alpha"], base_1_tex_n.outputs["Alpha"])
+        node_tree.links.new(sec_mult2_mix_n.inputs["Base Color"], base_1_tex_n.outputs["Color"])
+        node_tree.links.new(sec_mult2_mix_n.inputs["Mult Alpha"], mult_1_tex_n.outputs["Alpha"])
+        node_tree.links.new(sec_mult2_mix_n.inputs["Mult Color"], mult_1_tex_n.outputs["Color"])
 
         # pass 2
         node_tree.links.new(combined_a_mix_n.inputs["Fac"], vcol_group_n.outputs["Vertex Color Alpha"])
         node_tree.links.new(combined_a_mix_n.inputs["Color1"], mult2_mix_gn.outputs["Mix Alpha"])
-        node_tree.links.new(combined_a_mix_n.inputs["Color2"], sec_mult2_mix_gn.outputs["Mix Alpha"])
+        node_tree.links.new(combined_a_mix_n.inputs["Color2"], sec_mult2_mix_n.outputs["Mix Alpha"])
 
         node_tree.links.new(combined_mix_n.inputs["Fac"], vcol_group_n.outputs["Vertex Color Alpha"])
         node_tree.links.new(combined_mix_n.inputs["Color1"], mult2_mix_gn.outputs["Mix Color"])
-        node_tree.links.new(combined_mix_n.inputs["Color2"], sec_mult2_mix_gn.outputs["Mix Color"])
+        node_tree.links.new(combined_mix_n.inputs["Color2"], sec_mult2_mix_n.outputs["Mix Color"])
 
         # pass 3
-        node_tree.links.new(spec_mult_n.inputs["Color1"], spec_col_mix_n.outputs["Color"])
-        node_tree.links.new(spec_mult_n.inputs["Color2"], combined_a_mix_n.outputs["Color"])
+        node_tree.links.new(spec_mult_n.inputs[0], spec_col_mix_n.outputs["Color"])
+        node_tree.links.new(spec_mult_n.inputs[1], combined_a_mix_n.outputs["Color"])
 
-        node_tree.links.new(vcol_mult_n.inputs["Color2"], combined_mix_n.outputs["Color"])
+        node_tree.links.new(vcol_mult_n.inputs[1], combined_mix_n.outputs["Color"])
 
     @staticmethod
     def set_reflection2(node_tree, value):
@@ -196,8 +198,8 @@ class DifSpecWeightMult2Weight2(DifSpecWeightMult2):
 
         DifSpecWeightMult2.set_aux5(node_tree, aux_property)
 
-        node_tree.nodes[DifSpecWeightMult2Weight2.SEC_UV_SCALE_NODE].scale[0] = aux_property[2]["value"]
-        node_tree.nodes[DifSpecWeightMult2Weight2.SEC_UV_SCALE_NODE].scale[1] = aux_property[3]["value"]
+        node_tree.nodes[DifSpecWeightMult2Weight2.SEC_UV_SCALE_NODE].inputs['Scale'].default_value[0] = aux_property[2]["value"]
+        node_tree.nodes[DifSpecWeightMult2Weight2.SEC_UV_SCALE_NODE].inputs['Scale'].default_value[1] = aux_property[3]["value"]
 
     @staticmethod
     def set_base_uv(node_tree, uv_layer):
@@ -212,16 +214,27 @@ class DifSpecWeightMult2Weight2(DifSpecWeightMult2):
         DifSpecWeightMult2.set_mult_uv(node_tree, uv_layer)
 
     @staticmethod
-    def set_base_1_texture(node_tree, texture):
+    def set_base_1_texture(node_tree, image):
         """Set base_1 texture to shader.
 
         :param node_tree: node tree of current shader
         :type node_tree: bpy.types.NodeTree
-        :param texture: texture which should be assigned to base_1 texture node
-        :type texture: bpy.types.Texture
+        :param image: texture image which should be assigned to base_1 texture node
+        :type image: bpy.types.Texture
         """
 
-        node_tree.nodes[DifSpecWeightMult2Weight2.BASE_1_TEX_NODE].texture = texture
+        node_tree.nodes[DifSpecWeightMult2Weight2.BASE_1_TEX_NODE].image = image
+
+    @staticmethod
+    def set_base_1_texture_settings(node_tree, settings):
+        """Set base_1 texture settings to shader.
+
+        :param node_tree: node tree of current shader
+        :type node_tree: bpy.types.NodeTree
+        :param settings: binary string of TOBJ settings gotten from tobj import
+        :type settings: str
+        """
+        _material_utils.set_texture_settings_to_node(node_tree.nodes[DifSpecWeightMult2Weight2.BASE_1_TEX_NODE], settings)
 
     @staticmethod
     def set_base_1_uv(node_tree, uv_layer):
@@ -236,19 +249,30 @@ class DifSpecWeightMult2Weight2(DifSpecWeightMult2):
         if uv_layer is None or uv_layer == "":
             uv_layer = _MESH_consts.none_uv
 
-        node_tree.nodes[DifSpecWeightMult2Weight2.THRD_GEOM_NODE].uv_layer = uv_layer
+        node_tree.nodes[DifSpecWeightMult2Weight2.SEC_UVMAP_NODE].uv_map = uv_layer
 
     @staticmethod
-    def set_mult_1_texture(node_tree, texture):
+    def set_mult_1_texture(node_tree, image):
         """Set mult_1 texture to shader.
 
         :param node_tree: node tree of current shader
         :type node_tree: bpy.types.NodeTree
-        :param texture: texture which should be assigned to mult_1 texture node
-        :type texture: bpy.types.Texture
+        :param image: texture image which should be assigned to mult_1 texture node
+        :type image: bpy.types.Texture
         """
 
-        node_tree.nodes[DifSpecWeightMult2Weight2.MULT_1_TEX_NODE].texture = texture
+        node_tree.nodes[DifSpecWeightMult2Weight2.MULT_1_TEX_NODE].image = image
+
+    @staticmethod
+    def set_mult_1_texture_settings(node_tree, settings):
+        """Set mult_1 texture settings to shader.
+
+        :param node_tree: node tree of current shader
+        :type node_tree: bpy.types.NodeTree
+        :param settings: binary string of TOBJ settings gotten from tobj import
+        :type settings: str
+        """
+        _material_utils.set_texture_settings_to_node(node_tree.nodes[DifSpecWeightMult2Weight2.MULT_1_TEX_NODE], settings)
 
     @staticmethod
     def set_mult_1_uv(node_tree, uv_layer):
@@ -299,6 +323,18 @@ class DifSpecWeightMult2Weight2(DifSpecWeightMult2):
         pass  # NOTE: no support for this flavor; overriding with empty function
 
     @staticmethod
+    def set_blend_mult_flavor(node_tree, switch_on):
+        """Set blend mult flavor to this shader.
+
+        :param node_tree: node tree of current shader
+        :type node_tree: bpy.types.NodeTree
+        :param switch_on: flag indication if blend mult should be switched on or off
+        :type switch_on: bool
+        """
+
+        pass  # NOTE: no support for this flavor; overriding with empty function
+
+    @staticmethod
     def set_tg1_flavor(node_tree, switch_on):
         """Set zero texture generation flavor to this shader.
 
@@ -310,15 +346,15 @@ class DifSpecWeightMult2Weight2(DifSpecWeightMult2):
 
         if switch_on and not tg1.is_set(node_tree):
 
-            out_node = node_tree.nodes[DifSpecWeightMult2Weight2.THRD_GEOM_NODE]
+            out_node = node_tree.nodes[DifSpecWeightMult2Weight2.GEOM_NODE]
             in_node = node_tree.nodes[DifSpecWeightMult2Weight2.SEC_UV_SCALE_NODE]
             in_node2 = node_tree.nodes[DifSpecWeightMult2Weight2.BASE_1_TEX_NODE]
 
             out_node.location.x -= 185 * 2
             location = (out_node.location.x + 185, out_node.location.y)
 
-            tg1.init(node_tree, location, out_node.outputs["Global"], in_node.inputs["Vector"])
-            tg1.init(node_tree, location, out_node.outputs["Global"], in_node2.inputs["Vector"])
+            tg1.init(node_tree, location, out_node.outputs["Position"], in_node.inputs["Vector"])
+            tg1.init(node_tree, location, out_node.outputs["Position"], in_node2.inputs["Vector"])
 
         elif not switch_on:
 

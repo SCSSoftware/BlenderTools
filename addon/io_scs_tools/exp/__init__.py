@@ -74,13 +74,6 @@ def batch_export(operator_instance, init_obj_list, name_suffix="", menu_filepath
                 scs_game_objects_rejected.append("> \"" + root_object.name + "\"")
                 continue
 
-            # update root object location to invoke update tagging on it and
-            # then update scene to make sure all children objects will have all transforms up to date
-            # NOTE: needed because Blender doesn't update objects on invisible layers on it's own
-            root_object.location = root_object.location
-            for scene in bpy.data.scenes:
-                scene.update()
-
             # GET CUSTOM FILE PATH
             custom_filepath = _path_utils.get_custom_scs_root_export_path(root_object)
 
@@ -122,7 +115,7 @@ def batch_export(operator_instance, init_obj_list, name_suffix="", menu_filepath
 
         if not lprint("\nI Export procces completed, summaries are printed below!", report_errors=True, report_warnings=True):
             operator_instance.report({'INFO'}, "Export successfully completed, exported %s game object(s)!" % len(scs_game_objects_exported))
-            bpy.ops.wm.show_3dview_report('INVOKE_DEFAULT', abort=True)  # abort 3d view reporting operator
+            bpy.ops.wm.scs_tools_show_3dview_report('INVOKE_DEFAULT', abort=True)  # abort 3d view reporting operator
 
         if len(scs_game_objects_exported) > 0:
             message = "EXPORTED GAME OBJECTS (" + str(len(scs_game_objects_exported)) + "):\n\t   " + "=" * 26 + "\n\t   "

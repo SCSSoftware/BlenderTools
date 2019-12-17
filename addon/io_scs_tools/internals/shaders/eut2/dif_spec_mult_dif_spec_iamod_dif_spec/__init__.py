@@ -16,15 +16,15 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2015: SCS Software
-
+# Copyright (C) 2015-2019: SCS Software
 
 from io_scs_tools.consts import Mesh as _MESH_consts
 from io_scs_tools.internals.shaders.eut2.dif_spec_mult_dif_spec import DifSpecMultDifSpec
+from io_scs_tools.utils import material as _material_utils
 
 
 class DifSpecMultDifSpecIamodDifSpec(DifSpecMultDifSpec):
-    THIRD_GEOM_NODE = "ThirdGeometry"
+    THIRD_UVMAP_NODE = "ThirdUVMap"
     IAMOD_TEX_NODE = "IamodTex"
     IAMOD_SCALE_NODE = "IamodScaled"
     IAMOD_SCALE_A_NODE = "IamodAlphaScaled"
@@ -69,16 +69,17 @@ class DifSpecMultDifSpecIamodDifSpec(DifSpecMultDifSpec):
         mult_base_col_mix_n.location.y -= 200
 
         # node creation
-        third_geom_n = node_tree.nodes.new("ShaderNodeGeometry")
-        third_geom_n.name = DifSpecMultDifSpecIamodDifSpec.THIRD_GEOM_NODE
-        third_geom_n.label = DifSpecMultDifSpecIamodDifSpec.THIRD_GEOM_NODE
-        third_geom_n.location = (start_pos_x - pos_x_shift, start_pos_y + 900)
-        third_geom_n.uv_layer = _MESH_consts.none_uv
+        third_uvmap_n = node_tree.nodes.new("ShaderNodeUVMap")
+        third_uvmap_n.name = DifSpecMultDifSpecIamodDifSpec.THIRD_UVMAP_NODE
+        third_uvmap_n.label = DifSpecMultDifSpecIamodDifSpec.THIRD_UVMAP_NODE
+        third_uvmap_n.location = (start_pos_x - pos_x_shift, start_pos_y + 900)
+        third_uvmap_n.uv_map = _MESH_consts.none_uv
 
-        iamod_tex_n = node_tree.nodes.new("ShaderNodeTexture")
+        iamod_tex_n = node_tree.nodes.new("ShaderNodeTexImage")
         iamod_tex_n.name = DifSpecMultDifSpecIamodDifSpec.IAMOD_TEX_NODE
         iamod_tex_n.label = DifSpecMultDifSpecIamodDifSpec.IAMOD_TEX_NODE
         iamod_tex_n.location = (start_pos_x + pos_x_shift, start_pos_y + 900)
+        iamod_tex_n.width = 140
 
         iamod_scale_col_n = node_tree.nodes.new("ShaderNodeMixRGB")
         iamod_scale_col_n.name = DifSpecMultDifSpecIamodDifSpec.IAMOD_SCALE_NODE
@@ -94,12 +95,11 @@ class DifSpecMultDifSpecIamodDifSpec(DifSpecMultDifSpec):
         iamod_scale_a_n.blend_type = "MIX"
         iamod_scale_a_n.inputs['Color2'].default_value = (1,) * 4
 
-        iamod_multbase_col_mix_n = node_tree.nodes.new("ShaderNodeMixRGB")
+        iamod_multbase_col_mix_n = node_tree.nodes.new("ShaderNodeVectorMath")
         iamod_multbase_col_mix_n.name = DifSpecMultDifSpecIamodDifSpec.IAMOD_MULTBASE_COL_MIX_NODE
         iamod_multbase_col_mix_n.label = DifSpecMultDifSpecIamodDifSpec.IAMOD_MULTBASE_COL_MIX_NODE
         iamod_multbase_col_mix_n.location = (start_pos_x + pos_x_shift * 4, start_pos_y + 1100)
-        iamod_multbase_col_mix_n.blend_type = "MULTIPLY"
-        iamod_multbase_col_mix_n.inputs['Fac'].default_value = 1
+        iamod_multbase_col_mix_n.operation = "MULTIPLY"
 
         iamod_multbase_a_mix_n = node_tree.nodes.new("ShaderNodeMath")
         iamod_multbase_a_mix_n.name = DifSpecMultDifSpecIamodDifSpec.IAMOD_MULTBASE_A_MIX_NODE
@@ -108,34 +108,45 @@ class DifSpecMultDifSpecIamodDifSpec(DifSpecMultDifSpec):
         iamod_multbase_a_mix_n.operation = "MULTIPLY"
 
         # links creation
-        node_tree.links.new(iamod_tex_n.inputs['Vector'], third_geom_n.outputs['UV'])
+        node_tree.links.new(iamod_tex_n.inputs['Vector'], third_uvmap_n.outputs['UV'])
 
         node_tree.links.new(iamod_scale_col_n.inputs['Fac'], vcol_group_n.outputs['Vertex Color Alpha'])
         node_tree.links.new(iamod_scale_col_n.inputs['Color1'], iamod_tex_n.outputs['Color'])
 
         node_tree.links.new(iamod_scale_a_n.inputs['Fac'], vcol_group_n.outputs['Vertex Color Alpha'])
-        node_tree.links.new(iamod_scale_a_n.inputs['Color1'], iamod_tex_n.outputs['Value'])
+        node_tree.links.new(iamod_scale_a_n.inputs['Color1'], iamod_tex_n.outputs['Alpha'])
 
-        node_tree.links.new(iamod_multbase_col_mix_n.inputs['Color1'], mult_base_col_mix_n.outputs['Color'])
-        node_tree.links.new(iamod_multbase_col_mix_n.inputs['Color2'], iamod_scale_col_n.outputs['Color'])
+        node_tree.links.new(iamod_multbase_col_mix_n.inputs[0], mult_base_col_mix_n.outputs[0])
+        node_tree.links.new(iamod_multbase_col_mix_n.inputs[1], iamod_scale_col_n.outputs['Color'])
 
         node_tree.links.new(iamod_multbase_a_mix_n.inputs[0], mult_base_a_mix_n.outputs['Value'])
         node_tree.links.new(iamod_multbase_a_mix_n.inputs[1], iamod_scale_a_n.outputs['Color'])
 
-        node_tree.links.new(vcol_mult_n.inputs['Color2'], iamod_multbase_col_mix_n.outputs['Color'])
-        node_tree.links.new(spec_mult_n.inputs['Color2'], iamod_multbase_a_mix_n.outputs['Value'])
+        node_tree.links.new(vcol_mult_n.inputs[1], iamod_multbase_col_mix_n.outputs[0])
+        node_tree.links.new(spec_mult_n.inputs[1], iamod_multbase_a_mix_n.outputs['Value'])
 
     @staticmethod
-    def set_iamod_texture(node_tree, texture):
+    def set_iamod_texture(node_tree, image):
         """Set inverse alpha modulating texture to shader.
 
         :param node_tree: node tree of current shader
         :type node_tree: bpy.types.NodeTree
-        :param texture: texture which should be assigned to iamod texture node
-        :type texture: bpy.types.Texture
+        :param image: texture image which should be assigned to iamod texture node
+        :type image: bpy.types.Texture
         """
 
-        node_tree.nodes[DifSpecMultDifSpecIamodDifSpec.IAMOD_TEX_NODE].texture = texture
+        node_tree.nodes[DifSpecMultDifSpecIamodDifSpec.IAMOD_TEX_NODE].image = image
+
+    @staticmethod
+    def set_iamod_texture_settings(node_tree, settings):
+        """Set inverse alpha modulating texture settings to shader.
+
+        :param node_tree: node tree of current shader
+        :type node_tree: bpy.types.NodeTree
+        :param settings: binary string of TOBJ settings gotten from tobj import
+        :type settings: str
+        """
+        _material_utils.set_texture_settings_to_node(node_tree.nodes[DifSpecMultDifSpecIamodDifSpec.IAMOD_TEX_NODE], settings)
 
     @staticmethod
     def set_iamod_uv(node_tree, uv_layer):
@@ -150,7 +161,7 @@ class DifSpecMultDifSpecIamodDifSpec(DifSpecMultDifSpec):
         if uv_layer is None or uv_layer == "":
             uv_layer = _MESH_consts.none_uv
 
-        node_tree.nodes[DifSpecMultDifSpecIamodDifSpec.THIRD_GEOM_NODE].uv_layer = uv_layer
+        node_tree.nodes[DifSpecMultDifSpecIamodDifSpec.THIRD_UVMAP_NODE].uv_map = uv_layer
 
     @staticmethod
     def set_alpha_test_flavor(node_tree, switch_on):
@@ -183,6 +194,18 @@ class DifSpecMultDifSpecIamodDifSpec(DifSpecMultDifSpec):
         :param node_tree: node tree of current shader
         :type node_tree: bpy.types.NodeTree
         :param switch_on: flag indication if blend add should be switched on or off
+        :type switch_on: bool
+        """
+
+        pass  # NOTE: no support for this flavor; overriding with empty function
+
+    @staticmethod
+    def set_blend_mult_flavor(node_tree, switch_on):
+        """Set blend mult flavor to this shader.
+
+        :param node_tree: node tree of current shader
+        :type node_tree: bpy.types.NodeTree
+        :param switch_on: flag indication if blend mult should be switched on or off
         :type switch_on: bool
         """
 

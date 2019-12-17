@@ -41,8 +41,8 @@ def _get_active_scs_root(self):
     if "scs_cached_active_scs_root" not in self:
 
         # if there is no active object set empty string
-        if self.objects.active:
-            name = self.objects.active.name
+        if bpy.context.active_object:
+            name = bpy.context.active_object.name
         else:
             name = ""
 

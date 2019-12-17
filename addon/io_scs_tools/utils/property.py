@@ -16,26 +16,35 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2013-2014: SCS Software
+# Copyright (C) 2013-2019: SCS Software
 
+import bpy
 from bpy.props import EnumProperty
+from idprop.types import IDPropertyArray, IDPropertyGroup
 
 
-def get_by_type(blender_property, from_object=None):
-    """Gets value of Blender ID property
+def get_default(from_object, prop_name):
+    """Gets default value of Blender ID property
 
-    :param blender_property: any Blender ID property from "bpy.types" class
-    :type blender_property: tuple
-    :param from_object: object from which property value should be read
-    :type from_object: object
-    :return: default value or value from given object of Blender ID property; if given object doesn't have given property attribute None is returned
-    :rtype: object | None
+    :param from_object: instance of property object from which property value should be read
+    :type from_object: bpy.types.bpy_struct
+    :param prop_name: any Blender ID property name registred in given object
+    :type prop_name: str
+    :return: default value of Blender ID property; if given object doesn't have given property attribute or is None, then None is returned
+    :rtype: any | None
     """
 
     if from_object is None:
-        return blender_property[1]['default']
+        return None
+
+    if prop_name not in from_object.bl_rna.properties:
+        return None
+
+    bl_rna_prop = from_object.bl_rna.properties[prop_name]
+    if getattr(bl_rna_prop, "is_array", False):
+        return bl_rna_prop.default_array[:]
     else:
-        return getattr(from_object, blender_property[1]['attr'], None)
+        return bl_rna_prop.default
 
 
 def get_filebrowser_display_type(is_image=False):
@@ -60,3 +69,29 @@ def get_filebrowser_display_type(is_image=False):
         default=default_value,
         options={'HIDDEN'}
     )
+
+
+def get_id_prop_as_py_object(prop_value):
+    """Get blender ID Property represented as with python native types.
+    Nested group and collection properties are properly converted too, with the help of recursive calls.
+
+    :param prop_value: id property to convert
+    :type prop_value: IDProperty
+    :return: ID Property converted to native python object types
+    :rtype: any
+    """
+
+    if isinstance(prop_value, IDPropertyGroup):
+        prop_dict = {}
+        for sub_prop_key, sub_prop_value in prop_value.items():
+            prop_dict[sub_prop_key] = get_id_prop_as_py_object(sub_prop_value)
+        return prop_dict
+    elif isinstance(prop_value, IDPropertyArray):
+        return tuple(prop_value)
+    elif isinstance(prop_value, list):
+        prop_list = []
+        for sub_prop_value in prop_value:
+            prop_list.append(get_id_prop_as_py_object(sub_prop_value))
+        return prop_list
+    else:
+        return prop_value

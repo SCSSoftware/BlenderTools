@@ -16,10 +16,11 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2015: SCS Software
+# Copyright (C) 2015-2019: SCS Software
 
 from collections import Iterable
 from io_scs_tools.consts import Look as _LOOK_consts
+from io_scs_tools.utils import property as _property_utils
 from io_scs_tools.utils.printout import lprint
 
 _MAIN_DICT = _LOOK_consts.custom_prop_name
@@ -393,6 +394,83 @@ def clean_unused(root_obj):
                 del look_data[unused_mat_id]
 
     lprint("D %s material entries cleaned from looks dictionary in %r", (len(unused_mats_ids), root_obj.name))
+
+
+def reassign_material(root_obj, new_mat, old_mat):
+    """Re-assign material entries from old material to new material in all of the looks in given SCS root object.
+
+    NOTE: once reassign is triggered old material entry is removed from looks for given root object,
+    so it won't be accessible anymore
+
+    :param root_obj: scs root object on which looks datablock new materials should be added
+    :type root_obj: bpy.types.Object
+    :param new_mat: new material to assign to
+    :type new_mat: bpy.types.Material
+    :param old_mat: old material to assign from
+    :type old_mat: bpy.types.Material
+    """
+
+    if not root_obj or not new_mat or not old_mat:
+        return
+
+    if _MAIN_DICT not in root_obj or len(root_obj[_MAIN_DICT]) <= 0:
+        return
+
+    existing_mats_ids = root_obj[_MAIN_DICT][root_obj[_MAIN_DICT].keys()[0]].keys()
+
+    new_mat_id_str = str(new_mat.scs_props.id)
+    old_mat_id_str = str(old_mat.scs_props.id)
+
+    # old material not found, nothing to do
+    if old_mat_id_str not in existing_mats_ids:
+        return
+
+    # add material to looks only if it doesn't yet exists in dictionary
+    if new_mat_id_str not in existing_mats_ids:
+
+        # re-assign old entry in all of the looks and remove it
+        for look_id in root_obj[_MAIN_DICT]:
+            old_mat_entries = root_obj[_MAIN_DICT][look_id][old_mat_id_str]
+
+            root_obj[_MAIN_DICT][look_id][new_mat_id_str] = old_mat_entries
+            del root_obj[_MAIN_DICT][look_id][old_mat_id_str]
+
+
+def get_material_entries(root_obj, material):
+    """Get material entries from all looks for given material on given root object.
+
+    :param root_obj: scs root object on which looks datablock should be read from
+    :type root_obj: bpy.types.Object
+    :param material: blender material for which material entries should be gathered
+    :type material: bpy.type.Material
+    :return:
+    :rtype:
+    """
+    if not root_obj or not material:
+        return {}
+
+    if _MAIN_DICT not in root_obj or len(root_obj[_MAIN_DICT]) <= 0:
+        return {}
+
+    existing_mats_ids = root_obj[_MAIN_DICT][root_obj[_MAIN_DICT].keys()[0]].keys()
+
+    mat_id_str = str(material.scs_props.id)
+
+    # material not found, nothing to do
+    if mat_id_str not in existing_mats_ids:
+        return {}
+
+    material_entries = {}
+    for look_id in root_obj[_MAIN_DICT]:
+        mat_entries = {}
+
+        # construct material look entries as native python objects so we can compare for equality
+        for prop_name, prop_value in root_obj[_MAIN_DICT][look_id][mat_id_str].items():
+            mat_entries[prop_name] = _property_utils.get_id_prop_as_py_object(prop_value)
+
+        material_entries[look_id] = mat_entries
+
+    return material_entries
 
 
 def __collect_materials__(root_obj):

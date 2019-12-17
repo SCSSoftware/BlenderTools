@@ -16,10 +16,14 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2015: SCS Software
+# Copyright (C) 2015-2019: SCS Software
+
+from io_scs_tools.internals.shaders.base import BaseShader
 
 
-class Fakeshadow:
+class Fakeshadow(BaseShader):
+    WIREFRAME_NODE = "Wireframe"
+    MIX_NODE = "Mix"
     OUTPUT_NODE = "Output"
 
     @staticmethod
@@ -38,24 +42,29 @@ class Fakeshadow:
         start_pos_x = 0
         start_pos_y = 0
 
+        pos_x_shift = 185
+
         # node creation
-        output_n = node_tree.nodes.new("ShaderNodeOutput")
-        output_n.name = Fakeshadow.OUTPUT_NODE
-        output_n.label = Fakeshadow.OUTPUT_NODE
-        output_n.location = (start_pos_x, start_pos_y)
-        output_n.inputs['Color'].default_value = (0, 0, 0, 1)
+        wireframe_n = node_tree.nodes.new("ShaderNodeWireframe")
+        wireframe_n.name = wireframe_n.label = Fakeshadow.WIREFRAME_NODE
+        wireframe_n.location = (start_pos_x, start_pos_y)
+        wireframe_n.use_pixel_size = True
+        wireframe_n.inputs['Size'].default_value = 2.0
 
-    @staticmethod
-    def set_material(node_tree, material):
-        """Set output material for this shader.
+        mix_n = node_tree.nodes.new("ShaderNodeMixRGB")
+        mix_n.name = mix_n.label = Fakeshadow.MIX_NODE
+        mix_n.location = (start_pos_x + pos_x_shift, start_pos_y)
+        mix_n.inputs['Color1'].default_value = (1, 1, 1, 1)  # fakeshadow color
+        mix_n.inputs['Color2'].default_value = (0, 0, 0, 1)  # wireframe color
 
-        :param node_tree: node tree of current shader
-        :type node_tree: bpy.types.NodeTree
-        :param material: blender material for used in this tree node as output
-        :type material: bpy.types.Material
-        """
+        output_n = node_tree.nodes.new("ShaderNodeOutputMaterial")
+        output_n.name = output_n.label = Fakeshadow.OUTPUT_NODE
+        output_n.location = (start_pos_x + pos_x_shift * 2, start_pos_y)
 
-        pass  # NOTE: fake shadows materials are not rendered in game so they don't need material
+        # links creation
+        node_tree.links.new(mix_n.inputs['Fac'], wireframe_n.outputs['Fac'])
+
+        node_tree.links.new(output_n.inputs['Surface'], mix_n.outputs['Color'])
 
     @staticmethod
     def set_shadow_bias(node_tree, value):
@@ -68,3 +77,16 @@ class Fakeshadow:
         """
 
         pass  # NOTE: shadow bias won't be visualized as game uses it's own implementation
+
+    @staticmethod
+    def finalize(node_tree, material):
+        """Finalize node tree and material settings. Should be called as last.
+
+        :param node_tree: node tree on which this shader should be finalized
+        :type node_tree: bpy.types.NodeTree
+        :param material: material used for this shader
+        :type material: bpy.types.Material
+        """
+
+        material.use_backface_culling = True
+        material.blend_method = "OPAQUE"

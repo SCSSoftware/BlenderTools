@@ -18,6 +18,7 @@
 
 # Copyright (C) 2013-2017: SCS Software
 
+import re
 from collections import OrderedDict
 from io_scs_tools.utils import convert as _convert_utils
 
@@ -97,6 +98,27 @@ class SectionData(object):
 
         return False
 
+    def remove_section(self, sec_type, sec_prop, regex_str):
+        """Remnoves section if section with given type, given property and given property value regex is found.
+
+        :param sec_type: type of the section we are looking for
+        :type sec_type: str
+        :param sec_prop: type of property we are searching in section
+        :type sec_prop: str
+        :param regex_str: regex for matching property value
+        :type regex_str: str
+        :return: True if removed; False otherwise
+        :rtype: bool
+        """
+        for sec in self.sections:
+            if sec.type == sec_type:
+                prop = sec.get_prop(sec_prop)
+                if prop and re.search(regex_str, prop[1]):
+                    self.sections.remove(sec)
+                    return True
+
+        return False
+
 
 class UnitData(object):
     """Unit data structure (SII files):
@@ -173,7 +195,7 @@ class UnitData(object):
         :param default: default value that should be returned if property not found
         :type default: any
         :return: None if property not found, otherwise object representing it's data
-        :rtype:  None|object
+        :rtype:  None | any
         """
 
         if prop_name not in self.props:

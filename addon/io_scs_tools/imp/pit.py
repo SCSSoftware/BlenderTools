@@ -154,7 +154,8 @@ def _get_look(section):
                 if has_flipflake:
 
                     mat_effect = mat_effect.replace(".flipflake", "")
-                    textures.pop("texture_flakenoise", None)
+                    if textures.pop("texture_flakenoise", None):
+                        sec.remove_section("Texture", "Tag", r"^[\w\[\]]+:texture_flakenoise$")
 
                     lprint("W Flipflake flavor detected in material %r, ignoring it!", (mat_alias,))
 
@@ -176,7 +177,8 @@ def _get_look(section):
                                (mat_alias,))
 
                     if textures.pop("texture_paintjob", None) is not None:
-                        lprint("W Needless truckpaint texture: 'texture_paintjob' in current materialconfiguration inside material %r, ignoring it!",
+                        sec.remove_section("Texture", "Tag", r"^[\w\[\]]+:texture_paintjob$")
+                        lprint("W Needless truckpaint texture: 'texture_paintjob' in current material configuration inside material %r, ignoring it!",
                                (mat_alias,))
 
             # Extra treatment for building shaders

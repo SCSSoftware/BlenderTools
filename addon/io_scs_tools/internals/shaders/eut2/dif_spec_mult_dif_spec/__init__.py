@@ -16,19 +16,16 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2015: SCS Software
-
+# Copyright (C) 2015-2019: SCS Software
 
 from io_scs_tools.consts import Mesh as _MESH_consts
 from io_scs_tools.internals.shaders.eut2.dif_spec import DifSpec
-from io_scs_tools.internals.shaders.flavors import alpha_test
-from io_scs_tools.internals.shaders.flavors import blend_over
-from io_scs_tools.internals.shaders.flavors import blend_add
 from io_scs_tools.internals.shaders.flavors import tg1
+from io_scs_tools.utils import material as _material_utils
 
 
 class DifSpecMultDifSpec(DifSpec):
-    SEC_GEOM_NODE = "SecondGeometry"
+    SEC_UVMAP_NODE = "SecondUVMap"
     MULT_TEX_NODE = "MultTex"
     MULT_BASE_COL_MIX_NODE = "MultBaseColorMix"
     MULT_BASE_A_MIX_NODE = "MultBaseAlphaMix"
@@ -54,9 +51,11 @@ class DifSpecMultDifSpec(DifSpec):
         # init parent
         DifSpec.init(node_tree, disable_remap_alpha=True)
 
+        vcol_gn = node_tree.nodes[DifSpec.VCOL_GROUP_NODE]
         base_tex_n = node_tree.nodes[DifSpec.BASE_TEX_NODE]
         vcol_mult_n = node_tree.nodes[DifSpec.VCOLOR_MULT_NODE]
         spec_mult_n = node_tree.nodes[DifSpec.SPEC_MULT_NODE]
+        compose_lighting_n = node_tree.nodes[DifSpec.COMPOSE_LIGHTING_NODE]
 
         # delete existing
         node_tree.nodes.remove(node_tree.nodes[DifSpec.OPACITY_NODE])
@@ -67,23 +66,23 @@ class DifSpecMultDifSpec(DifSpec):
                 node.location.x += pos_x_shift
 
         # node creation
-        sec_geom_n = node_tree.nodes.new("ShaderNodeGeometry")
-        sec_geom_n.name = DifSpecMultDifSpec.SEC_GEOM_NODE
-        sec_geom_n.label = DifSpecMultDifSpec.SEC_GEOM_NODE
-        sec_geom_n.location = (start_pos_x - pos_x_shift, start_pos_y + 1200)
-        sec_geom_n.uv_layer = _MESH_consts.none_uv
+        sec_uvmap_n = node_tree.nodes.new("ShaderNodeUVMap")
+        sec_uvmap_n.name = DifSpecMultDifSpec.SEC_UVMAP_NODE
+        sec_uvmap_n.label = DifSpecMultDifSpec.SEC_UVMAP_NODE
+        sec_uvmap_n.location = (start_pos_x - pos_x_shift, start_pos_y + 1200)
+        sec_uvmap_n.uv_map = _MESH_consts.none_uv
 
-        mult_tex_n = node_tree.nodes.new("ShaderNodeTexture")
+        mult_tex_n = node_tree.nodes.new("ShaderNodeTexImage")
         mult_tex_n.name = DifSpecMultDifSpec.MULT_TEX_NODE
         mult_tex_n.label = DifSpecMultDifSpec.MULT_TEX_NODE
         mult_tex_n.location = (start_pos_x + pos_x_shift, start_pos_y + 1200)
+        mult_tex_n.width = 140
 
-        mult_base_col_mix_n = node_tree.nodes.new("ShaderNodeMixRGB")
+        mult_base_col_mix_n = node_tree.nodes.new("ShaderNodeVectorMath")
         mult_base_col_mix_n.name = DifSpecMultDifSpec.MULT_BASE_COL_MIX_NODE
         mult_base_col_mix_n.label = DifSpecMultDifSpec.MULT_BASE_COL_MIX_NODE
         mult_base_col_mix_n.location = (start_pos_x + pos_x_shift * 3, start_pos_y + 1400)
-        mult_base_col_mix_n.blend_type = "MULTIPLY"
-        mult_base_col_mix_n.inputs['Fac'].default_value = 1
+        mult_base_col_mix_n.operation = "MULTIPLY"
 
         mult_base_a_mix_n = node_tree.nodes.new("ShaderNodeMath")
         mult_base_a_mix_n.name = DifSpecMultDifSpec.MULT_BASE_A_MIX_NODE
@@ -92,27 +91,40 @@ class DifSpecMultDifSpec(DifSpec):
         mult_base_a_mix_n.operation = "MULTIPLY"
 
         # links creation
-        node_tree.links.new(mult_tex_n.inputs['Vector'], sec_geom_n.outputs['UV'])
+        node_tree.links.new(mult_tex_n.inputs['Vector'], sec_uvmap_n.outputs['UV'])
 
-        node_tree.links.new(mult_base_col_mix_n.inputs['Color1'], base_tex_n.outputs['Color'])
-        node_tree.links.new(mult_base_col_mix_n.inputs['Color2'], mult_tex_n.outputs['Color'])
-        node_tree.links.new(mult_base_a_mix_n.inputs[0], base_tex_n.outputs['Value'])
-        node_tree.links.new(mult_base_a_mix_n.inputs[1], mult_tex_n.outputs['Value'])
+        node_tree.links.new(mult_base_col_mix_n.inputs[0], base_tex_n.outputs['Color'])
+        node_tree.links.new(mult_base_col_mix_n.inputs[1], mult_tex_n.outputs['Color'])
+        node_tree.links.new(mult_base_a_mix_n.inputs[0], base_tex_n.outputs['Alpha'])
+        node_tree.links.new(mult_base_a_mix_n.inputs[1], mult_tex_n.outputs['Alpha'])
 
-        node_tree.links.new(vcol_mult_n.inputs['Color2'], mult_base_col_mix_n.outputs['Color'])
-        node_tree.links.new(spec_mult_n.inputs['Color2'], mult_base_a_mix_n.outputs['Value'])
+        node_tree.links.new(vcol_mult_n.inputs[1], mult_base_col_mix_n.outputs[0])
+        node_tree.links.new(spec_mult_n.inputs[1], mult_base_a_mix_n.outputs['Value'])
+
+        node_tree.links.new(compose_lighting_n.inputs['Alpha'], vcol_gn.outputs['Vertex Color Alpha'])
 
     @staticmethod
-    def set_mult_texture(node_tree, texture):
+    def set_mult_texture(node_tree, image):
         """Set multiplication texture to shader.
 
         :param node_tree: node tree of current shader
         :type node_tree: bpy.types.NodeTree
-        :param texture: texture which should be assigned to mult texture node
-        :type texture: bpy.types.Texture
+        :param image: texture image which should be assigned to mult texture node
+        :type image: bpy.types.Texture
         """
 
-        node_tree.nodes[DifSpecMultDifSpec.MULT_TEX_NODE].texture = texture
+        node_tree.nodes[DifSpecMultDifSpec.MULT_TEX_NODE].image = image
+
+    @staticmethod
+    def set_mult_texture_settings(node_tree, settings):
+        """Set multiplication texture settings to shader.
+
+        :param node_tree: node tree of current shader
+        :type node_tree: bpy.types.NodeTree
+        :param settings: binary string of TOBJ settings gotten from tobj import
+        :type settings: str
+        """
+        _material_utils.set_texture_settings_to_node(node_tree.nodes[DifSpecMultDifSpec.MULT_TEX_NODE], settings)
 
     @staticmethod
     def set_mult_uv(node_tree, uv_layer):
@@ -127,70 +139,7 @@ class DifSpecMultDifSpec(DifSpec):
         if uv_layer is None or uv_layer == "":
             uv_layer = _MESH_consts.none_uv
 
-        node_tree.nodes[DifSpecMultDifSpec.SEC_GEOM_NODE].uv_layer = uv_layer
-
-    @staticmethod
-    def set_alpha_test_flavor(node_tree, switch_on):
-        """Set alpha test flavor to this shader.
-
-        :param node_tree: node tree of current shader
-        :type node_tree: bpy.types.NodeTree
-        :param switch_on: flag indication if alpha test should be switched on or off
-        :type switch_on: bool
-        """
-
-        if switch_on and not blend_over.is_set(node_tree):
-            out_node = node_tree.nodes[DifSpecMultDifSpec.OUT_MAT_NODE]
-            in_node = node_tree.nodes[DifSpecMultDifSpec.VCOL_GROUP_NODE]
-            location = (out_node.location.x - 185 * 2, out_node.location.y - 500)
-
-            alpha_test.init(node_tree, location, in_node.outputs['Vertex Color Alpha'], out_node.inputs['Alpha'])
-        else:
-            alpha_test.delete(node_tree)
-
-    @staticmethod
-    def set_blend_over_flavor(node_tree, switch_on):
-        """Set blend over flavor to this shader.
-
-        :param node_tree: node tree of current shader
-        :type node_tree: bpy.types.NodeTree
-        :param switch_on: flag indication if blend over should be switched on or off
-        :type switch_on: bool
-        """
-
-        # remove alpha test flavor if it was set already. Because these two can not coexist
-        if alpha_test.is_set(node_tree):
-            DifSpecMultDifSpec.set_alpha_test_flavor(node_tree, False)
-
-        out_node = node_tree.nodes[DifSpecMultDifSpec.OUT_MAT_NODE]
-        in_node = node_tree.nodes[DifSpecMultDifSpec.VCOL_GROUP_NODE]
-
-        if switch_on:
-            blend_over.init(node_tree, in_node.outputs['Vertex Color Alpha'], out_node.inputs['Alpha'])
-        else:
-            blend_over.delete(node_tree)
-
-    @staticmethod
-    def set_blend_add_flavor(node_tree, switch_on):
-        """Set blend add flavor to this shader.
-
-        :param node_tree: node tree of current shader
-        :type node_tree: bpy.types.NodeTree
-        :param switch_on: flag indication if blend add should be switched on or off
-        :type switch_on: bool
-        """
-
-        # remove alpha test flavor if it was set already. Because these two can not coexist
-        if alpha_test.is_set(node_tree):
-            DifSpecMultDifSpec.set_alpha_test_flavor(node_tree, False)
-
-        out_node = node_tree.nodes[DifSpecMultDifSpec.OUT_MAT_NODE]
-        in_node = node_tree.nodes[DifSpecMultDifSpec.VCOL_GROUP_NODE]
-
-        if switch_on:
-            blend_add.init(node_tree, in_node.outputs['Vertex Color Alpha'], out_node.inputs['Alpha'])
-        else:
-            blend_add.delete(node_tree)
+        node_tree.nodes[DifSpecMultDifSpec.SEC_UVMAP_NODE].uv_map = uv_layer
 
     @staticmethod
     def set_tg1_flavor(node_tree, switch_on):
@@ -204,13 +153,13 @@ class DifSpecMultDifSpec(DifSpec):
 
         if switch_on and not tg1.is_set(node_tree):
 
-            out_node = node_tree.nodes[DifSpecMultDifSpec.SEC_GEOM_NODE]
+            out_node = node_tree.nodes[DifSpecMultDifSpec.GEOM_NODE]
             in_node = node_tree.nodes[DifSpecMultDifSpec.MULT_TEX_NODE]
 
             out_node.location.x -= 185
             location = (out_node.location.x + 185, out_node.location.y)
 
-            tg1.init(node_tree, location, out_node.outputs["Global"], in_node.inputs["Vector"])
+            tg1.init(node_tree, location, out_node.outputs["Position"], in_node.inputs["Vector"])
 
         elif not switch_on:
 

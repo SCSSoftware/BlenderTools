@@ -16,12 +16,13 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2013-2014: SCS Software
+# Copyright (C) 2013-2019: SCS Software
 
 from io_scs_tools.exp.pim.piece import Piece
 from io_scs_tools.exp.pim.material import Material
 from io_scs_tools.exp.pim.locator import Locator
 from io_scs_tools.exp.pim.bones import Bones
+from io_scs_tools.exp.pim.piece_skin import PieceSkin
 from io_scs_tools.internals.structure import SectionData as _SectionData
 
 
@@ -40,6 +41,7 @@ class Globall:
         Material.reset_counter()
         Locator.reset_counter()
         Bones.reset_counter()
+        PieceSkin.reset_counter()
 
         self.__part_count = part_count
         self.__skeleton = skeleton.replace("\\", "/")  # make sure to replace backslashes for windows paths
@@ -59,5 +61,6 @@ class Globall:
         section.props.append(("BoneCount", Bones.get_global_bones_count()))
         section.props.append(("LocatorCount", Locator.get_global_locator_count()))
         section.props.append(("Skeleton", self.__skeleton))
+        section.props.append(("PieceSkinCount", PieceSkin.get_global_piece_skin_count()))
 
         return section

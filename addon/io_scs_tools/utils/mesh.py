@@ -16,7 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2013-2014: SCS Software
+# Copyright (C) 2013-2019: SCS Software
 
 import bpy
 import bmesh
@@ -113,7 +113,7 @@ def make_per_face_rgb_layer(mesh, rgb_layer, layer_name):
 
 
 def make_points_to_weld_list(mesh_vertices, mesh_normals, mesh_rgb, mesh_rgba, equal_decimals_count):
-    """Makes a list of duplicated vertices indices. Each item in lists represents indices of vertices with same position and normal."""
+    """Makes a map of duplicated vertices indices into it's original counter part."""
 
     # take first present vertex color data
     if mesh_rgb:
@@ -124,7 +124,6 @@ def make_points_to_weld_list(mesh_vertices, mesh_normals, mesh_rgb, mesh_rgba, e
         mesh_final_rgba = {}
 
     posnorm_dict_tmp = {}
-    posnorm_dict = {}
     perc = 10 ** equal_decimals_count  # represent precision for duplicates
     for val_i, val in enumerate(mesh_vertices):
 
@@ -140,9 +139,18 @@ def make_points_to_weld_list(mesh_vertices, mesh_normals, mesh_rgb, mesh_rgba, e
             posnorm_dict_tmp[key] = [val_i]
         else:
             posnorm_dict_tmp[key].append(val_i)
-            posnorm_dict[key] = posnorm_dict_tmp[key]
 
-    return posnorm_dict.values()
+    # create map for quick access to original vertex index via double vertex indices: (key: double vert index; value: original vert index)
+    verts_map = {}
+    for indices in posnorm_dict_tmp.values():
+        # ignore entry if only one vertex was added to it (means there was no duplicates for it)
+        if len(indices) <= 1:
+            continue
+
+        for idx in indices[1:]:
+            verts_map[idx] = indices[0]  # fist index is original, rest are duplicates
+
+    return verts_map
 
 
 def set_sharp_edges(mesh, mesh_edges):
@@ -312,10 +320,8 @@ def bm_make_faces(bm, faces, points_to_weld_list):
             new_f_idx = []
             for v_idx in f_idx:
                 new_v_idx = v_idx
-                for rec in points_to_weld_list:
-                    if v_idx in rec:
-                        new_v_idx = rec[0]
-                        break
+                if v_idx in points_to_weld_list:
+                    new_v_idx = points_to_weld_list[v_idx]
                 new_f_idx.append(new_v_idx)
 
             try:
@@ -429,12 +435,12 @@ def bm_make_vc_layer(pim_version, bm, vc_layer_name, vc_layer_data, multiplier=1
                     vcol = vc_layer_data[face_i][loop_i][:3]
                     alpha = vc_layer_data[face_i][loop_i][3]
 
-            vcol = (vcol[0] / 2 / multiplier, vcol[1] / 2 / multiplier, vcol[2] / 2 / multiplier)
+            vcol = (vcol[0] / 2 / multiplier, vcol[1] / 2 / multiplier, vcol[2] / 2 / multiplier, 1.0)
             loop[color_lay] = vcol
 
             if alpha != -1.0:
                 assert color_a_lay
-                vcol_a = (alpha / 2 / multiplier,) * 3
+                vcol_a = (alpha / 2 / multiplier,) * 3 + (1.0,)
                 loop[color_a_lay] = vcol_a
 
 
@@ -502,6 +508,28 @@ def bm_prepare_mesh_for_export(mesh, transformation_matrix, triangulate=False, f
     return faces_mapping
 
 
+def get_mesh_for_normals(mesh):
+    """Get mesh prepared to be used for normals export.
+    1. enables auto smooth and sets angle to 180 degress so that split normaals can be calculated (but no normals gets splitted because of it)
+    2. calculates split normals
+
+    :param mesh: original mesh data block of object
+    :type mesh: bpy.types.Mesh
+    :return: mew mesh prepared for normals export
+    :rtype: bpy.types.Mesh
+    """
+    new_mesh = mesh.copy()
+
+    # if user is not using auto smooth, then apply it now just for the porpuse of proper normals split calculation.
+    if not new_mesh.use_auto_smooth:
+        new_mesh.use_auto_smooth = True
+        new_mesh.auto_smooth_angle = 3.14
+
+    new_mesh.calc_normals_split()
+
+    return new_mesh
+
+
 def cleanup_mesh(mesh):
     """Frees normals split and removes mesh if possible.
 
@@ -552,8 +580,8 @@ def vcoloring_rebake(mesh, vcolor_arrays, old_array_hash):
 
     # correct buffers size if needed
     for i in range(0, 4):
-        if len(vcolor_arrays[i]) != len(mesh.loops) * 3:
-            vcolor_arrays[i].resize((len(mesh.loops) * 3,))
+        if len(vcolor_arrays[i]) != len(mesh.loops) * 4:
+            vcolor_arrays[i].resize((len(mesh.loops) * 4,))
 
     color_loops = mesh_vcolors[_VCT_consts.ColoringLayersTypes.Color].data
     decal_loops = mesh_vcolors[_VCT_consts.ColoringLayersTypes.Decal].data

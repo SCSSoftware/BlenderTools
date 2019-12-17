@@ -16,8 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2015: SCS Software
-
+# Copyright (C) 2015-2019: SCS Software
 
 from io_scs_tools.internals.shaders.eut2.dif_spec_weight import DifSpecWeight
 from io_scs_tools.internals.shaders.eut2.std_passes.add_env import StdAddEnv
@@ -43,17 +42,11 @@ class DifSpecWeightAddEnv(DifSpecWeight, StdAddEnv):
                       DifSpecWeight.GEOM_NODE,
                       node_tree.nodes[DifSpecWeight.SPEC_COL_NODE].outputs['Color'],
                       node_tree.nodes[DifSpecWeight.REMAP_ALPHA_GNODE].outputs['Weighted Alpha'],
-                      node_tree.nodes[DifSpecWeight.OUT_MAT_NODE].outputs['Normal'],
+                      node_tree.nodes[DifSpecWeight.LIGHTING_EVAL_NODE].outputs['Normal'],
                       node_tree.nodes[DifSpecWeight.COMPOSE_LIGHTING_NODE].inputs['Env Color'])
 
-    @staticmethod
-    def set_reflection_texture(node_tree, texture):
-        """Set reflection texture on shader.
+        vcol_scale_n = node_tree.nodes[DifSpecWeight.VCOLOR_SCALE_NODE]
+        add_env_gn = node_tree.nodes[StdAddEnv.ADD_ENV_GROUP_NODE]
 
-        :param node_tree: node tree of current shader
-        :type node_tree: bpy.types.NodeTree
-        :param texture: texture object which should be used for reflection
-        :type texture: bpy.types.Texture
-        """
-
-        node_tree.nodes[DifSpecWeightAddEnv.REFL_TEX_NODE].texture = texture
+        # links creation
+        node_tree.links.new(add_env_gn.inputs['Weighted Color'], vcol_scale_n.outputs[0])

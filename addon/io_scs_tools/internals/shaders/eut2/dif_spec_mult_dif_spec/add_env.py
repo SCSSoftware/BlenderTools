@@ -16,8 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2015: SCS Software
-
+# Copyright (C) 2015-2019: SCS Software
 
 from io_scs_tools.internals.shaders.eut2.dif_spec_mult_dif_spec import DifSpecMultDifSpec
 from io_scs_tools.internals.shaders.eut2.std_passes.add_env import StdAddEnv
@@ -42,6 +41,12 @@ class DifSpecMultDifSpecAddEnv(DifSpecMultDifSpec, StdAddEnv):
         StdAddEnv.add(node_tree,
                       DifSpecMultDifSpec.GEOM_NODE,
                       node_tree.nodes[DifSpecMultDifSpec.SPEC_COL_NODE].outputs['Color'],
-                      node_tree.nodes[DifSpecMultDifSpec.BASE_TEX_NODE].outputs['Value'],
-                      node_tree.nodes[DifSpecMultDifSpec.OUT_MAT_NODE].outputs['Normal'],
+                      node_tree.nodes[DifSpecMultDifSpec.BASE_TEX_NODE].outputs['Alpha'],
+                      node_tree.nodes[DifSpecMultDifSpec.LIGHTING_EVAL_NODE].outputs['Normal'],
                       node_tree.nodes[DifSpecMultDifSpec.COMPOSE_LIGHTING_NODE].inputs['Env Color'])
+
+        mult_tex_n = node_tree.nodes[DifSpecMultDifSpec.MULT_TEX_NODE]
+        add_env_gn = node_tree.nodes[StdAddEnv.ADD_ENV_GROUP_NODE]
+
+        # links creation
+        node_tree.links.new(add_env_gn.inputs['Strength Multiplier'], mult_tex_n.outputs['Alpha'])

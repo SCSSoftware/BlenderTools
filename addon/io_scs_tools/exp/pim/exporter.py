@@ -16,7 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2013-2014: SCS Software
+# Copyright (C) 2013-2019: SCS Software
 
 import os
 import collections
@@ -32,8 +32,8 @@ from io_scs_tools.exp.pim.piece import Piece
 from io_scs_tools.exp.pim.part import Part
 from io_scs_tools.exp.pim.locator import Locator
 from io_scs_tools.exp.pim.bones import Bones
-from io_scs_tools.exp.pim.skin import Skin
-from io_scs_tools.exp.pim.skin import SkinStream
+from io_scs_tools.exp.pim.piece_skin import PieceSkin
+from io_scs_tools.exp.pim.piece_skin import PieceSkinStream
 from io_scs_tools.internals.containers import pix as _pix_container
 from io_scs_tools.utils import mesh as _mesh_utils
 from io_scs_tools.utils import name as _name_utils
@@ -97,12 +97,14 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
     """:type: dict[str, Part]"""
     pim_locators = []  # list of Locator class instances representing model locators
     """:type: list[Locator]"""
+    pim_piece_skins = collections.OrderedDict()
+    """:type: dict[str, PieceSkin"""
 
     objects_with_default_material = {}  # stores object names which has no material set
     missing_mappings_data = {}  # indicates if material doesn't have set any uv layer for export
     invalid_objects_for_tangents = set()  # stores object names which tangents calculation failed because of N-gons existence
 
-    bones = skin = skin_stream = None
+    bones = None
     if is_skin_used:
 
         invalid_bone_names = set()  # set for saving bones with invalid names, they are used for reporting to user
@@ -116,10 +118,6 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
             # do bones name checks
             if _name_utils.tokenize_name(bone.name) != bone.name:
                 invalid_bone_names.add(bone.name)
-
-        # create skin data section
-        skin_stream = SkinStream(SkinStream.Types.POSITION)
-        skin = Skin(skin_stream)
 
         # report invalid bone names
         if len(invalid_bone_names) > 0:
@@ -159,12 +157,11 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
         face_flip = scale_sign < 0
 
         # calculate transformation matrix for current object (root object transforms are always subtracted!)
-        mesh_transf_mat = root_object.matrix_world.inverted() * mesh_obj.matrix_world
+        mesh_transf_mat = root_object.matrix_world.inverted() @ mesh_obj.matrix_world
         """:type: mathutils.Matrix"""
 
         # calculate vertex position transformation matrix for this object
-        pos_transf_mat = (Matrix.Scale(scs_globals.export_scale, 4) *
-                          _scs_to_blend_matrix().inverted())
+        pos_transf_mat = Matrix.Scale(scs_globals.export_scale, 4) @ _scs_to_blend_matrix().inverted()
         """:type: mathutils.Matrix"""
 
         # calculate vertex normals transformation matrix for this object
@@ -173,9 +170,7 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
         scale_matrix_x = Matrix.Scale(scale.x, 3, Vector((1, 0, 0))).to_4x4()
         scale_matrix_y = Matrix.Scale(scale.y, 3, Vector((0, 1, 0))).to_4x4()
         scale_matrix_z = Matrix.Scale(scale.z, 3, Vector((0, 0, 1))).to_4x4()
-        nor_transf_mat = (_scs_to_blend_matrix().inverted() *
-                          rot.to_matrix().to_4x4() *
-                          scale_matrix_x * scale_matrix_y * scale_matrix_z)
+        nor_transf_mat = _scs_to_blend_matrix().inverted() @ rot.to_matrix().to_4x4() @ scale_matrix_x @ scale_matrix_y @ scale_matrix_z
         """:type: mathutils.Matrix"""
 
         tangent_transf_mat = _scs_to_blend_matrix().inverted()
@@ -183,11 +178,10 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
 
         # get initial mesh & extra copy of the mesh for normals
         mesh = _object_utils.get_mesh(mesh_obj)
-        mesh_for_normals = mesh.copy()
+        mesh_for_normals = _mesh_utils.get_mesh_for_normals(mesh)
 
         # prepare meshes
         faces_mapping = _mesh_utils.bm_prepare_mesh_for_export(mesh, mesh_transf_mat, triangulate=True)
-        mesh_for_normals.calc_normals_split()
 
         missing_uv_layers = {}  # stores missing uvs specified by materials of this object
         missing_vcolor = False  # indicates if object is missing vertex color layer
@@ -262,6 +256,18 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
             mesh_piece = mesh_pieces[piece_key]
             """:type: Piece"""
 
+            # create/get skin data section for current piece
+            if is_skin_used:
+                mesh_piece_idx = mesh_piece.get_index()
+
+                if mesh_piece_idx not in pim_piece_skins:
+                    new_skin_stream = PieceSkinStream(PieceSkinStream.Types.POSITION)
+                    pim_piece_skins[mesh_piece_idx] = PieceSkin(mesh_piece_idx, new_skin_stream)
+
+                skin_stream = pim_piece_skins[mesh_piece_idx].get_skin_stream_by_type(PieceSkinStream.Types.POSITION)
+            else:
+                skin_stream = None
+
             # get polygon loop indices for normals depending on mapped triangulated face
             if poly.index in faces_mapping:
                 normals_poly_loop_indices = list(mesh_for_normals.polygons[faces_mapping[poly.index]].loop_indices)
@@ -278,7 +284,7 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
 
                 # get data of current vertex
                 # 1. position -> mesh.vertices[loop.vertex_index].co
-                position = tuple(pos_transf_mat * mesh.vertices[vert_i].co)
+                position = tuple(pos_transf_mat @ mesh.vertices[vert_i].co)
 
                 # 2. normal -> mesh_for_normals.loops[loop_i].normal -> calc_normals_split() has to be called before
                 normal = (0, 0, 0)
@@ -287,7 +293,7 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
 
                     # match by vertex index as triangle will for sure have three unique vertices
                     if vert_i == normal_loop.vertex_index:
-                        normal = nor_transf_mat * normal_loop.normal
+                        normal = nor_transf_mat @ normal_loop.normal
                         normal = tuple(Vector(normal).normalized())
                         del normals_poly_loop_indices[i]
                         break
@@ -350,7 +356,7 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
 
                 # 5. tangent -> loop.tangent; loop.bitangent_sign -> calc_tangents() has to be called before
                 if pim_materials[pim_mat_name].get_nmap_uv_name():  # calculate tangents only if needed
-                    tangent = tuple(tangent_transf_mat * loop.tangent)
+                    tangent = tuple(tangent_transf_mat @ loop.tangent)
                     tangent = tuple(Vector(tangent).normalized())
                     tangent = (tangent[0], tangent[1], tangent[2], loop.bitangent_sign)
                 else:
@@ -378,14 +384,14 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
                             bone_weights[bone_indx] = bone_weight
                             bone_weights_sum += bone_weight
 
-                    skin_entry = SkinStream.Entry(mesh_piece.get_index(), piece_vert_index, position, bone_weights, bone_weights_sum)
-                    skin_stream.add_entry(skin_entry)
-
-                    # report un-skinned vertices (no bones or zero sum weight) or badly skinned model
-                    if bone_weights_sum <= 0:
+                    if bone_weights_sum > 0:
+                        skin_entry = PieceSkinStream.Entry(piece_vert_index, position, bone_weights, bone_weights_sum)
+                        skin_stream.add_entry(skin_entry)
+                    else:
+                        # report un-skinned vertices (no bones or zero sum weight) or badly skinned model
                         missing_skinned_verts.add(vert_i)
-                    elif bone_weights_sum < 1:
-                        has_unnormalized_skin = True
+                        if bone_weights_sum < 1:
+                            has_unnormalized_skin = True
 
                 # 9. Terrain Points: save vertex to terrain points storage, if present in correct vertex group
                 for group in mesh.vertices[vert_i].groups:
@@ -434,9 +440,9 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
             else:
                 mesh_piece.add_triangle(tuple(triangle_pvert_indices[::-1]))  # yep it's weird but it simply works vice versa
 
-        # free normals calculations
-        _mesh_utils.cleanup_mesh(mesh)
+        # free normals calculations & remove temporary mesh
         _mesh_utils.cleanup_mesh(mesh_for_normals)
+        mesh_obj.to_mesh_clear()
 
         # report missing data for each object
         if len(missing_uv_layers) > 0:
@@ -487,7 +493,7 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
     # create locators data sections
     for loc_obj in model_locators:
 
-        pos, qua, sca = _get_scs_transformation_components(root_object.matrix_world.inverted() * loc_obj.matrix_world)
+        pos, qua, sca = _get_scs_transformation_components(root_object.matrix_world.inverted() @ loc_obj.matrix_world)
 
         if sca[0] * sca[1] * sca[2] < 0:
             lprint("W Model locator %r inside SCS Root Object %r not exported because of invalid scale.\n\t   " +
@@ -542,7 +548,9 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
 
     if is_skin_used:
         pim_container.append(bones.get_as_section())
-        pim_container.append(skin.get_as_section())
+
+        for piece_key in pim_piece_skins:
+            pim_container.append(pim_piece_skins[piece_key].get_as_section())
 
     # write to file
     ind = "    "

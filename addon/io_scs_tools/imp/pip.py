@@ -16,17 +16,17 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2013-2014: SCS Software
+# Copyright (C) 2013-2019: SCS Software
 
 import math
 from io_scs_tools.consts import PrefabLocators as _PL_consts
 from io_scs_tools.internals import inventory as _inventory
 from io_scs_tools.internals.containers import pix as _pix_container
-from io_scs_tools.internals.connections.wrappers import group as _group_connections_wrapper
+from io_scs_tools.internals.connections.wrappers import collection as _connections_wrapper
 from io_scs_tools.utils import curve as _curve_utils
 from io_scs_tools.utils import name as _name_utils
 from io_scs_tools.utils import object as _object_utils
-from io_scs_tools.utils import get_scs_globals as _get_scs_globals
+from io_scs_tools.utils import get_scs_inventories as _get_scs_inventories
 from io_scs_tools.utils.printout import lprint
 
 
@@ -627,7 +627,7 @@ def load(filepath, terrain_points_trans):
     :return: set of operator result and list of created locators
     :rtype: tuple[set, list[bpy.types.Objects]]
     """
-    scs_globals = _get_scs_globals()
+    scs_inventories = _get_scs_inventories()
 
     print("\n************************************")
     print("**      SCS PIP Importer          **")
@@ -901,7 +901,7 @@ def load(filepath, terrain_points_trans):
             signs_data[name][2],
             signs_data[name][3],
             signs_data[name][4],
-            scs_globals.scs_sign_model_inventory
+            scs_inventories.sign_models
         )
         if loc:
             _print_locator_result(loc, "Sign", name)
@@ -932,7 +932,7 @@ def load(filepath, terrain_points_trans):
             traffic_lights_data[name][4],  # tsem_intervals
             traffic_lights_data[name][5],  # tsem_cycle
             traffic_lights_data[name][6],  # tsem_profile
-            scs_globals.scs_tsem_profile_inventory
+            scs_inventories.tsem_profiles
         )
         if loc:
             _print_locator_result(loc, "Traffic Semaphore", name)
@@ -1107,7 +1107,7 @@ def load(filepath, terrain_points_trans):
 
     # CREATE CONNECTIONS BETWEEN NAVIGATION POINTS
     for connection in conns_dict.values():
-        _group_connections_wrapper.create_connection(connection["start"], connection["end"])
+        _connections_wrapper.create_connection(connection["start"], connection["end"])
 
     # COLLECT MAP POINT CONNECTIONS
     connections = []
@@ -1169,7 +1169,7 @@ def load(filepath, terrain_points_trans):
             lprint('E Map connection out of range: %s', (str(connection),))
             continue
 
-        _group_connections_wrapper.create_connection(start_node, end_node)
+        _connections_wrapper.create_connection(start_node, end_node)
 
     # COLLECT TRIGGER POINT CONNECTIONS
     connections = []
@@ -1196,7 +1196,7 @@ def load(filepath, terrain_points_trans):
             tr_point[4],
             tr_point[5],
             tr_point[6],
-            scs_globals.scs_trigger_actions_inventory
+            scs_inventories.trigger_actions
         )
 
         _print_locator_result(loc, "Trigger Point", name)
@@ -1215,7 +1215,7 @@ def load(filepath, terrain_points_trans):
             print('E Trigger connection: %s', (str(connection),))
             continue
 
-        _group_connections_wrapper.create_connection(start_node, end_node)
+        _connections_wrapper.create_connection(start_node, end_node)
 
     print("************************************")
     return {'FINISHED'}, locators

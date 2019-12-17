@@ -16,13 +16,12 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2017: SCS Software
+# Copyright (C) 2017-2019: SCS Software
 
 import bpy
 import bmesh
 import array
 from mathutils import Vector
-from bpy_extras import object_utils as bpy_object_utils
 from io_scs_tools.consts import Operators as _OP_consts
 from io_scs_tools.imp.pim import get_header
 from io_scs_tools.imp.pim import get_global
@@ -32,6 +31,7 @@ from io_scs_tools.imp.pim import get_part_properties
 from io_scs_tools.imp.pim import get_locator_properties
 from io_scs_tools.imp.pim import get_bones_properties
 from io_scs_tools.imp.pim import get_skin_properties
+from io_scs_tools.imp.pim import get_piece_skin_properties
 from io_scs_tools.imp.transition_structs.terrain_points import TerrainPntsTrans
 from io_scs_tools.internals.containers import pix as _pix_container
 from io_scs_tools.utils.printout import lprint
@@ -291,7 +291,7 @@ def _create_piece(
 
             for poly_loop_i, loop_i in enumerate(poly.loop_indices):
 
-                curr_n = _convert_utils.scs_to_blend_matrix() * Vector(mesh_normals[poly_i][poly_loop_i])
+                curr_n = _convert_utils.scs_to_blend_matrix() @ Vector(mesh_normals[poly_i][poly_loop_i])
                 mesh.loops[loop_i].normal[:] = curr_n
 
         # then we have to go trough very important step they say,
@@ -308,22 +308,25 @@ def _create_piece(
         mesh.use_auto_smooth = True
 
         mesh.free_normals_split()
+    else:
+        # set polygons to use smooth representation only
+        mesh.polygons.foreach_set("use_smooth", [True] * len(mesh.polygons))
 
     context.window_manager.progress_update(0.6)
 
-    # Add the mesh as an object into the scene with this utility module.
-    obj = bpy_object_utils.object_data_add(context, mesh, use_active_layer=False).object
+    # Create object out of mesh and link it to active layer collection.
+    obj = bpy.data.objects.new(mesh.name, mesh)
     obj.scs_props.object_identity = obj.name
     obj.location = (0.0, 0.0, 0.0)
+    context.view_layer.active_layer_collection.collection.objects.link(obj)
 
-    obj.select = True
-    bpy.context.scene.objects.active = obj
-    bpy.ops.object.shade_smooth()
+    obj.select_set(True)
+    bpy.context.view_layer.objects.active = obj
 
     # SCALAR LAYERS
     if mesh_scalars:
         for sca_layer_name in mesh_scalars:
-            vertex_group = obj.vertex_groups.new(sca_layer_name)
+            vertex_group = obj.vertex_groups.new(name=sca_layer_name)
             for val_i, val in enumerate(mesh_scalars[sca_layer_name]):
                 val = float(val[0])
                 if val != 0.0:
@@ -345,7 +348,7 @@ def _create_piece(
             vg_name = str(tp_entry.variant_i).zfill(6) + _OP_consts.TerrainPoints.vg_name_prefix + str(tp_entry.node_i)
 
             if vg_name not in obj.vertex_groups:
-                obj.vertex_groups.new(vg_name)
+                obj.vertex_groups.new(name=vg_name)
 
             vertex_group = obj.vertex_groups[vg_name]
             vertex_group.add([vertex_i], 1.0, "REPLACE")
@@ -354,7 +357,7 @@ def _create_piece(
     if object_skinning:
         if name in object_skinning:
             for vertex_group_name in object_skinning[name]:
-                vertex_group = obj.vertex_groups.new(vertex_group_name)
+                vertex_group = obj.vertex_groups.new(name=vertex_group_name)
                 for vertex_i, vertex in enumerate(object_skinning[name][vertex_group_name]):
                     weight = object_skinning[name][vertex_group_name][vertex]
                     if weight != 0.0:
@@ -367,7 +370,6 @@ def _create_piece(
     bpy.ops.object.modifier_add(type='EDGE_SPLIT')
     bpy.context.object.modifiers["EdgeSplit"].use_edge_angle = False
     bpy.context.object.modifiers["EdgeSplit"].name = "ES_" + name
-    bpy.context.object.data.show_edge_sharp = True
 
     # MATERIALS
     used_mat_indices = set()
@@ -458,7 +460,8 @@ def load_pim_file(context, filepath, terrain_points_trans=None, preview_model=Fa
      part_count,
      bone_count,
      locator_count,
-     skeleton) = get_global(pim_container)
+     skeleton,
+     piece_skin_count) = get_global(pim_container)
 
     # DATA LOADING
     materials_data = {}
@@ -466,21 +469,24 @@ def load_pim_file(context, filepath, terrain_points_trans=None, preview_model=Fa
     parts_data = {}
     locators_data = {}
     bones = {}
-    skin_data = []
-
-    material_i = 0
+    skin_streams = []
+    piece_skin_data = {}
 
     for section in pim_container:
         if section.type == 'Material':
             if scs_globals.import_pim_file:
-                materials_alias, materials_effect = get_material_properties(section)
+                material_i, materials_alias, materials_effect = get_material_properties(section)
                 # print('\nmaterials_alias: %r' % materials_alias)
                 # print('  materials_effect: %s' % materials_effect)
+
+                # suport legacy format without index
+                if not material_i:
+                    material_i = len(materials_data.keys())
+
                 materials_data[material_i] = [
                     materials_alias,
                     materials_effect,
                 ]
-                material_i += 1
         elif section.type == 'Piece':
             if scs_globals.import_pim_file:
                 ob_index, ob_material, ob_vertex_cnt, ob_edge_cnt, ob_face_cnt, ob_stream_cnt = get_piece_properties(section)
@@ -570,9 +576,15 @@ def load_pim_file(context, filepath, terrain_points_trans=None, preview_model=Fa
         # SKINNING
         elif section.type == 'Skin':  # Always only one skin in current SCS game implementation.
             if scs_globals.import_pim_file and scs_globals.import_pis_file:
-                skin_stream_cnt, skin_data = get_skin_properties(section)
+                skin_stream_cnt, skin_streams = get_skin_properties(section)
                 # print('\nskin_stream_cnt: %r' % skin_stream_cnt)
                 # print('skin_data: %r\n' % str(skin_data))
+
+        elif section.type == "PieceSkin":
+            if scs_globals.import_pim_file and scs_globals.import_pis_file:
+                skin_piece_idx, skin_stream_cnt, skin_piece_streams = get_piece_skin_properties(section)
+                piece_skin_data[skin_piece_idx] = skin_piece_streams
+                piece_skin_count -= 1
 
     # CREATE MATERIALS
     if scs_globals.import_pim_file and not preview_model:
@@ -587,22 +599,39 @@ def load_pim_file(context, filepath, terrain_points_trans=None, preview_model=Fa
 
     # PREPARE VERTEX GROUPS FOR SKINNING
     object_skinning = {}
-    if scs_globals.import_pim_file and scs_globals.import_pis_file and bones and skin_data:
-        for skin in skin_data:
-            for stream_i, stream in enumerate(skin):
-                for data in stream[5]:
-                    # print(' ORIGIN - data: %s' % str(data))
-                    for rec in data['clones']:
-                        obj = objects_data[rec[0]][1]
-                        if obj not in object_skinning:
-                            object_skinning[obj] = {}
-                        vertex = rec[1]
-                        for weight in data['weights']:
-                            vg = bones[weight[0]]
-                            if vg not in object_skinning[obj]:
-                                object_skinning[obj][vg] = {}
-                            vw = weight[1]
-                            object_skinning[obj][vg][vertex] = vw
+    if scs_globals.import_pim_file and scs_globals.import_pis_file and bones:
+        if skin_streams:  # global skinning section
+            for skin_stream in skin_streams:
+                for stream_i, stream in enumerate(skin_stream):
+                    for data in stream[5]:  # index 5 is data block, see _get_skin_stream
+                        # print(' ORIGIN - data: %s' % str(data))
+                        for rec in data['clones']:
+                            obj = objects_data[rec[0]][1]  # piece name
+                            if obj not in object_skinning:
+                                object_skinning[obj] = {}
+                            vertex = rec[1]
+                            for weight in data['weights']:
+                                vg = bones[weight[0]]
+                                if vg not in object_skinning[obj]:
+                                    object_skinning[obj][vg] = {}
+                                vw = weight[1]
+                                object_skinning[obj][vg][vertex] = vw
+        elif piece_skin_data:  # or skinning per piece
+            for piece_idx, piece_skin_streams in piece_skin_data.items():
+                obj = objects_data[piece_idx][1]  # piece name
+                for skin_stream in piece_skin_streams:
+                    for stream_i, stream in enumerate(skin_stream):
+                        for data in stream[5]:  # index 5 is data block, see _get_skin_stream
+                            # print(' ORIGIN - data: %s' % str(data))
+                            for vertex_idx in data['vertex_indices']:
+                                if obj not in object_skinning:
+                                    object_skinning[obj] = {}
+                                for weight in data['weights']:
+                                    vg = bones[weight[0]]
+                                    if vg not in object_skinning[obj]:
+                                        object_skinning[obj][vg] = {}
+                                    vw = weight[1]
+                                    object_skinning[obj][vg][vertex_idx] = vw
 
     # CREATE OBJECTS
     lprint('\nI OBJECTS:')
@@ -717,36 +746,37 @@ def load_pim_file(context, filepath, terrain_points_trans=None, preview_model=Fa
     # CREATE SKELETON (ARMATURE)
     armature = None
     if scs_globals.import_pis_file and bones:
-        bpy.ops.object.add(type='ARMATURE', view_align=False, enter_editmode=False, location=(0.0, 0.0, 0.0), rotation=(0.0, 0.0, 0.0))
-        # bpy.ops.object.armature_add(view_align=False, enter_editmode=False)
+        bpy.ops.object.add(type='ARMATURE', enter_editmode=False)
         bpy.ops.object.editmode_toggle()
         for bone in bones:
             bpy.ops.armature.bone_primitive_add(name=bone)
         bpy.ops.object.editmode_toggle()
-        bpy.context.object.show_x_ray = True
         # bpy.context.object.data.show_names = True
         armature = bpy.context.object
 
         # ADD ARMATURE MODIFIERS TO SKINNED OBJECTS
-        if skin_data:
-            for obj in skinned_objects:
-                # print('...adding Armature modifier to %r...' % str(obj.name))
-                bpy.context.scene.objects.active = obj
-                bpy.ops.object.modifier_add(type='ARMATURE')
-                arm_modifier = None
-                for modifier in obj.modifiers:
-                    if modifier.type == 'ARMATURE':
-                        arm_modifier = modifier
-                        break
-                if arm_modifier:
-                    arm_modifier.object = armature
-                obj.parent = armature
+        for obj in skinned_objects:
+            # print('...adding Armature modifier to %r...' % str(obj.name))
+            bpy.context.view_layer.objects.active = obj
+            bpy.ops.object.modifier_add(type='ARMATURE')
+            arm_modifier = None
+            for modifier in obj.modifiers:
+                if modifier.type == 'ARMATURE':
+                    arm_modifier = modifier
+                    break
+            if arm_modifier:
+                arm_modifier.object = armature
+            obj.parent = armature
 
     # WARNING PRINTOUTS
     if piece_count < 0:
-        lprint('\nW More Pieces found than were declared!')
+        lprint('W More Pieces found than were declared!')
     if piece_count > 0:
-        lprint('\nW Some Pieces not found, but were declared!')
+        lprint('W Some Pieces not found, but were declared!')
+    if piece_skin_count > 0:
+        lprint("W More PieceSkins found than were declared!")
+    if piece_skin_count < 0:
+        lprint("W Some PieceSkins not found, but were declared!")
 
     return {'FINISHED'}, objects, locators, armature, skeleton, materials_data.values()
 

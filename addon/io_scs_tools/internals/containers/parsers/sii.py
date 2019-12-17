@@ -16,7 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2015: SCS Software
+# Copyright (C) 2015-2019: SCS Software
 
 import re
 import os
@@ -125,6 +125,12 @@ class _Tokenizer():
                 self.current_pos = 0
                 continue
 
+            # Skip block comments.
+            if re.match('/\*.*$', line_remainder):
+                self.current_pos += 2
+                self.skip_to_end_of_block_comment()
+                continue
+
             # Is this a identifier?
             match = re.match('\w+', line_remainder)
             if match:
@@ -144,6 +150,26 @@ class _Tokenizer():
         # Once we get to the end of the stream, always return the 'eof' token
         # even if we are called more than once for some reason.
         return _Token('eof', '')
+
+    def skip_to_end_of_block_comment(self):
+        """Parses input contents until it reaches end of the block comment."""
+
+        # end if we are at eof already
+        if self.current_line >= len(self.input):
+            return
+
+        line_remainder = self.input[self.current_line][self.current_pos:]
+
+        # inline block comment
+        match = re.match('.*\*/', line_remainder)
+        if match:
+            self.current_pos += match.end(0)
+            return
+
+        # jump to next line and do recursive parsing until we reach eof or end of comment
+        self.current_line += 1
+        self.current_pos = 0
+        self.skip_to_end_of_block_comment()
 
 
 def _parse_unit_name(tokenizer):

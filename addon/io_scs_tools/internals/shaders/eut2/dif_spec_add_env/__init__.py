@@ -16,8 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2015: SCS Software
-
+# Copyright (C) 2015-2019: SCS Software
 
 from io_scs_tools.internals.shaders.eut2.dif_spec import DifSpec
 from io_scs_tools.internals.shaders.eut2.std_passes.add_env import StdAddEnv
@@ -43,7 +42,7 @@ class DifSpecAddEnv(DifSpec, StdAddEnv):
                       DifSpec.GEOM_NODE,
                       node_tree.nodes[DifSpec.SPEC_COL_NODE].outputs['Color'],
                       node_tree.nodes[DifSpec.REMAP_ALPHA_GNODE].outputs['Weighted Alpha'],
-                      node_tree.nodes[DifSpec.OUT_MAT_NODE].outputs['Normal'],
+                      node_tree.nodes[DifSpec.LIGHTING_EVAL_NODE].outputs['Normal'],
                       node_tree.nodes[DifSpec.COMPOSE_LIGHTING_NODE].inputs['Env Color'])
 
     @staticmethod

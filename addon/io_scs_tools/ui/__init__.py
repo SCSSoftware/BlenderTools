@@ -16,12 +16,36 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2013-2014: SCS Software
+# Copyright (C) 2013-2019: SCS Software
 
 from io_scs_tools.ui import shared
 from io_scs_tools.ui import tool_shelf
-from io_scs_tools.ui import scene
+from io_scs_tools.ui import workspace
 from io_scs_tools.ui import object
 from io_scs_tools.ui import material
 from io_scs_tools.ui import mesh
 from io_scs_tools.ui import world
+from io_scs_tools.ui import output
+
+
+def register():
+    # order matters for scs tools main menu items ordering, items registered soner will appear on top
+    shared.register()
+    tool_shelf.register()
+    workspace.register()
+    world.register()
+    object.register()
+    mesh.register()
+    material.register()
+    output.register()
+
+
+def unregister():
+    shared.unregister()
+    tool_shelf.unregister()
+    workspace.unregister()
+    world.unregister()
+    object.unregister()
+    mesh.unregister()
+    material.unregister()
+    output.unregister()

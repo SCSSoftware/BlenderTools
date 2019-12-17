@@ -16,10 +16,13 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2015: SCS Software
+# Copyright (C) 2015-2019: SCS Software
+
+from io_scs_tools.internals.shaders.base import BaseShader
 
 
-class Shadowonly:
+class Shadowonly(BaseShader):
+    COL_NODE = "Color"
     OUTPUT_NODE = "Output"
 
     @staticmethod
@@ -38,24 +41,33 @@ class Shadowonly:
         start_pos_x = 0
         start_pos_y = 0
 
+        pos_x_shift = 185
+
         # node creation
-        output_n = node_tree.nodes.new("ShaderNodeOutput")
-        output_n.name = Shadowonly.OUTPUT_NODE
-        output_n.label = Shadowonly.OUTPUT_NODE
-        output_n.location = (start_pos_x, start_pos_y)
-        output_n.inputs['Color'].default_value = (0.01, 0, 0.01, 1)
+        col_n = node_tree.nodes.new("ShaderNodeRGB")
+        col_n.name = col_n.label = Shadowonly.COL_NODE
+        col_n.location = (start_pos_x, start_pos_y)
+        col_n.outputs['Color'].default_value = (0.01, 0, 0.01, 1.0)
+
+        output_n = node_tree.nodes.new("ShaderNodeOutputMaterial")
+        output_n.name = output_n.label = Shadowonly.OUTPUT_NODE
+        output_n.location = (start_pos_x + pos_x_shift, start_pos_y)
+
+        # links creation
+        node_tree.links.new(output_n.inputs['Surface'], col_n.outputs['Color'])
 
     @staticmethod
-    def set_material(node_tree, material):
-        """Set output material for this shader.
+    def finalize(node_tree, material):
+        """Finalize node tree and material settings. Should be called as last.
 
-        :param node_tree: node tree of current shader
+        :param node_tree: node tree on which this shader should be finalized
         :type node_tree: bpy.types.NodeTree
-        :param material: blender material for used in this tree node as output
+        :param material: material used for this shader
         :type material: bpy.types.Material
         """
 
-        pass  # NOTE: shadow casters are not rendered in game so they don't need material
+        material.use_backface_culling = True
+        material.blend_method = "OPAQUE"
 
     @staticmethod
     def set_shadow_bias(node_tree, value):

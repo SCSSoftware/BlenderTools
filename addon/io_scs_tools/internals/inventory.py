@@ -163,3 +163,49 @@ def get_item_name(inventory, data_id, report_errors=False):
                        (inventory_class_name, data_id))
 
     return result
+
+
+def move_up(inventory, idx):
+    """Move item in inventory with given index up for one place.
+
+    :param inventory: SCS collection property inventory
+    :type inventory: bpy.types.CollectionProperty
+    :param idx: index of item that should be moved
+    :type idx: int
+    :return: new index of moved item or unchanged index if out of range
+    :rtype: int
+    """
+
+    if idx < 0:
+        return idx
+
+    if idx >= len(inventory):
+        return idx
+
+    first_idx = idx
+    second_idx = max(0, idx - 1)
+    inventory.move(first_idx, second_idx)
+    return second_idx
+
+
+def move_down(inventory, idx):
+    """Move item in inventory with given index down for one place.
+
+    :param inventory: SCS collection property inventory
+    :type inventory: bpy.types.CollectionProperty
+    :param idx: index of item that should be moved
+    :type idx: int
+    :return: new index of moved item or unchanged index if out of range
+    :rtype: int
+    """
+
+    if idx < 0:
+        return idx
+
+    if idx >= len(inventory):
+        return idx
+
+    first_idx = idx
+    second_idx = min(len(inventory) - 1, idx + 1)
+    inventory.move(first_idx, second_idx)
+    return second_idx

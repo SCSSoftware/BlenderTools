@@ -204,7 +204,7 @@ def lprint(string, values=(), report_errors=0, report_warnings=0):
         print(text)
         file_logger.write(text + "\n")
         file_logger.flush()
-        bpy.ops.wm.show_3dview_report('INVOKE_DEFAULT', message=text)
+        bpy.ops.wm.scs_tools_show_3dview_report('INVOKE_DEFAULT', message=text)
 
         # make sure to tag any 3D view for redraw so errors OpenGL drawing is triggered
         from io_scs_tools.utils.view3d import tag_redraw_all_view3d

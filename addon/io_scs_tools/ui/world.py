@@ -16,26 +16,41 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2013-2014: SCS Software
+# Copyright (C) 2013-2019: SCS Software
 
+import bpy
 from bpy.types import Panel, UIList
-from io_scs_tools.consts import SCSLigthing as _LIGHTING_consts
 from io_scs_tools.utils import path as _path_utils
 from io_scs_tools.utils import view3d as _view_3d_utils
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
+from io_scs_tools.utils import get_scs_inventories as _get_scs_inventories
 from io_scs_tools.ui import shared as _shared
 
 
-class _WorldPanelBlDefs(_shared.HeaderIconPanel):
+class _WorldPanelBlDefs:
     """
-    Defines class for showing in Blender Scene Properties window
+    Defines class for showing in Blender World Properties window
     """
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
     bl_context = "world"
+    bl_ui_units_x = 15
+
+    @classmethod
+    def poll(cls, context):
+        return context.region.type in ('WINDOW', 'HEADER')
+
+    def get_layout(self):
+        """Returns layout depending where it's drawn into. If popover create extra box to make it distinguisable between different sub-panels."""
+        if self.is_popover:
+            layout = self.layout.box().column()
+        else:
+            layout = self.layout
+
+        return layout
 
 
-class SCSSunProfileSlots(UIList):
+class SCS_TOOLS_UL_SunProfileSlot(UIList):
     """
     Draw sun profile entry within ui list
     """
@@ -43,53 +58,45 @@ class SCSSunProfileSlots(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
         if item:
             layout.prop(item, "name", text="", emboss=False)
-            props = layout.operator("world.scs_use_sun_profile", icon="SAVE_PREFS", text="", emboss=False)
-            props.sun_profile_index = index
         else:
             layout.label(text="", icon_value=icon)
 
 
-class SCSLighting(_WorldPanelBlDefs, Panel):
-    """Creates a Panel in the Scene properties window"""
+class SCS_TOOLS_PT_Lighting(_shared.HeaderIconPanel, _WorldPanelBlDefs, Panel):
+    """Creates a Panel in the world properties window"""
     bl_label = "SCS Lighting"
-    bl_idname = "WORLD_PT_SCS_Lighting"
+
+    def draw_header(self, context):
+        if not self.is_popover:
+            scs_globals = _get_scs_globals()
+            self.layout.prop(scs_globals, "use_scs_lighting", text="")
+
+        _shared.HeaderIconPanel.draw_header(self, context)
 
     def draw(self, context):
         """UI draw function."""
-        layout = self.layout
         scs_globals = _get_scs_globals()
+        scs_inventories = _get_scs_inventories()
 
-        is_active_sun_profile_valid = (0 <= scs_globals.sun_profiles_inventory_active < len(scs_globals.sun_profiles_inventory))
-        is_ligting_scene_used = (context.scene and context.scene.background_set and
-                                 context.scene.background_set.name == _LIGHTING_consts.scene_name)
+        if self.is_popover:
+            header_row = self.layout.row()
+            header_row.prop(scs_globals, "use_scs_lighting", text="SCS Lighting")
+            layout = self.layout.box().column()
+        else:
+            layout = self.get_layout()
 
-        # draw operator for disabling lighting scene
-        if is_ligting_scene_used:
-            layout.operator("world.scs_disable_lighting_in_scene", icon="QUIT")
+        layout.enabled = _get_scs_globals().use_scs_lighting
 
-        # draw warning if lighting scene is not used as background set in current scene
-        if is_active_sun_profile_valid and not is_ligting_scene_used:
-            _shared.draw_warning_operator(layout, "SCS Lighting Not Used",
-                                          "Current scene is not using SCS Ligthing.\n"
-                                          "If you want to enable it, you either press icon beside sun profile name in the list or\n"
-                                          "use 'Apply Values to SCS Lighting' button located on the bottom of selected sun profile details.",
-                                          text="SCS Lighting Not Used: Click For Info",
-                                          icon="INFO")
-
-        # prepare main box containing header and body
-        col = layout.column(align=True)
-        header = col.box()
-        body = col.box()
+        # prepare main layout containing header and body
+        header = layout.column()
+        body = layout.column()
 
         # 1. header
         # library path
-        row = header.row(align=True)
-        split = row.split(percentage=0.35)
-        split.label("Sun Profiles Library:", icon="FILE_TEXT")
-        row = split.row(align=True)
+        row = _shared.create_row(header, use_split=True, enabled=True)
         row.alert = not _path_utils.is_valid_sun_profiles_library_path()
-        row.prop(scs_globals, "sun_profiles_lib_path", text="")
-        row.operator("scene.select_sun_profiles_lib_path", text="", icon='FILESEL')
+        row.prop(scs_globals, "sun_profiles_lib_path", icon='FILE_CACHE')
+        row.operator("scene.scs_tools_select_sun_profiles_lib_path", text="", icon='FILEBROWSER')
 
         # 2. body
         # lighting scene east direction
@@ -97,12 +104,12 @@ class SCSLighting(_WorldPanelBlDefs, Panel):
 
         left_col = row.row(align=True)
         left_col.enabled = not scs_globals.lighting_east_lock
-        left_col.label("", icon="LAMP_SPOT")
-        left_col.separator()
+        left_col.label(text="", icon='LIGHT_SPOT')
         left_col.prop(scs_globals, "lighting_scene_east_direction", slider=True)
 
         right_col = row.row(align=True)
-        right_col.prop(scs_globals, "lighting_east_lock", icon="LOCKED", icon_only=True)
+        icon = 'LOCKED' if scs_globals.lighting_east_lock else 'UNLOCKED'
+        right_col.prop(scs_globals, "lighting_east_lock", icon=icon, icon_only=True)
 
         # now if we have multiple 3D views locking has to be disabled,
         # as it can not work properly with multiple views because all views share same SCS Lighting lamps
@@ -112,55 +119,72 @@ class SCSLighting(_WorldPanelBlDefs, Panel):
                                           "SCS Lighting East Lock Disabled!",
                                           "East lock can not be used, because you are using multiple 3D views and\n"
                                           "tools can not decide on which view you want to lock the east.",
-                                          icon="INFO")
+                                          icon='INFO')
 
         # disable any UI from now on if active sun profile is not valid
-        body.enabled = is_active_sun_profile_valid
+        body.enabled = (0 <= scs_globals.sun_profiles_active < len(scs_inventories.sun_profiles))
 
         # loaded sun profiles list
         body.template_list(
-            'SCSSunProfileSlots',
+            SCS_TOOLS_UL_SunProfileSlot.__name__,
             list_id="",
-            dataptr=scs_globals,
-            propname="sun_profiles_inventory",
+            dataptr=scs_inventories,
+            propname="sun_profiles",
             active_dataptr=scs_globals,
-            active_propname="sun_profiles_inventory_active",
+            active_propname="sun_profiles_active",
             rows=3,
             maxrows=5,
             type='DEFAULT',
             columns=9
         )
 
-        # active/selected sun profile props
-        if is_active_sun_profile_valid:
 
-            layout = body.box().column()
+class SCS_TOOLS_PT_ActiveSunProfileSettings(_WorldPanelBlDefs, Panel):
+    """Creates a sub panel in the world properties window for active lighting settings."""
 
-            layout.label("Selected Sun Profile Details:", icon='LAMP')
-            layout.separator()
+    bl_parent_id = SCS_TOOLS_PT_Lighting.__name__
+    bl_label = "Active Sun Profile Settings"
 
-            active_sun_profile = scs_globals.sun_profiles_inventory[scs_globals.sun_profiles_inventory_active]
+    @classmethod
+    def poll(cls, context):
+        return 0 <= _get_scs_globals().sun_profiles_active < len(_get_scs_inventories().sun_profiles)
 
-            layout.row(align=True).prop(active_sun_profile, "low_elevation")
-            layout.row(align=True).prop(active_sun_profile, "high_elevation")
+    def draw(self, context):
+        """UI draw function."""
+        scs_globals = _get_scs_globals()
+        scs_inventories = _get_scs_inventories()
 
-            layout.row(align=True).prop(active_sun_profile, "ambient")
-            layout.row(align=True).prop(active_sun_profile, "ambient_hdr_coef")
+        layout = self.get_layout()
+        layout.enabled = scs_globals.use_scs_lighting
+        layout.use_property_split = True
+        layout.use_property_decorate = False
 
-            layout.row(align=True).prop(active_sun_profile, "diffuse")
-            layout.row(align=True).prop(active_sun_profile, "diffuse_hdr_coef")
+        active_sun_profile = scs_inventories.sun_profiles[scs_globals.sun_profiles_active]
 
-            layout.row(align=True).prop(active_sun_profile, "specular")
-            layout.row(align=True).prop(active_sun_profile, "specular_hdr_coef")
+        layout.prop(active_sun_profile, "low_elevation")
+        layout.prop(active_sun_profile, "high_elevation")
+        layout.prop(active_sun_profile, "ambient")
+        layout.prop(active_sun_profile, "diffuse")
+        layout.prop(active_sun_profile, "specular")
+        layout.prop(active_sun_profile, "env")
+        layout.prop(active_sun_profile, "env_static_mod")
 
-            # layout.row(align=True).prop(active_sun_profile, "sun_color")
-            # layout.row(align=True).prop(active_sun_profile, "sun_color_hdr_coef")
 
-            layout.row(align=True).prop(active_sun_profile, "env")
-            layout.row(align=True).prop(active_sun_profile, "env_static_mod")
+classes = (
+    SCS_TOOLS_PT_Lighting,
+    SCS_TOOLS_PT_ActiveSunProfileSettings,
+    SCS_TOOLS_UL_SunProfileSlot,
+)
 
-            layout.separator()
-            row = layout.row()
-            row.scale_y = 1.5
-            props = row.operator("world.scs_use_sun_profile", icon="SAVE_PREFS", text="Apply Values to SCS Lighting")
-            props.sun_profile_index = scs_globals.sun_profiles_inventory_active
+
+def register():
+    for cls in classes:
+        bpy.utils.register_class(cls)
+
+    from io_scs_tools import SCS_TOOLS_MT_MainMenu
+    SCS_TOOLS_MT_MainMenu.append_props_entry("World Properties", SCS_TOOLS_PT_Lighting.__name__)
+
+
+def unregister():
+    for cls in classes:
+        bpy.utils.unregister_class(cls)

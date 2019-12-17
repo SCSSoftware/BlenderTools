@@ -16,7 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2013-2014: SCS Software
+# Copyright (C) 2013-2019: SCS Software
 
 import bpy
 from mathutils import Vector
@@ -46,10 +46,10 @@ def collect_nav_curve_data(loc0_obj, loc1_obj):
 
     nav_point_0_loc = loc0_obj.matrix_world.translation
     nav_point_0_rot = loc0_obj.matrix_world.to_euler('XYZ')
-    nav_point_0_dir = loc0_obj.matrix_world.to_quaternion() * Vector((0, 1, 0))
+    nav_point_0_dir = loc0_obj.matrix_world.to_quaternion() @ Vector((0, 1, 0))
     nav_point_1_loc = loc1_obj.matrix_world.translation
     nav_point_1_rot = loc1_obj.matrix_world.to_euler('XYZ')
-    nav_point_1_dir = loc1_obj.matrix_world.to_quaternion() * Vector((0, 1, 0))
+    nav_point_1_dir = loc1_obj.matrix_world.to_quaternion() @ Vector((0, 1, 0))
 
     curve_data = _curve_utils.compute_curve(nav_point_0_loc, nav_point_0_dir,
                                             nav_point_1_loc, nav_point_1_dir, curve_steps)
@@ -87,10 +87,10 @@ def collect_nav_curve_data(loc0_obj, loc1_obj):
         curve_data['curve_color0'] = (0, 0.898, 0)
         curve_data['curve_color1'] = (0, 0.898, 0)
 
-    curve_data['locrot_0'] = (nav_point_0_loc.x, nav_point_0_loc.y, nav_point_0_loc.z, nav_point_0_rot.x,
-                              nav_point_0_rot.y, nav_point_0_rot.z)
-    curve_data['locrot_1'] = (nav_point_1_loc.x, nav_point_1_loc.y, nav_point_1_loc.z, nav_point_1_rot.x,
-                              nav_point_1_rot.y, nav_point_1_rot.z)
+    curve_data['locrot_0'] = (nav_point_0_loc.x, nav_point_0_loc.y, nav_point_0_loc.z,
+                              nav_point_0_rot.x, nav_point_0_rot.y, nav_point_0_rot.z)
+    curve_data['locrot_1'] = (nav_point_1_loc.x, nav_point_1_loc.y, nav_point_1_loc.z,
+                              nav_point_1_rot.x, nav_point_1_rot.y, nav_point_1_rot.z)
 
     return curve_data
 

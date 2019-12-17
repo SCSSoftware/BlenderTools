@@ -32,9 +32,8 @@ def __create_node__(node_tree):
     vector_mapping_n = node_tree.nodes.new("ShaderNodeMapping")
     vector_mapping_n.name = vector_mapping_n.label = TG0_NODE
     vector_mapping_n.vector_type = "POINT"
-    vector_mapping_n.translation = vector_mapping_n.rotation = (0.0,) * 3
-    vector_mapping_n.scale = (1.0,) * 3
-    vector_mapping_n.use_min = vector_mapping_n.use_max = False
+    vector_mapping_n.inputs['Location'].default_value = vector_mapping_n.inputs['Rotation'].default_value = (0.0,) * 3
+    vector_mapping_n.inputs['Scale'].default_value = (1.0,) * 3
 
 
 def init(node_tree, location, geom_output, texture_input):
@@ -61,7 +60,9 @@ def init(node_tree, location, geom_output, texture_input):
     node_tree.links.new(nodes[TG0_NODE].inputs[0], geom_output)
     node_tree.links.new(texture_input, nodes[TG0_NODE].outputs[0])
 
-    node_tree[FLAVOR_ID] = True
+    # FIXME: move to old system after: https://developer.blender.org/T68406 is resolved
+    flavor_frame = node_tree.nodes.new(type="NodeFrame")
+    flavor_frame.name = flavor_frame.label = FLAVOR_ID
 
 
 def delete(node_tree):
@@ -74,8 +75,8 @@ def delete(node_tree):
     if TG0_NODE in node_tree.nodes:
         node_tree.nodes.remove(node_tree.nodes[TG0_NODE])
 
-    if FLAVOR_ID in node_tree:
-        del node_tree[FLAVOR_ID]
+    if FLAVOR_ID in node_tree.nodes:
+        node_tree.nodes.remove(node_tree.nodes[FLAVOR_ID])
 
 
 def get_node(node_tree):
@@ -97,7 +98,7 @@ def is_set(node_tree):
     :return: True if flavor exists; False otherwise
     :rtype: bool
     """
-    return FLAVOR_ID in node_tree and node_tree[FLAVOR_ID]
+    return FLAVOR_ID in node_tree.nodes
 
 
 def set_scale(node_tree, scale_x, scale_y):
@@ -114,5 +115,5 @@ def set_scale(node_tree, scale_x, scale_y):
 
     if vector_mapping_n:
 
-        vector_mapping_n.scale[0] = 1 / scale_x
-        vector_mapping_n.scale[1] = 1 / scale_y
+        vector_mapping_n.inputs['Scale'].default_value[0] = 1 / scale_x
+        vector_mapping_n.inputs['Scale'].default_value[1] = 1 / scale_y

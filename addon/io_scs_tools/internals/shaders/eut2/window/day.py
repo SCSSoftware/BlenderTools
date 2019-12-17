@@ -16,11 +16,10 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2015: SCS Software
-
+# Copyright (C) 2015-2019: SCS Software
 
 from io_scs_tools.internals.shaders.eut2.dif_spec_add_env import DifSpecAddEnv
-from io_scs_tools.internals.shaders.eut2.std_node_groups import window_uv_offset
+from io_scs_tools.internals.shaders.eut2.window import window_uv_offset_ng
 
 
 class WindowDay(DifSpecAddEnv):
@@ -44,26 +43,28 @@ class WindowDay(DifSpecAddEnv):
         DifSpecAddEnv.init(node_tree)
 
         geom_n = node_tree.nodes[DifSpecAddEnv.GEOM_NODE]
+        uv_map_n = node_tree.nodes[DifSpecAddEnv.UVMAP_NODE]
         spec_col_n = node_tree.nodes[DifSpecAddEnv.SPEC_COL_NODE]
         base_tex_n = node_tree.nodes[DifSpecAddEnv.BASE_TEX_NODE]
-        out_mat_n = node_tree.nodes[DifSpecAddEnv.OUT_MAT_NODE]
+        compose_lighting_n = node_tree.nodes[DifSpecAddEnv.COMPOSE_LIGHTING_NODE]
 
         node_tree.nodes.remove(node_tree.nodes[DifSpecAddEnv.SPEC_MULT_NODE])
 
         # create nodes
-        uv_recalc_gn = node_tree.nodes.new("ShaderNodeGroup")
-        uv_recalc_gn.name = window_uv_offset.WINDOW_UV_OFFSET_G
-        uv_recalc_gn.label = window_uv_offset.WINDOW_UV_OFFSET_G
-        uv_recalc_gn.location = (start_pos_x, start_pos_y + 1500)
-        uv_recalc_gn.node_tree = window_uv_offset.get_node_group()
+        uv_recalc_n = node_tree.nodes.new("ShaderNodeGroup")
+        uv_recalc_n.name = window_uv_offset_ng.WINDOW_UV_OFFSET_G
+        uv_recalc_n.label = window_uv_offset_ng.WINDOW_UV_OFFSET_G
+        uv_recalc_n.location = (start_pos_x, start_pos_y + 1500)
+        uv_recalc_n.node_tree = window_uv_offset_ng.get_node_group()
 
         # create links
-        node_tree.links.new(out_mat_n.inputs["Spec"], spec_col_n.outputs["Color"])
+        node_tree.links.new(compose_lighting_n.inputs['Specular Color'], spec_col_n.outputs['Color'])
 
-        node_tree.links.new(uv_recalc_gn.inputs["UV"], geom_n.outputs["UV"])
-        node_tree.links.new(uv_recalc_gn.inputs["Normal"], geom_n.outputs["Normal"])
+        node_tree.links.new(uv_recalc_n.inputs['UV'], uv_map_n.outputs['UV'])
+        node_tree.links.new(uv_recalc_n.inputs['Normal'], geom_n.outputs['Normal'])
+        node_tree.links.new(uv_recalc_n.inputs['Incoming'], geom_n.outputs['Incoming'])
 
-        node_tree.links.new(base_tex_n.inputs["Vector"], uv_recalc_gn.outputs["UV Final"])
+        node_tree.links.new(base_tex_n.inputs['Vector'], uv_recalc_n.outputs['UV Final'])
 
     @staticmethod
     def set_lightmap_texture(node_tree, texture):
@@ -73,6 +74,17 @@ class WindowDay(DifSpecAddEnv):
         :type node_tree: bpy.types.NodeTree
         :param texture: texture which should be assignet to lightmap texture node
         :type texture: bpy.types.Texture
+        """
+        pass  # NOTE: light map texture is not used in day version of effect, so pass it
+
+    @staticmethod
+    def set_lightmap_texture_settings(node_tree, settings):
+        """Set lightmap texture settings to shader.
+
+        :param node_tree: node tree of current shader
+        :type node_tree: bpy.types.NodeTree
+        :param settings: binary string of TOBJ settings gotten from tobj import
+        :type settings: str
         """
         pass  # NOTE: light map texture is not used in day version of effect, so pass it
 

@@ -16,7 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2015-2017: SCS Software
+# Copyright (C) 2015-2019: SCS Software
 
 import bmesh
 import bpy
@@ -36,24 +36,24 @@ class LampTool:
     Wrapper class for better navigation in file
     """
 
-    class SetLampMaskUV(bpy.types.Operator):
+    class SCS_TOOLS_OT_SetLampmaskUV(bpy.types.Operator):
         bl_label = "Set UV to lamp mask"
-        bl_idname = "mesh.scs_set_lampmask_uv"
+        bl_idname = "mesh.scs_tools_set_lampmask_uv"
         bl_description = "Sets offset for lamp mask UV according to given vehicle side or auxiliary color."
 
-        vehicle_side = StringProperty(
+        vehicle_side: StringProperty(
             description="",
             default="",
             options={'HIDDEN'},
         )
 
-        aux_color = StringProperty(
+        aux_color: StringProperty(
             description="",
             default="",
             options={'HIDDEN'},
         )
 
-        traffic_light_color = StringProperty(
+        traffic_light_color: StringProperty(
             description="",
             default="",
             options={'HIDDEN'},
@@ -141,23 +141,23 @@ class VertexColorTools:
     Wrapper class for better navigation in file
     """
 
-    class WrapVertexColors(bpy.types.Operator):
+    class SCS_TOOLS_OT_WrapVertexColors(bpy.types.Operator):
         bl_label = "Wrap"
-        bl_idname = "mesh.scs_wrap_vcol"
+        bl_idname = "mesh.scs_tools_wrap_vertex_colors"
         bl_description = "Wraps vertex colors to given interval."
         bl_options = {'REGISTER', 'UNDO'}
 
-        wrap_type = StringProperty(
+        wrap_type: StringProperty(
             options={'HIDDEN'},
         )
-        min = FloatProperty(
+        min: FloatProperty(
             name="Min Value",
             description="New minimal possible value for vertex colors.",
             default=0.4,
             max=0.5,
             min=0.0,
         )
-        max = FloatProperty(
+        max: FloatProperty(
             name="Max Value",
             description="New maximal possible value for vertex colors.",
             default=0.6,
@@ -195,20 +195,21 @@ class VertexColorTools:
                         # cache original vertex colors because of update on interval change
                         if loop_i not in self.original_col:
                             color = vcolor_layer.data[loop_i].color
-                            self.original_col[loop_i] = (color[0], color[1], color[2])
+                            self.original_col[loop_i] = (color[0], color[1], color[2], color[3])
 
                         vcolor_layer.data[loop_i].color = (
                             self.original_col[loop_i][0] * interval + self.min,
                             self.original_col[loop_i][1] * interval + self.min,
-                            self.original_col[loop_i][2] * interval + self.min
+                            self.original_col[loop_i][2] * interval + self.min,
+                            self.original_col[loop_i][3]
                         )
 
             self.report({"INFO"}, "Vertex colors wrapped!")
             return {'FINISHED'}
 
-    class PrintVertexColorsStatistics(bpy.types.Operator):
+    class SCS_TOOLS_OT_PrintVertexColorsStats(bpy.types.Operator):
         bl_label = "Get Statistics"
-        bl_idname = "mesh.scs_get_vcol_stats"
+        bl_idname = "mesh.scs_tools_print_vertex_colors_stats"
         bl_description = "Prints out min, max and avarage vertex color for active vertex color layer."
         bl_options = {'REGISTER', 'UNDO'}
 
@@ -251,9 +252,9 @@ class VertexColorTools:
 
             return {'FINISHED'}
 
-    class AddVertexColorsToActive(bpy.types.Operator):
+    class SCS_TOOLS_OT_AddVertexColorsToActive(bpy.types.Operator):
         bl_label = "Add Vertex Colors To Active"
-        bl_idname = "mesh.scs_add_vcolors_to_active"
+        bl_idname = "mesh.scs_tools_add_vertex_colors_to_active"
         bl_description = "Adds missing vertex colors layers to active object."
         bl_options = {'REGISTER', 'UNDO'}
 
@@ -275,13 +276,13 @@ class VertexColorTools:
 
                     # setting neutral value (0.5) to all colors
                     for vertex_col_data in context.object.data.vertex_colors[curr_lay_name].data:
-                        vertex_col_data.color = (0.5,) * 3
+                        vertex_col_data.color = (0.5,) * 3 + (1.0,)
 
             return {'FINISHED'}
 
-    class AddVertexColorsToAll(bpy.types.Operator):
+    class SCS_TOOLS_OT_AddVertexColorsToAll(bpy.types.Operator):
         bl_label = "Add Vertex Colors To All"
-        bl_idname = "mesh.scs_add_vcolors_to_all"
+        bl_idname = "mesh.scs_tools_add_vertex_colors_to_all"
         bl_description = "Adds missing vertex colors layers to all objects using this material."
         bl_options = {'REGISTER', 'UNDO'}
 
@@ -315,18 +316,18 @@ class VertexColorTools:
 
                         # setting neutral value (0.5) to all colors
                         for vertex_col_data in obj.data.vertex_colors[curr_lay_name].data:
-                            vertex_col_data.color = (0.5,) * 3
+                            vertex_col_data.color = (0.5,) * 3 + (1.0,)
 
             return {'FINISHED'}
 
-    class VertexColoringEdit(bpy.types.Operator):
+    class SCS_TOOLS_OT_StartVColoring(bpy.types.Operator):
         bl_label = "VColoring - Edit"
-        bl_idname = "mesh.scs_vcoloring_edit"
+        bl_idname = "mesh.scs_tools_start_vcoloring"
         bl_description = "Enters complex vertex paint edit mode, where user can edit one of 4 vertex color layers: color, decal, ao, ao2.\n" \
                          "This layers are baked together by extra overlay functions designed for usage in map assets."
         bl_options = {'REGISTER', 'INTERNAL', 'UNDO'}
 
-        layer_name = StringProperty(default="", description="Name of the layer to edit currently.")
+        layer_name: StringProperty(default="", description="Name of the layer to edit currently.")
 
         __static_active_layer = _VCT_consts.ColoringLayersTypes.Color  # by default start editing color
         """Stores currently active vertex color layer. Used for switching to other modes when user invokes this operator again."""
@@ -363,11 +364,11 @@ class VertexColorTools:
 
             wm = context.window_manager
 
-            self.__timer = wm.event_timer_add(0.15, context.window)
+            self.__timer = wm.event_timer_add(0.15, window=context.window)
             self.__active_object_name = context.active_object.name
             self.__active_object_mode = context.active_object.mode
 
-            VertexColorTools.VertexColoringEdit.__static_is_active = True
+            VertexColorTools.SCS_TOOLS_OT_StartVColoring.__static_is_active = True
 
             wm.modal_handler_add(self)
 
@@ -382,23 +383,23 @@ class VertexColorTools:
 
                 buffer = None
                 if layer_name == _VCT_consts.ColoringLayersTypes.Color:
-                    buffer = numpy.array([0.5] * (len(mesh.loops) * 3))
+                    buffer = numpy.array([0.5] * (len(mesh.loops) * 4))
                 elif layer_name == _VCT_consts.ColoringLayersTypes.Decal:
-                    buffer = numpy.array([1.0] * (len(mesh.loops) * 3))
+                    buffer = numpy.array([1.0] * (len(mesh.loops) * 4))
                 elif layer_name == _VCT_consts.ColoringLayersTypes.AO:
-                    buffer = numpy.array([0.5] * (len(mesh.loops) * 3))
+                    buffer = numpy.array([0.5] * (len(mesh.loops) * 4))
                 elif layer_name == _VCT_consts.ColoringLayersTypes.AO2:
-                    buffer = numpy.array([0.5] * (len(mesh.loops) * 3))
+                    buffer = numpy.array([0.5] * (len(mesh.loops) * 4))
 
                 if buffer is not None:
                     vcolor.data.foreach_set("color", buffer)
 
             # initialize buffers and hash
             self.__vcolors_buffer_arrays = [
-                numpy.array([0.0] * (len(mesh.loops) * 3)),
-                numpy.array([0.0] * (len(mesh.loops) * 3)),
-                numpy.array([0.0] * (len(mesh.loops) * 3)),
-                numpy.array([0.0] * (len(mesh.loops) * 3))
+                numpy.array([0.0] * (len(mesh.loops) * 4)),
+                numpy.array([0.0] * (len(mesh.loops) * 4)),
+                numpy.array([0.0] * (len(mesh.loops) * 4)),
+                numpy.array([0.0] * (len(mesh.loops) * 4))
             ]
 
             self.__old_vcolors_array_hash = None
@@ -493,10 +494,10 @@ class VertexColorTools:
 
             # user requested layer change
             if self.layer_name != "" and self.layer_name in _VCT_consts.ColoringLayersTypes.as_list():
-                VertexColorTools.VertexColoringEdit.__static_active_layer = self.layer_name
+                VertexColorTools.SCS_TOOLS_OT_StartVColoring.__static_active_layer = self.layer_name
 
             # already active abort another one
-            if VertexColorTools.VertexColoringEdit.__static_is_active:
+            if VertexColorTools.SCS_TOOLS_OT_StartVColoring.__static_is_active:
                 return {'CANCELLED'}
 
             bpy.ops.object.mode_set(mode="VERTEX_PAINT")
@@ -538,26 +539,26 @@ class VertexColorTools:
             self.__old_vcolors_array_hash = None
             self.__vcolors_buffer_arrays = []
 
-            VertexColorTools.VertexColoringEdit.__static_is_active = False
+            VertexColorTools.SCS_TOOLS_OT_StartVColoring.__static_is_active = False
             lprint("D VColoring operator cleanup done, exiting now!")
 
-    class VertexColoringExit(bpy.types.Operator):
+    class SCS_TOOLS_OT_ExitVColoring(bpy.types.Operator):
         bl_label = "VColoring - Exit"
-        bl_idname = "mesh.scs_vcoloring_exit"
+        bl_idname = "mesh.scs_tools_exit_vcoloring"
         bl_description = "Exits complex vertex paint edit mode."
         bl_options = {'REGISTER', 'INTERNAL'}
 
         @classmethod
         def poll(cls, context):
-            return VertexColorTools.VertexColoringEdit.poll(context)
+            return VertexColorTools.SCS_TOOLS_OT_StartVColoring.poll(context)
 
         def execute(self, context):
-            VertexColorTools.VertexColoringEdit.abort()
+            VertexColorTools.SCS_TOOLS_OT_StartVColoring.abort()
             return {'FINISHED'}
 
-    class VertexColoringRebake(bpy.types.Operator):
+    class SCS_TOOLS_OT_RebakeVColoring(bpy.types.Operator):
         bl_label = "VColoring - Rebake"
-        bl_idname = "mesh.scs_vcoloring_rebake"
+        bl_idname = "mesh.scs_tools_rebake_vcoloring"
         bl_description = "Rebakes 4 vertex color layers (use it if you edited any of 4 extra vertex color layers by hand)."
         bl_options = {'REGISTER', 'UNDO'}
 
@@ -582,10 +583,10 @@ class VertexColorTools:
 
             # prepare buffers
             vcolors_buffer_arrays = [
-                numpy.array([0.0] * (len(mesh.loops) * 3)),
-                numpy.array([0.0] * (len(mesh.loops) * 3)),
-                numpy.array([0.0] * (len(mesh.loops) * 3)),
-                numpy.array([0.0] * (len(mesh.loops) * 3))
+                numpy.array([0.0] * (len(mesh.loops) * 4)),
+                numpy.array([0.0] * (len(mesh.loops) * 4)),
+                numpy.array([0.0] * (len(mesh.loops) * 4)),
+                numpy.array([0.0] * (len(mesh.loops) * 4))
             ]
 
             # rebake
@@ -605,3 +606,26 @@ class VertexColorTools:
                 self.report({'ERROR'}, message[2:])
 
             return {'FINISHED'}
+
+
+classes = (
+    LampTool.SCS_TOOLS_OT_SetLampmaskUV,
+
+    VertexColorTools.SCS_TOOLS_OT_AddVertexColorsToActive,
+    VertexColorTools.SCS_TOOLS_OT_AddVertexColorsToAll,
+    VertexColorTools.SCS_TOOLS_OT_PrintVertexColorsStats,
+    VertexColorTools.SCS_TOOLS_OT_StartVColoring,
+    VertexColorTools.SCS_TOOLS_OT_ExitVColoring,
+    VertexColorTools.SCS_TOOLS_OT_RebakeVColoring,
+    VertexColorTools.SCS_TOOLS_OT_WrapVertexColors,
+)
+
+
+def register():
+    for cls in classes:
+        bpy.utils.register_class(cls)
+
+
+def unregister():
+    for cls in classes:
+        bpy.utils.unregister_class(cls)

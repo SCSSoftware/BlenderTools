@@ -132,36 +132,36 @@ def _create_fcurves(anim_action, anim_group, anim_curve, rot_euler=True, types='
     """
     pos_fcurves = rot_fcurves = sca_fcurves = None
     if 'Loc' in types:
-        fcurve_pos_x = anim_action.fcurves.new(str(anim_curve + '.location'), 0)
-        fcurve_pos_y = anim_action.fcurves.new(str(anim_curve + '.location'), 1)
-        fcurve_pos_z = anim_action.fcurves.new(str(anim_curve + '.location'), 2)
+        fcurve_pos_x = anim_action.fcurves.new(str(anim_curve + '.location'), index=0)
+        fcurve_pos_y = anim_action.fcurves.new(str(anim_curve + '.location'), index=1)
+        fcurve_pos_z = anim_action.fcurves.new(str(anim_curve + '.location'), index=2)
         fcurve_pos_x.group = anim_group
         fcurve_pos_y.group = anim_group
         fcurve_pos_z.group = anim_group
         pos_fcurves = (fcurve_pos_x, fcurve_pos_y, fcurve_pos_z)
     if 'Rot' in types:
         if rot_euler:
-            fcurve_rot_x = anim_action.fcurves.new(str(anim_curve + '.rotation_euler'), 0)
-            fcurve_rot_y = anim_action.fcurves.new(str(anim_curve + '.rotation_euler'), 1)
-            fcurve_rot_z = anim_action.fcurves.new(str(anim_curve + '.rotation_euler'), 2)
+            fcurve_rot_x = anim_action.fcurves.new(str(anim_curve + '.rotation_euler'), index=0)
+            fcurve_rot_y = anim_action.fcurves.new(str(anim_curve + '.rotation_euler'), index=1)
+            fcurve_rot_z = anim_action.fcurves.new(str(anim_curve + '.rotation_euler'), index=2)
             fcurve_rot_x.group = anim_group
             fcurve_rot_y.group = anim_group
             fcurve_rot_z.group = anim_group
             rot_fcurves = (fcurve_rot_x, fcurve_rot_y, fcurve_rot_z)
         else:
-            fcurve_rot_w = anim_action.fcurves.new(str(anim_curve + '.rotation_quaternion'), 0)
-            fcurve_rot_x = anim_action.fcurves.new(str(anim_curve + '.rotation_quaternion'), 1)
-            fcurve_rot_y = anim_action.fcurves.new(str(anim_curve + '.rotation_quaternion'), 2)
-            fcurve_rot_z = anim_action.fcurves.new(str(anim_curve + '.rotation_quaternion'), 3)
+            fcurve_rot_w = anim_action.fcurves.new(str(anim_curve + '.rotation_quaternion'), index=0)
+            fcurve_rot_x = anim_action.fcurves.new(str(anim_curve + '.rotation_quaternion'), index=1)
+            fcurve_rot_y = anim_action.fcurves.new(str(anim_curve + '.rotation_quaternion'), index=2)
+            fcurve_rot_z = anim_action.fcurves.new(str(anim_curve + '.rotation_quaternion'), index=3)
             fcurve_rot_w.group = anim_group
             fcurve_rot_x.group = anim_group
             fcurve_rot_y.group = anim_group
             fcurve_rot_z.group = anim_group
             rot_fcurves = (fcurve_rot_w, fcurve_rot_x, fcurve_rot_y, fcurve_rot_z)
     if 'Sca' in types:
-        fcurve_sca_x = anim_action.fcurves.new(str(anim_curve + '.scale'), 0)
-        fcurve_sca_y = anim_action.fcurves.new(str(anim_curve + '.scale'), 1)
-        fcurve_sca_z = anim_action.fcurves.new(str(anim_curve + '.scale'), 2)
+        fcurve_sca_x = anim_action.fcurves.new(str(anim_curve + '.scale'), index=0)
+        fcurve_sca_y = anim_action.fcurves.new(str(anim_curve + '.scale'), index=1)
+        fcurve_sca_z = anim_action.fcurves.new(str(anim_curve + '.scale'), index=2)
         fcurve_sca_x.group = anim_group
         fcurve_sca_y.group = anim_group
         fcurve_sca_z.group = anim_group
@@ -181,10 +181,10 @@ def _get_delta_matrix(bone_rest_matrix_scs, parent_bone_rest_matrix_scs, bone_an
     scale[1] = (0, sca[1], 0, 0)
     scale[2] = (0, 0, sca[2], 0)
 
-    return (scale_matrix *
-            scale *
-            bone_rest_matrix_scs.inverted() *
-            parent_bone_rest_matrix_scs *
+    return (scale_matrix @
+            scale @
+            bone_rest_matrix_scs.inverted() @
+            parent_bone_rest_matrix_scs @
             bone_animation_matrix_scs)
 
 
@@ -378,9 +378,9 @@ def load(root_object, pia_files, armature, pis_filepath=None, bones=None):
                         # pos_fcurves, rot_fcurves, sca_fcurves = _create_fcurves(anim_action, anim_group, anim_curve, rot_euler=True,
                         # types='LocRotSca')
                         # pos_fcurves, rot_fcurves, sca_fcurves = _create_fcurves(anim_action, anim_group, anim_curve, types='Loc')
-                        fcurve_pos_x = anim_action.fcurves.new('location', 0)
-                        fcurve_pos_y = anim_action.fcurves.new('location', 1)
-                        fcurve_pos_z = anim_action.fcurves.new('location', 2)
+                        fcurve_pos_x = anim_action.fcurves.new('location', index=0)
+                        fcurve_pos_y = anim_action.fcurves.new('location', index=1)
+                        fcurve_pos_z = anim_action.fcurves.new('location', index=2)
                         fcurve_pos_x.group = anim_group
                         fcurve_pos_y.group = anim_group
                         fcurve_pos_z.group = anim_group

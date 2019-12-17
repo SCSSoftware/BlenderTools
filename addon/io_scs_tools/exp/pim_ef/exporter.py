@@ -16,7 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2017: SCS Software
+# Copyright (C) 2017-2019: SCS Software
 
 import os
 import collections
@@ -32,8 +32,8 @@ from io_scs_tools.exp.pim_ef.piece import Piece
 from io_scs_tools.exp.pim_ef.part import Part
 from io_scs_tools.exp.pim_ef.locator import Locator
 from io_scs_tools.exp.pim_ef.bones import Bones
-from io_scs_tools.exp.pim_ef.skin import Skin
-from io_scs_tools.exp.pim_ef.skin import SkinStream
+from io_scs_tools.exp.pim_ef.piece_skin import PieceSkin
+from io_scs_tools.exp.pim_ef.piece_skin import PieceSkinStream
 from io_scs_tools.internals.containers import pix as _pix_container
 from io_scs_tools.utils import mesh as _mesh_utils
 from io_scs_tools.utils import name as _name_utils
@@ -96,21 +96,19 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
     """:type: dict[str, Part]"""
     pim_locators = []  # list of Locator class instances representing model locators
     """:type: list[Locator]"""
+    pim_piece_skins = []
+    """:type: dict[str, PieceSkin"""
 
     objects_with_default_material = {}  # stores object names which has no material set
     missing_mappings_data = {}  # indicates if material doesn't have set any uv layer for export
 
-    bones = skin = skin_stream = None
+    bones = None
     if is_skin_used:
         # create bones data section
         bones = Bones()
         for bone in armature_object.data.bones:
             bones.add_bone(bone.name)
             used_bones.add(bone.name)
-
-        # create skin data section
-        skin_stream = SkinStream(SkinStream.Types.POSITION)
-        skin = Skin(skin_stream)
 
     # create mesh object data sections
     for mesh_obj in mesh_objects:
@@ -135,11 +133,11 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
             winding_order = -1
 
         # calculate transformation matrix for current object (root object transforms are always subtracted!)
-        mesh_transf_mat = root_object.matrix_world.inverted() * mesh_obj.matrix_world
+        mesh_transf_mat = root_object.matrix_world.inverted() @ mesh_obj.matrix_world
         """:type: mathutils.Matrix"""
 
         # calculate vertex position transformation matrix for this object
-        pos_transf_mat = (Matrix.Scale(scs_globals.export_scale, 4) *
+        pos_transf_mat = (Matrix.Scale(scs_globals.export_scale, 4) @
                           _scs_to_blend_matrix().inverted())
         """:type: mathutils.Matrix"""
 
@@ -149,18 +147,14 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
         scale_matrix_x = Matrix.Scale(scale.x, 3, Vector((1, 0, 0))).to_4x4()
         scale_matrix_y = Matrix.Scale(scale.y, 3, Vector((0, 1, 0))).to_4x4()
         scale_matrix_z = Matrix.Scale(scale.z, 3, Vector((0, 0, 1))).to_4x4()
-        nor_transf_mat = (_scs_to_blend_matrix().inverted() *
-                          rot.to_matrix().to_4x4() *
-                          scale_matrix_x * scale_matrix_y * scale_matrix_z)
+        nor_transf_mat = _scs_to_blend_matrix().inverted() @ rot.to_matrix().to_4x4() @ scale_matrix_x @ scale_matrix_y @ scale_matrix_z
         """:type: mathutils.Matrix"""
 
-        # get initial mesh and vertex groups for it
+        # get initial mesh and extra copy for normals only
         mesh = _object_utils.get_mesh(mesh_obj)
-        _mesh_utils.bm_prepare_mesh_for_export(mesh, mesh_transf_mat)
+        mesh_for_normals = _mesh_utils.get_mesh_for_normals(mesh)
 
-        # get extra mesh only for normals
-        mesh_for_normals = _object_utils.get_mesh(mesh_obj)
-        mesh_for_normals.calc_normals_split()
+        _mesh_utils.bm_prepare_mesh_for_export(mesh, mesh_transf_mat)
 
         missing_uv_layers = {}  # stores missing uvs specified by materials of this object
         missing_vcolor = False  # indicates if object is missing vertex color layer
@@ -171,6 +165,15 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
         hard_edges = set()
         mesh_piece = Piece(len(pim_pieces))
         """:type: Piece"""
+
+        # create/get skin data section for current piece
+        if is_skin_used:
+            skin_stream = PieceSkinStream(PieceSkinStream.Types.POSITION)
+            piece_skin = PieceSkin(mesh_piece.get_index(), skin_stream)
+            pim_piece_skins.append(piece_skin)
+        else:
+            skin_stream = None
+
         for poly in mesh.polygons:
 
             mat_index = poly.material_index
@@ -212,10 +215,10 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
 
                 # get data of current vertex
                 # 1. position -> mesh.vertices[loop.vertex_index].co
-                position = tuple(pos_transf_mat * mesh.vertices[vert_i].co)
+                position = tuple(pos_transf_mat @ mesh.vertices[vert_i].co)
 
                 # 2. normal -> loop.normal -> calc_normals_split() has to be called before
-                normal = nor_transf_mat * mesh_for_normals.loops[loop_i].normal
+                normal = nor_transf_mat @ mesh_for_normals.loops[loop_i].normal
                 normal = tuple(Vector(normal).normalized())
                 vert_normals.append(normal)
 
@@ -303,14 +306,14 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
                             bone_weights[bone_indx] = bone_weight
                             bone_weights_sum += bone_weight
 
-                    skin_entry = SkinStream.Entry(mesh_piece.get_index(), piece_vert_index, position, bone_weights, bone_weights_sum)
-                    skin_stream.add_entry(skin_entry)
-
-                    # report un-skinned vertices (no bones or zero sum weight) or badly skinned model
-                    if bone_weights_sum <= 0:
+                    if bone_weights_sum > 0:
+                        skin_entry = PieceSkinStream.Entry(piece_vert_index, position, bone_weights, bone_weights_sum)
+                        skin_stream.add_entry(skin_entry)
+                    else:
+                        # report un-skinned vertices (no bones or zero sum weight) or badly skinned model
                         missing_skinned_verts.add(vert_i)
-                    elif bone_weights_sum < 1:
-                        has_unnormalized_skin = True
+                        if bone_weights_sum < 1:
+                            has_unnormalized_skin = True
 
                 # save to terrain points storage if present in correct vertex group
                 for group in mesh.vertices[vert_i].groups:
@@ -368,9 +371,9 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
             (vert1_i, vert2_i) = mesh.edges[hard_edge].vertices
             assert mesh_piece.add_edge(vert1_i, vert2_i, blender_mesh_indices=True)
 
-        # free normals calculations and eventually remove mesh object
-        _mesh_utils.cleanup_mesh(mesh)
+        # free normals calculations & remove temporary mesh
         _mesh_utils.cleanup_mesh(mesh_for_normals)
+        mesh_obj.to_mesh_clear()
 
         # create part if it doesn't exists yet
         part_name = mesh_obj.scs_props.scs_part
@@ -415,7 +418,7 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
     # create locators data sections
     for loc_obj in model_locators:
 
-        pos, qua, sca = _get_scs_transformation_components(root_object.matrix_world.inverted() * loc_obj.matrix_world)
+        pos, qua, sca = _get_scs_transformation_components(root_object.matrix_world.inverted() @ loc_obj.matrix_world)
 
         if sca[0] * sca[1] * sca[2] < 0:
             lprint("W Model locator %r inside SCS Root Object %r not exported because of invalid scale.\n\t   " +
@@ -472,7 +475,8 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
 
     if is_skin_used:
         pim_container.append(bones.get_as_section())
-        pim_container.append(skin.get_as_section())
+        for piece_skin in pim_piece_skins:
+            pim_container.append(piece_skin.get_as_section())
 
     # write to file
     ind = "    "

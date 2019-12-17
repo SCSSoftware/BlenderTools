@@ -16,7 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2013-2014: SCS Software
+# Copyright (C) 2013-2019: SCS Software
 
 
 import bpy
@@ -225,7 +225,15 @@ def is_valid_shader_texture_path(shader_texture):
 def is_valid_shader_presets_library_path():
     """It returns True if there is valid "*.txt" file in
     the Shader Presets Library directory, otherwise False."""
-    shader_presets_filepath = _get_scs_globals().shader_presets_filepath
+
+    scs_globals = _get_scs_globals()
+
+    # check if default presets path is valid
+    if not scs_globals.shader_presets_use_custom:
+        return get_shader_presets_filepath() != ""
+
+    # check if set custom preset path is valid
+    shader_presets_filepath = scs_globals.shader_presets_filepath
     if shader_presets_filepath != "":
         if shader_presets_filepath.startswith("//"):  # RELATIVE PATH
             shader_presets_abs_path = get_abs_path(shader_presets_filepath)
@@ -384,6 +392,23 @@ def get_texture_path_from_tobj(tobj_filepath, raw_value=False):
     :rtype: str | None
     """
 
+    return get_texture_paths_from_tobj(tobj_filepath, raw_value=raw_value, first_only=True)[0]
+
+
+def get_texture_paths_from_tobj(tobj_filepath, raw_value=False, first_only=False):
+    """Get absolute path(s) of textures from given tobj filepath.
+    If raw value is requested returned path(s) are direct values written in TOBJ.
+    If first only is requested only first path is returned.
+
+    :param tobj_filepath: absolute tobj file path
+    :type tobj_filepath: str
+    :param raw_value: flag for indicating if texture path(s) shall be returned as it's written in TOBJ
+    :type raw_value: bool
+    :param first_only: flag for requesting only first entry from TOBJ map names (only first texture)
+    :type first_only: bool
+    :return: absolute texture file path(s) if found or None
+    :rtype: tuple[str] | None
+    """
     from io_scs_tools.internals.containers.tobj import TobjContainer
 
     container = TobjContainer.read_data_from_file(tobj_filepath, skip_validation=raw_value)
@@ -393,12 +418,25 @@ def get_texture_path_from_tobj(tobj_filepath, raw_value=False):
         return None
 
     if raw_value:
-        return container.map_names[0]
+        if first_only:
+            return container.map_names[0],
 
-    if container.map_names[0][0] == "/":
-        return get_abs_path("//" + container.map_names[0][1:])
+        return tuple(container.map_names)
 
-    return os.path.join(tobj_dir, container.map_names[0])
+    abs_texture_paths = []
+    for map_name in container.map_names:
+        if map_name[0] == "/":
+            curr_abs_tobj_path = get_abs_path("//" + map_name[1:])
+        else:
+            curr_abs_tobj_path = os.path.join(tobj_dir, map_name)
+
+        # directly intercept and return first texture path
+        if first_only:
+            return curr_abs_tobj_path,
+
+        abs_texture_paths.append(curr_abs_tobj_path)
+
+    return tuple(abs_texture_paths)
 
 
 def get_texture_extens_and_strip_path(texture_path):
@@ -822,3 +860,23 @@ def copytree(src, dest):
                 os.makedirs(dest_path)
 
             shutil.copyfile(os.path.join(root, file), os.path.join(dest_path, file))
+
+
+def get_tree_size(src):
+    """Return total size of files in given path and subdirs.
+
+    :param src: source path to get size from
+    :param src: str
+    """
+    total = 0
+
+    if not os.path.isdir(src) and not os.path.isfile(src):
+        return total
+
+    for entry in os.scandir(src):
+        if entry.is_dir(follow_symlinks=False):
+            total += get_tree_size(entry.path)
+        else:
+            total += entry.stat(follow_symlinks=False).st_size
+
+    return total

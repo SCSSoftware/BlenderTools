@@ -16,64 +16,33 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2013-2014: SCS Software
+# Copyright (C) 2013-2019: SCS Software
 
 import bpy
-from io_scs_tools.utils import get_scs_globals as _get_scs_globals
-from io_scs_tools.utils.printout import lprint
 
 
-def switch_local_view(show):
-    """Switches first space in VIEW_3D areas to local or switches back to normal
-
-    :param show: True if local view should be shown; False for switching back to normal view
-    :type show: bool
-    """
-    for area in bpy.context.screen.areas:
-        if area.type == 'VIEW_3D':
-            if show and area.spaces[0].local_view is None:
-                lprint("D Going into local view!")
-                override = {
-                    'window': bpy.context.window,
-                    'screen': bpy.context.screen,
-                    'blend_data': bpy.context.blend_data,
-                    'scene': bpy.context.scene,
-                    'region': area.regions[4],
-                    'area': area
-                }
-                bpy.ops.view3d.localview(override)
-            elif not show and area.spaces[0].local_view is not None:
-                lprint("D Returning from local view!")
-                override = {
-                    'window': bpy.context.window,
-                    'screen': bpy.context.screen,
-                    'blend_data': bpy.context.blend_data,
-                    'scene': bpy.context.scene,
-                    'region': area.regions[4],
-                    'area': area
-                }
-                bpy.ops.view3d.localview(override)
-
-    if _get_scs_globals().preview_export_selection_active != show:
-        _get_scs_globals().preview_export_selection_active = show
-        # redraw properties panels because of preview property change
-        for area in bpy.context.screen.areas:
-            if area.type == "PROPERTIES":
-                area.tag_redraw()
-
-
-def get_all_spaces():
+def get_all_spaces(screen=None):
     """Gets all the spaces in Blender which are type of bpy.types.SpaceView3D
 
+    :param screen: blender screen; if None is given all screens are taken from window manager
+    :type screen: bpy.types.Screen
     :return: all the spaces of type bpy.types.SpaceView3D
     :rtype: list of bpy.types.SpaceView3D
     """
+    screens = set()
+    if not screen:
+        for wnd in bpy.context.window_manager.windows:
+            screens.add(wnd.screen)
+    else:
+        screens.add(screen)
+
     spaces = []
-    for area in bpy.context.screen.areas:
-        if area.type == 'VIEW_3D':
-            for space in area.spaces:
-                if isinstance(space, bpy.types.SpaceView3D):
-                    spaces.append(space)
+    for screen in screens:
+        for area in screen.areas:
+            if area.type == 'VIEW_3D':
+                for space in area.spaces:
+                    if isinstance(space, bpy.types.SpaceView3D):
+                        spaces.append(space)
 
     return spaces
 
@@ -81,22 +50,21 @@ def get_all_spaces():
 def has_multiple_view3d_spaces(screen=None):
     """Tells if given blender screen has multile 3D views or not.
 
-    :param screen: blender screen
+    :param screen: blender screen; if None is given all screens are taken from window manager
     :type screen: bpy.types.Screen
     :return: True if at leas one 3d view is present; False otherwise
     :rtype: bool
     """
 
-    screens = {}
-    if screen is None:
-        if len(bpy.data.window_managers) > 0:
-            for wnd in bpy.data.window_managers[0].windows:
-                screens[wnd.screen.name] = wnd.screen
+    screens = set()
+    if not screen:
+        for wnd in bpy.context.window_manager.windows:
+            screens.add(wnd.screen)
     else:
-        screens[screen.name] = screen
+        screens.add(screen)
 
     spaces_count = 0
-    for scr in screens.values():
+    for scr in screens:
         for area in scr.areas:
 
             if area.type == 'VIEW_3D':
@@ -127,40 +95,20 @@ def has_view3d_space(screen):
     return False
 
 
-def switch_layers_visibility(storage_list, show):
-    """Switches visibility of layers in Blender. If show is True all layers on current scene
-        and local layers of current 3D spaces are shown. If storage_list is provided it tries
-        to restore visibilites from entries.
+def get_spaces_with_local_view(screen=None):
+    """Gets all spaces of current screen that currently have active local view.
 
-        WARNING: this function can restore only storage_list which was created with this function
-        otherwise it may raise error.
-
-    :param storage_list: list where previous layers visibility states are or should be stored into
-    :type storage_list: list
-    :param show: flag for indicating if all layers should be shown (value True) or restored (value False)
-    :type show: bool
-    :return: states of layers visibilites for scene and local layers of views
-    :rtype: list of list(bool*20)
+    :param screen: blender screen; if None is given all screens are taken from window manager
+    :type screen: bpy.types.Screen
+    :return: list of local view spaces
+    :rtype: list[bpy.types.SpaceView3D]
     """
+    spaces = []
+    for space in get_all_spaces(screen):
+        if space.local_view:
+            spaces.append(space)
 
-    for space in get_all_spaces():
-        if show:
-            storage_list.append(list(space.layers))
-            space.layers = [True] * 20
-            lprint("D Layers visibility set to True")
-        elif len(storage_list) > 0:
-            space.layers = storage_list[0]
-            storage_list = storage_list[1:]
-
-    scene = bpy.context.scene
-    if show:
-        storage_list.append(list(scene.layers))
-        scene.layers = [True] * 20
-    elif len(storage_list) > 0:
-        scene.layers = storage_list[0]
-        storage_list = storage_list[1:]
-
-    return storage_list
+    return spaces
 
 
 def tag_redraw_all_view3d():

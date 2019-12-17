@@ -16,7 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2013-2017: SCS Software
+# Copyright (C) 2013-2019: SCS Software
 
 import bpy
 import bmesh
@@ -28,20 +28,22 @@ from hashlib import sha1
 from sys import platform
 from time import time
 from bpy.props import StringProperty, CollectionProperty, EnumProperty, IntProperty, BoolProperty, FloatProperty, FloatVectorProperty
+from bl_operators.presets import AddPresetBase
 from io_scs_tools.consts import ConvHlpr as _CONV_HLPR_consts
 from io_scs_tools.consts import Operators as _OP_consts
 from io_scs_tools.consts import PaintjobTools as _PT_consts
 from io_scs_tools.imp import pix as _pix_import
 from io_scs_tools.internals.structure import UnitData as _UnitData
+from io_scs_tools.internals.containers import pix as _pix_container
 from io_scs_tools.internals.containers import sii as _sii_container
 from io_scs_tools.internals.containers.tobj import TobjContainer as _TobjContainer
+from io_scs_tools.operators.bases.export import SCSExportHelper as _SCSExportHelper
 from io_scs_tools.utils import name as _name_utils
 from io_scs_tools.utils import object as _object_utils
-from io_scs_tools.utils import view3d as _view3d_utils
 from io_scs_tools.utils import path as _path_utils
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
 from io_scs_tools.utils.printout import lprint
-from io_scs_tools.utils.property import get_by_type as _get_bpy_prop
+from io_scs_tools.utils.property import get_default as _get_default
 from io_scs_tools.utils.property import get_filebrowser_display_type
 from io_scs_tools import exp as _export
 from io_scs_tools import imp as _import
@@ -52,21 +54,21 @@ class Import:
     Wrapper class for better navigation in file
     """
 
-    class ImportAnimActions(bpy.types.Operator):
+    class SCS_TOOLS_OT_ImportAnimActions(bpy.types.Operator):
         bl_label = "Import SCS Animation (PIA)"
-        bl_idname = "scene.import_scs_anim_actions"
+        bl_idname = "scene.scs_tools_import_anim_actions"
         bl_description = "Import SCS Animation files (PIA) as a new SCS animations"
 
-        directory = StringProperty(
+        directory: StringProperty(
             name="Import PIA Directory",
             # maxlen=1024,
             subtype='DIR_PATH',
         )
-        files = CollectionProperty(
+        files: CollectionProperty(
             type=bpy.types.OperatorFileListElement,
             options={'HIDDEN', 'SKIP_SAVE'},
         )
-        filter_glob = StringProperty(default="*.pia", options={'HIDDEN'})
+        filter_glob: StringProperty(default="*.pia", options={'HIDDEN'})
 
         @classmethod
         def poll(cls, context):
@@ -100,18 +102,26 @@ class Export:
     Wrapper class for better navigation in file
     """
 
-    class ExportByScope(bpy.types.Operator):
+    class SCS_TOOLS_OT_ExportByScope(bpy.types.Operator, _SCSExportHelper):
         """Export selected operator."""
-        bl_idname = "scene.export_scs_content_by_scope"
+        bl_idname = "scene.scs_tools_export_by_scope"
         bl_label = "Export By Used Scope"
         bl_description = "Export SCS models depending on selected export scope."
         bl_options = set()
 
+        def __init__(self):
+            super().__init__()
+
+            self.can_mouse_rotate = False
+            """:type bool: Flag indiciating whether mouse move even will rotate view or no. Initiated by left mouse button press."""
+
         @staticmethod
-        def execute_rotation(rot_direction):
+        def execute_rotation(rot_direction, angle=0.05):
             """Uses Blender orbit rotation to rotate all 3D views
             :param rot_direction: "ORBITLEFT" | "ORBITRIGHT" | "ORBITUP" | "ORBITDOWN"
             :type rot_direction: str
+            :param angle: angle to use by rotation, in radians
+            :type angle: float
             """
             for area in bpy.context.screen.areas:
                 if area.type == "VIEW_3D":
@@ -120,10 +130,10 @@ class Export:
                         'screen': bpy.context.screen,
                         'blend_data': bpy.context.blend_data,
                         'scene': bpy.context.scene,
-                        'region': area.regions[4],
+                        'region': area.regions[5],
                         'area': area
                     }
-                    bpy.ops.view3d.view_orbit(override, type=rot_direction)
+                    bpy.ops.view3d.view_orbit(override, angle=angle, type=rot_direction)
 
         @staticmethod
         def execute_zoom(zoom_change):
@@ -136,122 +146,9 @@ class Export:
                     region = area.spaces[0].region_3d
                     region.view_distance += zoom_change
 
-        def __init__(self):
-            """Shows all layer to be able to alter selection on the whole scene and
-            alter Blender selection the way that:
-            1. if only child within root is selected -> selects root too
-            2. if only root is selected -> select all children
-            3. if root and some children are selected -> don't change selection
-            """
-
-            lprint("D Gathering object which visibility should be altered for export ...")
-
-            self.layers_visibilities = _view3d_utils.switch_layers_visibility([], True)
-            self.last_active_obj = bpy.context.active_object
-            self.altered_objs = []
-            self.altered_objs_visibilities = []
-            self.not_root_objs = []
-
-            for obj in bpy.context.selected_objects:
-                root = _object_utils.get_scs_root(obj)
-                if root:
-                    if root != obj:
-                        if not root.select:
-                            root.select = True
-                            self.altered_objs.append(root.name)
-                    else:
-                        children = _object_utils.get_children(obj)
-                        local_reselected_objs = []
-                        for child_obj in children:
-                            local_reselected_objs.append(child_obj.name)
-                            # if some child is selected this means we won't reselect nothing in this game objecdt
-                            if child_obj.select:
-                                local_reselected_objs = []
-                                break
-                        self.altered_objs.extend(local_reselected_objs)
-                else:
-                    obj.select = False
-                    self.not_root_objs.append(obj.name)
-
-            for obj_name in self.altered_objs:
-                self.altered_objs_visibilities.append(bpy.data.objects[obj_name].hide)
-                bpy.data.objects[obj_name].hide = False
-                bpy.data.objects[obj_name].select = True
-
-            lprint("D Gathering object visibility done!")
-
-        def __del__(self):
-            """Revert altered initial selection and layers visibilites
-            """
-
-            lprint("D Recovering object visibility after export ...")
-
-            # safety check if it's not deleting last instance
-            if hasattr(self, "altered_objs"):
-                i = 0
-                for obj_name in self.altered_objs:
-                    bpy.data.objects[obj_name].hide = self.altered_objs_visibilities[i]
-                    i += 1
-                    bpy.data.objects[obj_name].select = False
-
-                for obj_name in self.not_root_objs:
-                    bpy.data.objects[obj_name].select = True
-
-                if self.last_active_obj is not None:
-                    # call selection twice to actually change active object
-                    self.last_active_obj.select = not self.last_active_obj.select
-                    self.last_active_obj.select = not self.last_active_obj.select
-
-                _view3d_utils.switch_layers_visibility(self.layers_visibilities, False)
-
-            lprint("D Recovering object visibility done!")
-
-        def execute_export(self, context, disable_local_view):
-            """Actually executes export of current selected objects (bpy.context.selected_objects)
-
-            :param context: operator context
-            :type context: bpy_struct
-            :param disable_local_view: True if you want to disable local view after export
-            :type disable_local_view: bool
-            :return: succes of batch export
-            :rtype: {'FINISHED'} | {'CANCELLED'}
-            """
-
-            init_obj_list = ()
-            export_scope = _get_scs_globals().export_scope
-            if export_scope == "selection":
-                init_obj_list = tuple(bpy.context.selected_objects)
-            elif export_scope == "scene":
-                init_obj_list = tuple(bpy.context.scene.objects)
-            elif export_scope == "scenes":
-                init_obj_list = tuple(bpy.data.objects)
-
-            # check extension for EF format and properly assign it to name suffix
-            ef_name_suffix = ""
-            if _get_scs_globals().export_output_type == "EF":
-                ef_name_suffix = ".ef"
-
-            try:
-                result = _export.batch_export(self, init_obj_list, name_suffix=ef_name_suffix)
-            except Exception as e:
-
-                result = {"CANCELLED"}
-                context.window.cursor_modal_restore()
-
-                import traceback
-
-                trace_str = traceback.format_exc().replace("\n", "\n\t   ")
-                lprint("E Unexpected %r accured during batch export:\n\t   %s",
-                       (type(e).__name__, trace_str),
-                       report_errors=1,
-                       report_warnings=1)
-
-            if disable_local_view:
-                _view3d_utils.switch_local_view(False)
-
-            return result
-
         def modal(self, context, event):
+
+            ret_status = {'RUNNING_MODAL'}
 
             if event.type in ('WHEELUPMOUSE', 'NUMPAD_PLUS'):
                 self.execute_zoom(-1)
@@ -265,53 +162,63 @@ class Export:
                 self.execute_rotation("ORBITUP")
             elif event.type == 'NUMPAD_2':
                 self.execute_rotation("ORBITDOWN")
+            elif event.type == 'LEFTMOUSE' and event.value == 'PRESS':
+                self.can_mouse_rotate = True
+            elif (event.type == 'LEFTMOUSE' and event.value == 'RELEASE') or event.type == 'WINDOW_DEACTIVATE':
+                self.can_mouse_rotate = False
+            elif event.type == 'MOUSEMOVE' and self.can_mouse_rotate:
+                diff_x = event.mouse_x - event.mouse_prev_x
+                diff_y = event.mouse_y - event.mouse_prev_y
+                if abs(diff_x) > abs(diff_y):
+                    self.execute_rotation("ORBITLEFT", angle=diff_x * 0.002)
+                else:
+                    self.execute_rotation("ORBITDOWN", angle=diff_y * 0.002)
             elif event.type in ('RET', 'NUMPAD_ENTER'):
-                return self.execute_export(context, True)
+                ret_status = self.execute_export(context, False)
             elif event.type == 'ESC':
-                _view3d_utils.switch_local_view(False)
-                return {'CANCELLED'}
+                ret_status = {'CANCELLED'}
 
-            return {'RUNNING_MODAL'}
+            # make sure to finish preview, before ending the operator
+            if ret_status.issubset({'CANCELLED', 'FINISHED'}):
+                self.finish()
+
+            return ret_status
 
         def invoke(self, context, event):
             # show preview or directly execute export
-            if _get_scs_globals().export_scope == "selection":
+            if _get_scs_globals().export_scope == "selection" and _get_scs_globals().preview_export_selection:
+                if len(self.get_objects_for_export()) == 0:
+                    if len(bpy.context.selected_objects) > 0:
+                        msg = "Selected objects are not part of any SCS Game Object!"
+                    else:
+                        msg = "Nothing selected!"
+                    self.report({'ERROR'}, msg)
+                    return {'FINISHED'}
 
-                if _get_scs_globals().preview_export_selection:
+                self.init()
+                context.window_manager.modal_handler_add(self)
+                return {'RUNNING_MODAL'}
 
-                    if len(context.selected_objects) == 0:
-                        print(self.not_root_objs)
-                        if len(self.not_root_objs) > 0:
-                            msg = "Selected objects are not part of any SCS Game Object!"
-                        else:
-                            msg = "Nothing selected!"
-                        self.report({'ERROR'}, msg)
-                        return {'FINISHED'}
+            return self.execute_export(context, True)
 
-                    _view3d_utils.switch_local_view(True)
-                    context.window_manager.modal_handler_add(self)
-                    return {'RUNNING_MODAL'}
-
-            return self.execute_export(context, False)
-
-    class ExportAnimAction(bpy.types.Operator):
+    class SCS_TOOLS_OT_ExportAnimAction(bpy.types.Operator):
         bl_label = "Export SCS Animation (PIA)"
-        bl_idname = "scene.export_scs_anim_action"
+        bl_idname = "scene.scs_tools_export_anim_action"
         bl_description = "Select directory and export SCS animation (PIA) to it."
         bl_options = {'INTERNAL'}
 
-        index = IntProperty(
+        index: IntProperty(
             name="Anim Index",
             default=False,
             options={'HIDDEN'}
         )
 
-        directory = StringProperty(
+        directory: StringProperty(
             name="Export PIA Directory",
             subtype='DIR_PATH',
         )
         filename_ext = ".pia"
-        filter_glob = StringProperty(default=str("*" + filename_ext), options={'HIDDEN'})
+        filter_glob: StringProperty(default=str("*" + filename_ext), options={'HIDDEN'})
 
         @classmethod
         def poll(cls, context):
@@ -355,22 +262,22 @@ class Paths:
     Wrapper class for better navigation in file
     """
 
-    class SCSProjectPath(bpy.types.Operator):
+    class SCS_TOOLS_OT_SelectProjectPath(bpy.types.Operator):
         """Operator for setting an absolute path to SCS Project Directory."""
         bl_label = "Select SCS Project Directory"
-        bl_idname = "scene.select_scs_project_path"
+        bl_idname = "scene.scs_tools_select_project_path"
         bl_description = "Open a directory browser"
 
         # always set default display type so blender won't be using "last used"
-        display_type = get_filebrowser_display_type()
+        display_type: get_filebrowser_display_type()
 
-        directory = StringProperty(
+        directory: StringProperty(
             name="SCS Project Directory Path",
             description="SCS project directory path",
             # maxlen=1024,
             subtype='DIR_PATH',
         )
-        filter_glob = StringProperty(default="*.*", options={'HIDDEN'})
+        filter_glob: StringProperty(default="*.*", options={'HIDDEN'})
 
         def execute(self, context):
             """Set SCS project directory path."""
@@ -385,22 +292,22 @@ class Paths:
             context.window_manager.fileselect_add(self)
             return {'RUNNING_MODAL'}
 
-    class ShaderPresetsFilePath(bpy.types.Operator):
+    class SCS_TOOLS_OT_SelectShaderPresetsPath(bpy.types.Operator):
         """Operator for setting relative or absolute path to Shader Presets Library file."""
         bl_label = "Select Shader Presets Library File"
-        bl_idname = "scene.select_shader_presets_filepath"
+        bl_idname = "scene.scs_tools_select_shader_presets_path"
         bl_description = "Open a file browser"
 
         # always set default display type so blender won't be using "last used"
-        display_type = get_filebrowser_display_type()
+        display_type: get_filebrowser_display_type()
 
-        filepath = StringProperty(
+        filepath: StringProperty(
             name="Shader Presets Library File",
             description="Shader Presets library relative or absolute file path",
             # maxlen=1024,
             subtype='FILE_PATH',
         )
-        filter_glob = StringProperty(default="*.txt", options={'HIDDEN'})
+        filter_glob: StringProperty(default="*.txt", options={'HIDDEN'})
 
         def execute(self, context):
             """Set Shader Presets library file path."""
@@ -419,22 +326,22 @@ class Paths:
             context.window_manager.fileselect_add(self)
             return {'RUNNING_MODAL'}
 
-    class TriggerActionsRelativePath(bpy.types.Operator):
+    class SCS_TOOLS_OT_SelectTriggerActionsLibPath(bpy.types.Operator):
         """Operator for setting relative path to Trigger actions file."""
         bl_label = "Select Trigger Actions File"
-        bl_idname = "scene.select_trigger_actions_rel_path"
+        bl_idname = "scene.scs_tools_select_trigger_actions_lib_path"
         bl_description = "Open a file browser"
 
         # always set default display type so blender won't be using "last used"
-        display_type = get_filebrowser_display_type()
+        display_type: get_filebrowser_display_type()
 
-        filepath = StringProperty(
+        filepath: StringProperty(
             name="Trigger Actions File",
             description="Trigger actions relative file path",
             # maxlen=1024,
             subtype='FILE_PATH',
         )
-        filter_glob = StringProperty(default="*.sii", options={'HIDDEN'})
+        filter_glob: StringProperty(default="*.sii", options={'HIDDEN'})
 
         def execute(self, context):
             """Set Sign directory path."""
@@ -453,22 +360,22 @@ class Paths:
             context.window_manager.fileselect_add(self)
             return {'RUNNING_MODAL'}
 
-    class SignLibraryRelativePath(bpy.types.Operator):
+    class SCS_TOOLS_OT_SelectSignLibPath(bpy.types.Operator):
         """Operator for setting relative path to Sign Library file."""
         bl_label = "Select Sign Library File"
-        bl_idname = "scene.select_sign_library_rel_path"
+        bl_idname = "scene.scs_tools_select_sign_lib_path"
         bl_description = "Open a file browser"
 
         # always set default display type so blender won't be using "last used"
-        display_type = get_filebrowser_display_type()
+        display_type: get_filebrowser_display_type()
 
-        filepath = StringProperty(
+        filepath: StringProperty(
             name="Sign Library File",
             description="Sign library relative file path",
             # maxlen=1024,
             subtype='FILE_PATH',
         )
-        filter_glob = StringProperty(default="*.sii", options={'HIDDEN'})
+        filter_glob: StringProperty(default="*.sii", options={'HIDDEN'})
 
         def execute(self, context):
             """Set Sign directory path."""
@@ -487,22 +394,22 @@ class Paths:
             context.window_manager.fileselect_add(self)
             return {'RUNNING_MODAL'}
 
-    class TSemLibraryRelativePath(bpy.types.Operator):
+    class SCS_TOOLS_OT_SelectSemaphoreLibPath(bpy.types.Operator):
         """Operator for setting relative path to Traffic Semaphore Profile Library file."""
         bl_label = "Select Traffic Semaphore Profile Library File"
-        bl_idname = "scene.select_tsem_library_rel_path"
+        bl_idname = "scene.scs_tools_select_semaphore_lib_path"
         bl_description = "Open a file browser"
 
         # always set default display type so blender won't be using "last used"
-        display_type = get_filebrowser_display_type()
+        display_type: get_filebrowser_display_type()
 
-        filepath = StringProperty(
+        filepath: StringProperty(
             name="Traffic Semaphore Profile Library File",
             description="Traffic Semaphore Profile library relative file path",
             # maxlen=1024,
             subtype='FILE_PATH',
         )
-        filter_glob = StringProperty(default="*.sii", options={'HIDDEN'})
+        filter_glob: StringProperty(default="*.sii", options={'HIDDEN'})
 
         def execute(self, context):
             """Set Traffic Semaphore Profile library filepath."""
@@ -521,22 +428,22 @@ class Paths:
             context.window_manager.fileselect_add(self)
             return {'RUNNING_MODAL'}
 
-    class TrafficRulesLibraryRelativePath(bpy.types.Operator):
+    class SCS_TOOLS_OT_SelectTrafficRulesLibPath(bpy.types.Operator):
         """Operator for setting relative path to Traffic Rules Library file."""
         bl_label = "Select Traffic Rules Library File"
-        bl_idname = "scene.select_traffic_rules_library_rel_path"
+        bl_idname = "scene.scs_tools_select_traffic_rules_lib_path"
         bl_description = "Open a file browser"
 
         # always set default display type so blender won't be using "last used"
-        display_type = get_filebrowser_display_type()
+        display_type: get_filebrowser_display_type()
 
-        filepath = StringProperty(
+        filepath: StringProperty(
             name="Traffic Rules Library File",
             description="Traffic Rules library relative file path",
             # maxlen=1024,
             subtype='FILE_PATH',
         )
-        filter_glob = StringProperty(default="*.sii", options={'HIDDEN'})
+        filter_glob: StringProperty(default="*.sii", options={'HIDDEN'})
 
         def execute(self, context):
             """Set Traffic Rules library filepath."""
@@ -555,22 +462,22 @@ class Paths:
             context.window_manager.fileselect_add(self)
             return {'RUNNING_MODAL'}
 
-    class HookupLibraryRelativePath(bpy.types.Operator):
-        """Operator for setting relative path to Hookup files."""
+    class SCS_TOOLS_OT_SelectHookupLibPath(bpy.types.Operator):
+        """Operator for setting path to Hookup files."""
         bl_label = "Select Hookup Library Directory"
-        bl_idname = "scene.select_hookup_library_rel_path"
+        bl_idname = "scene.scs_tools_select_hookup_lib_path"
         bl_description = "Open a directory browser"
 
         # always set default display type so blender won't be using "last used"
-        display_type = get_filebrowser_display_type()
+        display_type: get_filebrowser_display_type()
 
-        directory = StringProperty(
+        directory: StringProperty(
             name="Hookup Library Directory Path",
             description="Hookup library directory path",
             # maxlen=1024,
             subtype='DIR_PATH',
         )
-        filter_glob = StringProperty(default="*.sii", options={'HIDDEN'})
+        filter_glob: StringProperty(default="*.sii", options={'HIDDEN'})
 
         def execute(self, context):
             """Set Hookup directory path."""
@@ -589,22 +496,22 @@ class Paths:
             context.window_manager.fileselect_add(self)
             return {'RUNNING_MODAL'}
 
-    class MatSubsLibraryRelativePath(bpy.types.Operator):
-        """Operator for setting relative path to Material Substance shader files."""
+    class SCS_TOOLS_OT_SelectMatSubsLibPath(bpy.types.Operator):
+        """Operator for setting path to Material Substance file."""
         bl_label = "Select Material Substance Library File"
-        bl_idname = "scene.select_matsubs_library_rel_path"
+        bl_idname = "scene.scs_tools_select_matsubs_lib_path"
         bl_description = "Open a file browser"
 
         # always set default display type so blender won't be using "last used"
-        display_type = get_filebrowser_display_type()
+        display_type: get_filebrowser_display_type()
 
-        filepath = StringProperty(
+        filepath: StringProperty(
             name="Material Substance Library File",
             description="Material Substance library relative file path",
             # maxlen=1024,
             subtype='FILE_PATH',
         )
-        filter_glob = StringProperty(default="*.db", options={'HIDDEN'})
+        filter_glob: StringProperty(default="*.db", options={'HIDDEN'})
 
         def execute(self, context):
             """Set Material Substance library filepath."""
@@ -623,21 +530,21 @@ class Paths:
             context.window_manager.fileselect_add(self)
             return {'RUNNING_MODAL'}
 
-    class SunProfilesLibraryPath(bpy.types.Operator):
+    class SCS_TOOLS_OT_SelectSunProfilesLibPath(bpy.types.Operator):
         """Operator for setting relative path to Material Substance shader files."""
         bl_label = "Select Sun Profiles Library File"
-        bl_idname = "scene.select_sun_profiles_lib_path"
+        bl_idname = "scene.scs_tools_select_sun_profiles_lib_path"
         bl_description = "Open a file browser"
 
         # always set default display type so blender won't be using "last used"
-        display_type = get_filebrowser_display_type()
+        display_type: get_filebrowser_display_type()
 
-        filepath = StringProperty(
+        filepath: StringProperty(
             name="Sun Profiles Library File",
             description="Sun Profiles library relative/absolute file path",
             subtype='FILE_PATH',
         )
-        filter_glob = StringProperty(default="*.sii", options={'HIDDEN'})
+        filter_glob: StringProperty(default="*.sii", options={'HIDDEN'})
 
         def execute(self, context):
             """Set Material Substance library filepath."""
@@ -656,22 +563,22 @@ class Paths:
             context.window_manager.fileselect_add(self)
             return {'RUNNING_MODAL'}
 
-    class DirSelectorInsideBase(bpy.types.Operator):
+    class SCS_TOOLS_OT_SelectDirInsideBase(bpy.types.Operator):
         """Operator for setting relative or absolute path to Global Export file."""
         bl_label = "Select Directory"
-        bl_idname = "scene.select_directory_inside_base"
+        bl_idname = "scene.scs_tools_select_dir_inside_base"
         bl_description = "Open a directory browser"
 
         # always set default display type so blender won't be using "last used"
-        display_type = get_filebrowser_display_type()
+        display_type: get_filebrowser_display_type()
 
-        directory = StringProperty(
+        directory: StringProperty(
             name="Directory",
             description="Directory inside SCS Project Base path",
             subtype='DIR_PATH',
         )
 
-        type = EnumProperty(
+        type: EnumProperty(
             name="Type",
             description="Type of selection",
             items=(
@@ -683,7 +590,7 @@ class Paths:
             options={'HIDDEN'}
         )
 
-        filter_glob = StringProperty(default="*.pim", options={'HIDDEN'})
+        filter_glob: StringProperty(default="*.pim", options={'HIDDEN'})
 
         def execute(self, context):
 
@@ -717,13 +624,13 @@ class Paths:
             context.window_manager.fileselect_add(self)
             return {'RUNNING_MODAL'}
 
-    class ReloadLibraryPath(bpy.types.Operator):
+    class SCS_TOOLS_OT_ReloadLibrary(bpy.types.Operator):
         """Operator for reloading given library."""
         bl_label = "Reload"
-        bl_idname = "scene.scs_reload_library"
+        bl_idname = "scene.scs_tools_reload_library"
         bl_description = "Reloads library and updates it with any possible new entries."
 
-        library_path_attr = StringProperty()
+        library_path_attr: StringProperty()
 
         def execute(self, context):
             scs_globals = _get_scs_globals()
@@ -738,15 +645,46 @@ class Paths:
 
             return {'FINISHED'}
 
+    class SCS_TOOLS_OT_AddPathPreset(bpy.types.Operator, AddPresetBase):
+        bl_label = "Add New Paths Preset"
+        bl_idname = "scene.scs_tools_add_path_preset"
+        bl_description = "Add or remove preset for SCS Project Base Path and rest of the libraries, to quickly switch between projects"
+        preset_menu = "SCS_TOOLS_PT_PathSettingsPresets"
+
+        # variable used for all preset values
+        preset_defines = [
+            "scs_globals = bpy.context.preferences.addons['io_scs_tools'].preferences.scs_globals"
+        ]
+
+        # properties to store in the preset
+        preset_values = [
+            "scs_globals.scs_project_path",
+            "scs_globals.use_alternative_bases",
+            "scs_globals.trigger_actions_rel_path",
+            "scs_globals.trigger_actions_use_infixed",
+            "scs_globals.sign_library_rel_path",
+            "scs_globals.sign_library_use_infixed",
+            "scs_globals.tsem_library_rel_path",
+            "scs_globals.tsem_library_use_infixed",
+            "scs_globals.traffic_rules_library_rel_path",
+            "scs_globals.traffic_rules_library_use_infixed",
+            "scs_globals.hookup_library_rel_path",
+            "scs_globals.matsubs_library_rel_path",
+            "scs_globals.shader_presets_filepath"
+        ]
+
+        # where to store the preset
+        preset_subdir = "io_scs_tools/paths"
+
 
 class Animation:
     """
     Wraper class for better navigation in file
     """
 
-    class IncreaseAnimationSteps(bpy.types.Operator):
+    class SCS_TOOLS_OT_IncreaseAnimationSteps(bpy.types.Operator):
         bl_label = "Increase Animation Steps"
-        bl_idname = "scene.increase_animation_steps"
+        bl_idname = "scene.scs_tools_increase_animation_steps"
         # TODO: better description...
         bl_description = "Scales the entire animation 2x in length, but compensate for playback and export so the result stays the same..."
 
@@ -808,9 +746,9 @@ class Animation:
 
             return {'FINISHED'}
 
-    class DecreaseAnimationSteps(bpy.types.Operator):
+    class SCS_TOOLS_OT_DecreaseAnimationSteps(bpy.types.Operator):
         bl_label = "Decrease Animation Steps"
-        bl_idname = "scene.decrease_animation_steps"
+        bl_idname = "scene.scs_tools_decrease_animation_steps"
         # TODO: better description...
         bl_description = "Scales down the entire animation to its half in length, but compensate for playback and export so the result stays the " \
                          "same..."
@@ -879,9 +817,9 @@ class ConversionHelper:
     Wraper class for better navigation in file
     """
 
-    class CleanRSRC(bpy.types.Operator):
+    class SCS_TOOLS_OT_CleanConversionRSRC(bpy.types.Operator):
         bl_label = "Clean RSRC"
-        bl_idname = "scene.scs_conv_hlpr_clean_rsrc"
+        bl_idname = "scene.scs_tools_clean_conversion_rsrc"
         bl_description = "Cleans-up converted data inside of conversion tools (empties 'rsrc' folder & removes symbolic links)."
 
         def execute(self, context):
@@ -911,12 +849,12 @@ class ConversionHelper:
             self.report({'INFO'}, "Successfully cleaned converted data in conversion tools folder!")
             return {'FINISHED'}
 
-    class AddConversionPath(bpy.types.Operator):
+    class SCS_TOOLS_OT_AddConversionPath(bpy.types.Operator):
         bl_label = "Add Path"
-        bl_idname = "scene.scs_conv_hlpr_add_path"
+        bl_idname = "scene.scs_tools_add_conversion_path"
         bl_description = "Adds new path to the stack of paths for conversion"
 
-        directory = StringProperty(
+        directory: StringProperty(
             name="Directory",
             description="Any directory on file system",
             subtype='DIR_PATH',
@@ -939,9 +877,9 @@ class ConversionHelper:
             context.window_manager.fileselect_add(self)
             return {'RUNNING_MODAL'}
 
-    class RemoveConversionPath(bpy.types.Operator):
+    class SCS_TOOLS_OT_RemoveConversionPath(bpy.types.Operator):
         bl_label = "Remove Path"
-        bl_idname = "scene.scs_conv_hlpr_remove_path"
+        bl_idname = "scene.scs_tools_remove_conversion_path"
         bl_description = "Removes path from the stack of paths for conversion"
 
         def execute(self, context):
@@ -955,12 +893,12 @@ class ConversionHelper:
 
             return {'FINISHED'}
 
-    class OrderConversionPath(bpy.types.Operator):
+    class SCS_TOOLS_OT_OrderConversionPath(bpy.types.Operator):
         bl_label = "Order Path"
-        bl_idname = "scene.scs_conv_hlpr_order_path"
+        bl_idname = "scene.scs_tools_order_conversion_path"
         bl_description = "Change order for the current path"
 
-        move_up = BoolProperty(default=True)
+        move_up: BoolProperty(default=True)
 
         def execute(self, context):
             scs_globals = _get_scs_globals()
@@ -985,9 +923,9 @@ class ConversionHelper:
 
             return {'FINISHED'}
 
-    class RunConversion(bpy.types.Operator):
+    class SCS_TOOLS_OT_RunConversion(bpy.types.Operator):
         bl_label = "Run Conversion"
-        bl_idname = "scene.scs_conv_hlpr_run"
+        bl_idname = "scene.scs_tools_run_conversion"
         bl_description = "Dry run of conversion tools without managing extra_mount.txt file (Should not be used from UI)"
 
         def execute(self, context):
@@ -1040,9 +978,9 @@ class ConversionHelper:
 
             return {'FINISHED'}
 
-    class ConvertCurrentBase(bpy.types.Operator):
+    class SCS_TOOLS_OT_ConvertCurrentBase(bpy.types.Operator):
         bl_label = "Convert Current Base"
-        bl_idname = "scene.scs_conv_hlpr_convert_current"
+        bl_idname = "scene.scs_tools_convert_current_base"
         bl_description = "Converts current SCS Base project (the one which is currently used by SCS Blender Tools) to binary files ready for packing."
 
         def execute(self, context):
@@ -1066,14 +1004,14 @@ class ConversionHelper:
             with open(extra_mount_path, mode="w", encoding="utf8") as f:
                 f.write(link_hash)
 
-            return ConversionHelper.RunConversion.execute(self, context)
+            return ConversionHelper.SCS_TOOLS_OT_RunConversion.execute(self, context)
 
-    class ConvertCustomPaths(bpy.types.Operator):
+    class SCS_TOOLS_OT_ConvertCustomPaths(bpy.types.Operator):
         bl_label = "Convert Custom Paths"
-        bl_idname = "scene.scs_conv_hlpr_convert_custom"
+        bl_idname = "scene.scs_tools_convert_custom_paths"
         bl_description = "Converts all paths given in Custom Paths list (order is the same as they appear in the list)"
 
-        include_current_project = BoolProperty(
+        include_current_project: BoolProperty(
             default=False
         )
 
@@ -1120,11 +1058,11 @@ class ConversionHelper:
                     else:
                         self.report({'WARNING'}, "None existing SCS Project Base Path detected, ignoring it!")
 
-            return ConversionHelper.RunConversion.execute(self, context)
+            return ConversionHelper.SCS_TOOLS_OT_RunConversion.execute(self, context)
 
-    class ConvertAllPaths(bpy.types.Operator):
+    class SCS_TOOLS_OT_ConvertAllPaths(bpy.types.Operator):
         bl_label = "Convert All"
-        bl_idname = "scene.scs_conv_hlpr_convert_all"
+        bl_idname = "scene.scs_tools_convert_all_paths"
         bl_description = "Converts all paths given in Custom Paths list + current SCS Project Base"
 
         def __init__(self):
@@ -1135,14 +1073,14 @@ class ConversionHelper:
             return len(_get_scs_globals().conv_hlpr_custom_paths) > 0
 
         def execute(self, context):
-            return ConversionHelper.ConvertCustomPaths.execute(self, context)
+            return ConversionHelper.SCS_TOOLS_OT_ConvertCustomPaths.execute(self, context)
 
-    class FindGameModFolder(bpy.types.Operator):
+    class SCS_TOOLS_OT_FindGameModFolder(bpy.types.Operator):
         bl_label = "Search SCS Game 'mod' Folder"
-        bl_idname = "scene.scs_conv_hlpr_find_mod_folder"
+        bl_idname = "scene.scs_tools_find_game_mod_folder"
         bl_description = "Search for given SCS game 'mod' folder and set it as mod destination"
 
-        game = EnumProperty(
+        game: EnumProperty(
             items=(
                 ("Euro Truck Simulator 2", "Euro Truck Simulator 2", ""),
                 ("American Truck Simulator", "American Truck Simulator", "")
@@ -1231,9 +1169,9 @@ class ConversionHelper:
 
             layout.prop(self, "game", expand=True)
 
-    class RunPacking(bpy.types.Operator):
+    class SCS_TOOLS_OT_RunPacking(bpy.types.Operator):
         bl_label = "Run Packing"
-        bl_idname = "scene.scs_conv_hlpr_pack"
+        bl_idname = "scene.scs_tools_run_packing"
         bl_description = "Pack converted sources to mod package and copy it to mod destination path.\n" \
                          "Depending on auto settings this operator will also execute clean, export and convert before packing."
 
@@ -1272,7 +1210,7 @@ class ConversionHelper:
             if scs_globals.conv_hlpr_clean_on_packing:
 
                 try:
-                    bpy.ops.scene.scs_conv_hlpr_clean_rsrc()
+                    bpy.ops.scene.scs_tools_clean_conversion_rsrc()
                 except RuntimeError as e:
                     self.report({'ERROR'}, e.args[0])
                     return {'CANCELLED'}
@@ -1280,7 +1218,7 @@ class ConversionHelper:
             if scs_globals.conv_hlpr_export_on_packing:
 
                 try:
-                    bpy.ops.export_mesh.pim()
+                    bpy.ops.scs_tools.export_pim()
                 except RuntimeError as e:
                     self.report({'ERROR'}, e.args[0])
                     return {'CANCELLED'}
@@ -1289,9 +1227,9 @@ class ConversionHelper:
 
                 try:
                     if scs_globals.conv_hlpr_use_custom_paths and len(scs_globals.conv_hlpr_custom_paths) > 0:
-                        bpy.ops.scene.scs_conv_hlpr_convert_custom(include_current_project=True)
+                        bpy.ops.scene.scs_tools_convert_custom_paths(include_current_project=True)
                     else:
-                        bpy.ops.scene.scs_conv_hlpr_convert_current()
+                        bpy.ops.scene.scs_tools_convert_current_base()
                 except RuntimeError as e:
                     self.report({'ERROR'}, e.args[0])
                     return {'CANCELLED'}
@@ -1383,27 +1321,15 @@ class Log:
     Wraper class for better navigation in file
     """
 
-    class CopyLogToClipboard(bpy.types.Operator):
+    class SCS_TOOLS_OT_CopyLogToClipboard(bpy.types.Operator):
         bl_label = "Copy BT Log To Clipboard"
-        bl_idname = "scene.scs_copy_log"
+        bl_idname = "scene.scs_tools_copy_log_to_clipboard"
         bl_description = "Copies whole Blender Tools log to clipboard (log was captured since Blender startup)."
 
         def execute(self, context):
             from io_scs_tools.utils.printout import get_log
 
-            text = bpy.data.texts.new("SCS BT Log")
-
-            override = {
-                'window': bpy.context.window,
-                'region': None,
-                'area': None,
-                'edit_text': text,
-            }
-            bpy.ops.text.insert(override, text=get_log())
-            bpy.ops.text.select_all(override)
-            bpy.ops.text.copy(override)
-
-            bpy.data.texts.remove(text, do_unlink=True)
+            context.window_manager.clipboard = get_log()
 
             self.report({'INFO'}, "Blender Tools log copied to clipboard!")
             return {'FINISHED'}
@@ -1414,23 +1340,23 @@ class PaintjobTools:
     Wrapper class for better navigation in file
     """
 
-    class ImportFromDataSII(bpy.types.Operator):
+    class SCS_TOOLS_OT_ImportFromDataSII(bpy.types.Operator):
         bl_label = "Import SCS Vehicle From data.sii"
-        bl_idname = "scene.scs_import_from_data_sii"
+        bl_idname = "scene.scs_tools_import_from_data_sii"
         bl_description = ("Import all models having paintable parts of a vehicle (including upgrades)"
                           "from choosen '/def/vehicle/<vehicle_type>/<brand.model>/data.sii' file.")
         bl_options = set()
 
-        directory = StringProperty(
+        directory: StringProperty(
             name="Import Vehicle",
             subtype='DIR_PATH',
         )
-        filepath = StringProperty(
+        filepath: StringProperty(
             name="Vehicle 'data.sii' filepath",
             description="File path to vehicle 'data.sii",
             subtype='FILE_PATH',
         )
-        filter_glob = StringProperty(default="*.sii", options={'HIDDEN'})
+        filter_glob: StringProperty(default="*.sii", options={'HIDDEN'})
 
         vehicle_type = _PT_consts.VehicleTypes.NONE
         start_time = None  # saving start time when initialize is called
@@ -1500,6 +1426,7 @@ class PaintjobTools:
         @staticmethod
         def import_and_clean_model(context, project_path, model_path):
             """Imports model from given model absolute path and removes all useless none paintable stuff.
+            If PIT file from given model doesn't have any truckpaint material, nothing is imported and None is returned.
             If no mesh remains in the model after cleaning, whole SCS Object is removed and None is returned.
 
             :param context: blender context used in PIX importing
@@ -1512,6 +1439,29 @@ class PaintjobTools:
             :rtype: bpy.types.Object
             """
 
+            # ignore models without pit
+            if not os.path.isfile(model_path + ".pit"):
+                return None
+
+            # load pit to search for truckpaint
+            pit_container = _pix_container.get_data_from_file(model_path + ".pit", ' ' * 4)
+            look = None
+            for section in pit_container:
+                if section.type == "Look":
+                    look = section
+                    break
+
+            # ignore models with invalid pit (no look = invalid pit)
+            if not look:
+                return None
+
+            # ignore models without truckpaint material
+            for mat_sec in look.get_sections("Material"):
+                if "eut2.truckpaint" in mat_sec.get_prop_value("Effect"):
+                    break
+            else:  # no truckpaint found, ignore this model
+                return None
+
             # internally change project path for the sake of texture loading, path will be reset in finalize method call
             _get_scs_globals()["scs_project_path"] = project_path
 
@@ -1521,7 +1471,6 @@ class PaintjobTools:
             _get_scs_globals().import_in_progress = False
 
             curr_scs_root = context.active_object
-            curr_scs_root.hide = True
 
             # remove useless stuff (none truckpaint meshes & all locators except model locators without hookup)
             mesh_obj_count = 0
@@ -1552,8 +1501,6 @@ class PaintjobTools:
 
                 if remove_object:
                     bpy.data.objects.remove(obj, do_unlink=True)
-                else:
-                    obj.hide = True
 
             # if no mesh has left inside the model, then remove everything
             if removed_mesh_obj_count >= mesh_obj_count:
@@ -1565,8 +1512,8 @@ class PaintjobTools:
             return curr_scs_root
 
         @staticmethod
-        def add_model_to_group(scs_root, model_type, model_name, linked_to_defs=set()):
-            """Adds model to group so it can be distinguished amongs all other models.
+        def add_model_to_collection(scs_root, model_type, model_name, linked_to_defs=set()):
+            """Adds model to collection so it can be distinguished amongs all other models.
 
             :param scs_root: blender object representing SCS Root
             :type scs_root: bpy.types.Object
@@ -1591,12 +1538,12 @@ class PaintjobTools:
                 else:  # if no variant specified "default" is used by game, so add it to our set
                     used_variants_by_linked_defs.add("default")
 
-            # create groups per variant
+            # create collections per variant
             for i, variant in enumerate(scs_root.scs_object_variant_inventory):
 
                 variant_name = variant.name.lower()
 
-                # do not create groups for unused variants
+                # do not create collections for unused variants
                 if variant_name not in used_variants_by_linked_defs:
                     continue
 
@@ -1604,40 +1551,31 @@ class PaintjobTools:
 
                 override = bpy.context.copy()
                 override["active_object"] = scs_root  # operator searches for scs root from active object, so make sure context will be correct
-                bpy.ops.object.switch_variant_selection(override, select_type=_OP_consts.SelectionType.select, variant_index=i)
+                bpy.ops.object.scs_tools_de_select_objects_with_variant(override, select_type=_OP_consts.SelectionType.select, variant_index=i)
 
-                group_name = model_type + " | " + model_name + " | " + variant_name
-                group = bpy.data.groups.new(group_name)
+                collection_name = model_type + " | " + model_name + " | " + variant_name
+                collection = bpy.data.collections.new(collection_name)
                 mesh_objects_count = 0
                 for obj in scs_root.children:
 
-                    if not obj.select:
+                    if not obj.select_get():
                         continue
 
                     if obj.type == "MESH":
                         mesh_objects_count += 1
 
-                    override = bpy.context.copy()
-                    override['object'] = obj
-                    bpy.ops.object.group_link(override, group=group.name)
+                    collection.objects.link(obj)
 
-                # do not create groups for variant if no mesh objects inside
+                # do not create collections for variant if no mesh objects inside
                 if mesh_objects_count <= 0:
-                    bpy.data.groups.remove(group, do_unlink=True)
+                    bpy.data.collections.remove(collection, do_unlink=True)
                     continue
 
-                group[_PT_consts.model_variant_prop] = variant_name
-                group[_PT_consts.model_refs_to_sii] = list(linked_to_defs)
+                collection[_PT_consts.model_variant_prop] = variant_name
+                collection[_PT_consts.model_refs_to_sii] = list(linked_to_defs)
 
-                obj = bpy.data.objects.new(_PT_consts.export_tag_obj_name + "_" + str(len(bpy.data.groups)), None)
-                obj.scs_props.object_identity = obj.name
-                obj.location = (0.0, 0.0, 0.0)
-                obj.use_fake_user = True  # as we don't link object to the scene (we don't want user to interfere with it somehow)
-                obj.hide = True  # as all groups are hidden by default make sure to hide object (this prevents group to get exported accidentally)
-
-                override = bpy.context.copy()
-                override['object'] = obj
-                bpy.ops.object.group_link(override, group=group.name)
+                # create new layer collection to make our collection visible in outliner
+                bpy.context.view_layer.layer_collection.collection.children.link(collection)
 
         @staticmethod
         def update_model_paths_dict(models_paths_dict, curr_models):
@@ -1767,7 +1705,7 @@ class PaintjobTools:
 
             lprint("S Vehicle Paths:\n%r" % vehicle_model_paths)
 
-            # import and properly group imported models
+            # import and properly collection imported models
             possible_upgrade_locators = {}  # dictionary holding all locators that can be used as candidates for upgrades positioning
             already_imported = set()  # set holding imported path of already imported model, to avoid double importing
             multiple_project_vehicle_models = set()  # set of model paths found in multiple projects (for reporting purposes)
@@ -1802,11 +1740,11 @@ class PaintjobTools:
 
                         possible_upgrade_locators[obj.name] = obj
 
-                    # put imported model into it's own groups per variant
-                    self.add_model_to_group(curr_vehicle_scs_root,
-                                            self.vehicle_type,
-                                            os.path.basename(vehicle_model_path),
-                                            vehicle_model_paths[vehicle_model_path])
+                    # put imported model into it's own collections per variant
+                    self.add_model_to_collection(curr_vehicle_scs_root,
+                                                 self.vehicle_type,
+                                                 os.path.basename(vehicle_model_path),
+                                                 vehicle_model_paths[vehicle_model_path])
 
             # if none vehicle models were properly imported it makes no sense to go forward on upgrades
             if len(already_imported) <= 0:
@@ -1850,7 +1788,7 @@ class PaintjobTools:
                     if len(upgrade_model_paths[upgrade_type]) <= 0:  # if no models for upgrade, remove set also
                         del upgrade_model_paths[upgrade_type]
 
-            # import models, group and position them properly
+            # import models, position them properly and put them to collections
             already_imported = set()  # set holding imported path of already imported model, to avoid double importing
             multiple_project_upgrade_models = set()  # set of model paths found in multiple projects (for reporting purposes)
             for project_path in project_paths:
@@ -1876,14 +1814,14 @@ class PaintjobTools:
                         # import model
                         curr_upgrade_scs_root = self.import_and_clean_model(context, project_path, model_path)
 
-                        if curr_upgrade_scs_root is None:  # everything was removed, so prevent group creation etc...
+                        if curr_upgrade_scs_root is None:  # everything was removed, so prevent collection creation etc...
                             continue
 
-                        # put imported model into it's own groups
-                        self.add_model_to_group(curr_upgrade_scs_root,
-                                                upgrade_type,
-                                                os.path.basename(upgrade_model_path),
-                                                upgrade_model_paths[upgrade_type][upgrade_model_path])
+                        # put imported model into it's own collections
+                        self.add_model_to_collection(curr_upgrade_scs_root,
+                                                     upgrade_type,
+                                                     os.path.basename(upgrade_model_path),
+                                                     upgrade_model_paths[upgrade_type][upgrade_model_path])
 
                         # find upgrade locator by prefix & position upgrade by locator aka make parent on it
                         upgrade_locator = None
@@ -1893,14 +1831,14 @@ class PaintjobTools:
                                 continue
 
                             # Now we are trying to find "perfect" match, which is found,
-                            # when matched prefixed upgrade locator is also assigned to at least one group.
+                            # when matched prefixed upgrade locator is also assigned to at least one collection.
                             # This way we eliminate locators that are in variants
                             # not used by any chassis, cabin or trailer body of our vehicle.
                             # However cases involving "suitable_for" fields are not covered here!
 
                             if upgrade_locator is None:
                                 upgrade_locator = possible_upgrade_locators[locator_name]
-                            elif len(possible_upgrade_locators[locator_name].users_group) > 0:
+                            elif len(possible_upgrade_locators[locator_name].users_collection) > 0:
                                 upgrade_locator = possible_upgrade_locators[locator_name]
                                 break
 
@@ -1913,6 +1851,24 @@ class PaintjobTools:
                         curr_upgrade_scs_root.location = (0,) * 3
                         curr_upgrade_scs_root.rotation_euler = (0,) * 3
                         curr_upgrade_scs_root.parent = upgrade_locator
+
+            ##################################
+            #
+            # 4. cleanup the scene and report problems
+            #
+            ##################################
+
+            # remove any layer collection not created by us
+            cols_to_unlink = set()
+            for col in bpy.context.scene.collection.children:
+                if _PT_consts.model_refs_to_sii not in col:
+                    cols_to_unlink.add(col)
+            for col in cols_to_unlink:
+                bpy.context.scene.collection.children.unlink(col)
+
+            # make our layer collections hidden, as user should later select what to export
+            for layer_col in bpy.context.view_layer.layer_collection.children:
+                layer_col.hide_viewport = True
 
             # on the end report multiple project model problems
             if len(multiple_project_vehicle_models) > 0:
@@ -1935,50 +1891,50 @@ class PaintjobTools:
             context.window_manager.fileselect_add(self)
             return {'RUNNING_MODAL'}
 
-    class ExportUVLayoutAndMesh(bpy.types.Operator):
+    class SCS_TOOLS_OT_ExportPaintjobUVLayoutAndMesh(bpy.types.Operator):
         bl_label = "Export SCS Paintjob UV Layout & Mesh"
-        bl_idname = "scene.scs_export_paintjob_uv_layout_and_mesh"
+        bl_idname = "scene.scs_tools_export_paintjob_uv_layout_and_mesh"
         bl_description = "Exports painjtob uv layout & mesh (OBJ) for currently visible objects in scene."
         bl_options = {'PRESET'}
 
-        directory = StringProperty(
+        directory: StringProperty(
             name="Export UV",
             subtype='DIR_PATH',
         )
 
-        filepath = StringProperty(
+        filepath: StringProperty(
             name="Export UVs & mesh",
             description="File path to export paintjob uv layout & mesh too.",
             subtype='FILE_PATH',
         )
 
-        config_meta_filepath = StringProperty(
+        config_meta_filepath: StringProperty(
             description="File path to paintjob configuration SII file."
         )
 
-        layout_sii_selection_mode = BoolProperty(
+        layout_sii_selection_mode: BoolProperty(
             default=False,
             description="Use currently selected file as paintjob layout configuration file."
         )
 
-        export_2nd_uvs = BoolProperty(
+        export_2nd_uvs: BoolProperty(
             name="Export 2nd UVs",
             description="Should 2nd UV set layout be exported?",
             default=True
         )
-        export_3rd_uvs = BoolProperty(
+        export_3rd_uvs: BoolProperty(
             name="Export 3rd UVs",
             description="Should 3rd UV set layout be exported?",
             default=True
         )
 
-        export_id_mask = BoolProperty(
+        export_id_mask: BoolProperty(
             name="Export ID Mask",
             description="Should be id mask marking texture portions be exported?",
             default=True
         )
 
-        id_mask_alpha = FloatProperty(
+        id_mask_alpha: FloatProperty(
             name="ID Mask Color Alpha",
             description="Alpha value of ID color when exporting ID Mask\n"
                         "(For debugging purposes of texture portion overlaying, value 0.5 is advised otherwise 1.0 should be used.)",
@@ -1987,7 +1943,7 @@ class PaintjobTools:
             max=1.0
         )
 
-        export_mesh = BoolProperty(
+        export_mesh: BoolProperty(
             name="Export Mesh as OBJ",
             description="Should OBJ mesh also be exported?",
             default=True
@@ -2072,9 +2028,14 @@ class PaintjobTools:
             """Cleanups any meshes with zero users that might be left-overs from join operator.
             """
 
+            meshes_to_remove = []
             for m in bpy.data.meshes:
                 if m.users == 0:
-                    bpy.data.meshes.remove(m)
+                    meshes_to_remove.append(m.name)
+
+            for mesh_name in meshes_to_remove:
+                if mesh_name in bpy.data.meshes:
+                    bpy.data.meshes.remove(bpy.data.meshes[mesh_name])
 
         def check(self, context):
 
@@ -2088,13 +2049,13 @@ class PaintjobTools:
 
             col = self.layout.column(align=True)
 
-            col.label("Paintjobs Layout META File:", icon='FILE_SCRIPT')
+            col.label(text="Paintjobs Layout META File:", icon='FILE_SCRIPT')
             col.prop(self, "config_meta_filepath", text="")
-            col.prop(self, "layout_sii_selection_mode", toggle=True, text="Select Current File from File Browser", icon='SCREEN_BACK')
+            col.prop(self, "layout_sii_selection_mode", toggle=True, text="Select Current File from File Browser", icon='PASTEDOWN')
 
             col.separator()
 
-            col.label("What to export?", icon='QUESTION')
+            col.label(text="What to export?", icon='QUESTION')
             col.prop(self, "export_2nd_uvs")
             col.prop(self, "export_3rd_uvs")
             col.prop(self, "export_id_mask")
@@ -2122,57 +2083,52 @@ class PaintjobTools:
 
             ##################################
             #
-            # 1. collect visible mesh & determinate which groups to export
+            # 1. collect visible mesh & determinate which collections to export
             #
             ##################################
-            visible_groups = []
-            for group in bpy.data.groups:
+            visible_collections = []
+            for layer_col in context.view_layer.layer_collection.children:
 
-                if _PT_consts.model_refs_to_sii not in group:
+                if layer_col.hide_viewport:
                     continue
 
-                has_hidden_object = False
+                collection = layer_col.collection
 
-                # thanks to our dummy export tag object we can simply iterate trough group objects and
-                # once some object is hidden (either export tag object or any other)
-                # we decide that this group is not visible thus won't be exported
-                for obj in group.objects:
-                    if obj.hide:
-                        has_hidden_object = True
-                        break
-
-                if has_hidden_object:
+                if _PT_consts.model_refs_to_sii not in collection:
                     continue
 
-                visible_groups.append(group)
+                # unhide all objects that are part of collections to export (in case user hid them for some reason),
+                # becasue hidden objects can not be selected/duplicated otherwise
+                for obj in collection.objects:
+                    obj.hide_viewport = False
+                    obj.hide_set(False)
 
-            lprint("S Visible groups to export: %s", (visible_groups,))
+                visible_collections.append(collection)
+
+            lprint("S Visible collections to export: %s", (visible_collections,))
 
             merged_objects_to_export = {}
-            for group in visible_groups:
+            for collection in visible_collections:
 
                 # start with selection clearing, use our implementation to deselect any possible selected object in hidden layers
-                for obj in context.scene.objects:
-                    obj.select = False
+                for obj in context.view_layer.objects:
+                    obj.select_set(False)
 
                 selected_objects_count = 0
-                for obj in group.objects:
+                for obj in collection.objects:
                     if obj.type == "MESH":
-                        obj.select = True
+                        obj.select_set(True)
                         selected_objects_count += 1
 
-                # in case no mesh objects in this group,
-                # there is no data to be exported, so advance to next group
+                # in case no mesh objects in this collection, there is no data to be exported, so advance to next collection
                 if selected_objects_count <= 0:
                     continue
 
                 bpy.ops.object.duplicate()
 
                 if selected_objects_count > 1:
-                    context.scene.objects.active = context.selected_objects[0]
-                    override = context.copy()
-                    override["selected_objects"] = context.selected_objects
-                    bpy.ops.object.join(override)
+                    context.view_layer.objects.active = context.selected_objects[0]
+                    bpy.ops.object.join()
                     self.cleanup_meshes()
 
                 curr_merged_object = context.selected_objects[0]
@@ -2183,7 +2139,7 @@ class PaintjobTools:
                         break
 
                 if curr_truckpaint_mat is None:
-                    self.do_report({'WARNING'}, "Group %r won't be exported as 'truckpaint' material wasn't found!" % group.name)
+                    self.do_report({'WARNING'}, "Collection %r won't be exported as 'truckpaint' material wasn't found!" % collection.name)
                     self.cleanup((curr_merged_object,))
                     continue
 
@@ -2193,19 +2149,19 @@ class PaintjobTools:
                                  curr_truckpaint_mat.scs_props.shader_texture_base_uv[1].value,
                                  curr_truckpaint_mat.scs_props.shader_texture_base_uv[2].value)
 
-                # remove all none needed & colliding data-blocks from object: materials, groups
+                # remove all none needed & colliding data-blocks from object: materials, collections
                 while len(curr_merged_object.material_slots) > 0:
                     override = context.copy()
                     override["object"] = curr_merged_object
                     bpy.ops.object.material_slot_remove(override)
 
-                while len(curr_merged_object.users_group) > 0:
-                    override = context.copy()
-                    override["object"] = curr_merged_object
-                    override["group"] = curr_merged_object.users_group[0]
-                    bpy.ops.object.group_remove(override)
+                while len(curr_merged_object.users_collection) > 0:
+                    curr_merged_object.users_collection[0].objects.unlink(curr_merged_object)
 
-                merged_objects_to_export[curr_merged_object] = group
+                # linke merged objects to scene master collection so they can be handled properly by selection operators
+                context.view_layer.layer_collection.collection.objects.link(curr_merged_object)
+
+                merged_objects_to_export[curr_merged_object] = collection
 
             if len(merged_objects_to_export) <= 0:
                 self.do_report({'ERROR'}, "No objects to export!")
@@ -2278,7 +2234,7 @@ class PaintjobTools:
             unconfigured_objects = []
             for obj in merged_objects_to_export:
 
-                group = merged_objects_to_export[obj]
+                collection = merged_objects_to_export[obj]
 
                 # find texture portion belonging to export object
                 texture_portion = None
@@ -2290,7 +2246,7 @@ class PaintjobTools:
                     if not model_sii:
                         continue
 
-                    for reference_to_sii in group[_PT_consts.model_refs_to_sii]:
+                    for reference_to_sii in collection[_PT_consts.model_refs_to_sii]:
 
                         # yep we found possible sii of the model, but not quite yet
                         if reference_to_sii.endswith(model_sii):
@@ -2304,7 +2260,7 @@ class PaintjobTools:
                                 variant = "default"  # if variant is not specified in sii, our games uses default
 
                             # now check variant: if it's the same then we have it!
-                            if variant == group[_PT_consts.model_variant_prop]:
+                            if variant == collection[_PT_consts.model_variant_prop]:
                                 texture_portion = texture_portions[unit_id]
                                 break
 
@@ -2313,12 +2269,12 @@ class PaintjobTools:
 
                 if not texture_portion:  # texture portion not found help the user!
                     referenced_siis = ""
-                    for referenced_sii in sorted(group[_PT_consts.model_refs_to_sii]):
+                    for referenced_sii in sorted(collection[_PT_consts.model_refs_to_sii]):
                         referenced_siis += "-> %r\n\t   " % referenced_sii
 
                     self.do_report({'WARNING'},
                                    "Model %r wasn't referenced by any SII defined in paintjob configuration metadata, please reconfigure!\n\t   "
-                                   "SII files from which model was referenced:\n\t   %s" % (group.name, referenced_siis))
+                                   "SII files from which model was referenced:\n\t   %s" % (collection.name, referenced_siis))
                     unconfigured_objects.append(obj)
                     continue
 
@@ -2333,17 +2289,24 @@ class PaintjobTools:
                     independent_export_objects[obj] = texture_portion
 
                 # as last get trough objects with parent & put them in proper dictionary assigning PARENT texture portion already
+                parent_texture_portion = texture_portion
                 while parent:
-                    texture_portion = _sii_container.get_unit_by_id(pj_config_sii_container, parent, texture_portion.type)
-                    parent = texture_portion.get_prop("parent")
+                    parent_texture_portion = _sii_container.get_unit_by_id(pj_config_sii_container, parent, parent_texture_portion.type)
+                    parent = parent_texture_portion.get_prop("parent")
 
-                if bool(texture_portion.get_prop("is_master")):
+                if bool(parent_texture_portion.get_prop("is_master")):
                     master_child_export_objects[obj] = texture_portion
                 else:
-                    independent_export_objects[obj] = texture_portion  # even if it has parent it's exported independent; no duplicates needed
+                    independent_export_objects[obj] = parent_texture_portion  # even if it has parent it's exported independent; no duplicates needed
 
             # cleanup unconfigured objects
             if len(unconfigured_objects) > 0:
+
+                # make sure to remove uncofigured objects from merged,
+                # so that cleanup won't be done twice and possibly result in ReferenceError
+                for obj in unconfigured_objects:
+                    del merged_objects_to_export[obj]
+
                 self.cleanup(unconfigured_objects)
 
             # nonsense to go further if nothing to export
@@ -2363,21 +2326,25 @@ class PaintjobTools:
 
             # duplicate all objects with master parent & merge them
             for obj in master_child_export_objects:
+                export_uvs_to = master_child_export_objects[obj].get_prop("export_uvs_to")
 
                 for master_obj in master_export_objects:
+
+                    # if there is extra field defining where we should export child of a master
+                    # then ignore export for other master portions
+                    if export_uvs_to and master_export_objects[master_obj].id not in export_uvs_to:
+                        continue
 
                     bpy.ops.object.select_all(action="DESELECT")
 
                     # duplicate
-                    obj.select = True
+                    obj.select_set(True)
                     bpy.ops.object.duplicate()
 
                     # merge with master object
-                    master_obj.select = True
-                    context.scene.objects.active = master_obj
-                    override = context.copy()
-                    override["selected_objects"] = context.selected_objects
-                    bpy.ops.object.join(override)
+                    master_obj.select_set(True)
+                    context.view_layer.objects.active = master_obj
+                    bpy.ops.object.join()
                     self.cleanup_meshes()
 
                 bpy.data.objects.remove(obj, do_unlink=True)
@@ -2395,17 +2362,15 @@ class PaintjobTools:
             # select all export objects first
             bpy.ops.object.select_all(action="DESELECT")
             for obj in independent_export_objects:
-                obj.select = True
+                obj.select_set(True)
             for obj in master_export_objects:
-                obj.select = True
+                obj.select_set(True)
 
             # merge them
             final_merged_object = context.selected_objects[0]
             if len(merged_objects_to_export) > 1:
-                context.scene.objects.active = context.selected_objects[0]
-                override = context.copy()
-                override["selected_objects"] = context.selected_objects
-                bpy.ops.object.join(override)
+                context.view_layer.objects.active = context.selected_objects[0]
+                bpy.ops.object.join()
                 self.cleanup_meshes()
 
             ##################################
@@ -2419,7 +2384,7 @@ class PaintjobTools:
             if self.export_2nd_uvs:
 
                 # set active uv layer so export will take proper
-                final_merged_object.data.uv_textures.active = final_merged_object.data.uv_textures[_PT_consts.uvs_name_2nd]
+                final_merged_object.data.uv_layers.active = final_merged_object.data.uv_layers[_PT_consts.uvs_name_2nd]
 
                 override = context.copy()
                 override["active_object"] = final_merged_object
@@ -2442,7 +2407,7 @@ class PaintjobTools:
             if self.export_3rd_uvs:
 
                 # set active uv layer so export will take proper
-                final_merged_object.data.uv_textures.active = final_merged_object.data.uv_textures[_PT_consts.uvs_name_3rd]
+                final_merged_object.data.uv_layers.active = final_merged_object.data.uv_layers[_PT_consts.uvs_name_3rd]
 
                 override = context.copy()
                 override["active_object"] = final_merged_object
@@ -2519,14 +2484,14 @@ class PaintjobTools:
                 # create image data block
                 img = bpy.data.images.new("tmp_img", common_texture_size[0], common_texture_size[1], alpha=True)
                 img.colorspace_settings.name = "sRGB"  # make sure we use sRGB color-profile
-                img.use_alpha = True
+                img.alpha_mode = 'CHANNEL_PACKED'
                 img.pixels[:] = img_pixels
 
                 # save
                 scene = bpy.context.scene
                 scene.render.image_settings.file_format = "PNG"
                 scene.render.image_settings.color_mode = "RGBA"
-                img.save_render(self.filepath + ".id_mask.png", bpy.context.scene)
+                img.save_render(self.filepath + ".id_mask.png", scene=bpy.context.scene)
 
                 # remove image data-block, as we don't need it anymore
                 img.buffers_free()
@@ -2542,9 +2507,9 @@ class PaintjobTools:
             context.window_manager.fileselect_add(self)
             return {'RUNNING_MODAL'}
 
-    class GeneratePaintjob(bpy.types.Operator):
+    class SCS_TOOLS_OT_GeneratePaintjob(bpy.types.Operator):
         bl_label = "Generate SCS Paintjob From Common Texture"
-        bl_idname = "scene.scs_generate_paintjob"
+        bl_idname = "scene.scs_tools_generate_paintjob"
         bl_description = "Generates complete setup for given paintjob: definitions, TGAs & TOBJs."
         bl_options = {'INTERNAL'}
 
@@ -2668,72 +2633,72 @@ class PaintjobTools:
         translate_node = None
         viewer_node = None
 
-        config_meta_filepath = StringProperty(
+        config_meta_filepath: StringProperty(
             description="File path to paintjob configuration SII file."
         )
 
-        project_path = StringProperty(
+        project_path: StringProperty(
             description="Project to which this paintjob belongs. Could be usefull if PSD file is not within same project."
         )
 
-        common_texture_path = StringProperty(
+        common_texture_path: StringProperty(
             description="File path to original common paintjob TGA texture."
         )
 
-        export_alpha = BoolProperty(
+        export_alpha: BoolProperty(
             description="Flag defining if textures shall be exported with alpha or not."
         )
 
-        preserve_common_texture = BoolProperty(
+        preserve_common_texture: BoolProperty(
             description="Should given common texture TGA be preserved and not deleted after generation is finished?"
         )
 
-        optimize_single_color_textures = BoolProperty(
+        optimize_single_color_textures: BoolProperty(
             description="Export texture with size 4x4 if whole exported texture has all pixels with same color?"
         )
 
-        export_configs_only = BoolProperty(
+        export_configs_only: BoolProperty(
             description="Should only configurations be exported (used for export of metallic like paintjobs without paintjob texture)?"
         )
 
         # paint job settings exported to common SUI settings file
-        pjs_name = StringProperty(default="pj_name")
-        pjs_price = IntProperty(default=10000)
-        pjs_unlock = IntProperty(default=0)
-        pjs_icon = StringProperty(default="")
+        pjs_name: StringProperty(default="pj_name")
+        pjs_price: IntProperty(default=10000)
+        pjs_unlock: IntProperty(default=0)
+        pjs_icon: StringProperty(default="")
 
-        pjs_paint_job_mask = StringProperty(default="")
+        pjs_paint_job_mask: StringProperty(default="")
 
-        pjs_mask_r_color = FloatVectorProperty(default=(1, 0, 0))
-        pjs_mask_r_locked = BoolProperty(default=True)
+        pjs_mask_r_color: FloatVectorProperty(default=(1, 0, 0))
+        pjs_mask_r_locked: BoolProperty(default=True)
 
-        pjs_mask_g_color = FloatVectorProperty(default=(0, 1, 0))
-        pjs_mask_g_locked = BoolProperty(default=True)
+        pjs_mask_g_color: FloatVectorProperty(default=(0, 1, 0))
+        pjs_mask_g_locked: BoolProperty(default=True)
 
-        pjs_mask_b_color = FloatVectorProperty(default=(0, 0, 1))
-        pjs_mask_b_locked = BoolProperty(default=True)
+        pjs_mask_b_color: FloatVectorProperty(default=(0, 0, 1))
+        pjs_mask_b_locked: BoolProperty(default=True)
 
-        pjs_base_color = FloatVectorProperty(default=(1, 1, 1))
-        pjs_base_color_locked = BoolProperty(default=True)
+        pjs_base_color: FloatVectorProperty(default=(1, 1, 1))
+        pjs_base_color_locked: BoolProperty(default=True)
 
-        pjs_flip_color = FloatVectorProperty(default=(1, 0, 0))
-        pjs_flip_color_locked = BoolProperty(default=True)
+        pjs_flip_color: FloatVectorProperty(default=(1, 0, 0))
+        pjs_flip_color_locked: BoolProperty(default=True)
 
-        pjs_flip_strength = FloatProperty(default=0.27)
+        pjs_flip_strength: FloatProperty(default=0.27)
 
-        pjs_flake_color = FloatVectorProperty(default=(0, 1, 0))
-        pjs_flake_color_locked = BoolProperty(default=True)
+        pjs_flake_color: FloatVectorProperty(default=(0, 1, 0))
+        pjs_flake_color_locked: BoolProperty(default=True)
 
-        pjs_flake_uvscale = FloatProperty(default=32.0)
-        pjs_flake_vratio = FloatProperty(default=1.0)
-        pjs_flake_density = FloatProperty(default=1.0)
-        pjs_flake_shininess = FloatProperty(default=50.0)
-        pjs_flake_clearcoat_rolloff = FloatProperty(default=2.2)
-        pjs_flake_noise = StringProperty(default="/material/custom/flake_noise.tobj")
+        pjs_flake_uvscale: FloatProperty(default=32.0)
+        pjs_flake_vratio: FloatProperty(default=1.0)
+        pjs_flake_density: FloatProperty(default=1.0)
+        pjs_flake_shininess: FloatProperty(default=50.0)
+        pjs_flake_clearcoat_rolloff: FloatProperty(default=2.2)
+        pjs_flake_noise: StringProperty(default="/material/custom/flake_noise.tobj")
 
-        pjs_alternate_uvset = BoolProperty(default=False)
-        pjs_flipflake = BoolProperty(default=False)
-        pjs_airbrush = BoolProperty(default=False)
+        pjs_alternate_uvset: BoolProperty(default=False)
+        pjs_flipflake: BoolProperty(default=False)
+        pjs_airbrush: BoolProperty(default=False)
 
         @staticmethod
         def do_report(the_type, message, do_report=False):
@@ -2844,15 +2809,25 @@ class PaintjobTools:
                                                         img_height)
             tga_path = os.path.join(tgas_dir_path, tga_name)
 
-            # export texture portion image by rendering compositor
+            # export texture portion image by properly reset scene settings and then render with compositor
 
             scene = bpy.context.scene
+
+            scene.display_settings.display_device = "sRGB"
+
+            scene.view_settings.view_transform = "Standard"
+            scene.view_settings.look = "None"
+            scene.view_settings.exposure = 0
+            scene.view_settings.gamma = 1
+
             scene.render.image_settings.file_format = "TARGA"
             scene.render.image_settings.color_mode = "RGBA" if self.export_alpha else "RGB"
             scene.render.resolution_percentage = 100
             scene.render.resolution_x = img_width
             scene.render.resolution_y = img_height
             scene.render.filepath = tga_path
+            scene.render.dither_intensity = 0
+
             bpy.ops.render.render(write_still=True)
 
             # if no optimization or is master then we can skip optimization processing,
@@ -3013,9 +2988,9 @@ class PaintjobTools:
             unit.props["unlock"] = self.pjs_unlock
 
             # now go trough all props and export the ones that are different from default value
-            for object_dir_entry in dir(self):
-                if object_dir_entry.startswith("pjs_"):
-                    assert self.append_prop_if_not_default(unit, object_dir_entry)
+            for props_dir_entry in dir(self.properties):
+                if props_dir_entry.startswith("pjs_"):
+                    assert self.append_prop_if_not_default(unit, props_dir_entry)
 
             return _sii_container.write_data_to_file(settings_sui_path, (unit,), is_sui=True, create_dirs=True)
 
@@ -3036,12 +3011,12 @@ class PaintjobTools:
             _EPSILON = 0.0001  # float values max difference to be still equal
             _PJS_PREFIX = "pjs_"  # prefix that marks setting as paint job setting
 
-            if not hasattr(PaintjobTools.GeneratePaintjob, prop_name):
+            if not hasattr(self, prop_name):
                 lprint("E Invalid property for paintjob settings: %r, contact the developer!", (prop_name,))
                 return False
 
             # gather values
-            default_value = _get_bpy_prop(getattr(PaintjobTools.GeneratePaintjob, prop_name))
+            default_value = _get_default(self.properties, prop_name)
 
             if prop_value is None:
                 current_value = getattr(self, prop_name)
@@ -3263,7 +3238,8 @@ class PaintjobTools:
             ##################################
 
             common_tex_img = bpy.data.images.load(self.common_texture_path, check_existing=False)
-            common_tex_img.use_alpha = self.export_alpha
+            common_tex_img.colorspace_settings.name = "sRGB"
+            common_tex_img.alpha_mode = 'STRAIGHT' if self.export_alpha else 'NONE'
 
             self.initialize_nodes(context, common_tex_img)
 
@@ -3458,7 +3434,7 @@ class PaintjobTools:
                             # ensure current master portion has it's own overrides
                             config_path = os.path.join(overrides_config_dir, pj_token + master_unit_suffix + ".sii")
                             if config_path not in overrides:
-                                overrides[config_path] = PaintjobTools.GeneratePaintjob.Overrides()
+                                overrides[config_path] = PaintjobTools.SCS_TOOLS_OT_GeneratePaintjob.Overrides()
 
                             # now add current accessory to overrides
                             overrides[config_path].add_accessory(acc_type_token + "." + acc_id_token, pj_props)
@@ -3482,3 +3458,54 @@ class PaintjobTools:
             lprint("\nI Export of paintjobs took: %0.3f sec" % (time() - start_time))
 
             return {'FINISHED'}
+
+
+classes = (
+    Animation.SCS_TOOLS_OT_IncreaseAnimationSteps,
+    Animation.SCS_TOOLS_OT_DecreaseAnimationSteps,
+
+    ConversionHelper.SCS_TOOLS_OT_AddConversionPath,
+    ConversionHelper.SCS_TOOLS_OT_CleanConversionRSRC,
+    ConversionHelper.SCS_TOOLS_OT_ConvertAllPaths,
+    ConversionHelper.SCS_TOOLS_OT_ConvertCurrentBase,
+    ConversionHelper.SCS_TOOLS_OT_ConvertCustomPaths,
+    ConversionHelper.SCS_TOOLS_OT_FindGameModFolder,
+    ConversionHelper.SCS_TOOLS_OT_OrderConversionPath,
+    ConversionHelper.SCS_TOOLS_OT_RemoveConversionPath,
+    ConversionHelper.SCS_TOOLS_OT_RunConversion,
+    ConversionHelper.SCS_TOOLS_OT_RunPacking,
+
+    Export.SCS_TOOLS_OT_ExportAnimAction,
+    Export.SCS_TOOLS_OT_ExportByScope,
+
+    Import.SCS_TOOLS_OT_ImportAnimActions,
+
+    Log.SCS_TOOLS_OT_CopyLogToClipboard,
+
+    PaintjobTools.SCS_TOOLS_OT_ExportPaintjobUVLayoutAndMesh,
+    PaintjobTools.SCS_TOOLS_OT_GeneratePaintjob,
+    PaintjobTools.SCS_TOOLS_OT_ImportFromDataSII,
+
+    Paths.SCS_TOOLS_OT_SelectProjectPath,
+    Paths.SCS_TOOLS_OT_SelectShaderPresetsPath,
+    Paths.SCS_TOOLS_OT_SelectTriggerActionsLibPath,
+    Paths.SCS_TOOLS_OT_SelectSignLibPath,
+    Paths.SCS_TOOLS_OT_SelectSemaphoreLibPath,
+    Paths.SCS_TOOLS_OT_SelectTrafficRulesLibPath,
+    Paths.SCS_TOOLS_OT_SelectHookupLibPath,
+    Paths.SCS_TOOLS_OT_SelectMatSubsLibPath,
+    Paths.SCS_TOOLS_OT_SelectSunProfilesLibPath,
+    Paths.SCS_TOOLS_OT_SelectDirInsideBase,
+    Paths.SCS_TOOLS_OT_ReloadLibrary,
+    Paths.SCS_TOOLS_OT_AddPathPreset,
+)
+
+
+def register():
+    for cls in classes:
+        bpy.utils.register_class(cls)
+
+
+def unregister():
+    for cls in classes:
+        bpy.utils.unregister_class(cls)

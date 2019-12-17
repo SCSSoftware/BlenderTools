@@ -16,12 +16,12 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2015: SCS Software
-
+# Copyright (C) 2015-2019: SCS Software
 
 from io_scs_tools.internals.shaders.eut2.dif_spec import DifSpec
-from io_scs_tools.internals.shaders.eut2.std_node_groups import mult2_mix
+from io_scs_tools.internals.shaders.eut2.std_node_groups import mult2_mix_ng
 from io_scs_tools.internals.shaders.flavors import tg0
+from io_scs_tools.utils import material as _material_utils
 
 
 class DifSpecWeightMult2(DifSpec):
@@ -51,16 +51,16 @@ class DifSpecWeightMult2(DifSpec):
         # init parent
         DifSpec.init(node_tree, disable_remap_alpha=False)
 
-        geom_n = node_tree.nodes[DifSpec.GEOM_NODE]
+        first_uv_map = node_tree.nodes[DifSpec.UVMAP_NODE]
         base_tex_n = node_tree.nodes[DifSpec.BASE_TEX_NODE]
         spec_mult_n = node_tree.nodes[DifSpec.SPEC_MULT_NODE]
         vcol_scale_n = node_tree.nodes[DifSpec.VCOLOR_SCALE_NODE]
         vcol_mult_n = node_tree.nodes[DifSpec.VCOLOR_MULT_NODE]
         opacity_mult_n = node_tree.nodes[DifSpec.OPACITY_NODE]
-        out_mat_n = node_tree.nodes[DifSpec.OUT_MAT_NODE]
+        compose_lighting_n = node_tree.nodes[DifSpec.COMPOSE_LIGHTING_NODE]
 
         # move existing
-        geom_n.location.x -= pos_x_shift * 2
+        first_uv_map.location.x -= pos_x_shift * 2
         opacity_mult_n.location.y -= 100
         for node in node_tree.nodes:
             if node.location.x > start_pos_x + pos_x_shift:
@@ -69,63 +69,74 @@ class DifSpecWeightMult2(DifSpec):
         # nodes creation
         uv_scale_n = node_tree.nodes.new("ShaderNodeMapping")
         uv_scale_n.name = uv_scale_n.label = DifSpecWeightMult2.UV_SCALE_NODE
-        uv_scale_n.location = (start_pos_x - pos_x_shift * 2, start_pos_y + 1200)
+        uv_scale_n.location = (start_pos_x - pos_x_shift, start_pos_y + 1100)
         uv_scale_n.vector_type = "POINT"
-        uv_scale_n.translation = uv_scale_n.rotation = (0.0,) * 3
-        uv_scale_n.scale = (1.0,) * 3
-        uv_scale_n.use_min = uv_scale_n.use_max = False
+        uv_scale_n.inputs['Location'].default_value = uv_scale_n.inputs['Rotation'].default_value = (0.0,) * 3
+        uv_scale_n.inputs['Scale'].default_value = (1.0,) * 3
+        uv_scale_n.width = 140
 
-        mult_tex_n = node_tree.nodes.new("ShaderNodeTexture")
+        mult_tex_n = node_tree.nodes.new("ShaderNodeTexImage")
         mult_tex_n.name = mult_tex_n.label = DifSpecWeightMult2.MULT_TEX_NODE
         mult_tex_n.location = (start_pos_x + pos_x_shift, start_pos_y + 1200)
+        mult_tex_n.width = 140
 
-        mult2_mix_gn = node_tree.nodes.new("ShaderNodeGroup")
-        mult2_mix_gn.name = mult2_mix_gn.label = DifSpecWeightMult2.MULT2_MIX_GROUP_NODE
-        mult2_mix_gn.location = (start_pos_x + pos_x_shift * 3, start_pos_y + 1400)
-        mult2_mix_gn.node_tree = mult2_mix.get_node_group()
+        mult2_mix_n = node_tree.nodes.new("ShaderNodeGroup")
+        mult2_mix_n.name = mult2_mix_n.label = DifSpecWeightMult2.MULT2_MIX_GROUP_NODE
+        mult2_mix_n.location = (start_pos_x + pos_x_shift * 3, start_pos_y + 1400)
+        mult2_mix_n.node_tree = mult2_mix_ng.get_node_group()
 
-        spec_vcol_mult_n = node_tree.nodes.new("ShaderNodeMixRGB")
+        spec_vcol_mult_n = node_tree.nodes.new("ShaderNodeVectorMath")
         spec_vcol_mult_n.name = spec_vcol_mult_n.label = DifSpecWeightMult2.SPEC_VCOL_MULT_NODE
         spec_vcol_mult_n.location = (start_pos_x + pos_x_shift * 5, start_pos_y + 1800)
-        spec_vcol_mult_n.blend_type = "MULTIPLY"
-        spec_vcol_mult_n.inputs["Fac"].default_value = 1.0
+        spec_vcol_mult_n.operation = "MULTIPLY"
 
         # links creation
-        node_tree.links.new(uv_scale_n.inputs["Vector"], geom_n.outputs["UV"])
+        node_tree.links.new(uv_scale_n.inputs["Vector"], first_uv_map.outputs["UV"])
 
         node_tree.links.new(mult_tex_n.inputs["Vector"], uv_scale_n.outputs["Vector"])
 
         # pass 1
-        node_tree.links.new(mult2_mix_gn.inputs["Base Alpha"], base_tex_n.outputs["Value"])
-        node_tree.links.new(mult2_mix_gn.inputs["Base Color"], base_tex_n.outputs["Color"])
-        node_tree.links.new(mult2_mix_gn.inputs["Mult Alpha"], mult_tex_n.outputs["Value"])
-        node_tree.links.new(mult2_mix_gn.inputs["Mult Color"], mult_tex_n.outputs["Color"])
+        node_tree.links.new(mult2_mix_n.inputs["Base Alpha"], base_tex_n.outputs["Alpha"])
+        node_tree.links.new(mult2_mix_n.inputs["Base Color"], base_tex_n.outputs["Color"])
+        node_tree.links.new(mult2_mix_n.inputs["Mult Alpha"], mult_tex_n.outputs["Alpha"])
+        node_tree.links.new(mult2_mix_n.inputs["Mult Color"], mult_tex_n.outputs["Color"])
 
         # pass 2
-        node_tree.links.new(spec_mult_n.inputs["Color2"], mult2_mix_gn.outputs["Mix Alpha"])
+        node_tree.links.new(spec_mult_n.inputs[1], mult2_mix_n.outputs["Mix Alpha"])
 
-        node_tree.links.new(opacity_mult_n.inputs[0], mult2_mix_gn.outputs["Mix Alpha"])
+        node_tree.links.new(opacity_mult_n.inputs[0], mult2_mix_n.outputs["Mix Alpha"])
 
         # pass 3
-        node_tree.links.new(spec_vcol_mult_n.inputs["Color1"], spec_mult_n.outputs["Color"])
-        node_tree.links.new(spec_vcol_mult_n.inputs["Color2"], vcol_scale_n.outputs["Color"])
+        node_tree.links.new(spec_vcol_mult_n.inputs[0], spec_mult_n.outputs[0])
+        node_tree.links.new(spec_vcol_mult_n.inputs[1], vcol_scale_n.outputs[0])
 
-        node_tree.links.new(vcol_mult_n.inputs["Color2"], mult2_mix_gn.outputs["Mix Color"])
+        node_tree.links.new(vcol_mult_n.inputs[1], mult2_mix_n.outputs["Mix Color"])
 
         # pass 4
-        node_tree.links.new(out_mat_n.inputs["Spec"], spec_vcol_mult_n.outputs["Color"])
+        node_tree.links.new(compose_lighting_n.inputs["Specular Color"], spec_vcol_mult_n.outputs[0])
 
     @staticmethod
-    def set_mult_texture(node_tree, texture):
+    def set_mult_texture(node_tree, image):
         """Set multiplication texture to shader.
 
         :param node_tree: node tree of current shader
         :type node_tree: bpy.types.NodeTree
-        :param texture: texture which should be assigned to mult texture node
-        :type texture: bpy.types.Texture
+        :param image: texture image which should be assigned to mult texture node
+        :type image: bpy.types.Texture
         """
 
-        node_tree.nodes[DifSpecWeightMult2.MULT_TEX_NODE].texture = texture
+        node_tree.nodes[DifSpecWeightMult2.MULT_TEX_NODE].image = image
+
+    @staticmethod
+    def set_mult_texture_settings(node_tree, settings):
+        """Set multiplication texture settings to shader.
+
+        :param node_tree: node tree of current shader
+        :type node_tree: bpy.types.NodeTree
+        :param settings: binary string of TOBJ settings gotten from tobj import
+        :type settings: str
+        """
+        _material_utils.set_texture_settings_to_node(node_tree.nodes[DifSpecWeightMult2.MULT_TEX_NODE], settings)
 
     @staticmethod
     def set_mult_uv(node_tree, uv_layer):
@@ -149,8 +160,8 @@ class DifSpecWeightMult2(DifSpec):
         :type aux_property: bpy.types.IDPropertyGroup
         """
 
-        node_tree.nodes[DifSpecWeightMult2.UV_SCALE_NODE].scale[0] = aux_property[0]["value"]
-        node_tree.nodes[DifSpecWeightMult2.UV_SCALE_NODE].scale[1] = aux_property[1]["value"]
+        node_tree.nodes[DifSpecWeightMult2.UV_SCALE_NODE].inputs['Scale'].default_value[0] = aux_property[0]["value"]
+        node_tree.nodes[DifSpecWeightMult2.UV_SCALE_NODE].inputs['Scale'].default_value[1] = aux_property[1]["value"]
 
     @staticmethod
     def set_tg0_flavor(node_tree, switch_on):
@@ -171,8 +182,8 @@ class DifSpecWeightMult2(DifSpec):
             out_node.location.x -= 185 * 2
             location = (out_node.location.x + 185, out_node.location.y)
 
-            tg0.init(node_tree, location, out_node.outputs["Global"], in_node.inputs["Vector"])
-            tg0.init(node_tree, location, out_node.outputs["Global"], in_node2.inputs["Vector"])
+            tg0.init(node_tree, location, out_node.outputs["Position"], in_node.inputs["Vector"])
+            tg0.init(node_tree, location, out_node.outputs["Position"], in_node2.inputs["Vector"])
 
         elif not switch_on:
 

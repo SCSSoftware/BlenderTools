@@ -16,12 +16,14 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2015: SCS Software
+# Copyright (C) 2015-2019: SCS Software
 
 from io_scs_tools.internals.shaders.eut2.dif import Dif
 
 
 class Grass(Dif):
+    NORMAL_TRANS_NODE = "UpNormal"
+
     @staticmethod
     def get_name():
         """Get name of this shader file with full modules path."""
@@ -38,23 +40,20 @@ class Grass(Dif):
         # init parent
         Dif.init(node_tree)
 
-        out_mat_n = node_tree.nodes[Dif.OUTPUT_NODE]
-        opacity_n = node_tree.nodes[Dif.OPACITY_NODE]
+        geom_n = node_tree.nodes[Dif.GEOM_NODE]
+        lighting_eval_n = node_tree.nodes[Dif.LIGHTING_EVAL_NODE]
 
-        # create links
-        node_tree.links.new(out_mat_n.inputs['Alpha'], opacity_n.outputs[0])
+        # nodes creation
+        normal_trans_n = node_tree.nodes.new("ShaderNodeVectorTransform")
+        normal_trans_n.name = normal_trans_n.label = Grass.NORMAL_TRANS_NODE
+        normal_trans_n.location = (geom_n.location.x, geom_n.location.y - 250)
+        normal_trans_n.vector_type = "NORMAL"
+        normal_trans_n.convert_from = "OBJECT"
+        normal_trans_n.convert_to = "WORLD"
+        normal_trans_n.inputs['Vector'].default_value = (0, 0, 1)  # up normal in object space
 
-    @staticmethod
-    def set_material(node_tree, material):
-        """Set output material for this shader.
+        # links creation
+        node_tree.links.new(lighting_eval_n.inputs['Normal Vector'], normal_trans_n.outputs['Vector'])
 
-        :param node_tree: node tree of current shader
-        :type node_tree: bpy.types.NodeTree
-        :param material: blender material for used in this tree node as output
-        :type material: bpy.types.Material
-        """
-
-        Dif.set_material(node_tree, material)
-
-        material.use_transparency = True
-        material.transparency_method = "Z_TRANSPARENCY"
+        # enable hardcoded flavour
+        Dif.set_alpha_test_flavor(node_tree, True)

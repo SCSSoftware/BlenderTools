@@ -16,7 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2015: SCS Software
+# Copyright (C) 2015-2019: SCS Software
 
 import bpy
 from io_scs_tools.consts import Material as _MAT_consts
@@ -57,13 +57,15 @@ def __create_group__():
     # inputs defining
     detail_setup_g.inputs.new("NodeSocketFloat", "Near Distance")
     detail_setup_g.inputs.new("NodeSocketFloat", "Far Distance")
+    detail_setup_g.inputs.new("NodeSocketFloat", "Scramble Distance")
     input_n = detail_setup_g.nodes.new("NodeGroupInput")
     input_n.location = (start_pos_x, start_pos_y)
 
     # outputs defining
     detail_setup_g.outputs.new("NodeSocketFloat", "Mix Factor")
+    detail_setup_g.outputs.new("NodeSocketFloat", "Scramble Mix Factor")
     output_n = detail_setup_g.nodes.new("NodeGroupOutput")
-    output_n.location = (start_pos_x + pos_x_shift * 5, start_pos_y)
+    output_n.location = (start_pos_x + pos_x_shift * 7, start_pos_y)
 
     # group nodes
     camera_data_n = detail_setup_g.nodes.new("ShaderNodeCameraData")
@@ -72,7 +74,8 @@ def __create_group__():
     equation_nodes = []
 
     for i, name in enumerate(("ZDeptInv", "ZDeptInv+NearDistance", "NearDistance-FarDistance",
-                              "(ZDeptInv+NearDistance)/(NearDistance-FarDistance)")):
+                              "(ZDeptInv+NearDistance)/(NearDistance-FarDistance)", "ZDeptInv/ScrambleDistance",
+                              "1/(ZDeptInv/ScrambleDistance)")):
 
         # node creation
         equation_nodes.append(detail_setup_g.nodes.new("ShaderNodeMath"))
@@ -107,3 +110,20 @@ def __create_group__():
             detail_setup_g.links.new(equation_nodes[i].inputs[1], equation_nodes[i - 1].outputs[0])
 
             detail_setup_g.links.new(output_n.inputs['Mix Factor'], equation_nodes[i].outputs[0])
+
+        elif i == 4:
+
+            equation_nodes[i].operation = "DIVIDE"
+            equation_nodes[i].location.y -= 200
+            detail_setup_g.links.new(equation_nodes[i].inputs[0], camera_data_n.outputs['View Distance'])
+            detail_setup_g.links.new(equation_nodes[i].inputs[1], input_n.outputs['Scramble Distance'])
+
+        elif i == 5:
+
+            equation_nodes[i].operation = "DIVIDE"
+            equation_nodes[i].location.y -= 200
+
+            equation_nodes[i].inputs[0].default_value = 1
+            detail_setup_g.links.new(equation_nodes[i].inputs[1], equation_nodes[i - 1].outputs[0])
+
+            detail_setup_g.links.new(output_n.inputs['Scramble Mix Factor'], equation_nodes[i].outputs[0])

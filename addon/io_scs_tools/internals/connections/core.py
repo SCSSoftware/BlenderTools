@@ -16,7 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2013-2014: SCS Software
+# Copyright (C) 2013-2019: SCS Software
 
 import bpy
 import hashlib
@@ -58,7 +58,7 @@ def init(data_block):
     if MAIN_DICT in data_block:
         lprint("W Custom property on datablock %s will be reset to init value and used for connections storage.", (str(data_block),))
     else:
-        lprint("D Just to inform that init was invoked!")
+        lprint("D Just to inform that connections init was invoked!")
 
     data_block[MAIN_DICT] = {
         CACHE: {
@@ -144,7 +144,7 @@ def update_for_redraw(data_block, selection):
 
     # create a complete list of objects to recalculate connections
     if selection is None:
-        objects_to_check = bpy.context.selected_objects  # this is entry point for selection because only selected objects can be transformed
+        objects_to_check = bpy.context.view_layer.objects.selected.values()  # get selection because only selected objects can be transformed
     else:
         objects_to_check = selection
 
@@ -157,7 +157,7 @@ def update_for_redraw(data_block, selection):
         # if root is selected all of children should be checked too
         for child_obj in obj.children:
 
-            if len(child_obj.children) > 0:
+            if child_obj.children:
 
                 objects_to_check.append(child_obj)
 

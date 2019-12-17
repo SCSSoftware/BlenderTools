@@ -18,7 +18,6 @@
 
 # Copyright (C) 2015: SCS Software
 
-
 from io_scs_tools.internals.shaders.eut2.dif_spec_add_env import DifSpecAddEnv
 
 
@@ -38,12 +37,6 @@ class BuildingAddEnvDay(DifSpecAddEnv):
 
         # init parent
         DifSpecAddEnv.init(node_tree)
-
-        geometry_n = node_tree.nodes[DifSpecAddEnv.GEOM_NODE]
-        refl_tex_n = node_tree.nodes[DifSpecAddEnv.REFL_TEX_NODE]
-
-        # change mapping of reflection texture to View coordinates, it gives better effect for plain surfaces
-        node_tree.links.new(refl_tex_n.inputs['Vector'], geometry_n.outputs['View'])
 
     @staticmethod
     def set_aux5(node_tree, aux_property):

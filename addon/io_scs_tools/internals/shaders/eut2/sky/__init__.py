@@ -16,26 +16,26 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2015: SCS Software
-
+# Copyright (C) 2015-2019: SCS Software
 
 from mathutils import Color
 from io_scs_tools.consts import Mesh as _MESH_consts
+from io_scs_tools.internals.shaders.base import BaseShader
 from io_scs_tools.internals.shaders.flavors import blend_over
-from io_scs_tools.internals.shaders.eut2.std_node_groups import vcolor_input
+from io_scs_tools.internals.shaders.eut2.std_node_groups import vcolor_input_ng
 from io_scs_tools.utils import convert as _convert_utils
+from io_scs_tools.utils import material as _material_utils
 
 
-class Sky:
+class Sky(BaseShader):
     VCOL_GROUP_NODE = "VColorGroup"
-    GEOM_NODE = "Geometry"
-    SEC_GEOM_NODE = "SecGeometry"
+    UV_MAP_NODE = "UVMap"
+    SEC_UV_MAP_NODE = "SecUVMap"
     DIFF_COL_NODE = "DiffuseColor"
     BASE_TEX_NODE = "BaseTex"
     OVER_TEX_NODE = "OverTex"
     MASK_TEX_NODE = "MaskTex"
     BLEND_VAL_NODE = "BlendInput"
-    VCOLOR_SCALE_NODE = "VertexColorScale"
     MASK_TEX_SEP_NODE = "SeparateMask"
     MASK_FACTOR_MIX_NODE = "MaskFactorMix"
     MASK_FACTOR_BLEND_MULT_NODE = "MaskFactorBlendMultiplier"
@@ -43,6 +43,8 @@ class Sky:
     BASE_OVER_A_MIX_NODE = "BaseOverAlphaMix"
     VCOLOR_MULT_NODE = "VertexColorMultiplier"
     DIFF_MULT_NODE = "DiffuseMultiplier"
+    ALPHA_INV_NODE = "AlphaInv"
+    OUT_SHADER_NODE = "OutShader"
     OUTPUT_NODE = "Output"
 
     @staticmethod
@@ -67,44 +69,40 @@ class Sky:
         vcol_group_n = node_tree.nodes.new("ShaderNodeGroup")
         vcol_group_n.name = vcol_group_n.label = Sky.VCOL_GROUP_NODE
         vcol_group_n.location = (start_pos_x - pos_x_shift, start_pos_y + 1650)
-        vcol_group_n.node_tree = vcolor_input.get_node_group()
+        vcol_group_n.node_tree = vcolor_input_ng.get_node_group()
 
-        geometry_n = node_tree.nodes.new("ShaderNodeGeometry")
-        geometry_n.name = geometry_n.label = Sky.GEOM_NODE
-        geometry_n.location = (start_pos_x - pos_x_shift, start_pos_y + 1500)
-        geometry_n.uv_layer = _MESH_consts.none_uv
+        uv_map_n = node_tree.nodes.new("ShaderNodeUVMap")
+        uv_map_n.name = uv_map_n.label = Sky.UV_MAP_NODE
+        uv_map_n.location = (start_pos_x - pos_x_shift, start_pos_y + 1500)
+        uv_map_n.uv_map = _MESH_consts.none_uv
 
-        sec_geom_n = node_tree.nodes.new("ShaderNodeGeometry")
-        sec_geom_n.name = sec_geom_n.label = Sky.SEC_GEOM_NODE
-        sec_geom_n.location = (start_pos_x - pos_x_shift, start_pos_y + 900)
-        sec_geom_n.uv_layer = _MESH_consts.none_uv
+        sec_uv_map_n = node_tree.nodes.new("ShaderNodeUVMap")
+        sec_uv_map_n.name = sec_uv_map_n.label = Sky.SEC_UV_MAP_NODE
+        sec_uv_map_n.location = (start_pos_x - pos_x_shift, start_pos_y + 900)
+        sec_uv_map_n.uv_map = _MESH_consts.none_uv
 
         diff_col_n = node_tree.nodes.new("ShaderNodeRGB")
         diff_col_n.name = diff_col_n.label = Sky.DIFF_COL_NODE
         diff_col_n.location = (start_pos_x + pos_x_shift, start_pos_y + 1700)
 
-        base_tex_n = node_tree.nodes.new("ShaderNodeTexture")
+        base_tex_n = node_tree.nodes.new("ShaderNodeTexImage")
         base_tex_n.name = base_tex_n.label = Sky.BASE_TEX_NODE
         base_tex_n.location = (start_pos_x + pos_x_shift, start_pos_y + 1500)
+        base_tex_n.width = 140
 
-        over_tex_n = node_tree.nodes.new("ShaderNodeTexture")
+        over_tex_n = node_tree.nodes.new("ShaderNodeTexImage")
         over_tex_n.name = over_tex_n.label = Sky.OVER_TEX_NODE
         over_tex_n.location = (start_pos_x + pos_x_shift, start_pos_y + 1200)
+        over_tex_n.width = 140
 
-        mask_tex_n = node_tree.nodes.new("ShaderNodeTexture")
+        mask_tex_n = node_tree.nodes.new("ShaderNodeTexImage")
         mask_tex_n.name = mask_tex_n.label = Sky.MASK_TEX_NODE
         mask_tex_n.location = (start_pos_x + pos_x_shift, start_pos_y + 900)
+        mask_tex_n.width = 140
 
         blend_input_n = node_tree.nodes.new("ShaderNodeValue")
         blend_input_n.name = blend_input_n.label = Sky.BLEND_VAL_NODE
         blend_input_n.location = (start_pos_x + pos_x_shift, start_pos_y + 600)
-
-        vcol_scale_n = node_tree.nodes.new("ShaderNodeMixRGB")
-        vcol_scale_n.name = vcol_scale_n.label = Sky.VCOLOR_SCALE_NODE
-        vcol_scale_n.location = (start_pos_x + pos_x_shift * 3, start_pos_y + 1600)
-        vcol_scale_n.blend_type = "MULTIPLY"
-        vcol_scale_n.inputs['Fac'].default_value = 1
-        vcol_scale_n.inputs['Color2'].default_value = (2,) * 4
 
         mask_tex_sep_n = node_tree.nodes.new("ShaderNodeSeparateRGB")
         mask_tex_sep_n.name = mask_tex_sep_n.label = Sky.MASK_TEX_SEP_NODE
@@ -134,33 +132,41 @@ class Sky:
         base_over_a_mix_n.location = (start_pos_x + pos_x_shift * 6, start_pos_y + 1200)
         base_over_a_mix_n.blend_type = "MIX"
 
-        vcol_mult_n = node_tree.nodes.new("ShaderNodeMixRGB")
-        vcol_mult_n.name = Sky.VCOLOR_MULT_NODE
-        vcol_mult_n.label = Sky.VCOLOR_MULT_NODE
+        vcol_mult_n = node_tree.nodes.new("ShaderNodeVectorMath")
+        vcol_mult_n.name = vcol_mult_n.label = Sky.VCOLOR_MULT_NODE
         vcol_mult_n.location = (start_pos_x + pos_x_shift * 7, start_pos_y + 1500)
-        vcol_mult_n.blend_type = "MULTIPLY"
-        vcol_mult_n.inputs['Fac'].default_value = 1
+        vcol_mult_n.operation = "MULTIPLY"
 
-        diff_mult_n = node_tree.nodes.new("ShaderNodeMixRGB")
-        diff_mult_n.name = Sky.DIFF_MULT_NODE
-        diff_mult_n.label = Sky.DIFF_MULT_NODE
+        diff_mult_n = node_tree.nodes.new("ShaderNodeVectorMath")
+        diff_mult_n.name = diff_mult_n.label = Sky.DIFF_MULT_NODE
         diff_mult_n.location = (start_pos_x + pos_x_shift * 8, start_pos_y + 1650)
-        diff_mult_n.blend_type = "MULTIPLY"
-        diff_mult_n.inputs['Fac'].default_value = 1
-        diff_mult_n.inputs['Color2'].default_value = (0, 0, 0, 1)
+        diff_mult_n.operation = "MULTIPLY"
+        diff_mult_n.inputs[1].default_value = (0, 0, 0)
 
-        output_n = node_tree.nodes.new("ShaderNodeOutput")
-        output_n.name = Sky.OUTPUT_NODE
-        output_n.label = Sky.OUTPUT_NODE
-        output_n.location = (start_pos_x + + pos_x_shift * 10, start_pos_y + 1500)
+        alpha_inv_n = node_tree.nodes.new("ShaderNodeMath")
+        alpha_inv_n.name = alpha_inv_n.label = Sky.ALPHA_INV_NODE
+        alpha_inv_n.location = (start_pos_x + pos_x_shift * 9, 1300)
+        alpha_inv_n.operation = "SUBTRACT"
+        alpha_inv_n.inputs[0].default_value = 0.999999  # TODO: change back to 1.0 after bug is fixed: https://developer.blender.org/T71426
+        alpha_inv_n.inputs[1].default_value = 1.0
+        alpha_inv_n.use_clamp = True
+
+        out_shader_node = node_tree.nodes.new("ShaderNodeEeveeSpecular")
+        out_shader_node.name = out_shader_node.label = Sky.OUT_SHADER_NODE
+        out_shader_node.location = (start_pos_x + pos_x_shift * 10, 1500)
+        out_shader_node.inputs["Base Color"].default_value = (0.0,) * 4
+        out_shader_node.inputs["Specular"].default_value = (0.0,) * 4
+
+        output_n = node_tree.nodes.new("ShaderNodeOutputMaterial")
+        output_n.name = output_n.label = Sky.OUTPUT_NODE
+        output_n.location = (start_pos_x + + pos_x_shift * 11, start_pos_y + 1500)
 
         # links creation
-        node_tree.links.new(base_tex_n.inputs['Vector'], geometry_n.outputs['UV'])
-        node_tree.links.new(over_tex_n.inputs['Vector'], geometry_n.outputs['UV'])
-        node_tree.links.new(mask_tex_n.inputs['Vector'], sec_geom_n.outputs['UV'])
+        node_tree.links.new(base_tex_n.inputs['Vector'], uv_map_n.outputs['UV'])
+        node_tree.links.new(over_tex_n.inputs['Vector'], uv_map_n.outputs['UV'])
+        node_tree.links.new(mask_tex_n.inputs['Vector'], sec_uv_map_n.outputs['UV'])
 
         # pass 1
-        node_tree.links.new(vcol_scale_n.inputs['Color1'], vcol_group_n.outputs['Vertex Color'])
         node_tree.links.new(mask_tex_sep_n.inputs['Image'], mask_tex_n.outputs['Color'])
 
         # pass 2
@@ -176,31 +182,41 @@ class Sky:
         node_tree.links.new(base_over_mix_n.inputs['Color2'], over_tex_n.outputs['Color'])
 
         node_tree.links.new(base_over_a_mix_n.inputs['Fac'], mask_factor_blend_mult_n.outputs['Color'])
-        node_tree.links.new(base_over_a_mix_n.inputs['Color1'], base_tex_n.outputs['Value'])
-        node_tree.links.new(base_over_a_mix_n.inputs['Color2'], over_tex_n.outputs['Value'])
+        node_tree.links.new(base_over_a_mix_n.inputs['Color1'], base_tex_n.outputs['Alpha'])
+        node_tree.links.new(base_over_a_mix_n.inputs['Color2'], over_tex_n.outputs['Alpha'])
 
         # pass 5
-        node_tree.links.new(vcol_mult_n.inputs['Color1'], vcol_scale_n.outputs['Color'])
-        node_tree.links.new(vcol_mult_n.inputs['Color2'], base_over_mix_n.outputs['Color'])
+        node_tree.links.new(vcol_mult_n.inputs[0], vcol_group_n.outputs['Vertex Color'])
+        node_tree.links.new(vcol_mult_n.inputs[1], base_over_mix_n.outputs['Color'])
 
         # pass 6
-        node_tree.links.new(diff_mult_n.inputs['Color1'], diff_col_n.outputs['Color'])
-        node_tree.links.new(diff_mult_n.inputs['Color2'], vcol_mult_n.outputs['Color'])
+        node_tree.links.new(diff_mult_n.inputs[0], diff_col_n.outputs['Color'])
+        node_tree.links.new(diff_mult_n.inputs[1], vcol_mult_n.outputs[0])
+
+        # pass 7
+        node_tree.links.new(out_shader_node.inputs['Emissive Color'], diff_mult_n.outputs[0])
+        node_tree.links.new(out_shader_node.inputs['Transparency'], alpha_inv_n.outputs['Value'])
+
+        node_tree.links.new(alpha_inv_n.inputs[1], base_over_a_mix_n.outputs['Color'])
 
         # output pass
-        node_tree.links.new(output_n.inputs['Color'], diff_mult_n.outputs['Color'])
+        node_tree.links.new(output_n.inputs['Surface'], out_shader_node.outputs['BSDF'])
 
     @staticmethod
-    def set_material(node_tree, material):
-        """Set output material for this shader.
+    def finalize(node_tree, material):
+        """Finalize node tree and material settings. Should be called as last.
 
-        :param node_tree: node tree of current shader
+        :param node_tree: node tree on which this shader should be finalized
         :type node_tree: bpy.types.NodeTree
-        :param material: blender material for used in this tree node as output
+        :param material: material used for this shader
         :type material: bpy.types.Material
         """
 
-        pass  # we don't use any material as no shading is applied
+        material.use_backface_culling = True
+        material.blend_method = "OPAQUE"
+
+        if blend_over.is_set(node_tree):
+            material.blend_method = "BLEND"
 
     @staticmethod
     def set_diffuse(node_tree, color):
@@ -217,16 +233,27 @@ class Sky:
         node_tree.nodes[Sky.DIFF_COL_NODE].outputs['Color'].default_value = color
 
     @staticmethod
-    def set_base_texture(node_tree, texture):
+    def set_base_texture(node_tree, image):
         """Set base texture to shader.
 
         :param node_tree: node tree of current shader
         :type node_tree: bpy.types.NodeTree
-        :param texture: texture which should be assignet to base texture node
-        :type texture: bpy.types.Texture
+        :param image: texture image which should be assignet to base texture node
+        :type image: bpy.types.Image
         """
 
-        node_tree.nodes[Sky.BASE_TEX_NODE].texture = texture
+        node_tree.nodes[Sky.BASE_TEX_NODE].image = image
+
+    @staticmethod
+    def set_base_texture_settings(node_tree, settings):
+        """Set base texture settings to shader.
+
+        :param node_tree: node tree of current shader
+        :type node_tree: bpy.types.NodeTree
+        :param settings: binary string of TOBJ settings gotten from tobj import
+        :type settings: str
+        """
+        _material_utils.set_texture_settings_to_node(node_tree.nodes[Sky.BASE_TEX_NODE], settings)
 
     @staticmethod
     def set_base_uv(node_tree, uv_layer):
@@ -241,19 +268,30 @@ class Sky:
         if uv_layer is None or uv_layer == "":
             uv_layer = _MESH_consts.none_uv
 
-        node_tree.nodes[Sky.GEOM_NODE].uv_layer = uv_layer
+        node_tree.nodes[Sky.UV_MAP_NODE].uv_map = uv_layer
 
     @staticmethod
-    def set_over_texture(node_tree, texture):
+    def set_over_texture(node_tree, image):
         """Set over texture to shader.
 
         :param node_tree: node tree of current shader
         :type node_tree: bpy.types.NodeTree
-        :param texture: texture which should be assigned to over texture node
-        :type texture: bpy.types.Texture
+        :param image: texture image which should be assigned to over texture node
+        :type image: bpy.types.Image
         """
 
-        node_tree.nodes[Sky.OVER_TEX_NODE].texture = texture
+        node_tree.nodes[Sky.OVER_TEX_NODE].image = image
+
+    @staticmethod
+    def set_over_texture_settings(node_tree, settings):
+        """Set over texture settings to shader.
+
+        :param node_tree: node tree of current shader
+        :type node_tree: bpy.types.NodeTree
+        :param settings: binary string of TOBJ settings gotten from tobj import
+        :type settings: str
+        """
+        _material_utils.set_texture_settings_to_node(node_tree.nodes[Sky.OVER_TEX_NODE], settings)
 
     @staticmethod
     def set_over_uv(node_tree, uv_layer):
@@ -268,16 +306,27 @@ class Sky:
         Sky.set_base_uv(node_tree, uv_layer)
 
     @staticmethod
-    def set_mask_texture(node_tree, texture):
+    def set_mask_texture(node_tree, image):
         """Set mask texture to shader.
 
         :param node_tree: node tree of current shader
         :type node_tree: bpy.types.NodeTree
-        :param texture: texture which should be assignet to mask texture node
-        :type texture: bpy.types.Texture
+        :param image: texture image which should be assignet to mask texture node
+        :type image: bpy.types.Image
         """
 
-        node_tree.nodes[Sky.MASK_TEX_NODE].texture = texture
+        node_tree.nodes[Sky.MASK_TEX_NODE].image = image
+
+    @staticmethod
+    def set_mask_texture_settings(node_tree, settings):
+        """Set mask texture settings to shader.
+
+        :param node_tree: node tree of current shader
+        :type node_tree: bpy.types.NodeTree
+        :param settings: binary string of TOBJ settings gotten from tobj import
+        :type settings: str
+        """
+        _material_utils.set_texture_settings_to_node(node_tree.nodes[Sky.MASK_TEX_NODE], settings)
 
     @staticmethod
     def set_mask_uv(node_tree, uv_layer):
@@ -292,7 +341,7 @@ class Sky:
         if uv_layer is None or uv_layer == "":
             uv_layer = _MESH_consts.none_uv
 
-        node_tree.nodes[Sky.SEC_GEOM_NODE].uv_layer = uv_layer
+        node_tree.nodes[Sky.SEC_UV_MAP_NODE].uv_map = uv_layer
 
     @staticmethod
     def set_aux0(node_tree, aux_property):
@@ -316,10 +365,7 @@ class Sky:
         :type switch_on: bool
         """
 
-        out_node = node_tree.nodes[Sky.OUTPUT_NODE]
-        in_node = node_tree.nodes[Sky.BASE_OVER_A_MIX_NODE]
-
         if switch_on:
-            blend_over.init(node_tree, in_node.outputs['Color'], out_node.inputs['Alpha'])
+            blend_over.init(node_tree)
         else:
             blend_over.delete(node_tree)

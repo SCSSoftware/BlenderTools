@@ -67,7 +67,9 @@ def init(node_tree, location, mix_factor_from, color_from, color_to):
 
     node_tree.links.new(color_to, awhite_mix_n.outputs['Color'])
 
-    node_tree[FLAVOR_ID] = True
+    # FIXME: move to old system after: https://developer.blender.org/T68406 is resolved
+    flavor_frame = node_tree.nodes.new(type="NodeFrame")
+    flavor_frame.name = flavor_frame.label = FLAVOR_ID
 
 
 def delete(node_tree):
@@ -77,9 +79,11 @@ def delete(node_tree):
     :type node_tree: bpy.types.NodeTree
     """
 
-    if FLAVOR_ID in node_tree:
+    if _AWHITE_MIX_NODE in node_tree.nodes:
         node_tree.nodes.remove(node_tree.nodes[_AWHITE_MIX_NODE])
-        del node_tree[FLAVOR_ID]
+
+    if FLAVOR_ID in node_tree.nodes:
+        node_tree.nodes.remove(node_tree.nodes[FLAVOR_ID])
 
 
 def is_set(node_tree):
@@ -90,7 +94,7 @@ def is_set(node_tree):
     :return: True if flavor exists; False otherwise
     :rtype: bool
     """
-    return FLAVOR_ID in node_tree and node_tree[FLAVOR_ID]
+    return FLAVOR_ID in node_tree.nodes
 
 
 def get_out_socket(node_tree):

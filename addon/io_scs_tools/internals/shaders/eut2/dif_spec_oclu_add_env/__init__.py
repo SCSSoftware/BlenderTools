@@ -16,8 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2015: SCS Software
-
+# Copyright (C) 2015-2019: SCS Software
 
 from io_scs_tools.internals.shaders.eut2.dif_spec_oclu import DifSpecOclu
 from io_scs_tools.internals.shaders.eut2.std_passes.add_env import StdAddEnv
@@ -43,6 +42,12 @@ class DifSpecOcluAddEnv(DifSpecOclu, StdAddEnv):
         StdAddEnv.add(node_tree,
                       DifSpecOclu.GEOM_NODE,
                       node_tree.nodes[DifSpecOclu.SPEC_COL_NODE].outputs['Color'],
-                      node_tree.nodes[DifSpecOclu.BASE_TEX_NODE].outputs['Value'],
-                      node_tree.nodes[DifSpecOclu.OUT_MAT_NODE].outputs['Normal'],
+                      node_tree.nodes[DifSpecOclu.BASE_TEX_NODE].outputs['Alpha'],
+                      node_tree.nodes[DifSpecOclu.LIGHTING_EVAL_NODE].outputs['Normal'],
                       node_tree.nodes[DifSpecOclu.COMPOSE_LIGHTING_NODE].inputs['Env Color'])
+
+        oclu_sep_n = node_tree.nodes[DifSpecOclu.OCLU_SEPARATE_RGB_NODE]
+        add_env_gn = node_tree.nodes[StdAddEnv.ADD_ENV_GROUP_NODE]
+
+        # links creation
+        node_tree.links.new(add_env_gn.inputs['Strength Multiplier'], oclu_sep_n.outputs['R'])

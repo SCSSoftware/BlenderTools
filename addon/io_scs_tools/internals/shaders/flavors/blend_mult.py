@@ -16,76 +16,41 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2015: SCS Software
+# Copyright (C) 2015-2019: SCS Software
 
+from io_scs_tools.internals.shaders.std_node_groups import blend_mult_ng
 
 FLAVOR_ID = "blend_mult"
 
-_HUE_SAT_NODE = "BlendMultHueSat"
-_ALPHA_POW_NODE = "BlendMultAlphaPower"
+_BLEND_MULT_GN = "BlendMultPass"
 
 
-def __create_nodes__(node_tree):
-    """Create node for alpha to white mixing.
+def init(node_tree, location, shader_from, shader_to):
+    """Initialize blend mult.
 
-    :param node_tree: node tree on which this flavor will be used
+    :param node_tree: node tree on which blend over will be used
     :type node_tree: bpy.types.NodeTree
-    :return: alpha to white mixing node
-    :rtype: (bpy.types.Node, bpy.types.Node)
+    :param location: location where blend pass node should be created
+    :type location: tuple(int, int)
+    :param shader_from: node socket from which blend pass should take the shader result
+    :type shader_from: bpy.types.NodeSocket
+    :param shader_to: node socket to which result of blend pass should be sent
+    :type shader_to: bpy.types.NodeSocket
     """
 
-    hue_sat_mix_n = node_tree.nodes.new("ShaderNodeHueSaturation")
-    hue_sat_mix_n.name = hue_sat_mix_n.label = _HUE_SAT_NODE
-    hue_sat_mix_n.inputs['Hue'].default_value = 0.5
-    hue_sat_mix_n.inputs['Saturation'].default_value = 1.5
-    hue_sat_mix_n.inputs['Value'].default_value = 0.025
-    hue_sat_mix_n.inputs['Fac'].default_value = 1.0
+    # node creation
+    blend_mult_n = node_tree.nodes.new("ShaderNodeGroup")
+    blend_mult_n.name = blend_mult_n.label = _BLEND_MULT_GN
+    blend_mult_n.location = location
+    blend_mult_n.node_tree = blend_mult_ng.get_node_group()
 
-    alpha_pow_n = node_tree.nodes.new("ShaderNodeMath")
-    alpha_pow_n.name = alpha_pow_n.label = _ALPHA_POW_NODE
-    alpha_pow_n.operation = "POWER"
-    alpha_pow_n.inputs[1].default_value = 1.5
+    # link creation
+    node_tree.links.new(blend_mult_n.inputs['Shader'], shader_from)
+    node_tree.links.new(shader_to, blend_mult_n.outputs['Shader'])
 
-    return hue_sat_mix_n, alpha_pow_n
-
-
-def init(node_tree, location, alpha_from, alpha_to, color_from, color_to):
-    """Initialize blend multiplication flavor.
-
-    NOTE: this flavor implementation is fake aproximation to be
-    used in eut2.unlit.vcol.tex shader
-
-    :param node_tree: node tree on which this flavor will be used
-    :type node_tree: bpy.types.NodeTree
-    :param location: position in node tree
-    :type location: (int, int)
-    :param alpha_from: node socket from which alpha should be taken
-    :type alpha_from: bpy.types.NodeSocket
-    :param alpha_to: node socket to which alpha should be send
-    :type alpha_to: bpy.types.NodeSocket
-    :param color_from: node socket from which color should be applierd
-    :type color_from: bpy.types.NodeSocket
-    :param color_to: node socket to which result of this flavor should be send
-    :type color_to: bpy.types.NodeSocket
-    """
-
-    if not is_set(node_tree):
-        (hue_sat_mix_n, alpha_pow_n) = __create_nodes__(node_tree)
-        hue_sat_mix_n.location = location
-        alpha_pow_n.location = location
-        alpha_pow_n.location.y -= 200
-    else:
-        hue_sat_mix_n = node_tree.nodes[_HUE_SAT_NODE]
-        alpha_pow_n = node_tree.nodes[_ALPHA_POW_NODE]
-
-    # links creation
-    node_tree.links.new(hue_sat_mix_n.inputs['Color'], color_from)
-    node_tree.links.new(alpha_pow_n.inputs[0], alpha_from)
-
-    node_tree.links.new(color_to, hue_sat_mix_n.outputs['Color'])
-    node_tree.links.new(alpha_to, alpha_pow_n.outputs[0])
-
-    node_tree[FLAVOR_ID] = True
+    # FIXME: move to old system after: https://developer.blender.org/T68406 is resolved
+    flavor_frame = node_tree.nodes.new(type="NodeFrame")
+    flavor_frame.name = flavor_frame.label = FLAVOR_ID
 
 
 def delete(node_tree):
@@ -95,10 +60,11 @@ def delete(node_tree):
     :type node_tree: bpy.types.NodeTree
     """
 
-    if FLAVOR_ID in node_tree:
-        node_tree.nodes.remove(node_tree.nodes[_HUE_SAT_NODE])
-        node_tree.nodes.remove(node_tree.nodes[_ALPHA_POW_NODE])
-        del node_tree[FLAVOR_ID]
+    if _BLEND_MULT_GN in node_tree.nodes:
+        node_tree.nodes.remove(node_tree.nodes[_BLEND_MULT_GN])
+
+    if FLAVOR_ID in node_tree.nodes:
+        node_tree.nodes.remove(node_tree.nodes[FLAVOR_ID])
 
 
 def is_set(node_tree):
@@ -109,4 +75,4 @@ def is_set(node_tree):
     :return: True if flavor exists; False otherwise
     :rtype: bool
     """
-    return FLAVOR_ID in node_tree and node_tree[FLAVOR_ID]
+    return FLAVOR_ID in node_tree.nodes

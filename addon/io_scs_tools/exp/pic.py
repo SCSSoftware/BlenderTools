@@ -97,7 +97,7 @@ def _fill_piece_sections(convex_coll_locators, export_scale):
             for vert in verts:
                 # scs_position = Matrix.Scale(scs_globals.export_scale, 4) * io_utils.scs_to_blend_matrix().inverted() * mat_world * position ##
                 # POSITION
-                scs_position = Matrix.Scale(export_scale, 4) * _convert_utils.scs_to_blend_matrix().inverted() * Vector(vert)  # POSITION
+                scs_position = Matrix.Scale(export_scale, 4) @ _convert_utils.scs_to_blend_matrix().inverted() @ Vector(vert)  # POSITION
                 vector_verts.append(Vector(scs_position))
             section.sections.append(_pix_container.make_stream_section(vector_verts, "_POSITION", ()))
 
@@ -166,25 +166,25 @@ def _make_common_part(item, index, col_type):
 
     if not item.scs_props.locator_collider_centered:
         if item.scs_props.locator_collider_type == 'Box':
-            offset_matrix = (item.matrix_world *
-                             Matrix.Translation((0.0, -item.scs_props.locator_collider_box_y / 2, 0.0)) *
-                             (Matrix.Scale(item.scs_props.locator_collider_box_x, 4, (1.0, 0.0, 0.0)) *
-                              Matrix.Scale(item.scs_props.locator_collider_box_y, 4, (0.0, 1.0, 0.0)) *
+            offset_matrix = (item.matrix_world @
+                             Matrix.Translation((0.0, -item.scs_props.locator_collider_box_y / 2, 0.0)) @
+                             (Matrix.Scale(item.scs_props.locator_collider_box_x, 4, (1.0, 0.0, 0.0)) @
+                              Matrix.Scale(item.scs_props.locator_collider_box_y, 4, (0.0, 1.0, 0.0)) @
                               Matrix.Scale(item.scs_props.locator_collider_box_z, 4, (0.0, 0.0, 1.0))))
         elif item.scs_props.locator_collider_type == 'Sphere':
-            offset_matrix = (item.matrix_world *
-                             Matrix.Translation((0.0, -item.scs_props.locator_collider_dia / 2, 0.0)) *
+            offset_matrix = (item.matrix_world @
+                             Matrix.Translation((0.0, -item.scs_props.locator_collider_dia / 2, 0.0)) @
                              Matrix.Scale(item.scs_props.locator_collider_dia, 4))
         elif item.scs_props.locator_collider_type in ('Capsule', 'Cylinder'):
-            offset_matrix = (item.matrix_world *
-                             Matrix.Translation((0.0, -item.scs_props.locator_collider_len / 2, 0.0)) *
+            offset_matrix = (item.matrix_world @
+                             Matrix.Translation((0.0, -item.scs_props.locator_collider_len / 2, 0.0)) @
                              Matrix.Scale(item.scs_props.locator_collider_dia, 4))
         else:
             offset_matrix = item.matrix_world
 
-        loc, qua, sca = _convert_utils.get_scs_transformation_components(scs_root.matrix_world.inverted() * offset_matrix)
+        loc, qua, sca = _convert_utils.get_scs_transformation_components(scs_root.matrix_world.inverted() @ offset_matrix)
     else:
-        loc, qua, sca = _convert_utils.get_scs_transformation_components(scs_root.matrix_world.inverted() * item.matrix_world)
+        loc, qua, sca = _convert_utils.get_scs_transformation_components(scs_root.matrix_world.inverted() @ item.matrix_world)
 
     section = _SectionData("Locator")
     section.props.append(("Name", _name_utils.tokenize_name(item.name)))

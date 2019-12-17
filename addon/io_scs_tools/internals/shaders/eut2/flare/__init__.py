@@ -16,8 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2015: SCS Software
-
+# Copyright (C) 2015-2019: SCS Software
 
 from io_scs_tools.internals.shaders.eut2.unlit_vcol_tex import UnlitVcolTex
 
@@ -41,18 +40,3 @@ class Flare(UnlitVcolTex):
 
         # enable hardcoded flavors
         UnlitVcolTex.set_blend_add_flavor(node_tree, True)
-
-    @staticmethod
-    def set_material(node_tree, material):
-        """Set output material for this shader.
-
-        :param node_tree: node tree of current shader
-        :type node_tree: bpy.types.NodeTree
-        :param material: blender material for used in this tree node as output
-        :type material: bpy.types.Material
-        """
-
-        UnlitVcolTex.set_material(node_tree, material)
-
-        material.use_transparency = True
-        material.transparency_method = "MASK"

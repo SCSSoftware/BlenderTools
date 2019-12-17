@@ -16,7 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2013-2014: SCS Software
+# Copyright (C) 2013-2019: SCS Software
 
 import bpy
 import console_python
@@ -34,19 +34,18 @@ def enable(mode="Normal"):
     if _callback_handle:
         disable()
 
-    if mode == "Normal":
+    # no open gl in background mode, thus ignore open gl draw callbacks
+    if bpy.app.background:
+        return
 
-        handle_pixel = bpy.types.SpaceView3D.draw_handler_add(_gl_core.draw_custom_2d_elements, (), 'WINDOW', 'POST_PIXEL')
-        handle_pre_view = bpy.types.SpaceView3D.draw_handler_add(_gl_core.draw_custom_3d_elements, (mode,), 'WINDOW', 'PRE_VIEW')
-        handle_post_view = bpy.types.SpaceView3D.draw_handler_add(_gl_core.disable_depth_test, (), 'WINDOW', 'POST_VIEW')
+    # fill buffers when initiated
+    if hasattr(bpy.context, "visible_objects"):
+        _gl_core.fill_buffers(bpy.context.visible_objects)
 
-    else:  # X-ray mode
+    handle_post_pixel = bpy.types.SpaceView3D.draw_handler_add(_gl_core.draw_custom_2d_elements, (), 'WINDOW', 'POST_PIXEL')
+    handle_post_view = bpy.types.SpaceView3D.draw_handler_add(_gl_core.draw_custom_3d_elements, (mode,), 'WINDOW', 'POST_VIEW')
 
-        handle_pixel = bpy.types.SpaceView3D.draw_handler_add(_gl_core.draw_custom_2d_elements, (), 'WINDOW', 'POST_PIXEL')
-        handle_pre_view = None
-        handle_post_view = bpy.types.SpaceView3D.draw_handler_add(_gl_core.draw_custom_3d_elements, (mode,), 'WINDOW', 'POST_VIEW')
-
-    _callback_handle[:] = handle_pixel, handle_pre_view, handle_post_view
+    _callback_handle[:] = handle_post_pixel, handle_post_view
 
     console_python.execute.hooks.append((_view3d_utils.tag_redraw_all_view3d, ()))
 
@@ -61,11 +60,12 @@ def disable():
 
     console_python.execute.hooks.remove((_view3d_utils.tag_redraw_all_view3d, ()))
 
-    handle_pixel, handle_pre_view, handle_post_view = _callback_handle
+    handle_post_pixel, handle_post_view = _callback_handle
 
-    bpy.types.SpaceView3D.draw_handler_remove(handle_pixel, 'WINDOW')
-    if handle_pre_view:
-        bpy.types.SpaceView3D.draw_handler_remove(handle_pre_view, 'WINDOW')
+    bpy.types.SpaceView3D.draw_handler_remove(handle_post_pixel, 'WINDOW')
     bpy.types.SpaceView3D.draw_handler_remove(handle_post_view, 'WINDOW')
 
     _callback_handle[:] = []
+
+    # clear buffers
+    _gl_core.fill_buffers([])

@@ -16,7 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2013-2014: SCS Software
+# Copyright (C) 2013-2019: SCS Software
 
 import bpy
 from bpy.props import StringProperty, FloatProperty
@@ -27,14 +27,14 @@ class MeshSCSTools(bpy.types.PropertyGroup):
     SCS Tools Mesh Variables - ...Mesh.scs_props...
     :return:
     """
-    locator_preview_model_path = StringProperty(
+    locator_preview_model_path: StringProperty(
         name="Preview Model",
         description="Preview model filepath",
         default="",
         subtype="FILE_PATH",
         # subtype='NONE',
     )
-    vertex_color_multiplier = FloatProperty(
+    vertex_color_multiplier: FloatProperty(
         name="Vertex Color Multiplier",
         description="All of the vertices will have their color multiplied for this factor upon export.",
         default=1,
@@ -42,3 +42,18 @@ class MeshSCSTools(bpy.types.PropertyGroup):
         max=10,
         step=0.1
     )
+
+
+classes = (
+    MeshSCSTools,
+)
+
+
+def register():
+    for cls in classes:
+        bpy.utils.register_class(cls)
+
+
+def unregister():
+    for cls in classes:
+        bpy.utils.unregister_class(cls)

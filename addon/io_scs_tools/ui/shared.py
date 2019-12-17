@@ -16,7 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2013-2014: SCS Software
+# Copyright (C) 2013-2019: SCS Software
 
 import bpy
 from io_scs_tools.consts import Icons as _ICONS_consts
@@ -32,90 +32,97 @@ class HeaderIconPanel:
     Holds the function for drawing icon in header section of Panel
     """
 
+    is_popover = None  # predefined Blender variable to avoid warnings in PyCharm
+
     def draw_header(self, context):
-        self.layout.label('', icon_value=get_icon(_ICON_TYPES.scs_logo))
+        if not self.is_popover:
+            self.layout.label(text="", icon_value=get_icon(_ICON_TYPES.scs_logo))
 
 
-def draw_scs_looks_panel(layout, scene, active_object, scs_root_object):
+class SCS_TOOLS_UL_ObjectLookSlots(bpy.types.UIList):
+    """
+    Draw look item slot within SCS Looks list
+    """
+
+    def draw_item(self, context, layout, data, item, icon, active_data, active_property, index):
+        layout.prop(item, "name", text="", emboss=False, icon_value=icon)
+
+        # DEBUG
+        if int(_get_scs_globals().dump_level) > 2:
+            layout.label(text="DEBUG - id: " + str(item.id))
+
+
+def draw_scs_looks_panel(layout, active_object, scs_root_object, without_box=False):
     """Creates 'SCS Looks' settings sub-panel.
 
     :param layout: Blender UI Layout to draw to
     :type layout: bpy.types.UILayout
-    :param scene: Blender Scene
-    :type scene: bpy.types.Scene
     :param active_object: active object
     :type active_object: bpy.types.Object
     :param scs_root_object: SCS Root Object
     :type scs_root_object: bpy.types.Object
+    :param without_box: draw without extra box layout?
+    :type without_box: bool
     """
 
     layout_column = layout.column(align=True)
-    layout_box = layout_column.box()
 
-    if scene.scs_props.scs_look_panel_expand:
-
-        # HEADER (COLLAPSIBLE - OPENED)
-        row = layout_box.row()
-        row.prop(scene.scs_props, 'scs_look_panel_expand', text="SCS Looks:", icon='TRIA_DOWN', icon_only=True, emboss=False)
-        row.prop(scene.scs_props, 'scs_look_panel_expand', text=" ", icon='NONE', icon_only=True, emboss=False)
-
-        layout_box = layout_column.box()  # body box
-
-        if len(_object_utils.gather_scs_roots(bpy.context.selected_objects)) > 1 and active_object is not scs_root_object:
-
-            col = layout_box.box().column(align=True)
-            row = col.row()
-            row.label("WARNING", icon="ERROR")
-            row = col.row()
-            row.label("Can not edit looks! Selection has multiple game objects.")
-
-        else:  # more roots or active object is root object
-
-            row = layout_box.row()
-            row.template_list(
-                'SCSObjectLookSlots',
-                list_id="",
-                dataptr=scs_root_object,
-                propname="scs_object_look_inventory",
-                active_dataptr=scs_root_object.scs_props,
-                active_propname="active_scs_look",
-                rows=3,
-                maxrows=5,
-                type='DEFAULT',
-                columns=9
-            )
-
-            # LIST BUTTONS
-            col = row.column(align=True)
-            col.operator('object.add_scs_look', text="", icon='ZOOMIN')
-            col.operator('object.remove_scs_look', text="", icon='ZOOMOUT')
-
+    if without_box:
+        layout_box = layout_column
     else:
+        layout_box = layout_column.box()
+
+    if len(_object_utils.gather_scs_roots(bpy.context.selected_objects)) > 1 and active_object is not scs_root_object:
+
+        warning_box = layout_box.column(align=True)
+
+        header = warning_box.box()
+        header.label(text="WARNING", icon='ERROR')
+        body = warning_box.box()
+        col = body.column(align=True)
+        col.label(text="Can not edit looks!")
+        col.label(text="Selection has multiple game objects.")
+
+    else:  # more roots or active object is root object
+
         row = layout_box.row()
-        row.prop(scene.scs_props, 'scs_look_panel_expand', text="SCS Looks:", icon='TRIA_RIGHT', icon_only=True, emboss=False)
-        row.prop(scene.scs_props, 'scs_look_panel_expand', text=" ", icon='NONE', icon_only=True, emboss=False)
+        row.template_list(
+            SCS_TOOLS_UL_ObjectLookSlots.__name__,
+            list_id="",
+            dataptr=scs_root_object,
+            propname="scs_object_look_inventory",
+            active_dataptr=scs_root_object.scs_props,
+            active_propname="active_scs_look",
+            rows=3,
+            maxrows=5,
+            type='DEFAULT',
+            columns=9
+        )
+
+        # LIST BUTTONS
+        col = row.column(align=True)
+        col.operator('object.scs_tools_add_look', text="", icon='ADD')
+        col.operator('object.scs_tools_remove_active_look', text="", icon='REMOVE')
 
 
 def draw_export_panel(layout, ignore_extra_boxes=False):
     box1 = layout.box() if not ignore_extra_boxes else layout
-    row = box1.row()
-    row.prop(_get_scs_globals(), 'export_scale')
-    col = box1.column()
-    row = col.row()
-    row.prop(_get_scs_globals(), 'export_apply_modifiers')
-    row_2 = row.row()
+
+    box1.use_property_split = True
+    box1.use_property_decorate = False
+
+    box1.prop(_get_scs_globals(), 'export_scale')
+
+    flow = box1.grid_flow(row_major=True, columns=0, even_columns=True, even_rows=False, align=False)
+    col = flow.column()
+    col.prop(_get_scs_globals(), 'export_apply_modifiers')
+    col = flow.column()
     if _get_scs_globals().export_output_type.startswith('EF'):
-        if int(_get_scs_globals().export_apply_modifiers):
-            row_2.enabled = True
-        else:
-            row_2.enabled = False
-        row_2.prop(_get_scs_globals(), 'export_exclude_edgesplit')
+        col.enabled = _get_scs_globals().export_apply_modifiers
+        col.prop(_get_scs_globals(), 'export_exclude_edgesplit')
     else:
-        if not int(_get_scs_globals().export_apply_modifiers):
-            row_2.enabled = True
-        else:
-            row_2.enabled = False
-        row_2.prop(_get_scs_globals(), 'export_include_edgesplit')
+        col.enabled = not _get_scs_globals().export_apply_modifiers
+        col.prop(_get_scs_globals(), 'export_include_edgesplit')
     '''
     col.prop(_get_scs_globals(), 'export_active_uv_only')
     if not _get_scs_globals().export_output_type.startswith('EF'):
@@ -131,6 +138,8 @@ def draw_export_panel(layout, ignore_extra_boxes=False):
     # row = box1.row()
     # row.prop(_get_scs_globals(), 'export_anim_file', expand=True)
     box2 = layout.box() if not ignore_extra_boxes else layout
+    box2.use_property_split = True
+    box2.use_property_decorate = False
     box2.prop(_get_scs_globals(), 'export_output_type')
     '''
     col = box2.column()
@@ -159,29 +168,35 @@ def draw_export_panel(layout, ignore_extra_boxes=False):
     '''
 
 
-def draw_common_settings(layout, log_level_only=False):
+def draw_common_settings(layout, log_level_only=False, without_box=False):
     """Draw common settings panel featuring log level and usage type of global settings if requested
 
     :param layout: Blender UI layout to draw operator to
     :type layout: UILayout
     :param log_level_only: draw only log level option
     :type log_level_only: bool
+    :param without_box: draw without extra box layout?
+    :type without_box: bool
     """
-    box4 = layout.box().column()
+
+    if without_box:
+        sub_layout = layout.column()
+    else:
+        sub_layout = layout.box().column()
+
+    sub_layout.use_property_split = True
+    sub_layout.use_property_decorate = False
 
     if not log_level_only:
-        row = box4.row(align=True)
-        row.operator("scene.scs_copy_log", icon="COPYDOWN")
+        sub_layout.operator("scene.scs_tools_copy_log_to_clipboard", icon='COPYDOWN')
 
-    row = box4.row(align=True)
-    row.prop(_get_scs_globals(), 'dump_level', text="Log Level", icon='MOD_EXPLODE')
+    sub_layout.prop(_get_scs_globals(), 'dump_level', text="Log Level", icon='MOD_EXPLODE')
 
     if not log_level_only:
-        row = box4.row(align=True)
-        row.prop(_get_scs_globals(), 'config_storage_place', icon='NONE')
+        sub_layout.prop(_get_scs_globals(), 'config_storage_place')
 
 
-def draw_warning_operator(layout, title, message, text="", icon="ERROR"):
+def draw_warning_operator(layout, title, message, text="", icon='ERROR'):
     """Draws operator for showing popup window with given title and message.
 
     :param layout: Blender UI layout to draw operator to
@@ -195,8 +210,74 @@ def draw_warning_operator(layout, title, message, text="", icon="ERROR"):
     :param icon: blender icon string (optional)
     :type icon: str
     """
-    props = layout.operator('wm.show_warning_message', text=text, icon=icon)
+    props = layout.operator('wm.scs_tools_show_message_in_popup', text=text, icon=icon)
     props.is_modal = False
     props.icon = icon
     props.title = title
     props.message = message
+
+
+def create_row(layout, align=False, use_split=False, use_decorate=False, enabled=False):
+    """Creates a row layout with givent options of the layout.
+
+    :param layout:
+    :type layout:
+    :param align:
+    :type align:
+    :param use_split:
+    :type use_split:
+    :param use_decorate:
+    :type use_decorate:
+    :param enabled:
+    :type enabled:
+    :return:
+    :rtype:
+    """
+    row = layout.row(align=align)
+    row.use_property_split = use_split
+    row.use_property_decorate = use_decorate
+    row.enabled = enabled
+    return row
+
+
+def compensate_aligning_bug(layout, number_of_items=0):
+    """Creates compensation UI label items to fix aliging, when prop_search is used.
+
+    TODO: Remove this and it's usage once blender has this bug resolved.
+
+    :param layout:
+    :type layout:
+    :param number_of_items:
+    :type number_of_items:
+    :return:
+    :rtype:
+    """
+    if number_of_items > 0:
+        for _ in range(0, number_of_items):
+            layout.label(text="", icon='BLANK1')
+
+
+def get_on_off_icon(is_state_on):
+    """Returns icon string for on/off state. Should be used everywhere where we indicate on/off state in buttons.
+
+    :param is_state_on: if True then ON icon is returned, OFF icon returned otherwise
+    :type is_state_on: bool
+    :return: icon string
+    :rtype: str
+    """
+    return 'CHECKBOX_HLT' if is_state_on else 'CHECKBOX_DEHLT'
+
+
+classes = (
+    SCS_TOOLS_UL_ObjectLookSlots,
+)
+
+
+def register():
+    for cls in classes:
+        bpy.utils.register_class(cls)
+
+
+def unregister():
+    for cls in classes:
+        bpy.utils.unregister_class(cls)

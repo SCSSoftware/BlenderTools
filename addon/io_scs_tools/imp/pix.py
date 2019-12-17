@@ -16,7 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2013-2014: SCS Software
+# Copyright (C) 2013-2019: SCS Software
 
 import bpy
 import os
@@ -158,17 +158,10 @@ def _create_scs_root_object(name, loaded_variants, loaded_looks, mats_info, obje
     # MAKE THE 'SCS ROOT OBJECT' NAME UNIQUE
     name = _name_utils.get_unique(name, bpy.data.objects)
 
-    # CREATE EMPTY OBJECT
-    bpy.ops.object.empty_add(
-        view_align=False,
-        location=(0.0, 0.0, 0.0),
-        # rotation=rot,
-    )  # , layers=(False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False,
-    # False, False))
-
-    # MAKE A PROPER SETTINGS TO THE 'SCS Game Object' OBJECT
-    scs_root_object = context.active_object
-    scs_root_object.name = name
+    # CREATE EMPTY OBJECT & MAKE A PROPER SETTINGS TO THE 'SCS Game Object' OBJECT
+    scs_root_object = bpy.data.objects.new(name, None)
+    bpy.context.view_layer.active_layer_collection.collection.objects.link(scs_root_object)
+    bpy.context.view_layer.objects.active = scs_root_object
     scs_root_object.scs_props.scs_root_object_export_enabled = True
     scs_root_object.scs_props.empty_object_type = 'SCS_Root'
 
@@ -176,39 +169,36 @@ def _create_scs_root_object(name, loaded_variants, loaded_looks, mats_info, obje
     # print('CUR.pos: %s' % str(context.space_data.cursor_location))
 
     # PARENTING
+    bpy.ops.object.select_all(action='DESELECT')
+
     if armature:
 
         # if armature is present we can specify our game object as animated
         scs_root_object.scs_props.scs_root_animated = "anim"
 
         # print('ARM.pos: %s' % str(armature.location))
-        bpy.ops.object.select_all(action='DESELECT')
-        armature.select = True
-        bpy.ops.object.parent_set(type='OBJECT', keep_transform=False)
+        armature.select_set(True)
         armature.scs_props.parent_identity = scs_root_object.name
 
     for obj in objects:
         # print('OBJ.pos: %s' % str(object.location))
-        bpy.ops.object.select_all(action='DESELECT')
-        obj.select = True
-        bpy.ops.object.parent_set(type='OBJECT', keep_transform=False)
+        obj.select_set(True)
         obj.scs_props.parent_identity = scs_root_object.name
 
     for obj in locators:
-        bpy.ops.object.select_all(action='DESELECT')
-        obj.select = True
-        bpy.ops.object.parent_set(type='OBJECT', keep_transform=False)
+        obj.select_set(True)
         obj.scs_props.parent_identity = scs_root_object.name
 
+    bpy.ops.object.parent_set(type='OBJECT', keep_transform=False)
+    bpy.ops.object.parent_clear(type='CLEAR_INVERSE')
+
     # LOCATION
-    scs_root_object.location = context.scene.cursor_location
+    scs_root_object.location = context.scene.cursor.location
 
     # MAKE ONLY 'SCS GAME OBJECT' SELECTED
     bpy.ops.object.select_all(action='DESELECT')
-    for obj in bpy.data.objects:
-        obj.select = False
-    scs_root_object.select = True
-    context.scene.objects.active = scs_root_object
+    scs_root_object.select_set(True)
+    context.view_layer.objects.active = scs_root_object
 
     # MAKE PART RECORD
     part_inventory = scs_root_object.scs_object_part_inventory
@@ -295,6 +285,13 @@ def _create_scs_root_object(name, loaded_variants, loaded_looks, mats_info, obje
                 # try to find suitable preset
                 (preset_name, preset_section) = _material_utils.find_preset(material_effect, material_textures)
 
+                # we don't support effect mismatch between looks, even if game works with it, somehow.
+                # most probably imported model is result of third party software, thus let user know and skip look for this material
+                if look_i != 0 and material_effect != mat.scs_props.mat_effect_name:
+                    lprint("E Look %r skipped on material %r, mismatched material effect: %r but should be %r.",
+                           (look_name, mat.name, material_effect, mat.scs_props.mat_effect_name))
+                    continue
+
                 # preset name is found & shader data are compatible with found preset
                 if preset_name and _are_shader_data_compatible(preset_section, material_attributes, material_textures, mat_info[0]):
 
@@ -330,7 +327,7 @@ def _create_scs_root_object(name, loaded_variants, loaded_looks, mats_info, obje
                         del mat["scs_tex_aliases"]
 
         # create new look entry on root
-        bpy.ops.object.add_scs_look(look_name=look_name, instant_apply=False)
+        bpy.ops.object.scs_tools_add_look(look_name=look_name, instant_apply=False)
 
     # apply first look after everything is done
     scs_root_object.scs_props.active_scs_look = 0
@@ -378,6 +375,7 @@ def load(context, filepath, name_suffix="", suppress_reports=False):
 
     # IMPORT PIP -> has to be loaded before PIM because of terrain points
     if scs_globals.import_pip_file:
+        lprint("I Importing PIP ...")
         pip_filepath = filepath + ".pip" + name_suffix
         if os.path.isfile(pip_filepath):
             lprint('\nD PIP filepath:\n  %s', (pip_filepath,))
@@ -389,6 +387,7 @@ def load(context, filepath, name_suffix="", suppress_reports=False):
 
     # IMPORT PIM
     if scs_globals.import_pim_file or scs_globals.import_pis_file:
+        lprint("I Importing PIM ...")
         pim_filepath = filepath + ".pim" + name_suffix
         if pim_filepath:
             if os.path.isfile(pim_filepath):
@@ -414,8 +413,9 @@ def load(context, filepath, name_suffix="", suppress_reports=False):
             lprint('\nI No filepath provided!')
 
     # IMPORT PIT
-    bpy.context.scene.objects.active = None
+    bpy.context.view_layer.objects.active = None
     if scs_globals.import_pit_file:
+        lprint("I Importing PIT ...")
         pit_filepath = filepath + ".pit" + name_suffix
         if os.path.isfile(pit_filepath):
             lprint('\nD PIT filepath:\n  %s', (pit_filepath,))
@@ -427,6 +427,7 @@ def load(context, filepath, name_suffix="", suppress_reports=False):
 
     # IMPORT PIC
     if scs_globals.import_pic_file:
+        lprint("I Importing PIC ...")
         pic_filepath = filepath + ".pic" + name_suffix
         if os.path.isfile(pic_filepath):
             lprint('\nD PIC filepath:\n  %s', (pic_filepath,))
@@ -437,6 +438,7 @@ def load(context, filepath, name_suffix="", suppress_reports=False):
             # print('INFO - No PIC file.')
 
     # SETUP 'SCS GAME OBJECTS'
+    lprint("I Setup of SCS game object ...")
     for item in collision_locators:
         locators.append(item)
     for item in prefab_locators:
@@ -458,6 +460,7 @@ def load(context, filepath, name_suffix="", suppress_reports=False):
 
     # IMPORT PIS
     if scs_globals.import_pis_file:
+        lprint("I Importing PIS ...")
         # pis file path is created from directory of pim file and skeleton definition inside pim header
         pis_filepath = os.path.dirname(filepath) + os.sep + skeleton
         if os.path.isfile(pis_filepath):
@@ -479,6 +482,7 @@ def load(context, filepath, name_suffix="", suppress_reports=False):
 
         # IMPORT PIA
         if scs_globals.import_pia_file and bones:
+            lprint("I Importing PIAs ...")
             basepath = os.path.dirname(filepath)
             # Search for PIA files in model's directory and its subdirectiories...
             lprint('\nD Searching the directory for PIA files:\n   %s', (basepath,))
@@ -507,19 +511,6 @@ def load(context, filepath, name_suffix="", suppress_reports=False):
 
     # fix scene objects count so it won't trigger copy cycle
     bpy.context.scene.scs_cached_num_objects = len(bpy.context.scene.objects)
-
-    # Turn on Textured Solid in 3D view...
-    for bl_screen in bpy.data.screens:
-        for bl_area in bl_screen.areas:
-            for bl_space in bl_area.spaces:
-                if bl_space.type == 'VIEW_3D':
-                    bl_space.show_textured_solid = True
-
-    # Turn on GLSL in 3D view...
-    bpy.context.scene.game_settings.material_mode = 'GLSL'
-
-    # Turn on "Frame Dropping" for animation playback...
-    bpy.context.scene.use_frame_drop = True
 
     # FINAL FEEDBACK
     bpy.context.window.cursor_modal_restore()

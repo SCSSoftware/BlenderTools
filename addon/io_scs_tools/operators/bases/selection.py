@@ -16,7 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2013-2014: SCS Software
+# Copyright (C) 2013-2019: SCS Software
 
 import bpy
 from bpy.props import IntProperty
@@ -36,7 +36,7 @@ class Selection:
     SHIFT_SELECT = _OP_consts.SelectionType.shift_select
     CTRL_SELECT = _OP_consts.SelectionType.ctrl_select
 
-    select_type = IntProperty()
+    select_type: IntProperty()
 
     def get_select_state(self):
         """Define selection state for objects depending on current select_type state.

@@ -142,7 +142,7 @@ def load(filepath, armature, get_only=False):
         lprint('\nE No Armature for file "%s"!', (os.path.basename(filepath),))
         return {'CANCELLED'}, None
 
-    bpy.context.scene.objects.active = armature
+    bpy.context.view_layer.objects.active = armature
     bpy.ops.object.mode_set(mode='EDIT')
 
     # CONNECTED BONES - Add information about all children...
@@ -169,7 +169,7 @@ def load(filepath, armature, get_only=False):
 
         # COMPUTE BONE TRANSFORMATION
         matrix = bones[bone.name][1]
-        bone_matrix = _convert_utils.scs_to_blend_matrix() * matrix.transposed()
+        bone_matrix = _convert_utils.scs_to_blend_matrix() @ matrix.transposed()
         axis, angle = _convert_utils.mat3_to_vec_roll(bone_matrix)
         # print(' * %r - angle: %s' % (bone.name, angle))
 
@@ -194,13 +194,13 @@ def load(filepath, armature, get_only=False):
         if connected_bones:
             if len(bones[bone.name][2]) == 1:
                 matrix = bones[bones[bone.name][2][0]][1]
-                bone_matrix = _convert_utils.scs_to_blend_matrix() * matrix.transposed()
+                bone_matrix = _convert_utils.scs_to_blend_matrix() @ matrix.transposed()
                 armature.data.edit_bones[bone.name].tail = bone_matrix.to_translation().to_3d() * import_scale
                 armature.data.edit_bones[bones[bone.name][2][0]].use_connect = True
 
     bpy.ops.object.mode_set(mode='OBJECT')
     armature.data.show_axes = True
-    armature.draw_type = 'WIRE'
+    armature.display_type = 'WIRE'
 
     # WARNING PRINTOUTS
     # if piece_count < 0: Print(dump_level, '\nW More Pieces found than were declared!')

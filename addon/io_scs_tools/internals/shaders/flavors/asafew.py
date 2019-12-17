@@ -36,7 +36,9 @@ def init(node_tree, alpha_remap_gn):
     alpha_remap_gn.inputs["Factor1"].default_value = 1.0 / 0.875
     alpha_remap_gn.inputs["Factor2"].default_value = -0.125 * 1.0 / 0.875
 
-    node_tree[FLAVOR_ID] = True
+    # FIXME: move to old system after: https://developer.blender.org/T68406 is resolved
+    flavor_frame = node_tree.nodes.new(type="NodeFrame")
+    flavor_frame.name = flavor_frame.label = FLAVOR_ID
 
 
 def delete(node_tree, alpha_remap_gn):
@@ -48,11 +50,11 @@ def delete(node_tree, alpha_remap_gn):
     :type alpha_remap_gn: bpy.types.Node
     """
 
-    if FLAVOR_ID in node_tree:
+    if FLAVOR_ID in node_tree.nodes:
         alpha_remap_gn.inputs["Factor1"].default_value = 1.0
         alpha_remap_gn.inputs["Factor2"].default_value = 0.0
 
-        del node_tree[FLAVOR_ID]
+        node_tree.nodes.remove(node_tree.nodes[FLAVOR_ID])
 
 
 def is_set(node_tree):
@@ -63,4 +65,4 @@ def is_set(node_tree):
     :return: True if flavor exists; False otherwise
     :rtype: bool
     """
-    return FLAVOR_ID in node_tree and node_tree[FLAVOR_ID]
+    return FLAVOR_ID in node_tree.nodes

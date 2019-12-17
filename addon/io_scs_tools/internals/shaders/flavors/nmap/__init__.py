@@ -16,22 +16,23 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2015: SCS Software
+# Copyright (C) 2015-2019: SCS Software
 
 import bpy
 from io_scs_tools.consts import Mesh as _MESH_consts
 from io_scs_tools.internals.shaders.flavors.nmap import scale_ng
 from io_scs_tools.internals.shaders.flavors.nmap import dds16_ng
+from io_scs_tools.utils import material as _material_utils
 
 NMAP_FLAVOR_FRAME_NODE = "TSNMap Flavor"
-NMAP_NODE = "NormalMapMat"
-NMAP_GEOM_NODE = "NMapGeom"
+NMAP_UVMAP_NODE = "NormalMapUVs"
+NMAP_NODE = "NormalMap"
 NMAP_TEX_NODE = "NMapTex"
 NMAP_DDS16_GNODE = "NMapDDS16Group"
 NMAP_SCALE_GNODE = "NMapScaleGroup"
 
 
-def __create_nodes__(node_tree, location=None, normal_to=None):
+def __create_nodes__(node_tree, location=None, normal_to=None, normal_from=None):
     """Create node for normal maps.
 
     :param node_tree: node tree on which normal map will be used
@@ -43,24 +44,29 @@ def __create_nodes__(node_tree, location=None, normal_to=None):
         if NMAP_NODE in node_tree.nodes:
             location = node_tree.nodes[NMAP_NODE].location
 
-    # try to recover normal to link node socket
-    if not normal_to:
-        if NMAP_NODE in node_tree.nodes:
-            for link in node_tree.links:
-                if link.from_node == node_tree.nodes[NMAP_NODE] and link.from_socket.name == "Normal":
-                    normal_to = link.to_socket
+    # try to recover normals to link node socket
+    if not normal_to and NMAP_NODE in node_tree.nodes:
+        for link in node_tree.links:
+            if link.from_node == node_tree.nodes[NMAP_NODE] and link.from_socket.name == "Normal":
+                normal_to = link.to_socket
+
+    if not normal_from and NMAP_SCALE_GNODE in node_tree.nodes:
+        for link in node_tree.links:
+            if link.to_node == node_tree.nodes[NMAP_SCALE_GNODE] and link.to_socket.name == "Original Normal":
+                normal_from = link.from_socket
 
     frame = node_tree.nodes.new("NodeFrame")
     frame.name = frame.label = NMAP_FLAVOR_FRAME_NODE
 
-    nmap_geom_n = node_tree.nodes.new("ShaderNodeGeometry")
-    nmap_geom_n.parent = frame
-    nmap_geom_n.name = nmap_geom_n.label = NMAP_GEOM_NODE
-    nmap_geom_n.uv_layer = _MESH_consts.none_uv
+    nmap_uvs_n = node_tree.nodes.new("ShaderNodeUVMap")
+    nmap_uvs_n.parent = frame
+    nmap_uvs_n.name = nmap_uvs_n.label = NMAP_UVMAP_NODE
+    nmap_uvs_n.uv_map = _MESH_consts.none_uv
 
-    nmap_tex_n = node_tree.nodes.new("ShaderNodeTexture")
+    nmap_tex_n = node_tree.nodes.new("ShaderNodeTexImage")
     nmap_tex_n.parent = frame
     nmap_tex_n.name = nmap_tex_n.label = NMAP_TEX_NODE
+    nmap_tex_n.width = 140
 
     nmap_n = node_tree.nodes.new("ShaderNodeNormalMap")
     nmap_n.parent = frame
@@ -68,27 +74,28 @@ def __create_nodes__(node_tree, location=None, normal_to=None):
     nmap_n.space = "TANGENT"
     nmap_n.inputs["Strength"].default_value = 1
 
-    nmap_scale_gn = node_tree.nodes.new("ShaderNodeGroup")
-    nmap_scale_gn.parent = frame
-    nmap_scale_gn.name = nmap_scale_gn.label = NMAP_SCALE_GNODE
-    nmap_scale_gn.node_tree = scale_ng.get_node_group()
+    nmap_scale_n = node_tree.nodes.new("ShaderNodeGroup")
+    nmap_scale_n.parent = frame
+    nmap_scale_n.name = nmap_scale_n.label = NMAP_SCALE_GNODE
+    nmap_scale_n.node_tree = scale_ng.get_node_group()
 
     # position nodes
     if location:
-        nmap_geom_n.location = (location[0] - 185 * 3, location[1])
+        nmap_uvs_n.location = (location[0] - 185 * 3, location[1])
         nmap_tex_n.location = (location[0] - 185 * 2, location[1])
         nmap_n.location = (location[0] - 185, location[1] - 200)
-        nmap_scale_gn.location = (location[0], location[1])
+        nmap_scale_n.location = (location[0], location[1])
 
     # links creation
     nodes = node_tree.nodes
 
-    node_tree.links.new(nodes[NMAP_TEX_NODE].inputs["Vector"], nodes[NMAP_GEOM_NODE].outputs["UV"])
+    node_tree.links.new(nodes[NMAP_UVMAP_NODE].outputs["UV"], nodes[NMAP_TEX_NODE].inputs["Vector"])
 
     node_tree.links.new(nodes[NMAP_NODE].inputs["Color"], nodes[NMAP_TEX_NODE].outputs["Color"])
 
     node_tree.links.new(nodes[NMAP_SCALE_GNODE].inputs["NMap Tex Color"], nodes[NMAP_TEX_NODE].outputs["Color"])
-    node_tree.links.new(nodes[NMAP_SCALE_GNODE].inputs["Original Normal"], nodes[NMAP_GEOM_NODE].outputs["Normal"])
+    if normal_from:
+        node_tree.links.new(nodes[NMAP_SCALE_GNODE].inputs["Original Normal"], normal_from)
     node_tree.links.new(nodes[NMAP_SCALE_GNODE].inputs["Modified Normal"], nodes[NMAP_NODE].outputs["Normal"])
 
     # set normal only if we know where to
@@ -96,32 +103,32 @@ def __create_nodes__(node_tree, location=None, normal_to=None):
         node_tree.links.new(normal_to, nodes[NMAP_SCALE_GNODE].outputs["Normal"])
 
 
-def __check_and_create_dds16_node__(node_tree, texture):
+def __check_and_create_dds16_node__(node_tree, image):
     """Checks if given texture is composed '16-bit DDS' texture and properly create extra node for it's representation.
     On the contrary if texture is not 16-bit DDS and node exists clean that node and restore old connections.
 
     :param node_tree: node tree on which normal map will be used
     :type node_tree: bpy.types.NodeTree
-    :param texture: texture which should be assignet to nmap texture node
-    :type texture: bpy.types.Texture
+    :param image: texture image which should be assigned to nmap texture node
+    :type image: bpy.types.Image
     """
 
     # in case of DDS simulating 16-bit normal maps create it's group and properly connect it,
     # on the other hand if group exists but shouldn't delete group and restore old connections
 
-    is_dds16 = texture and texture.image and texture.image.filepath.endswith(".dds") and texture.image.pixels[2] == 0.0
+    is_dds16 = image and image.filepath.endswith(".dds") and image.pixels[2] == 0.0
     if is_dds16 and NMAP_DDS16_GNODE not in node_tree.nodes:
 
-        nmap_dds16_gn = node_tree.nodes.new("ShaderNodeGroup")
-        nmap_dds16_gn.parent = node_tree.nodes[NMAP_FLAVOR_FRAME_NODE]
-        nmap_dds16_gn.name = nmap_dds16_gn.label = NMAP_DDS16_GNODE
-        nmap_dds16_gn.node_tree = dds16_ng.get_node_group()
+        nmap_dds16_n = node_tree.nodes.new("ShaderNodeGroup")
+        nmap_dds16_n.parent = node_tree.nodes[NMAP_FLAVOR_FRAME_NODE]
+        nmap_dds16_n.name = nmap_dds16_n.label = NMAP_DDS16_GNODE
+        nmap_dds16_n.node_tree = dds16_ng.get_node_group()
 
         location = node_tree.nodes[NMAP_NODE].location
 
         node_tree.nodes[NMAP_TEX_NODE].location[0] -= 185
-        node_tree.nodes[NMAP_GEOM_NODE].location[0] -= 185
-        nmap_dds16_gn.location = (location[0] - 185, location[1])
+        node_tree.nodes[NMAP_UVMAP_NODE].location[0] -= 185
+        nmap_dds16_n.location = (location[0] - 185, location[1])
 
         node_tree.links.new(node_tree.nodes[NMAP_DDS16_GNODE].inputs["Color"], node_tree.nodes[NMAP_TEX_NODE].outputs["Color"])
 
@@ -133,33 +140,35 @@ def __check_and_create_dds16_node__(node_tree, texture):
         node_tree.nodes.remove(node_tree.nodes[NMAP_DDS16_GNODE])
 
         node_tree.nodes[NMAP_TEX_NODE].location[0] += 185
-        node_tree.nodes[NMAP_GEOM_NODE].location[0] += 185
+        node_tree.nodes[NMAP_UVMAP_NODE].location[0] += 185
 
         node_tree.links.new(node_tree.nodes[NMAP_NODE].inputs["Color"], node_tree.nodes[NMAP_TEX_NODE].outputs["Color"])
 
 
-def init(node_tree, location, normal_to):
+def init(node_tree, location, normal_to, normal_from):
     """Initialize normal map nodes.
 
     :param node_tree: node tree on which normal map will be used
     :type node_tree: bpy.types.NodeTree
     :param location: x position in node tree
     :type location (int, int)
-    :param normal_to: node socket to which result of normal map material should be send
+    :param normal_to: node socket to which result of final commbined normal should be send
     :type normal_to: bpy.types.NodeSocket
+    :param normal_from: node socket from which original mesh normal should be taken
+    :type normal_from: bpy.types.NodeSocket
     """
 
     if NMAP_FLAVOR_FRAME_NODE not in node_tree.nodes:
-        __create_nodes__(node_tree, location, normal_to)
+        __create_nodes__(node_tree, location, normal_to=normal_to, normal_from=normal_from)
 
 
-def set_texture(node_tree, texture):
+def set_texture(node_tree, image):
     """Set texture to normal map flavor.
 
     :param node_tree: node tree on which normal map is used
     :type node_tree: bpy.types.NodeTree
-    :param texture: texture which should be assignet to nmap texture node
-    :type texture: bpy.types.Texture
+    :param image: texture image which should be assignet to nmap texture node
+    :type image: bpy.types.Image
     """
 
     # save currently active node to properly reset it on the end
@@ -167,7 +176,7 @@ def set_texture(node_tree, texture):
     old_active = node_tree.nodes.active
 
     # ignore empty texture
-    if texture is None:
+    if image is None:
         delete(node_tree, True)
         return
 
@@ -176,12 +185,23 @@ def set_texture(node_tree, texture):
         __create_nodes__(node_tree)
 
     # in case of DDS simulating 16-bit normal maps create it's group and properly connect it
-    __check_and_create_dds16_node__(node_tree, texture)
+    __check_and_create_dds16_node__(node_tree, image)
 
     # assign texture to texture node first
-    node_tree.nodes[NMAP_TEX_NODE].texture = texture
+    node_tree.nodes[NMAP_TEX_NODE].image = image
 
     node_tree.nodes.active = old_active
+
+
+def set_texture_settings(node_tree, settings):
+    """Set texture settings to normal map flavor.
+
+    :param node_tree: node tree of current shader
+    :type node_tree: bpy.types.NodeTree
+    :param settings: binary string of TOBJ settings gotten from tobj import
+    :type settings: str
+    """
+    _material_utils.set_texture_settings_to_node(node_tree.nodes[NMAP_TEX_NODE], settings)
 
 
 def set_uv(node_tree, uv_layer):
@@ -201,7 +221,7 @@ def set_uv(node_tree, uv_layer):
         __create_nodes__(node_tree)
 
     # set uv layer to texture node and normal map node
-    node_tree.nodes[NMAP_GEOM_NODE].uv_layer = uv_layer
+    node_tree.nodes[NMAP_UVMAP_NODE].uv_map = uv_layer
     node_tree.nodes[NMAP_NODE].uv_map = uv_layer
 
 
@@ -215,7 +235,6 @@ def delete(node_tree, preserve_node=False):
     """
 
     if NMAP_NODE in node_tree.nodes and not preserve_node:
-        node_tree.nodes.remove(node_tree.nodes[NMAP_GEOM_NODE])
         node_tree.nodes.remove(node_tree.nodes[NMAP_TEX_NODE])
         node_tree.nodes.remove(node_tree.nodes[NMAP_NODE])
         if NMAP_DDS16_GNODE in node_tree.nodes:

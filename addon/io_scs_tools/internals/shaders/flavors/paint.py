@@ -31,13 +31,12 @@ def __create_node__(node_tree):
     :param node_tree: node tree on which paint flavor will be used
     :type node_tree: bpy.types.NodeTree
     """
-    paint_mult_n = node_tree.nodes.new("ShaderNodeMixRGB")
+    paint_mult_n = node_tree.nodes.new("ShaderNodeVectorMath")
     paint_mult_n.name = paint_mult_n.label = PAINT_MULT_NODE
-    paint_mult_n.blend_type = "MULTIPLY"
-    paint_mult_n.inputs['Fac'].default_value = 1
+    paint_mult_n.operation = "MULTIPLY"
 
     color = _convert_utils.to_node_color(_get_scs_globals().base_paint_color)
-    paint_mult_n.inputs['Color2'].default_value = color
+    paint_mult_n.inputs[1].default_value = color[:3]
 
 
 def init(node_tree, location, diffuse_from, paint_to):
@@ -61,10 +60,12 @@ def init(node_tree, location, diffuse_from, paint_to):
     # links creation
     nodes = node_tree.nodes
 
-    node_tree.links.new(nodes[PAINT_MULT_NODE].inputs["Color1"], diffuse_from)
+    node_tree.links.new(nodes[PAINT_MULT_NODE].inputs[0], diffuse_from)
     node_tree.links.new(paint_to, nodes[PAINT_MULT_NODE].outputs[0])
 
-    node_tree[FLAVOR_ID] = True
+    # FIXME: move to old system after: https://developer.blender.org/T68406 is resolved
+    flavor_frame = node_tree.nodes.new(type="NodeFrame")
+    flavor_frame.name = flavor_frame.label = FLAVOR_ID
 
 
 def delete(node_tree):
@@ -93,8 +94,8 @@ def delete(node_tree):
         if out_socket and in_socket:
             node_tree.links.new(out_socket, in_socket)
 
-    if FLAVOR_ID in node_tree:
-        del node_tree[FLAVOR_ID]
+    if FLAVOR_ID in node_tree.nodes:
+        node_tree.nodes.remove(node_tree.nodes[FLAVOR_ID])
 
 
 def is_set(node_tree):
@@ -105,7 +106,7 @@ def is_set(node_tree):
     :return: True if flavor exists; False otherwise
     :rtype: bool
     """
-    return FLAVOR_ID in node_tree and node_tree[FLAVOR_ID]
+    return FLAVOR_ID in node_tree.nodes
 
 
 def set_color(node_tree, color):
@@ -121,4 +122,4 @@ def set_color(node_tree, color):
         return
 
     color = _convert_utils.to_node_color(color)
-    node_tree.nodes[PAINT_MULT_NODE].inputs["Color2"].default_value = color
+    node_tree.nodes[PAINT_MULT_NODE].inputs[1].default_value = color

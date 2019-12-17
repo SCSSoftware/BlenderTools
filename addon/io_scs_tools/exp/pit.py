@@ -295,7 +295,7 @@ def fill_part_list(parts, used_parts_names, all_parts=False):
     """Fills up "Part" sections in "Varian" section
 
     :param parts: SCS Root part inventory or parts collection property from variant inventory
-    :type parts: io_scs_tools.properties.object.ObjectPartInventoryItem | list[io_scs_tools.properties.object.ObjectVariantPartInclusion]
+    :type parts: io_scs_tools.properties.object.ObjectPartInventoryItem | list[io_scs_tools.properties.object.ObjectVariantPartInclusionItem]
     :param used_parts_names: list of part names that are actually used in game object
     :type used_parts_names: list[str]
     :param all_parts: flag for all parts are visible (handy for creating default visibilities)
@@ -371,10 +371,8 @@ def export(root_object, filepath, name_suffix, used_parts, used_materials):
 
         # apply each look from inventory first
         if len(looks_inventory) > 0:
-            root_object.scs_props.active_scs_look = i
-
-            # actually write values to material because Blender might not refresh data yet
-            _looks.apply_active_look(root_object)
+            root_object.scs_props.active_scs_look = i  # set index for curret look
+            _looks.apply_active_look(root_object)  # apply look manually, as active look setter method works only when user sets index from UI
 
             curr_look_name = looks_inventory[i].name
         else:  # if no looks create default
@@ -608,7 +606,8 @@ def export(root_object, filepath, name_suffix, used_parts, used_materials):
         look_list.append(look_data)
 
     # restore look applied before export
-    root_object.scs_props.active_scs_look = saved_active_look
+    root_object.scs_props.active_scs_look = saved_active_look  # set index for curret look
+    _looks.apply_active_look(root_object)  # apply look manually, as active look setter method works only when user sets index from UI
 
     # PARTS AND VARIANTS...
     used_parts_names = used_parts.get_as_list()

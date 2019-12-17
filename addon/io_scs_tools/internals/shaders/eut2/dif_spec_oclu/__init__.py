@@ -16,18 +16,15 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2015: SCS Software
-
+# Copyright (C) 2015-2019: SCS Software
 
 from io_scs_tools.consts import Mesh as _MESH_consts
 from io_scs_tools.internals.shaders.eut2.dif_spec import DifSpec
-from io_scs_tools.internals.shaders.flavors import alpha_test
-from io_scs_tools.internals.shaders.flavors import blend_add
-from io_scs_tools.internals.shaders.flavors import blend_over
+from io_scs_tools.utils import material as _material_utils
 
 
 class DifSpecOclu(DifSpec):
-    SEC_GEOM_NODE = "SecGeom"
+    SEC_UVMAP_NODE = "SecUVMap"
     OCLU_TEX_NODE = "OcclusionTexture"
     OCLU_SEPARATE_RGB_NODE = "OcclusionSeparateRGB"
     OCLU_A_MIX_NODE = "OcclusionAlphaMix"
@@ -64,24 +61,24 @@ class DifSpecOclu(DifSpec):
                 node.location.x += pos_x_shift * 2
 
         # node creation
-        sec_geom_n = node_tree.nodes.new("ShaderNodeGeometry")
-        sec_geom_n.name = sec_geom_n.label = DifSpecOclu.SEC_GEOM_NODE
-        sec_geom_n.location = (start_pos_x - pos_x_shift, start_pos_y + 1200)
-        sec_geom_n.uv_layer = _MESH_consts.none_uv
+        sec_uvmap_n = node_tree.nodes.new("ShaderNodeUVMap")
+        sec_uvmap_n.name = sec_uvmap_n.label = DifSpecOclu.SEC_UVMAP_NODE
+        sec_uvmap_n.location = (start_pos_x - pos_x_shift, start_pos_y + 1100)
+        sec_uvmap_n.uv_map = _MESH_consts.none_uv
 
-        oclu_tex_n = node_tree.nodes.new("ShaderNodeTexture")
+        oclu_tex_n = node_tree.nodes.new("ShaderNodeTexImage")
         oclu_tex_n.name = oclu_tex_n.label = DifSpecOclu.OCLU_TEX_NODE
         oclu_tex_n.location = (start_pos_x + pos_x_shift, start_pos_y + 1200)
+        oclu_tex_n.width = 140
 
         oclu_sep_rgb_n = node_tree.nodes.new("ShaderNodeSeparateRGB")
         oclu_sep_rgb_n.name = oclu_sep_rgb_n.label = DifSpecOclu.OCLU_SEPARATE_RGB_NODE
         oclu_sep_rgb_n.location = (start_pos_x + pos_x_shift * 3, start_pos_y + 1200)
 
-        oclu_mix_n = node_tree.nodes.new("ShaderNodeMixRGB")
+        oclu_mix_n = node_tree.nodes.new("ShaderNodeVectorMath")
         oclu_mix_n.name = oclu_mix_n.label = DifSpecOclu.OCLU_MIX_NODE
         oclu_mix_n.location = (start_pos_x + pos_x_shift * 4, start_pos_y + 1400)
-        oclu_mix_n.blend_type = "MULTIPLY"
-        oclu_mix_n.inputs['Fac'].default_value = 1
+        oclu_mix_n.operation = "MULTIPLY"
 
         oclu_a_mix_n = node_tree.nodes.new("ShaderNodeMath")
         oclu_a_mix_n.name = oclu_a_mix_n.label = DifSpecOclu.OCLU_A_MIX_NODE
@@ -89,35 +86,46 @@ class DifSpecOclu(DifSpec):
         oclu_a_mix_n.operation = "MULTIPLY"
 
         # links creation
-        node_tree.links.new(oclu_tex_n.inputs["Vector"], sec_geom_n.outputs["UV"])
+        node_tree.links.new(oclu_tex_n.inputs["Vector"], sec_uvmap_n.outputs["UV"])
 
         # pass 1
         node_tree.links.new(oclu_sep_rgb_n.inputs["Image"], oclu_tex_n.outputs["Color"])
 
         # pass 2
-        node_tree.links.new(oclu_a_mix_n.inputs[0], base_tex_n.outputs["Value"])
+        node_tree.links.new(oclu_a_mix_n.inputs[0], base_tex_n.outputs["Alpha"])
         node_tree.links.new(oclu_a_mix_n.inputs[1], oclu_sep_rgb_n.outputs["R"])
 
-        node_tree.links.new(oclu_mix_n.inputs["Color1"], base_tex_n.outputs["Color"])
-        node_tree.links.new(oclu_mix_n.inputs["Color2"], oclu_sep_rgb_n.outputs["R"])
+        node_tree.links.new(oclu_mix_n.inputs[0], base_tex_n.outputs["Color"])
+        node_tree.links.new(oclu_mix_n.inputs[1], oclu_sep_rgb_n.outputs["R"])
 
         # pass 3
-        node_tree.links.new(spec_mult_n.inputs["Color2"], oclu_a_mix_n.outputs["Value"])
+        node_tree.links.new(spec_mult_n.inputs[1], oclu_a_mix_n.outputs["Value"])
 
         # pass 4
-        node_tree.links.new(vcol_mult_n.inputs["Color2"], oclu_mix_n.outputs["Color"])
+        node_tree.links.new(vcol_mult_n.inputs[1], oclu_mix_n.outputs[0])
 
     @staticmethod
-    def set_oclu_texture(node_tree, texture):
+    def set_oclu_texture(node_tree, image):
         """Set occlusion texture to shader.
 
         :param node_tree: node tree of current shader
         :type node_tree: bpy.types.NodeTree
-        :param texture: texture which should be assigned to oclu texture node
-        :type texture: bpy.types.Texture
+        :param image: texture image which should be assigned to oclu texture node
+        :type image: bpy.types.Texture
         """
 
-        node_tree.nodes[DifSpecOclu.OCLU_TEX_NODE].texture = texture
+        node_tree.nodes[DifSpecOclu.OCLU_TEX_NODE].image = image
+
+    @staticmethod
+    def set_oclu_texture_settings(node_tree, settings):
+        """Set occlusion texture settings to shader.
+
+        :param node_tree: node tree of current shader
+        :type node_tree: bpy.types.NodeTree
+        :param settings: binary string of TOBJ settings gotten from tobj import
+        :type settings: str
+        """
+        _material_utils.set_texture_settings_to_node(node_tree.nodes[DifSpecOclu.OCLU_TEX_NODE], settings)
 
     @staticmethod
     def set_oclu_uv(node_tree, uv_layer):
@@ -132,4 +140,4 @@ class DifSpecOclu(DifSpec):
         if uv_layer is None or uv_layer == "":
             uv_layer = _MESH_consts.none_uv
 
-        node_tree.nodes[DifSpecOclu.SEC_GEOM_NODE].uv_layer = uv_layer
+        node_tree.nodes[DifSpecOclu.SEC_UVMAP_NODE].uv_map = uv_layer

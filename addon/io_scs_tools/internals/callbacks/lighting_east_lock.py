@@ -23,6 +23,7 @@ from math import pi
 from io_scs_tools.consts import SCSLigthing as _LIGHTING_consts
 from io_scs_tools.utils import view3d as _view3d_utils
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
+from io_scs_tools.internals.shaders.eut2.std_node_groups import lighting_evaluator_ng as _lighting_evaluator_ng
 
 _callback = {
     "handle": None,
@@ -31,23 +32,18 @@ _callback = {
 }
 
 
-def _get_diffuse_and_specular_lamps_from_scs_lighting():
+def _get_scs_sun():
     if _LIGHTING_consts.scene_name not in bpy.data.scenes:
-        return None, None
+        return None
 
     lighting_scene = bpy.data.scenes[_LIGHTING_consts.scene_name]
 
-    if _LIGHTING_consts.diffuse_lamp_name not in lighting_scene.objects:
-        return None, None
+    if _LIGHTING_consts.sun_lamp_name not in lighting_scene.collection.objects:
+        return None
 
-    diffuse_lamp_obj = lighting_scene.objects[_LIGHTING_consts.diffuse_lamp_name]
+    sun_obj = lighting_scene.collection.objects[_LIGHTING_consts.sun_lamp_name]
 
-    if _LIGHTING_consts.specular_lamp_name not in lighting_scene.objects:
-        return None, None
-
-    specular_lamp_obj = lighting_scene.objects[_LIGHTING_consts.specular_lamp_name]
-
-    return diffuse_lamp_obj, specular_lamp_obj
+    return sun_obj
 
 
 def _lightning_east_lock_draw_callback(reset):
@@ -61,8 +57,8 @@ def _lightning_east_lock_draw_callback(reset):
 
     # 1. check lighting scene integrity and region data integrity and
     # finish callback if everything is not up and ready
-    diffuse_lamp_obj, specular_lamp_obj = _get_diffuse_and_specular_lamps_from_scs_lighting()
-    if diffuse_lamp_obj is None or specular_lamp_obj is None:
+    sun_obj = _get_scs_sun()
+    if sun_obj is None:
         return
 
     if reset:
@@ -79,7 +75,7 @@ def _lightning_east_lock_draw_callback(reset):
 
         # 2. on first run just remember initial rotation and end callback
         if _callback["initial_view_rotation"] == -1:
-            _callback["initial_lamp_rotation"] = diffuse_lamp_obj.rotation_euler[2]
+            _callback["initial_lamp_rotation"] = sun_obj.rotation_euler[2]
             _callback["initial_view_rotation"] = current_view_z_rot
             return
 
@@ -87,27 +83,29 @@ def _lightning_east_lock_draw_callback(reset):
         east_rotation = current_view_z_rot - _callback["initial_view_rotation"] + _callback["initial_lamp_rotation"]
 
     # as last apply rotations to lamps
-    if abs(east_rotation - diffuse_lamp_obj.rotation_euler[2]) > 0.001:
-        diffuse_lamp_obj.rotation_euler[2] = east_rotation
+    if abs(east_rotation - sun_obj.rotation_euler[2]) > 0.001:
+        sun_obj.rotation_euler[2] = east_rotation
 
-    if abs(east_rotation - specular_lamp_obj.rotation_euler[2]) > 0.001:
-        specular_lamp_obj.rotation_euler[2] = east_rotation
+    if abs(east_rotation - sun_obj.rotation_euler[2]) > 0.001:
+        sun_obj.rotation_euler[2] = east_rotation
+
+    _lighting_evaluator_ng.set_light_direction(sun_obj)
 
 
 def correct_lighting_east():
     """Corrects lighting east depending on current rotation of directed lamps in SCS Lighting scene
 
     """
-    diffuse_lamp_obj, specular_lamp_obj = _get_diffuse_and_specular_lamps_from_scs_lighting()
-    if diffuse_lamp_obj is None:
+    sun_obj = _get_scs_sun()
+    if sun_obj is None:
         return
 
-    _get_scs_globals().lighting_scene_east_direction = (diffuse_lamp_obj.rotation_euler[2] * 180 / pi + 360) % 360
+    _get_scs_globals().lighting_scene_east_direction = (sun_obj.rotation_euler[2] * 180 / pi + 360) % 360
 
 
 def set_lighting_east():
     """Sets lighting east according to current value set in SCS Globals.
-    
+
     """
     _lightning_east_lock_draw_callback(True)
 

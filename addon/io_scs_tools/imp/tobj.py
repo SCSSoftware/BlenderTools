@@ -43,18 +43,19 @@ def get_settings_and_type(filepath, as_set=False):
 
     if container and container.map_type == "2d":
 
-        addr = ""
+        loaded_addr = ""
         for addr_value in container.addr:
             if addr_value == "clamp_to_edge":
-                addr += "0"
+                loaded_addr += "0"
             elif addr_value == "repeat":
-                addr += "1"
+                loaded_addr += "1"
             else:
                 # NOTE: there are also other options for addr like: mirror etc.
-                # But artists are not encouraged to really used them, so use default: "clamp_to_edge".
-                addr += "0"
+                # But artists are not encouraged to really use them, so use default: "clamp_to_edge".
+                loaded_addr += "0"
 
-        addr = addr[::-1]
+        if len(loaded_addr) == 2:
+            addr = loaded_addr[::-1]
 
         if container.usage == "tsnormal":
             tsnormal = "1"

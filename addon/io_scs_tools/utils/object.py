@@ -16,15 +16,12 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2013-2014: SCS Software
+# Copyright (C) 2013-2019: SCS Software
 
 import bpy
 import bmesh
 from bpy_extras import object_utils as bpy_object_utils
 from mathutils import Vector
-from io_scs_tools.consts import Part as _PART_consts
-from io_scs_tools.internals import looks as _looks
-from io_scs_tools.internals import inventory as _inventory
 from io_scs_tools.utils.printout import lprint
 from io_scs_tools.utils import math as _math
 from io_scs_tools.utils import name as _name
@@ -50,9 +47,9 @@ def gather_scs_roots(objs):
     """Gets all the SCS root objects from given objects.
 
     :param objs: Blender objects
-    :type objs: list of bpy.types.Object
+    :type objs: collections.Iterable[bpy.types.Object]
     :return: list of roots, if none are found then empty list
-    :rtype: list of bpy.types.Object
+    :rtype: list[bpy.types.Object]
     """
     roots = {}
     for obj in objs:
@@ -61,86 +58,6 @@ def gather_scs_roots(objs):
             roots[curr_root.name] = curr_root
 
     return roots.values()
-
-
-def make_scs_root_object(context, dialog=False):
-    # FAIRLY SMART SELECTION OF SCS GAME OBJECT CONTENT
-    scs_game_object_content = []
-    for obj in context.selected_objects:
-        if not obj.parent:
-            scs_game_object_content.append(obj)
-        else:
-            if not obj.parent.select:
-                scs_game_object_content.append(obj)
-
-    # UN-PARENT OBJECTS - un-parent and keep transformations, so objects stays on same place when re-parenting to new root
-    if context.active_object and len(context.selected_objects) > 0:
-        bpy.ops.object.parent_clear(type='CLEAR_KEEP_TRANSFORM')
-
-    # ADD SCS ROOT OBJECT (EMPTY OBJECT)
-    bpy.ops.object.empty_add(
-        view_align=False,
-        location=context.scene.cursor_location,
-    )
-
-    # SET PROPERTIES
-
-    name = _name.get_unique("game_object", bpy.data.objects)
-    bpy.context.active_object.name = name
-    new_scs_root = bpy.data.objects.get(name)
-    new_scs_root.scs_props.scs_root_object_export_enabled = True
-    new_scs_root.scs_props.empty_object_type = 'SCS_Root'
-
-    # SET A NEW NAME DIALOG
-    if dialog:
-        bpy.ops.object.add_scs_root_object_dialog_operator('INVOKE_DEFAULT')
-
-    # PARENT OBJECTS TO SCS ROOT OBJECT
-    part_inventory = new_scs_root.scs_object_part_inventory
-    if len(scs_game_object_content) > 0:
-
-        bpy.ops.object.select_all(action='DESELECT')
-
-        new_scs_root_mats = []
-        # select content object for parenting later
-        for obj in scs_game_object_content:
-            obj.select = True
-
-            # fix old parent with new children number and cleaned looks
-            if obj.parent:
-                ex_parent_obj = obj.parent
-                obj.parent = None
-
-                ex_parent_obj.scs_cached_num_children = len(ex_parent_obj.children)
-
-                ex_parent_scs_root = get_scs_root(ex_parent_obj)
-                if ex_parent_scs_root:
-                    _looks.clean_unused(ex_parent_scs_root)
-
-            obj.scs_props.parent_identity = new_scs_root.name
-            obj.scs_cached_num_children = len(obj.children)
-
-            for slot in obj.material_slots:
-                if slot.material and slot.material not in new_scs_root_mats:
-                    new_scs_root_mats.append(slot.material)
-
-        _looks.add_materials(new_scs_root, new_scs_root_mats)
-
-        bpy.ops.object.parent_set(type='OBJECT', keep_transform=False)
-        bpy.ops.object.select_all(action='DESELECT')
-        new_scs_root.select = True
-
-        # fix children count to prevent persistent to hook up
-        new_scs_root.scs_cached_num_children = len(new_scs_root.children)
-
-        for part_name in collect_parts_on_root(new_scs_root):
-            _inventory.add_item(part_inventory, part_name)
-
-    # MAKE DEFAULT PART IF THERE IS NO PARTS
-    if len(part_inventory) == 0:
-        _inventory.add_item(part_inventory, _PART_consts.default_name)
-
-    return new_scs_root
 
 
 def sort_out_game_objects_for_export(objects):
@@ -355,7 +272,7 @@ def make_mesh_from_verts_and_faces(verts, faces, convex_props):
     new_bm.free()
 
     # Add the mesh as an object into the scene with this utility module.
-    new_object = bpy_object_utils.object_data_add(bpy.context, new_mesh).object
+    new_object = bpy_object_utils.object_data_add(bpy.context, new_mesh)
     new_object = set_collider_props(new_object, convex_props)
     new_object.location = convex_props['location']
     new_object.rotation_euler = convex_props['rotation']
@@ -363,11 +280,13 @@ def make_mesh_from_verts_and_faces(verts, faces, convex_props):
     return new_object
 
 
-def make_objects_selected(objects):
+def make_objects_selected(objects, active_object=None):
     """Select only the given objects. Deselect all others.
 
     :param objects: list of objects to be selected
     :type objects: list, tuple
+    :param active_object: object to be made active; if None active object remains unchanged
+    :type active_object: bpy.types.Object
     :rtype: None
     """
     bpy.ops.object.select_all(action='DESELECT')
@@ -375,7 +294,10 @@ def make_objects_selected(objects):
         for obj in objects:
             # select only real objects
             if obj:
-                obj.select = True
+                obj.select_set(True)
+
+    if active_object:
+        bpy.context.view_layer.objects.active = active_object
 
 
 def pick_objects_from_selection(operator_object, needs_active_obj=True, obj_type='MESH'):
@@ -416,23 +338,38 @@ def pick_objects_from_selection(operator_object, needs_active_obj=True, obj_type
         return None, active_object
 
 
-def create_convex_data(objects, convex_props={}, create_hull=False):
-    """Creates a convex hull from selected objects..."""
+def create_convex_data(objects, convex_props={}, return_hull_object=False, max_face_count=256):
+    """Creates a convex hull from selected objects...
 
-    # SAVE ORIGINAL SELECTION
+    :param objects: list of blender objects to make convex hull from
+    :type objects: list[bpy.types.Object]
+    :param convex_props: existing convexr properties gotten with get_collider_props
+    :type convex_props: dict
+    :param return_hull_object: should convex data be as normal blender mesh object?
+    :type return_hull_object: bool
+    :param max_face_count: maximum number of faces that returned hull object can have, in interval (256, 6)
+    :type max_face_count: int
+    :return: tuple[(verts, faces, bb_size, bb_center), convex_props, returned_hull_object)
+    :rtype: tuple[tuple, dict, bpy.types.Object]
+    """
+
+    assert 6 <= max_face_count <= 256
+
+    # save original selection
     original_selection = []
     for obj in bpy.context.selected_objects:
         original_selection.append(obj)
 
-    # MAKE A SELECTION FROM MESH OBJECTS
+    # save original active
+    original_active = bpy.context.active_object
+
+    # make a selection from mesh objects
     make_objects_selected(objects)
 
-    # IF MULTIPLE OBJECTS, CREATE JOINED MESH FROM ALL SELECTED MESHES
+    # if multiple objects, create joined mesh from all selected meshes
     bpy.ops.object.duplicate_move()
-    original_active = None
     if bpy.context.active_object not in bpy.context.selected_objects:
-        original_active = bpy.context.active_object
-        bpy.context.scene.objects.active = bpy.context.selected_objects[0]
+        bpy.context.view_layer.objects.active = bpy.context.selected_objects[0]
 
     if len(original_selection) > 1:
         bpy.ops.object.join()
@@ -442,123 +379,112 @@ def create_convex_data(objects, convex_props={}, create_hull=False):
     for modifier in obj.modifiers:
         bpy.ops.object.modifier_apply(modifier=modifier.name)
 
-    # if convex locator creation than decimate joined object to make sure
-    # mesh is not to big for convex locator
-    if not create_hull:
-        modifier = obj.modifiers.new("triangulate", "TRIANGULATE")
-        bpy.ops.object.modifier_apply(modifier=modifier.name)
-
-        if len(obj.data.polygons) > 256:  # actually decimate if face count is to big
-            initial_polycount = len(obj.data.polygons)
-
-            modifier = obj.modifiers.new("decimate", "DECIMATE")
-            while modifier.face_count > 256 or modifier.face_count < 200:
-
-                # divide ratio by 2 until we get into desired count of faces
-                diff = abs(modifier.ratio) / 2.0
-                if modifier.face_count > 256:
-                    diff *= -1.0
-
-                modifier.ratio += diff
-                bpy.context.scene.update()  # invoke scene update to get updated modifier
-
-            bpy.ops.object.modifier_apply(modifier=modifier.name)
-
-            lprint("W Mesh used for convex locator was decimated because it had to many faces for convex locator.\n\t   " +
-                   "Maximum triangles count is 256 but mesh had %s triangles.", (initial_polycount,))
-
-    # GET PROPERTIES FROM THE RESULTING OBJECT
+    # get properties from the resulting object
     if not convex_props:
         convex_props = {'name': obj.name}
         convex_props = get_collider_props(obj, convex_props)
 
-    # CREATE CONVEX HULL DATA
-    geoms = {}
+    # create convex hull data
     mesh = obj.data
     bm = bmesh.new()
     bm.from_mesh(mesh)
-    hull = None
-    resulting_convex_object = None
-    try:
-        hull = bmesh.ops.convex_hull(
-            bm,
-            input=bm.verts,
-            use_existing_faces=False,
-        )
-    except RuntimeError:
-        import traceback
 
-        trace_str = traceback.format_exc().replace("\n", "\n\t   ")
-        lprint("E Problem creating convex hull:\n\t   %s",
-               (trace_str,),
-               report_errors=1,
-               report_warnings=1)
+    bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=0.01)
 
-    # RETRIEVE CONVEX DATA
-    # print(' > hull: %s' % str(hull))
-    if hull:
-        for geom in ('geom', 'geom_unused', 'geom_holes', 'geom_interior'):
-            geometry = hull[geom]
-            # print('\n > geometry: %r' % geom)
-            if geometry:
-                verts = []
-                verts_index_correction = {}
-                vert_i = 0
-                edges = []
-                faces = []
-                min_val = [None, None, None]
-                max_val = [None, None, None]
-                for item in geometry:
-                    # print('   > item[%i]: %s' % (item.index, str(item)))
-                    # print('     type: %s' % str(type(item)))
+    # delete everything except verts, otherwise convex hull doesn't work as expected
+    for face in bm.faces:
+        bm.faces.remove(face)
+    for edge in bm.edges:
+        bm.edges.remove(edge)
 
-                    # VERTICES
-                    if isinstance(item, bmesh.types.BMVert):
-                        vert_orig_index = item.index
-                        verts.append(item.co)
+    convex_hull_res = bmesh.ops.convex_hull(bm, input=bm.verts)
 
-                        # Bounding Box data evaluation
-                        min_val, max_val = _math.evaluate_minmax(item.co, min_val, max_val)
+    # now again remove everything except real convex hull geometry
+    for geom_type in ('geom_interior', 'geom_unused', 'geom_holes'):
+        for item in convex_hull_res[geom_type]:
+            try:
+                if isinstance(item, bmesh.types.BMVert):
+                    bm.verts.remove(item)
+                elif isinstance(item, bmesh.types.BMEdge):
+                    bm.edges.remove(item)
+                elif isinstance(item, bmesh.types.BMFace):
+                    bm.faces.remove(item)
+            except ReferenceError:
+                continue
 
-                        verts_index_correction[vert_orig_index] = vert_i
-                        vert_i += 1
-
-                        # EDGES
-                        # if isinstance(item, bmesh.types.BMEdge):
-                        # edges.append(item)
-                        # print('   > edge[%i]: %s' % (item.index, str(item.verts)))
-
-                    # FACES
-                    if isinstance(item, bmesh.types.BMFace):
-                        face_verts_correction = []
-                        for vert in item.verts:
-                            face_verts_correction.append(verts_index_correction[vert.index])
-                        # print('   > face[%i]: %s - %s' % (item.index, str(face_verts), str(face_verts_correction)))
-                        faces.append(face_verts_correction)
-
-                # Bounding Box data creation
-                bbox, bbcenter = _math.get_bb(min_val, max_val)
-                geoms[geom] = (verts, faces, bbox, bbcenter)
-
-                # CREATE CONVEX HULL MESH OBJECT
-                if geom == 'geom' and create_hull:
-                    resulting_convex_object = make_mesh_from_verts_and_faces(verts, faces, convex_props)
-
-                    # make resulting object is on the same layers as joined object
-                    resulting_convex_object.layers = obj.layers
-
+    # transform back to mesh
+    bm.normal_update()
+    bm.to_mesh(mesh)
     bm.free()
+
+    # if convex locator creation then decimate convex hull even more to make sure mesh is not to big for convex locator
+    if not return_hull_object and len(mesh.polygons) > max_face_count:
+
+        initial_polycount = len(mesh.polygons)
+
+        modifier = obj.modifiers.new("decimate", "DECIMATE")
+        bpy.context.view_layer.update()
+
+        while (modifier.face_count > max_face_count or modifier.face_count < max(max_face_count - 10, 10)) and modifier.ratio > 0.01:
+
+            # divide ratio by 2 until we get into desired count of faces
+            diff = abs(modifier.ratio) / 2.0
+            if modifier.face_count > max_face_count:
+                diff *= -1.0
+
+            modifier.ratio += diff
+            bpy.context.view_layer.update()  # invoke depsgraph update to get updated modifier
+            print("WHILE:", modifier.face_count, modifier.ratio)
+
+        bpy.ops.object.modifier_apply(modifier=modifier.name)
+
+        lprint("I Mesh used for convex locator was decimated because it had to many faces for convex locator.\n\t   " +
+               "Maximum triangles count is %i but mesh had %s triangles.", (max_face_count, initial_polycount))
+
+    # retrieve convex data
+    verts = []
+    faces = []
+    min_val = [None, None, None]
+    max_val = [None, None, None]
+    for vert in mesh.vertices:
+        verts.append(tuple(vert.co))
+
+        # Bounding Box data evaluation
+        min_val, max_val = _math.evaluate_minmax(verts[-1], min_val, max_val)
+
+    for poly in mesh.polygons:
+        assert len(poly.vertices) == 3
+        faces.append(tuple(poly.vertices))
+
+    # bbox data creation
+    bbox, bbcenter = _math.get_bb(min_val, max_val)
+    geom = (verts, faces, bbox, bbcenter)
+
+    # should have volume, if it doesn't it's not really a shape
+    for axis_size in bbox:
+        if axis_size == 0:
+            geom = None
+
+    # create convex hull object to return
+    resulting_convex_object = None
+    if return_hull_object and geom:
+        resulting_convex_object = make_mesh_from_verts_and_faces(verts, faces, convex_props)
+
+        # make sure resulting object is on the same collections as joined object
+        for col in resulting_convex_object.users_collection:
+            col.objects.unlink(resulting_convex_object)
+
+        for col in obj.users_collection:
+            col.objects.link(resulting_convex_object)
 
     make_objects_selected((object_to_delete,))
     bpy.ops.object.delete(use_global=True)
 
-    # MAKE ORIGINAL ACTIVE OBJECT ACTIVE AGAIN
-    if original_active:
-        bpy.context.scene.objects.active = original_active
-    if original_selection:
-        make_objects_selected(original_selection)
+    # make original active object active again
+    if original_selection or original_active:
+        make_objects_selected(original_selection, active_object=original_active)
 
-    return geoms, convex_props, resulting_convex_object
+    return geom, convex_props, resulting_convex_object
 
 
 def add_collider_convex_locator(geom_data, convex_props, locator=None):
@@ -566,8 +492,6 @@ def add_collider_convex_locator(geom_data, convex_props, locator=None):
     and creates new Convex Collision Locator."""
     if not locator:
         bpy.ops.object.empty_add(
-            type='PLAIN_AXES',
-            view_align=False,
             location=convex_props['location'],
             rotation=convex_props['rotation'],
         )
@@ -603,12 +527,10 @@ def make_mesh_convex_from_locator(obj):
     return new_object
 
 
-def create_collider_convex_locator(geoms, convex_props, mesh_objects, delete_mesh_objects):
+def create_collider_convex_locator(geom, convex_props, mesh_objects, delete_mesh_objects):
     locator = None
-    if geoms:
-        for geom in geoms:
-            if geom == 'geom':
-                locator = add_collider_convex_locator(geoms[geom], convex_props)
+    if geom:
+        locator = add_collider_convex_locator(geom, convex_props)
 
         # DEBUG PRINTOUT
         # print('\n > geom: %s' % str(geom))
@@ -622,7 +544,7 @@ def create_collider_convex_locator(geoms, convex_props, mesh_objects, delete_mes
             make_objects_selected(mesh_objects)
             bpy.ops.object.delete(use_global=True)
             if locator:
-                locator.select = True
+                locator.select_set(True)
 
         update_convex_hull_margins(locator)
     return locator
@@ -650,25 +572,25 @@ def show_loc_type(objects, loc_type, pref_type=None, hide_state=None, view_only=
 
                     if hide_state is None:
 
-                        hide_state = not obj.hide
+                        hide_state = not obj.hide_get()
 
-                    obj.hide = hide_state
+                    hide_set(obj, hide_state)
 
                 elif view_only:
 
-                    obj.hide = True
+                    hide_set(obj, True)
 
             else:
 
                 if hide_state is None:
 
-                    hide_state = not obj.hide
+                    hide_state = not obj.hide_get()
 
-                obj.hide = hide_state
+                hide_set(obj, hide_state)
 
         elif view_only:
 
-            obj.hide = True
+            hide_set(obj, True)
 
 
 def get_object_materials(obj):
@@ -712,9 +634,10 @@ def disable_modifier(modifier, disabled_modifiers):
     :param disabled_modifiers:
     :return:
     """
-    if modifier.show_viewport:
+    if modifier.name not in disabled_modifiers:
+        disabled_modifiers[modifier.name] = (modifier.show_viewport, modifier.show_render)
         modifier.show_viewport = False
-        disabled_modifiers.append(modifier.name)
+        modifier.show_render = False
     return disabled_modifiers
 
 
@@ -727,7 +650,7 @@ def disable_modifiers(obj, modifier_type_to_disable='EDGE_SPLIT', inverse=False)
     :param inverse:
     :return:
     """
-    disabled_modifiers = []
+    disabled_modifiers = dict()
     for modifier in obj.modifiers:
         if modifier_type_to_disable == 'ANY':
             disabled_modifiers = disable_modifier(modifier, disabled_modifiers)
@@ -746,8 +669,7 @@ def get_mesh(obj):
     Returns Mesh data of provided Object (un)affected with specified Modifiers, which are
     evaluated as within provided Scene.
     """
-    scene = bpy.context.scene
-    disabled_modifiers = []
+    disabled_modifiers = dict()
 
     # always disable armature modifiers from SCS animations
     # to prevent vertex rest position change because of the animation
@@ -759,20 +681,17 @@ def get_mesh(obj):
     if _get_scs_globals().export_output_type.startswith('EF'):
         if _get_scs_globals().export_apply_modifiers:
             if _get_scs_globals().export_exclude_edgesplit:
-                disabled_modifiers.extend(disable_modifiers(obj, modifier_type_to_disable='EDGE_SPLIT'))
-            mesh = obj.to_mesh(scene, True, 'PREVIEW')
-        else:
-            mesh = obj.data
+                disabled_modifiers.update(disable_modifiers(obj, modifier_type_to_disable='EDGE_SPLIT'))
     else:
-        if _get_scs_globals().export_apply_modifiers:
-            mesh = obj.to_mesh(scene, True, 'PREVIEW')
-        else:
+        if not _get_scs_globals().export_apply_modifiers:
             if _get_scs_globals().export_include_edgesplit:
-                disabled_modifiers.extend(disable_modifiers(obj, modifier_type_to_disable='EDGE_SPLIT', inverse=True))
-                mesh = obj.to_mesh(scene, True, 'PREVIEW')
+                disabled_modifiers.update(disable_modifiers(obj, modifier_type_to_disable='EDGE_SPLIT', inverse=True))
             else:
-                disabled_modifiers.extend(disable_modifiers(obj, modifier_type_to_disable='ANY', inverse=True))
-                mesh = obj.to_mesh(scene, True, 'PREVIEW')
+                disabled_modifiers.update(disable_modifiers(obj, modifier_type_to_disable='ANY', inverse=True))
+
+    depsgraph = bpy.context.evaluated_depsgraph_get()
+    obj_eval = obj.evaluated_get(depsgraph)
+    mesh = obj_eval.to_mesh(preserve_all_data_layers=True, depsgraph=depsgraph)
 
     restore_modifiers(obj, disabled_modifiers)
 
@@ -786,9 +705,10 @@ def restore_modifiers(obj, disabled_modifiers):
     :param disabled_modifiers:
     :return:
     """
-    for modifier in obj.modifiers:
-        if modifier.name in disabled_modifiers:
-            modifier.show_viewport = True
+    for modifier_name, show_states in disabled_modifiers.items():
+        obj.modifiers[modifier_name].show_viewport = show_states[0]
+        obj.modifiers[modifier_name].show_render = show_states[1]
+        lprint("D Restored modifier with name: %r on object with name: %r", (modifier_name, obj.name))
 
 
 def get_stream_vgs(obj):
@@ -853,16 +773,20 @@ def create_locator_empty(name, loc, rot=(0, 0, 0), scale=(1, 1, 1), size=1.0, da
     else:
         location = _convert.change_to_scs_xyz_coordinates(loc, _get_scs_globals().import_scale)
 
-    bpy.ops.object.empty_add(
-        type='PLAIN_AXES',
-        view_align=False,
-        location=location,
-        rotation=rot,
-    )
-
-    bpy.context.active_object.name = _name.get_unique(name, bpy.data.objects, sep=".")
-    locator = bpy.context.active_object
+    unique_name = _name.get_unique(name, bpy.data.objects, sep=".")
+    locator = bpy.data.objects.new(unique_name, None)
+    locator.empty_display_type = 'PLAIN_AXES'
     locator.scs_props.object_identity = locator.name
+
+    # link to active layer and scene and make it active and selected
+    bpy.context.view_layer.active_layer_collection.collection.objects.link(locator)
+    bpy.context.view_layer.objects.active = locator
+    locator.select_set(True)
+
+    # fix scene objects count to avoid callback of new object
+    bpy.context.scene.scs_cached_num_objects = len(bpy.context.scene.objects)
+
+    locator.location = location
 
     if rot_quaternion:
         locator.rotation_mode = 'QUATERNION'
@@ -870,6 +794,9 @@ def create_locator_empty(name, loc, rot=(0, 0, 0), scale=(1, 1, 1), size=1.0, da
             locator.rotation_quaternion = rot_quaternion
         else:
             locator.rotation_quaternion = _convert.change_to_blender_quaternion_coordinates(rot_quaternion)
+    else:
+        locator.rotation_mode = 'XYZ'
+        locator.rotation_euler = rot
 
     locator.scale = scale
     locator.scs_props.empty_object_type = 'Locator'
@@ -965,3 +892,126 @@ def get_other_object(obj_iterable, original_obj):
             return sel_obj
 
     return None
+
+
+def set_locators_original_size_and_type(obj):
+    """Set original drawing style for Empty object.
+
+    :param obj: Blender Object
+    :type obj: bpy.types.Object
+    """
+    # _object.set_attr_if_different(obj, "empty_display_size", obj.scs_props.locators_orig_display_size)
+    if obj.empty_display_size != obj.scs_props.locators_orig_display_size:
+        obj.empty_display_size = obj.scs_props.locators_orig_display_size
+        obj.scs_props.locators_orig_display_size = 0.0
+    if obj.empty_display_type != obj.scs_props.locators_orig_display_type:
+        obj.empty_display_type = obj.scs_props.locators_orig_display_type
+        obj.scs_props.locators_orig_display_type = ''
+
+
+def store_locators_original_display_size_and_type(obj):
+    """Set Prefab Locator drawing style for Empty object.
+
+    :param obj: Blender Object
+    :type obj: bpy.types.Object
+    """
+    if obj.scs_props.locators_orig_display_size == 0.0:
+        set_attr_if_different(obj.scs_props, "locators_orig_display_size", obj.empty_display_size)
+        set_attr_if_different(obj.scs_props, "locators_orig_display_type", obj.empty_display_type)
+
+
+def set_locators_prefab_display_size_and_type(obj):
+    """Set Prefab Locator drawing style for Empty object.
+
+    :param obj: Blender Object
+    :type obj: bpy.types.Object
+    """
+    new_draw_size = _get_scs_globals().locator_empty_size * _get_scs_globals().locator_size
+    set_attr_if_different(obj, "empty_display_size", new_draw_size)
+    set_attr_if_different(obj, "empty_display_type", 'PLAIN_AXES')
+
+
+def set_locators_model_display_size_and_type(obj):
+    """Set Model Locator drawing style for Empty object.
+
+    :param obj: Blender Object
+    :type obj: bpy.types.Object
+    """
+    new_draw_size = _get_scs_globals().locator_empty_size * _get_scs_globals().locator_size
+    set_attr_if_different(obj, "empty_display_size", new_draw_size)
+    set_attr_if_different(obj, "empty_display_type", 'PLAIN_AXES')
+
+
+def set_locators_coll_display_size_and_type(obj):
+    """Set Collision Locator drawing style for Empty object.
+
+    :param obj: Blender Object
+    :type obj: bpy.types.Object
+    """
+    new_draw_size = 0.5
+    if obj.scs_props.locator_collider_type == 'Box':
+        bigest_value = max(obj.scs_props.locator_collider_box_x, obj.scs_props.locator_collider_box_y, obj.scs_props.locator_collider_box_z)
+        new_draw_size = bigest_value * 0.8
+    elif obj.scs_props.locator_collider_type in ('Sphere', 'Capsule', 'Cylinder'):
+        new_draw_size = obj.scs_props.locator_collider_dia * 0.8
+    elif obj.scs_props.locator_collider_type == 'Convex':
+        bbox = obj.scs_props.get("coll_convex_bbox", None)
+        bbcenter = obj.scs_props.get("coll_convex_bbcenter", None)
+        if bbox and bbcenter:
+            scaling = _math.scaling_width_margin(bbox, obj.scs_props.locator_collider_margin)
+            val = []
+            for axis in range(3):
+                val.append((bbox[axis] + abs(bbcenter[axis])) * scaling[axis])
+            new_draw_size = max(val) * 0.5
+    set_attr_if_different(obj, "empty_display_size", new_draw_size)
+    set_attr_if_different(obj, "empty_display_type", 'PLAIN_AXES')
+
+
+def hide_set(obj, state, view_layer=None):
+    """Sets hide state on the object taking into account it's membership in current or given view layer.
+    So in case object is not found in view layer, it's hide state doesn't change.
+
+    :param obj: object to hide/unhide
+    :type obj: bpy.types.Object
+    :param state: True unhide; False hide
+    :type state: bool
+    :param view_layer: view layer on which hide state should be set; if None hide state is set on active view layer in the bpy context
+    :type view_layer: bpy.types.ViewLayer
+    :return: True if state was applied, False otherwise
+    :rtype: bool
+    """
+    if view_layer:
+        if obj.name in view_layer.objects:
+            obj.hide_set(state, view_layer=view_layer)
+            return True
+    else:
+        if obj.name in bpy.context.view_layer.objects:
+            obj.hide_set(state)
+            return True
+
+    return False
+
+
+def select_set(obj, state, view_layer=None):
+    """Sets select state on the object taking into account it's membership in current or given view layer.
+    So in case object is not found in view layer, it's hide state doesn't change.
+
+    :param obj: object to select/deselect
+    :type obj: bpy.types.Object
+    :param state: True select; False deselect
+    :type state: bool
+    :param view_layer: view layer on which select state should be set; if None select state is set on active view layer in the bpy context
+    :type view_layer: bpy.types.ViewLayer
+    :return: True if state was applied, False otherwise
+    :rtype: bool
+    """
+    if view_layer:
+        if obj.name in view_layer.objects:
+            obj.select_set(state, view_layer=view_layer)
+            return True
+    else:
+        if obj.name in bpy.context.view_layer.objects:
+            obj.select_set(state)
+            return True
+
+    return False

@@ -16,31 +16,41 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2015: SCS Software
+# Copyright (C) 2015-2019: SCS Software
 
+from io_scs_tools.internals.shaders.std_node_groups import blend_add_ng
 
 FLAVOR_ID = "blend_add"
 
+_BLEND_ADD_GN = "BlendAddPass"
 
-def init(node_tree, alpha_from, alpha_to):
+
+def init(node_tree, location, shader_from, shader_to):
     """Initialize blend add.
 
-    NOTE: this flavor is implemented the same as "blend_over" for now
-    because we don't have access to pixel color behind the material
-    using this flavor. So the closest solution is to use blend_over
-    as we at least get the opacity blending with alpha channel.
     :param node_tree: node tree on which blend over will be used
     :type node_tree: bpy.types.NodeTree
-    :param alpha_from: node socket from which blend over should be applierd
-    :type alpha_from: bpy.types.NodeSocket
-    :param alpha_to: node socket to which result of blend over should be send
-    :type alpha_to: bpy.types.NodeSocket
+    :param location: location where blend pass node should be created
+    :type location: tuple(int, int)
+    :param shader_from: node socket from which blend pass should take the shader result
+    :type shader_from: bpy.types.NodeSocket
+    :param shader_to: node socket to which result of blend pass should be sent
+    :type shader_to: bpy.types.NodeSocket
     """
 
-    # links creation
-    node_tree.links.new(alpha_to, alpha_from)
+    # node creation
+    blend_add_n = node_tree.nodes.new("ShaderNodeGroup")
+    blend_add_n.name = blend_add_n.label = _BLEND_ADD_GN
+    blend_add_n.location = location
+    blend_add_n.node_tree = blend_add_ng.get_node_group()
 
-    node_tree[FLAVOR_ID] = True
+    # link creation
+    node_tree.links.new(blend_add_n.inputs['Shader'], shader_from)
+    node_tree.links.new(shader_to, blend_add_n.outputs['Shader'])
+
+    # FIXME: move to old system after: https://developer.blender.org/T68406 is resolved
+    flavor_frame = node_tree.nodes.new(type="NodeFrame")
+    flavor_frame.name = flavor_frame.label = FLAVOR_ID
 
 
 def delete(node_tree):
@@ -50,8 +60,11 @@ def delete(node_tree):
     :type node_tree: bpy.types.NodeTree
     """
 
-    if FLAVOR_ID in node_tree:
-        del node_tree[FLAVOR_ID]
+    if _BLEND_ADD_GN in node_tree.nodes:
+        node_tree.nodes.remove(node_tree.nodes[_BLEND_ADD_GN])
+
+    if FLAVOR_ID in node_tree.nodes:
+        node_tree.nodes.remove(node_tree.nodes[FLAVOR_ID])
 
 
 def is_set(node_tree):
@@ -62,4 +75,4 @@ def is_set(node_tree):
     :return: True if flavor exists; False otherwise
     :rtype: bool
     """
-    return FLAVOR_ID in node_tree and node_tree[FLAVOR_ID]
+    return FLAVOR_ID in node_tree.nodes

@@ -162,7 +162,7 @@ def _get_data(file, line):
                         # print('  %i---%s' % (w_index, w_value))
                         data['weights'].append((w_index, w_value))
 
-                # CLONES
+                # CLONES & VERTEX_VERTICES
                 data_type, line = next_line(file)
                 line_split = re.split(' +', line.strip())
                 if line_split[0] == "Clones:":
@@ -173,6 +173,13 @@ def _get_data(file, line):
                         c_vertex = int(line_split[(cnt * 2) + 3])
                         # print('  %i---%s' % (c_piece, c_vertex))
                         data['clones'].append((c_piece, c_vertex))
+                elif line_split[0] == "VertexIndices:":
+                    # print('%s  =-> "%s"' % (data_type, line_split))
+                    data['vertex_indices'] = []
+                    for cnt in range(int(line_split[1])):
+                        c_vertex = int(line_split[cnt + 2])
+                        # print('  %i---%s' % (c_piece, c_vertex))
+                        data['vertex_indices'].append(c_vertex)
 
                 # CLOSING BRACKET
                 data_type, line = next_line(file)

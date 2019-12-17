@@ -16,35 +16,47 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2015: SCS Software
+# Copyright (C) 2015-2019: SCS Software
 
 import bpy
 from bpy.app.handlers import persistent
+from io_scs_tools.consts import SCSLigthing as _LIGHTING_consts
 from io_scs_tools.internals import looks as _looks
+from io_scs_tools.internals import preview_models as _preview_models
 from io_scs_tools.internals import shader_presets as _shader_presets
-from io_scs_tools.operators.world import SCSPathsInitialization as _SCSPathsInitialization
+from io_scs_tools.utils import collection as _collection_utils
 from io_scs_tools.utils import material as _material_utils
 from io_scs_tools.utils import object as _object_utils
 from io_scs_tools.utils import info as _info_utils
+from io_scs_tools.utils import property as _property_utils
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
 
 
 @persistent
 def post_load(scene):
+    from io_scs_tools.internals.containers.config import AsyncPathsInit
+
     # get Blender Tools version from last blend file load
     last_load_bt_ver = _get_scs_globals().last_load_bt_version
 
-    if _info_utils.cmp_ver_str(last_load_bt_ver, "0.6") <= 0:
+    # no version yet, so new blend or blend without previous BT usage. Nothing to be fixed, yay!
+    if last_load_bt_ver == _property_utils.get_default(_get_scs_globals(), 'last_load_bt_version'):
+        _get_scs_globals().last_load_bt_version = _info_utils.get_tools_version()
+        return
 
-        # try to add apply fixed function as callback, if failed execute fixes right now
-        if not _SCSPathsInitialization.append_callback(apply_fixes_for_0_6):
-            apply_fixes_for_0_6()
+    # list versions and fix functions  & then execute them
+    VERSIONS_LIST = (
+        ("0.6", apply_fixes_for_0_6),
+        ("1.4", apply_fixes_for_1_4),
+        ("1.12", apply_fixes_for_1_12),
+    )
 
-    if _info_utils.cmp_ver_str(last_load_bt_ver, "1.4") <= 0:
+    for version, func in VERSIONS_LIST:
+        if _info_utils.cmp_ver_str(last_load_bt_ver, version) <= 0:
 
-        # try to add apply fixed function as callback, if failed execute fixes right now
-        if not _SCSPathsInitialization.append_callback(apply_fixes_for_1_4):
-            apply_fixes_for_1_4()
+            # try to add apply fixed function as callback, if failed execute fixes right now
+            if not AsyncPathsInit.append_callback(func):
+                func()
 
     # as last update "last load" Blender Tools version to current
     _get_scs_globals().last_load_bt_version = _info_utils.get_tools_version()
@@ -156,7 +168,7 @@ def apply_fixes_for_1_4():
     print("INFO\t-  Applying fixes for version <= 1.4")
 
     # 1. reload all materials
-    bpy.ops.material.scs_reload_nodes('INVOKE_DEFAULT')
+    bpy.ops.material.scs_tools_reload_materials('INVOKE_DEFAULT')
 
     # 2. remove all obsolete ".scs_nmap_" + str(i) materials, as of 2.78 we are using new normal maps node
     i = 1
@@ -184,3 +196,81 @@ def apply_fixes_for_1_4():
             bpy.data.materials.remove(material, do_unlink=True)
 
         i += 1
+
+
+def apply_fixes_for_1_12():
+    """
+    Applies fixes for 1.12 or less:
+    1. Remove legacy scs_shader_presets_inventory from world.
+    2. Remove old lighting scene.
+    3. Reload materials node trees.
+    4. Unhide collections in viewport.
+    5. Enable proper filters in outliner (for user to see why his objects are hidden)
+    """
+
+    print("INFO\t-  Applying fixes for version <= 1.12")
+
+    from io_scs_tools.utils import __get_world__
+    world = __get_world__()
+
+    # 1. remove legacy scs_shader_presets_inventory from world
+    if 'scs_shader_presets_inventory' in world:
+        del world['scs_shader_presets_inventory']
+
+    # 2. remove old lighting scene
+    if _LIGHTING_consts.scene_name in bpy.data.scenes:
+        lighting_scene = bpy.data.scenes[_LIGHTING_consts.scene_name]
+
+        for obj in lighting_scene.objects:
+
+            if obj.type == "LIGHT":
+                bpy.data.lights.remove(obj.data)
+            else:
+                bpy.data.objects.remove(obj)
+
+        # TODO: use scenes.remove() once bug is resolved: https://developer.blender.org/T71422
+        override = {'scene': lighting_scene}
+        bpy.ops.scene.delete(override, 'EXEC_DEFAULT')
+
+        for col in bpy.data.collections:
+            if col.users == 0:
+                bpy.data.collections.remove(col)
+
+    # 3. reload materials node trees
+    override = bpy.context.copy()
+    override["window"] = bpy.data.window_managers[0].windows[0]
+    bpy.ops.material.scs_tools_reload_materials(override, 'INVOKE_DEFAULT')
+
+    # 4. update preview models to get new material assigned
+    _preview_models.update(force=True)
+
+    # 5. remove unused textures and reflection images from old blender (materials now don't use texture objects anymore)
+    for tex in bpy.data.textures:
+        if tex.users == 0:
+            bpy.data.textures.remove(tex)
+
+    for img in bpy.data.images:
+        if img.users == 0:
+            bpy.data.images.remove(img)
+
+    # 6. unhide all collections and objects in viewport
+    for coll in bpy.data.collections:
+        coll.hide_viewport = False
+
+    for obj in bpy.data.objects:
+        obj.hide_viewport = False
+
+    # due to big version bump after this one, we let user know he is migrating to 2.0
+    msg = (
+        "\nWelcome back, your scene just migrated to SCS Blender Tools 2.0!\n",
+        "To give you idea what just happened, here is a summary:",
+        "1. SCS Materials were reloaded and adopted to the new renderer in Blender!",
+        "2. SCS preview models were reloaded to apply new material to them!",
+        "3. Old SCS Lighting was removed and replaced by new one!",
+        "4. Old textures and images were purged!",
+        "5. Old layers were migrated over as collections, thus everything got visible in your scene!"
+    )
+
+    override = bpy.context.copy()
+    override["window"] = bpy.data.window_managers[0].windows[0]
+    bpy.ops.wm.scs_tools_show_3dview_report(override, 'INVOKE_DEFAULT', message="\n".join(msg))

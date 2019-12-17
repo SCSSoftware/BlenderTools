@@ -16,7 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2015: SCS Software
+# Copyright (C) 2015-2019: SCS Software
 
 from io_scs_tools.internals.shaders.eut2.lamp import Lamp
 from io_scs_tools.internals.shaders.eut2.dif_spec_add_env import DifSpecAddEnv
@@ -39,10 +39,3 @@ class LampAddEnv(Lamp, DifSpecAddEnv):
         # init parents
         DifSpecAddEnv.init(node_tree)
         Lamp.init(node_tree, init_dif_spec=False, start_pos_x=0, start_pos_y=500)
-
-        out_add_lampmask_n = node_tree.nodes[Lamp.OUT_ADD_LAMPMASK_NODE]
-        out_add_lampmask_n.location.y -= 300
-        compose_lighting_n = node_tree.nodes[DifSpecAddEnv.COMPOSE_LIGHTING_NODE]
-
-        # links fixing
-        node_tree.links.new(out_add_lampmask_n.inputs["Color2"], compose_lighting_n.outputs["Composed Color"])

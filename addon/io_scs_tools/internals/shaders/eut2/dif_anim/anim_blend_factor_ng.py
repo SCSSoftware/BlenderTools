@@ -19,12 +19,11 @@
 # Copyright (C) 2015: SCS Software
 
 import bpy
-from time import time
 from io_scs_tools.consts import Material as _MAT_consts
 
 BLEND_FACTOR_G = _MAT_consts.node_group_prefix + "BlendFactor"
 
-ANIM_TIME_NODE = "AnimTime"
+_ANIM_TIME_NODE = "AnimTime"
 
 
 def get_node_group():
@@ -40,14 +39,18 @@ def get_node_group():
     return bpy.data.node_groups[BLEND_FACTOR_G]
 
 
-def update_time():
+def update_time(scene):
     """Updates time value used in calculation of blend factor.
+
+    :param scene: scene in which time for shaders is being updated
+    :type scene: bpy.types.Scene
     """
 
     if BLEND_FACTOR_G not in bpy.data.node_groups:
         return
 
-    bpy.data.node_groups[BLEND_FACTOR_G].nodes[ANIM_TIME_NODE].outputs[0].default_value = time() % 60.0
+    time = scene.frame_current / (scene.render.fps / scene.render.fps_base)
+    bpy.data.node_groups[BLEND_FACTOR_G].nodes[_ANIM_TIME_NODE].outputs[0].default_value = time
 
 
 def __create_node_group__():
@@ -77,7 +80,7 @@ def __create_node_group__():
 
     # node creation
     anim_time_n = blend_fac_g.nodes.new("ShaderNodeValue")
-    anim_time_n.name = anim_time_n.label = ANIM_TIME_NODE
+    anim_time_n.name = anim_time_n.label = _ANIM_TIME_NODE
     anim_time_n.location = (start_pos_x, start_pos_y + 200)
 
     equation_nodes = []

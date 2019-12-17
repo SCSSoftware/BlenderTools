@@ -16,7 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2013-2014: SCS Software
+# Copyright (C) 2013-2019: SCS Software
 
 from io_scs_tools.operators import material
 from io_scs_tools.operators import mesh
@@ -24,3 +24,21 @@ from io_scs_tools.operators import object
 from io_scs_tools.operators import scene
 from io_scs_tools.operators import wm
 from io_scs_tools.operators import world
+
+
+def register():
+    material.register()
+    mesh.register()
+    object.register()
+    scene.register()
+    wm.register()
+    world.register()
+
+
+def unregister():
+    material.unregister()
+    mesh.unregister()
+    object.unregister()
+    scene.unregister()
+    wm.unregister()
+    world.unregister()
