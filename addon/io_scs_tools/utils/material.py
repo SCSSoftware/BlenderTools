@@ -188,7 +188,7 @@ def get_reflection_image(texture_path, report_invalid=False):
     abs_texture_filepaths = _path.get_texture_paths_from_tobj(abs_tobj_filepath)
 
     # should be a cubemap with six images
-    if len(abs_texture_filepaths) != 6:
+    if not abs_texture_filepaths or len(abs_texture_filepaths) != 6:
         return None
 
     # all six images have to exist
@@ -784,26 +784,30 @@ def set_texture_settings_to_node(tex_node, settings):
     :type settings: str
     """
 
+    # addr - repeating
+    if settings[2] == "1" and settings[3] == "1":
+        tex_node.extension = "REPEAT"
+    else:
+        tex_node.extension = "EXTEND"
+
     image = tex_node.image
 
+    # image settings can't be done without image object thus end here
+    if not image:
+        return
+
     # linear colorspace
-    if settings[0] == "1" and image:
+    if settings[0] == "1":
         image.colorspace_settings.name = "Linear"
     else:
         image.colorspace_settings.name = "sRGB"
 
     # tsnormal option
-    if settings[1] == "1" and image:
+    if settings[1] == "1":
         if image.filepath[-4:] in (".tga", ".dds"):
             image.colorspace_settings.name = "Non-Color"
         elif image.filepath[-4:] == ".png" and image.is_float:
             image.colorspace_settings.name = "Linear"
-
-    # addr
-    if settings[2] == "1" and settings[3] == "1":
-        tex_node.extension = "REPEAT"
-    else:
-        tex_node.extension = "EXTEND"
 
 
 def has_valid_color_management(scene):

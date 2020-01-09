@@ -124,11 +124,6 @@ def apply_fixes_for_0_6():
                     for scs_root in scs_roots:
                         _looks.write_through(scs_root, material, texture_attr_str)
 
-                # 2. trigger update function for path reload and reload of possible missing textures
-                update_func = getattr(material.scs_props, "update_" + texture_attr_str, None)
-                if update_func:
-                    update_func(material)
-
         # ignore already properly set materials
         if _shader_presets.has_preset(material.scs_props.active_shader_preset_name):
             continue
@@ -157,6 +152,11 @@ def apply_fixes_for_0_6():
             for scs_root in scs_roots:
                 _looks.write_through(scs_root, material, "active_shader_preset_name")
 
+        # 4. reload all materials once all corrections to materials has been done
+        override = bpy.context.copy()
+        override["window"] = bpy.data.window_managers[0].windows[0]
+        bpy.ops.material.scs_tools_reload_materials(override, 'INVOKE_DEFAULT')
+
 
 def apply_fixes_for_1_4():
     """
@@ -168,7 +168,9 @@ def apply_fixes_for_1_4():
     print("INFO\t-  Applying fixes for version <= 1.4")
 
     # 1. reload all materials
-    bpy.ops.material.scs_tools_reload_materials('INVOKE_DEFAULT')
+    override = bpy.context.copy()
+    override["window"] = bpy.data.window_managers[0].windows[0]
+    bpy.ops.material.scs_tools_reload_materials(override, 'INVOKE_DEFAULT')
 
     # 2. remove all obsolete ".scs_nmap_" + str(i) materials, as of 2.78 we are using new normal maps node
     i = 1

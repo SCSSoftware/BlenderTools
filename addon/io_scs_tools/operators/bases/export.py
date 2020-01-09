@@ -127,13 +127,15 @@ class SCSExportHelper:
         bpy.data.scenes.remove(self.scene)
         self.scene = None
 
-    def execute_export(self, context, without_preview):
+    def execute_export(self, context, without_preview, menu_filepath=None):
         """Executes export.
 
         :param context: operator context
         :type context: bpy_struct
         :param without_preview: is export run without preview?
         :type without_preview: bool
+        :param menu_filepath: filepath used from menu export, if not provided export is done to none menu set path
+        :type menu_filepath: str
         :return: success of batch export
         :rtype: {'FINISHED'} | {'CANCELLED'}
         """
@@ -150,7 +152,7 @@ class SCSExportHelper:
             ef_name_suffix = ".ef"
 
         try:
-            result = _export.batch_export(self, init_obj_list, name_suffix=ef_name_suffix)
+            result = _export.batch_export(self, init_obj_list, name_suffix=ef_name_suffix, menu_filepath=menu_filepath)
         except Exception as e:
 
             result = {"CANCELLED"}

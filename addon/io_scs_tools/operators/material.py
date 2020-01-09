@@ -347,6 +347,7 @@ class Common:
                         if base_mat_look_entries:
                             mat_look_entries = _looks.get_material_entries(root_obj, mat)
                             if base_mat_look_entries[base_mat] != mat_look_entries:
+                                lprint("W Looks of %r on object %r don't match with base material, material merge skipped!" % (mat.name, obj.name))
                                 continue
 
                         # ressign material
@@ -482,22 +483,29 @@ class Common:
             for mat in unmergable_base_mats:
                 del mats_to_merge[mat.name]
 
+            # take care of materials without linkage to objects,
+            # should be treated as mergable as no look entries for it exists.
+            for mat_name in mats_to_merge:
+                mat = bpy.data.materials[mat_name]
+                if mat not in mergable_base_mats:
+                    mergable_base_mats[mat] = _looks.get_material_entries(None, mat)
+
             # report unmergable
             if len(mats_to_merge) == 0 and len(unmergable_base_mats) > 0:
-                msg = ("No materials merging can be done. Found %i material candidates, "
+                msg = ("No materials merging can be done. Found %i base material candidates, "
                        "however they are used on multiple SCS Root objects with different looks setup!") % len(unmergable_base_mats)
                 self.report({'WARNING'}, msg)
                 lprint("W " + msg, report_warnings=1)
                 return {'CANCELLED'}
             elif len(unmergable_base_mats) > 0:
-                msg = "W Due to different looks settings on multiple SCS Root objects, following materials are unmergable:\n\t   "
+                msg = "W Due to different looks settings on multiple SCS Root objects, following base materials are unmergable:\n\t   "
                 for i, mat in enumerate(unmergable_base_mats):
                     msg += str(i + 1) + ". '" + mat.name + "'\n\t   "
                 lprint(msg.strip("\n\t   "))
 
             # now merge by name & effect & attributes and finish
             if self.merge_type == self.BY_NEA:
-                self.merge_materials(mats_to_merge, mergable_base_mats)
+                self.merge_materials(mats_to_merge, base_mat_look_entries=mergable_base_mats)
                 lprint("", report_warnings=1)
                 return {'FINISHED'}
 

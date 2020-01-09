@@ -151,15 +151,15 @@ class _ViewsBufferHandler:
     def __get_new_buffers__():
         """Gets new instance for all buffers we currently use in one view.
 
-        :return: currently we have 3 buffers: 1 for lines and 2 for points of different size
+        :return: currently we have 5 buffers: 1 for trises, 1 for stipple lines, 1 for normal lines and 2 for points of different size
         :rtype: tuple[_Buffer]
         """
         return (
-            _Buffer(_Buffer.Types.LINES, 2, ShaderTypes.SMOOTH_COLOR_CLIPPED_3D, ("pos", "color")),  # 0
+            _Buffer(_Buffer.Types.TRIS, 0, ShaderTypes.SMOOTH_COLOR_CLIPPED_3D, ("pos", "color")),  # 0
             _Buffer(_Buffer.Types.LINES, 2, ShaderTypes.SMOOTH_COLOR_STIPPLE_CLIPPED_3D, ("pos", "color")),  # 1
-            _Buffer(_Buffer.Types.POINTS, 5, ShaderTypes.SMOOTH_COLOR_CLIPPED_3D, ("pos", "color")),  # 2
-            _Buffer(_Buffer.Types.POINTS, 12, ShaderTypes.SMOOTH_COLOR_CLIPPED_3D, ("pos", "color")),  # 3
-            _Buffer(_Buffer.Types.TRIS, 0, ShaderTypes.SMOOTH_COLOR_CLIPPED_3D, ("pos", "color")),  # 4
+            _Buffer(_Buffer.Types.LINES, 2, ShaderTypes.SMOOTH_COLOR_CLIPPED_3D, ("pos", "color")),  # 2
+            _Buffer(_Buffer.Types.POINTS, 5, ShaderTypes.SMOOTH_COLOR_CLIPPED_3D, ("pos", "color")),  # 3
+            _Buffer(_Buffer.Types.POINTS, 12, ShaderTypes.SMOOTH_COLOR_CLIPPED_3D, ("pos", "color")),  # 4
         )
 
     def __init__(self):
@@ -200,7 +200,7 @@ class _ViewsBufferHandler:
         :param color: color of the vertex, has to be of size 4 and fromat: (r, g, b, a)
         :type color: mathutils.Vector | bpy.types.bpy_prop_collection | tuple
         """
-        buffer = self.__buffers[self.__current][4]
+        buffer = self.__buffers[self.__current][0]
 
         buffer.append_attr("pos", tuple(pos))
         buffer.append_attr("color", tuple(color))
@@ -218,7 +218,7 @@ class _ViewsBufferHandler:
         if is_stipple:
             buffer = self.__buffers[self.__current][1]
         else:
-            buffer = self.__buffers[self.__current][0]
+            buffer = self.__buffers[self.__current][2]
 
         buffer.append_attr("pos", tuple(pos))
         buffer.append_attr("color", tuple(color))
@@ -234,9 +234,9 @@ class _ViewsBufferHandler:
         :type size: float
         """
         if size == 5.0:
-            buffer = self.__buffers[self.__current][2]
-        elif size == 12.0:
             buffer = self.__buffers[self.__current][3]
+        elif size == 12.0:
+            buffer = self.__buffers[self.__current][4]
         else:
             raise ValueError("Unsupported point size: %.2f. Only 5.0 or 12.0 are supported!" % size)
 

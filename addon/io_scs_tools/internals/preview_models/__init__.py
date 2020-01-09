@@ -24,6 +24,7 @@ import bmesh
 from io_scs_tools.internals.preview_models.cache import PrevModelsCache
 from io_scs_tools.consts import Material as _MAT_consts
 from io_scs_tools.consts import Colors as _COL_consts
+from io_scs_tools.imp import pim as _pim_import
 from io_scs_tools.utils import path as _path_utils
 from io_scs_tools.utils.printout import lprint
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
@@ -144,9 +145,11 @@ def load(locator, deep_reload=False):
 
         # we need to load preview model, if old mesh is not found or deep reload is requested
         if not old_mesh or deep_reload:
-            from io_scs_tools.imp import pim as _pim_import
+            scs_globals = _get_scs_globals()
 
+            scs_globals.import_in_progress = True
             obj = _pim_import.load_pim_file(bpy.context, abs_filepath, preview_model=True)
+            scs_globals.import_in_progress = False
 
             # in case used preview model doesn't have any mesh, abort loading, report error and reset path
             # Path has to be reset to prevent loading preview model over and over again
@@ -193,6 +196,7 @@ def load(locator, deep_reload=False):
         prev_model_name = _cache.get_entry(locator.name)
         if prev_model_name and prev_model_name in bpy.data.objects:
             prev_model = bpy.data.objects[prev_model_name]
+            prev_model.data = old_mesh
         else:
             prev_model = bpy.data.objects.new(name=prem_name, object_data=old_mesh)
 

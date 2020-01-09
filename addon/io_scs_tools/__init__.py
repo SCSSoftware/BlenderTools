@@ -22,7 +22,7 @@ bl_info = {
     "name": "SCS Tools",
     "description": "Setup models, Import-Export SCS data format",
     "author": "Simon Lusenc (50keda), Milos Zajic (4museman)",
-    "version": (2, 0, "c95d7ac"),
+    "version": (2, 0, "fae8eb4"),
     "blender": (2, 81, 0),
     "location": "File > Import-Export",
     "wiki_url": "http://modding.scssoft.com/wiki/Documentation/Tools/SCS_Blender_Tools",
@@ -218,7 +218,13 @@ class SCS_TOOLS_OT_Export(bpy.types.Operator, _SCSExportHelper, ExportHelper):
     filter_glob: StringProperty(default=str("*" + filename_ext), options={'HIDDEN'})
 
     def execute(self, context):
-        return self.execute_export(context, True)
+        # convert filepath to None if empty, so export will ignore given menu file path and try to export to other none menu set paths
+        if self.filepath == "":
+            filepath = None
+        else:
+            filepath = os.path.dirname(self.filepath)
+
+        return self.execute_export(context, True, menu_filepath=filepath)
 
     def draw(self, context):
         from io_scs_tools.ui.shared import draw_export_panel
