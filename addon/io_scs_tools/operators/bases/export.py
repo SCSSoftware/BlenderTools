@@ -68,7 +68,7 @@ class SCSExportHelper:
                 for child_obj in children:
                     if child_obj.select_get():
                         children_selected.append(child_obj)
-                    else:
+                    elif child_obj.users_scene:  # unlinked objects shouldn't be exported
                         children_unselected.append(child_obj)
 
                 # if any children was selected make sure, to export only them
@@ -79,7 +79,10 @@ class SCSExportHelper:
         elif export_scope == "scene":
             objs_to_export = tuple(bpy.context.scene.objects)
         elif export_scope == "scenes":
-            objs_to_export = tuple(bpy.data.objects)
+            scenes_objs = set()
+            for scene in bpy.data.scenes:
+                scenes_objs.update(scene.objects)
+            objs_to_export = tuple(scenes_objs)
 
         # cache filtered list, to be able to retrive it quickly on second call
         self.cached_objects = objs_to_export

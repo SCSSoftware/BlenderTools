@@ -2699,6 +2699,7 @@ class PaintjobTools:
         pjs_alternate_uvset: BoolProperty(default=False)
         pjs_flipflake: BoolProperty(default=False)
         pjs_airbrush: BoolProperty(default=False)
+        pjs_stock: BoolProperty(default=False)
 
         @staticmethod
         def do_report(the_type, message, do_report=False):
@@ -2888,7 +2889,7 @@ class PaintjobTools:
 
                     img = bpy.data.images[_SINGLE_COLOR_IMAGE_NAME]
                     img.colorspace_settings.name = "sRGB"  # make sure we use sRGB color-profile
-                    img.use_alpha = True
+                    img.alpha_mode = 'STRAIGHT'
                     img.pixels[:] = comparing_pixel * 16
 
                     # we use shared prefix for 4x4 textures in case any other portion will be using same one
@@ -2898,7 +2899,7 @@ class PaintjobTools:
                                                                 int(comparing_pixel[3] * 255.0))
                     tga_path = os.path.join(tgas_dir_path, tga_name)
 
-                    img.save_render(tga_path, bpy.context.scene)
+                    img.save_render(tga_path, scene=bpy.context.scene)
 
                     lprint("I Texture portion %r has only one color in common texture, optimizing it by exporting 4x4px TGA!", (texture_portion.id,))
 

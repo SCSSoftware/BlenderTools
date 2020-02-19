@@ -520,7 +520,7 @@ class Common:
         bl_label = "More Options"
         bl_idname = "material.scs_tools_material_item_extras"
         bl_description = "Show more options for this material item (WT, Copy Linear Color etc.)"
-        bl_options = {'REGISTER', 'UNDO'}
+        bl_options = set()
 
         property_str: StringProperty(
             description="String representing which property should be worked on.",
@@ -635,11 +635,32 @@ class Looks:
         is_ctrl = False  # WT to same look of this material in other SCS Roots
         is_shift = False  # is_shift + is_ctrl ->  WT to all looks of this material in all SCS Roots
 
+        def init_control_states(self):
+
+            # decide which type of WT is it, prefer manually set type over ctrl and shift modifiers
+            if self.wt_type == self.WT_TYPE_NORMAL:
+                self.is_ctrl = False
+                self.is_shift = False
+            elif self.wt_type == self.WT_TYPE_SAME_LOOK:
+                self.is_ctrl = True
+                self.is_shift = False
+            elif self.wt_type == self.WT_TYPE_ALL:
+                self.is_ctrl = True
+                self.is_shift = True
+            else:
+                self.is_ctrl = False
+                self.is_shift = False
+
+            # always reset type for next invoke
+            self.wt_type = -1
+
         def execute(self, context):
             material = context.active_object.active_material
 
             if not material or not hasattr(material.scs_props, self.property_str):
                 return {'CANCELLED'}
+
+            self.init_control_states()
 
             scs_roots = []
             active_scs_root = _object_utils.get_scs_root(context.active_object)
@@ -652,11 +673,17 @@ class Looks:
             if self.is_shift or not self.is_ctrl:  # WT either on active only or all SCS roots; (Shift + Ctrl) or none
 
                 altered_looks = 0
+                altered_scs_roots = 0
                 for scs_root in scs_roots:
-                    altered_looks += _looks.write_through(scs_root, material, self.property_str)
+                    res = _looks.write_through(scs_root, material, self.property_str)
+
+                    # only log altered looks if write trought succeded
+                    if res > 0:
+                        altered_looks += res
+                        altered_scs_roots += 1
 
                 if altered_looks > 0:
-                    message = "Write through successfully altered %s looks on %s SCS Root Objects!" % (altered_looks, len(scs_roots))
+                    message = "Write through successfully altered %s looks on %s SCS Root Objects!" % (altered_looks, altered_scs_roots)
                 else:
                     message = "Nothing to write through."
 
@@ -697,27 +724,6 @@ class Looks:
                     self.report({'INFO'}, "Write through altered property on %s other SCS Root Objects!" % altered_looks)
 
             return {'FINISHED'}
-
-        def invoke(self, context, event):
-
-            # decide which type of WT is it, prefer manually set type over ctrl and shift modifiers
-            if self.wt_type == self.WT_TYPE_NORMAL:
-                self.is_ctrl = False
-                self.is_shift = False
-            elif self.wt_type == self.WT_TYPE_SAME_LOOK:
-                self.is_ctrl = True
-                self.is_shift = False
-            elif self.wt_type == self.WT_TYPE_ALL:
-                self.is_ctrl = True
-                self.is_shift = True
-            else:
-                self.is_ctrl = False
-                self.is_shift = False
-
-            # always reset type for next invoke
-            self.wt_type = -1
-
-            return self.execute(context)
 
 
 class Tobj:

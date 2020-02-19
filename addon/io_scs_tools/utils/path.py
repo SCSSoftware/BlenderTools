@@ -391,8 +391,12 @@ def get_texture_path_from_tobj(tobj_filepath, raw_value=False):
     :return: absolute texture file path if found or None
     :rtype: str | None
     """
+    texture_paths = get_texture_paths_from_tobj(tobj_filepath, raw_value=raw_value, first_only=True)
 
-    return get_texture_paths_from_tobj(tobj_filepath, raw_value=raw_value, first_only=True)[0]
+    if not texture_paths:
+        return None
+
+    return texture_paths[0]
 
 
 def get_texture_paths_from_tobj(tobj_filepath, raw_value=False, first_only=False):

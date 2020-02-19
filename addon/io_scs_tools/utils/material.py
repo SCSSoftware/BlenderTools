@@ -175,15 +175,22 @@ def get_reflection_image(texture_path, report_invalid=False):
     if not abs_tobj_filepath or not os.path.isfile(abs_tobj_filepath):
         return None
 
-    # check existance of this cubemap
-    if teximag_id_name in bpy.data.images:
+    # 1. reuse existing image texture if possible, otherwise construct first free slot
 
-        if _path.get_abs_path(bpy.data.images[teximag_id_name].filepath) == abs_tobj_filepath:
-            return bpy.data.images[teximag_id_name]
+    postfix = 0
+    postfixed_tex = teximag_id_name
+    while postfixed_tex in bpy.data.images:
 
-        bpy.data.images.remove(bpy.data.images[teximag_id_name])
+        img_exists = postfixed_tex in bpy.data.images
+        if img_exists and _path.repair_path(bpy.data.images[postfixed_tex].filepath) == _path.repair_path(abs_tobj_filepath):
+            return bpy.data.images[postfixed_tex]
 
-    # 1. get all textures file paths and check their existance
+        postfix += 1
+        postfixed_tex = teximag_id_name + "." + str(postfix).zfill(3)
+
+    teximag_id_name = postfixed_tex
+
+    # 2. get all textures file paths and check their existance
 
     abs_texture_filepaths = _path.get_texture_paths_from_tobj(abs_tobj_filepath)
 
@@ -221,13 +228,13 @@ def get_reflection_image(texture_path, report_invalid=False):
 
             return None
 
-    # 2. create image objects for all planes
+    # 3. create image objects for all planes
 
     images = []
     for abs_texture_filepath in abs_texture_filepaths:
         images.append(bpy.data.images.load(abs_texture_filepath))
 
-    # 3. setup scene, create planes, create camera projector and assign images
+    # 4. setup scene, create planes, create camera projector and assign images
 
     old_scene = bpy.context.window.scene
     tmp_scene = bpy.data.scenes.new("cubemap")
@@ -314,7 +321,7 @@ def get_reflection_image(texture_path, report_invalid=False):
 
     tmp_scene.collection.objects.link(cam_obj)
 
-    # 4. render & save image
+    # 5. render & save image
 
     final_image_path = os.path.join(tempfile.gettempdir(), teximag_id_name + ".tga")
 
@@ -329,7 +336,7 @@ def get_reflection_image(texture_path, report_invalid=False):
     tmp_scene.render.filepath = final_image_path
     bpy.ops.render.render(write_still=True, scene=tmp_scene.name)
 
-    # 5. cleanup & scene restoring
+    # 6. cleanup & scene restoring
 
     for obj in objects:
         bpy.data.objects.remove(obj)
@@ -349,14 +356,14 @@ def get_reflection_image(texture_path, report_invalid=False):
     bpy.context.window.scene = old_scene
     bpy.data.scenes.remove(tmp_scene)
 
-    # 6. load temp image and pack it
+    # 7. load temp image and pack it
 
     final_image = bpy.data.images.load(final_image_path)
     final_image.name = teximag_id_name
     final_image.alpha_mode = 'CHANNEL_PACKED'
     final_image.pack()
 
-    # 7. set filepath to original image
+    # 8. set filepath to original image
     final_image.filepath = abs_tobj_filepath
 
     return final_image

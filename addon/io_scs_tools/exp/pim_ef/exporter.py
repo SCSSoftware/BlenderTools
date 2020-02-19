@@ -113,6 +113,10 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
     # create mesh object data sections
     for mesh_obj in mesh_objects:
 
+        if mesh_obj.mode != 'OBJECT':
+            lprint("W Invalid object mode detected on: %r, skipping it on export!", (mesh_obj.name,))
+            continue
+
         vert_groups = mesh_obj.vertex_groups
 
         # calculate faces flip state from all ancestors of current object

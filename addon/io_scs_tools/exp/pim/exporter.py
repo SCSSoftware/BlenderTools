@@ -132,6 +132,10 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
     # create mesh object data sections
     for mesh_i, mesh_obj in enumerate(mesh_objects):
 
+        if mesh_obj.mode != 'OBJECT':
+            lprint("W Invalid object mode detected on: %r, skipping it on export!", (mesh_obj.name,))
+            continue
+
         lprint("I Preparing mesh object: %r ...", (mesh_obj.name,))
 
         # create part if it doesn't exists yet

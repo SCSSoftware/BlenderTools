@@ -122,4 +122,4 @@ def set_color(node_tree, color):
         return
 
     color = _convert_utils.to_node_color(color)
-    node_tree.nodes[PAINT_MULT_NODE].inputs[1].default_value = color
+    node_tree.nodes[PAINT_MULT_NODE].inputs[1].default_value = color[:3]

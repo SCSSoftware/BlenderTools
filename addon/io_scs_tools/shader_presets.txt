@@ -1270,6 +1270,11 @@ Shader {
         Tag: "tint_opacity"
         Value: ( -0.01 )
     }
+    Attribute {
+        Format: INT
+        Tag: "queue_bias"
+        Value: ( 0 )
+    }
     Texture {
         Tag: "texture[X]:texture_base"
         Value: "/vehicle/truck/share/glass_ex"
