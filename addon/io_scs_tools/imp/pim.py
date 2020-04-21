@@ -1024,7 +1024,7 @@ def load_pim_file(context, filepath, terrain_points_trans=None, preview_model=Fa
     armature = None
     if scs_globals.import_pis_file and bones:
         bpy.ops.object.add(type='ARMATURE')
-        if bpy.app.version < (2, 82, 0):
+        if bpy.context.preferences.edit.use_enter_edit_mode == False:
             bpy.ops.object.editmode_toggle()
         for bone in bones:
             bpy.ops.armature.bone_primitive_add(name=bone)
