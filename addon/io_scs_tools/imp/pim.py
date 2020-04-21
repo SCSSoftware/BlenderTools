@@ -1023,9 +1023,7 @@ def load_pim_file(context, filepath, terrain_points_trans=None, preview_model=Fa
     # CREATE SKELETON (ARMATURE)
     armature = None
     if scs_globals.import_pis_file and bones:
-        bpy.ops.object.add(type='ARMATURE')
-        if bpy.context.preferences.edit.use_enter_edit_mode == False:
-            bpy.ops.object.editmode_toggle()
+        bpy.ops.object.add(type='ARMATURE', enter_editmode=True)
         for bone in bones:
             bpy.ops.armature.bone_primitive_add(name=bone)
         bpy.ops.object.editmode_toggle()
