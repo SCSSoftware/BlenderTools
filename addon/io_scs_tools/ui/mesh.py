@@ -66,10 +66,6 @@ class SCS_TOOLS_PT_Mesh(_MeshPanelBlDefs, Panel):
         layout.use_property_split = True
         layout.use_property_decorate = False
 
-        # show this only for meshes not for empties and other kinda objects
-        if mesh:
-            layout.prop(mesh.scs_props, "vertex_color_multiplier")
-
 
 classes = (
     SCS_TOOLS_PT_Mesh,
@@ -77,13 +73,19 @@ classes = (
 
 
 def register():
-    for cls in classes:
-        bpy.utils.register_class(cls)
+    # for cls in classes:
+    #     bpy.utils.register_class(cls)
+    #
+    # from io_scs_tools import SCS_TOOLS_MT_MainMenu
+    # SCS_TOOLS_MT_MainMenu.append_props_entry("Mesh Properties", SCS_TOOLS_PT_Mesh.__name__)
 
-    from io_scs_tools import SCS_TOOLS_MT_MainMenu
-    SCS_TOOLS_MT_MainMenu.append_props_entry("Mesh Properties", SCS_TOOLS_PT_Mesh.__name__)
+    # No mesh settings available currently, thus commented out and just passing
+    pass
 
 
 def unregister():
-    for cls in classes:
-        bpy.utils.unregister_class(cls)
+    # for cls in classes:
+    #     bpy.utils.unregister_class(cls)
+
+    # No mesh settings available currently, thus commented out and just passing
+    pass

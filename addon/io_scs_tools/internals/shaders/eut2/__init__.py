@@ -16,7 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2015: SCS Software
+# Copyright (C) 2015-2021: SCS Software
 
 
 def get_shader(effect):
@@ -36,13 +36,9 @@ def get_shader(effect):
 
         from io_scs_tools.internals.shaders.eut2.water import Water as Shader
 
-    elif effect == "window.day":
+    elif effect == "window.lit":
 
-        from io_scs_tools.internals.shaders.eut2.window.day import WindowDay as Shader
-
-    elif effect == "window.night":
-
-        from io_scs_tools.internals.shaders.eut2.window.night import WindowNight as Shader
+        from io_scs_tools.internals.shaders.eut2.window.lit import WindowLit as Shader
 
     elif effect == "reflective":
 
@@ -83,10 +79,6 @@ def get_shader(effect):
     elif effect.startswith("retroreflective"):
 
         from io_scs_tools.internals.shaders.eut2.retroreflective import Retroreflective as Shader
-
-    elif effect.startswith("unlit.tex.a8"):
-
-        from io_scs_tools.internals.shaders.eut2.unlit_tex.a8 import UnlitTexA8 as Shader
 
     elif effect.startswith("unlit.tex"):
 

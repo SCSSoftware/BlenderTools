@@ -193,6 +193,7 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
         missing_skinned_verts = set()  # indicates if object is having only partial skin, which is not allowed in our models
         has_unnormalized_skin = False  # indicates if object has vertices which bones weight sum is smaller then one
         last_tangents_uv_layer = None  # stores uv layer for which tangents were calculated, so tangents won't be calculated all over again
+        max_vcolor = 0  # indicates maximum vertex color inside this model and is used to report unnormalized vertex color over 1.0
 
         for poly in mesh.polygons:
 
@@ -343,20 +344,35 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
                         uvs_aliases.append(aliases)
 
                 # 4. vcol -> vcol_lay = mesh.vertex_colors[0].data; vcol_lay[loop_i].color
-                vcol_multi = mesh_obj.data.scs_props.vertex_color_multiplier
                 if _MESH_consts.default_vcol not in mesh.vertex_colors:  # get RGB component of RGBA
                     vcol = (1.0,) * 3
                     missing_vcolor = True
                 else:
-                    color = mesh.vertex_colors[_MESH_consts.default_vcol].data[loop_i].color
-                    vcol = (color[0] * 2 * vcol_multi, color[1] * 2 * vcol_multi, color[2] * 2 * vcol_multi)
+                    color = list(mesh.vertex_colors[_MESH_consts.default_vcol].data[loop_i].color[:3])
+
+                    for i in range(0, 3):
+                        # since blender is saving vcolor in 8-bits 0.5 can not be set, thus clamp 128/255 to 0.5 or report to big vcolor otherwise
+                        if 0.5 < color[i] <= 0.501960813999176:
+                            color[i] = 0.5
+                        elif color[i] > 0.501960813999176 and color[i] > max_vcolor:
+                            max_vcolor = color[i]
+
+                    vcol = (color[0] * 2, color[1] * 2, color[2] * 2)
 
                 if _MESH_consts.default_vcol + _MESH_consts.vcol_a_suffix not in mesh.vertex_colors:  # get A component of RGBA
                     vcol += (1.0,)
                     missing_vcolor_a = True
                 else:
-                    alpha = mesh.vertex_colors[_MESH_consts.default_vcol + _MESH_consts.vcol_a_suffix].data[loop_i].color
-                    vcol += ((alpha[0] + alpha[1] + alpha[2]) / 3.0 * 2 * vcol_multi,)  # take avg of colors for alpha
+                    alpha = mesh.vertex_colors[_MESH_consts.default_vcol + _MESH_consts.vcol_a_suffix].data[loop_i].color[:3]
+                    alpha = (alpha[0] + alpha[1] + alpha[2]) / 3.0 # take avg of colors for alpha
+
+                    # since blender is saving vcolor in 8-bits 0.5 can not be set, thus clamp 128/255 to 0.5 or report to big vcolor otherwise
+                    if 0.5 < alpha <= 0.501960813999176:
+                        alpha = 0.5
+                    elif alpha > 0.501960813999176 and alpha > max_vcolor:
+                        max_vcolor = alpha
+
+                    vcol += (alpha * 2,)
 
                 # 5. tangent -> loop.tangent; loop.bitangent_sign -> calc_tangents() has to be called before
                 if pim_materials[pim_mat_name].get_nmap_uv_name():  # calculate tangents only if needed
@@ -466,6 +482,9 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
             lprint("W Object %r from SCS Root %r has unormalized skinning, exporting normalized weights!\n\t   "
                    "You can normalize weights by selecting object & executing 'Normalize All Vertex Groups'.",
                    (mesh_obj.name, root_object.name))
+        if max_vcolor != 0:
+            lprint("W Object %r from SCS Root %r has unormalized vertex color, some vertices use: %.5f. instead of max 0.5",
+                   (mesh_obj.name, root_object.name, max_vcolor))
 
     # add rest of the pieces to global list
     for piece_key in mesh_pieces:

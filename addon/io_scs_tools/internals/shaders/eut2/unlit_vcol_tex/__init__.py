@@ -21,6 +21,7 @@
 from mathutils import Color
 from io_scs_tools.consts import Mesh as _MESH_consts
 from io_scs_tools.internals.shaders.base import BaseShader
+from io_scs_tools.internals.shaders.eut2 import parameters
 from io_scs_tools.internals.shaders.eut2.std_node_groups import vcolor_input_ng
 from io_scs_tools.internals.shaders.flavors import alpha_test
 from io_scs_tools.internals.shaders.flavors import awhite
@@ -36,10 +37,12 @@ class UnlitVcolTex(BaseShader):
     DIFF_COL_NODE = "DiffuseColor"
     UVMAP_NODE = "UVMap"
     VCOL_GROUP_NODE = "VColorGroup"
+    VCOLOR_SCALE_NODE = "VertexColorScale"
     OPACITY_NODE = "OpacityMultiplier"
     BASE_TEX_NODE = "BaseTex"
     DIFF_MULT_NODE = "DiffMultiplier"
     TEX_MULT_NODE = "TextureMultiplier"
+    LUM_MULT_NODE = "LuminanceMultiplier"
     ALPHA_INV_NODE = "AlphaInv"
     OUT_SHADER_NODE = "OutShader"
     OUTPUT_NODE = "Output"
@@ -79,7 +82,7 @@ class UnlitVcolTex(BaseShader):
 
         opacity_n = node_tree.nodes.new("ShaderNodeMath")
         opacity_n.name = opacity_n.label = UnlitVcolTex.OPACITY_NODE
-        opacity_n.location = (start_pos_x + pos_x_shift * 3, start_pos_y + 1300)
+        opacity_n.location = (start_pos_x + pos_x_shift * 4, start_pos_y + 1300)
         opacity_n.operation = "MULTIPLY"
 
         base_tex_n = node_tree.nodes.new("ShaderNodeTexImage")
@@ -87,20 +90,32 @@ class UnlitVcolTex(BaseShader):
         base_tex_n.location = (start_pos_x + pos_x_shift, start_pos_y + 1500)
         base_tex_n.width = 140
 
+        vcol_scale_n = node_tree.nodes.new("ShaderNodeVectorMath")
+        vcol_scale_n.name = vcol_scale_n.label = UnlitVcolTex.VCOLOR_SCALE_NODE
+        vcol_scale_n.location = (start_pos_x + pos_x_shift * 3, start_pos_y + 1600)
+        vcol_scale_n.operation = "MULTIPLY"
+        vcol_scale_n.inputs[1].default_value = (2.0,) * 3
+
         diff_mult_n = node_tree.nodes.new("ShaderNodeVectorMath")
         diff_mult_n.name = diff_mult_n.label = UnlitVcolTex.DIFF_MULT_NODE
-        diff_mult_n.location = (start_pos_x + pos_x_shift * 3, start_pos_y + 1700)
+        diff_mult_n.location = (start_pos_x + pos_x_shift * 4, start_pos_y + 1700)
         diff_mult_n.operation = "MULTIPLY"
         diff_mult_n.inputs[1].default_value = (0, 0, 0)
 
         tex_mult_n = node_tree.nodes.new("ShaderNodeVectorMath")
         tex_mult_n.name = tex_mult_n.label = UnlitVcolTex.TEX_MULT_NODE
-        tex_mult_n.location = (start_pos_x + pos_x_shift * 4, start_pos_y + 1500)
+        tex_mult_n.location = (start_pos_x + pos_x_shift * 5, start_pos_y + 1500)
         tex_mult_n.operation = "MULTIPLY"
+
+        lum_mult_n = node_tree.nodes.new("ShaderNodeVectorMath")
+        lum_mult_n.name = lum_mult_n.label = UnlitVcolTex.LUM_MULT_NODE
+        lum_mult_n.location = (start_pos_x + pos_x_shift * 6, start_pos_y + 1500)
+        lum_mult_n.operation = "MULTIPLY"
+        lum_mult_n.inputs[0].default_value = (1.0,) * 3
 
         alpha_inv_n = node_tree.nodes.new("ShaderNodeMath")
         alpha_inv_n.name = alpha_inv_n.label = UnlitVcolTex.ALPHA_INV_NODE
-        alpha_inv_n.location = (start_pos_x + pos_x_shift * 5, 1300)
+        alpha_inv_n.location = (start_pos_x + pos_x_shift * 7, 1300)
         alpha_inv_n.operation = "SUBTRACT"
         alpha_inv_n.inputs[0].default_value = 0.999999  # TODO: change back to 1.0 after bug is fixed: https://developer.blender.org/T71426
         alpha_inv_n.inputs[1].default_value = 1.0
@@ -108,29 +123,33 @@ class UnlitVcolTex(BaseShader):
 
         out_shader_node = node_tree.nodes.new("ShaderNodeEeveeSpecular")
         out_shader_node.name = out_shader_node.label = UnlitVcolTex.OUT_SHADER_NODE
-        out_shader_node.location = (start_pos_x + pos_x_shift * 6, 1500)
+        out_shader_node.location = (start_pos_x + pos_x_shift * 8, 1500)
         out_shader_node.inputs["Base Color"].default_value = (0.0,) * 4
         out_shader_node.inputs["Specular"].default_value = (0.0,) * 4
 
         output_n = node_tree.nodes.new("ShaderNodeOutputMaterial")
         output_n.name = output_n.label = UnlitVcolTex.OUTPUT_NODE
-        output_n.location = (start_pos_x + pos_x_shift * 7, start_pos_y + 1500)
+        output_n.location = (start_pos_x + pos_x_shift * 9, start_pos_y + 1500)
 
         # links creation
         node_tree.links.new(base_tex_n.inputs['Vector'], uv_n.outputs['UV'])
 
-        node_tree.links.new(diff_mult_n.inputs[0], diff_col_n.outputs['Color'])
-        node_tree.links.new(diff_mult_n.inputs[1], vcol_group_n.outputs['Vertex Color'])
+        node_tree.links.new(vcol_scale_n.inputs[0], vcol_group_n.outputs['Vertex Color'])
 
         node_tree.links.new(opacity_n.inputs[0], base_tex_n.outputs["Alpha"])
         node_tree.links.new(opacity_n.inputs[1], vcol_group_n.outputs["Vertex Color Alpha"])
+
+        node_tree.links.new(diff_mult_n.inputs[0], diff_col_n.outputs['Color'])
+        node_tree.links.new(diff_mult_n.inputs[1], vcol_scale_n.outputs[0])
 
         node_tree.links.new(tex_mult_n.inputs[0], diff_mult_n.outputs[0])
         node_tree.links.new(tex_mult_n.inputs[1], base_tex_n.outputs['Color'])
 
         node_tree.links.new(alpha_inv_n.inputs[1], opacity_n.outputs['Value'])
 
-        node_tree.links.new(out_shader_node.inputs['Emissive Color'], tex_mult_n.outputs[0])
+        node_tree.links.new(lum_mult_n.inputs[1], tex_mult_n.outputs[0])
+
+        node_tree.links.new(out_shader_node.inputs['Emissive Color'], lum_mult_n.outputs[0])
         node_tree.links.new(out_shader_node.inputs['Transparency'], alpha_inv_n.outputs['Value'])
 
         node_tree.links.new(output_n.inputs['Surface'], out_shader_node.outputs['BSDF'])
@@ -201,6 +220,20 @@ class UnlitVcolTex(BaseShader):
         """
 
         pass  # NOTE: shadow bias won't be visualized as game uses it's own implementation
+
+    @staticmethod
+    def set_aux5(node_tree, aux_property):
+        """Set luminosity boost factor.
+
+        :param node_tree: node tree of current shader
+        :type node_tree: bpy.types.NodeTree
+        :param aux_property: luminosity output represented with property group
+        :type aux_property: bpy.types.IDPropertyGroup
+        """
+
+        luminance_boost = aux_property[0]['value']
+        node_tree.nodes[UnlitVcolTex.LUM_MULT_NODE].inputs[0].default_value = (parameters.get_material_luminosity(luminance_boost),) * 3
+
 
     @staticmethod
     def set_base_texture(node_tree, image):
@@ -340,7 +373,7 @@ class UnlitVcolTex(BaseShader):
         if switch_on:
             out_shader_node = node_tree.nodes[UnlitVcolTex.OUT_SHADER_NODE]
             from_mix_factor = node_tree.nodes[UnlitVcolTex.OPACITY_NODE].outputs[0]
-            from_color_socket = node_tree.nodes[UnlitVcolTex.TEX_MULT_NODE].outputs[0]
+            from_color_socket = node_tree.nodes[UnlitVcolTex.LUM_MULT_NODE].outputs[0]
 
             # remove link to transparency as awhite sets alpha to 1
             if out_shader_node.inputs['Transparency'].links:

@@ -16,7 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2017-2019: SCS Software
+# Copyright (C) 2017-2020: SCS Software
 
 import bpy
 import bmesh
@@ -26,7 +26,6 @@ from io_scs_tools.consts import Operators as _OP_consts
 from io_scs_tools.imp.pim import get_header
 from io_scs_tools.imp.pim import get_global
 from io_scs_tools.imp.pim import get_material_properties
-from io_scs_tools.imp.pim import get_piece_properties
 from io_scs_tools.imp.pim import get_part_properties
 from io_scs_tools.imp.pim import get_locator_properties
 from io_scs_tools.imp.pim import get_bones_properties
@@ -40,6 +39,30 @@ from io_scs_tools.utils import convert as _convert_utils
 from io_scs_tools.utils import object as _object_utils
 from io_scs_tools.utils import mesh as _mesh_utils
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
+
+
+def _get_piece_properties(section):
+    """Receives a Piece section and returns its properties in its own variables.
+    For any item that fails to be found, it returns None."""
+    ob_index = ob_material = ob_vertex_cnt = ob_edge_cnt = ob_face_cnt = ob_stream_cnt = 0
+    for prop in section.props:
+        if prop[0] in ("", "#"):
+            pass
+        elif prop[0] == "Index":
+            ob_index = prop[1]
+        elif prop[0] == "Material":
+            ob_material = prop[1]
+        elif prop[0] == "VertexCount":
+            ob_vertex_cnt = prop[1]
+        elif prop[0] == "EdgeCount":
+            ob_edge_cnt = prop[1]
+        elif prop[0] == "FaceCount":
+            ob_face_cnt = prop[1]
+        elif prop[0] == "StreamCount":
+            ob_stream_cnt = prop[1]
+        else:
+            lprint('\nW Unknown property in "Piece" data: "%s"!', prop[0])
+    return ob_index, ob_material, ob_vertex_cnt, ob_edge_cnt, ob_face_cnt, ob_stream_cnt
 
 
 def _get_piece_streams(section):
@@ -263,19 +286,22 @@ def _create_piece(
     if mesh_rgb:
         mesh_rgb_final.update(mesh_rgb)
 
+    vcolor_corrupt = False
     for vc_layer_name in mesh_rgb_final:
-        max_value = mesh_rgb_final[vc_layer_name][0][0][0] / 2
 
-        for vc_entry in mesh_rgb_final[vc_layer_name]:
-            for v_i in vc_entry:
+        # check for vcolor bigger than possible float range (since we divide our vcolor by 2 max value is 2)
+        max_vcolor = 2.0
+        for k, vc_entry in enumerate(mesh_rgb_final[vc_layer_name]):
+            for j, v_i in enumerate(vc_entry):
                 for i, value in enumerate(v_i):
-                    if max_value < value / 2:
-                        max_value = value / 2
+                    if value > max_vcolor:
+                        mesh_rgb_final[vc_layer_name][k][j][i] = max_vcolor
+                        vcolor_corrupt = True
 
-        if max_value > mesh.scs_props.vertex_color_multiplier:
-            mesh.scs_props.vertex_color_multiplier = max_value
+        _mesh_utils.bm_make_vc_layer(7, bm, vc_layer_name, mesh_rgb_final[vc_layer_name])
 
-        _mesh_utils.bm_make_vc_layer(7, bm, vc_layer_name, mesh_rgb_final[vc_layer_name], mesh.scs_props.vertex_color_multiplier)
+    if vcolor_corrupt:
+        lprint("W Piece %r has vertices with vertex color greater the 1.0, clamping it!", (name,))
 
     bm.to_mesh(mesh)
     mesh.update()
@@ -489,8 +515,12 @@ def load_pim_file(context, filepath, terrain_points_trans=None, preview_model=Fa
                 ]
         elif section.type == 'Piece':
             if scs_globals.import_pim_file:
-                ob_index, ob_material, ob_vertex_cnt, ob_edge_cnt, ob_face_cnt, ob_stream_cnt = get_piece_properties(section)
+                ob_index, ob_material, ob_vertex_cnt, ob_edge_cnt, ob_face_cnt, ob_stream_cnt = _get_piece_properties(section)
                 piece_name = 'piece_' + str(ob_index)
+
+                if ob_vertex_cnt == 0 or ob_face_cnt == 0:
+                    lprint("W Piece with index %i has no vertices or faces, ignoring piece import in model:\n\t   %r!", (ob_index, filepath))
+                    continue
 
                 (mesh_vertices,
                  mesh_normals,

@@ -497,6 +497,8 @@ class PaintjobTools:
     """Name of the object inside the group which visibility tells us either group should be exported or no."""
     model_variant_prop = ".scs_variant"
     """Name of the property for saving variant of the model inside group encapsulating imported paintable model."""
+    main_coll_name = ".scs_main_collection"
+    """Name of the collection where left over objects will be linked to, when importing from sii data."""
 
     id_mask_colors = (
         (51, 0, 0),

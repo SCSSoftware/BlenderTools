@@ -2262,9 +2262,6 @@ class SCSRoot:
             # 3. add scs root empty object, set it's properties and fix scene objects count to avoid callback of new object
             name = _name_utils.get_unique(self.scs_root_object_string, bpy.data.objects)
             new_scs_root = bpy.data.objects.new(name, None)
-            new_scs_root.empty_display_size = 5.0
-            new_scs_root.empty_display_type = "ARROWS"
-            new_scs_root.show_name = True
             new_scs_root.location = context.scene.cursor.location
 
             new_scs_root.scs_props.object_identity = new_scs_root.name

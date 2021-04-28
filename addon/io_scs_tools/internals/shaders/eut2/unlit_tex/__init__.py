@@ -21,6 +21,7 @@
 from mathutils import Color
 from io_scs_tools.consts import Mesh as _MESH_consts
 from io_scs_tools.internals.shaders.base import BaseShader
+from io_scs_tools.internals.shaders.eut2 import parameters
 from io_scs_tools.internals.shaders.flavors import alpha_test
 from io_scs_tools.internals.shaders.flavors import blend_over
 from io_scs_tools.internals.shaders.flavors import blend_add
@@ -35,6 +36,7 @@ class UnlitTex(BaseShader):
     UV_MAP_NODE = "UVMap"
     BASE_TEX_NODE = "BaseTex"
     TEX_MULT_NODE = "TextureMultiplier"
+    LUM_MULT_NODE = "LuminanceMultiplier"
     ALPHA_INV_NODE = "AlphaInv"
     OUT_SHADER_NODE = "OutShader"
     OUTPUT_NODE = "Output"
@@ -77,6 +79,12 @@ class UnlitTex(BaseShader):
         tex_mult_n.location = (start_pos_x + pos_x_shift * 3, start_pos_y + 1500)
         tex_mult_n.operation = "MULTIPLY"
 
+        lum_mult_n = node_tree.nodes.new("ShaderNodeVectorMath")
+        lum_mult_n.name = lum_mult_n.label = UnlitTex.LUM_MULT_NODE
+        lum_mult_n.location = (start_pos_x + pos_x_shift * 4, start_pos_y + 1500)
+        lum_mult_n.operation = "MULTIPLY"
+        lum_mult_n.inputs[0].default_value = (1.0,) * 3
+
         alpha_inv_n = node_tree.nodes.new("ShaderNodeMath")
         alpha_inv_n.name = alpha_inv_n.label = UnlitTex.ALPHA_INV_NODE
         alpha_inv_n.location = (start_pos_x + pos_x_shift * 4, 1300)
@@ -103,7 +111,9 @@ class UnlitTex(BaseShader):
 
         node_tree.links.new(alpha_inv_n.inputs[1], base_tex_n.outputs['Alpha'])
 
-        node_tree.links.new(out_shader_node.inputs['Emissive Color'], tex_mult_n.outputs[0])
+        node_tree.links.new(lum_mult_n.inputs[1], tex_mult_n.outputs[0])
+
+        node_tree.links.new(out_shader_node.inputs['Emissive Color'], lum_mult_n.outputs[0])
         node_tree.links.new(out_shader_node.inputs['Transparency'], alpha_inv_n.outputs['Value'])
 
         node_tree.links.new(output_n.inputs['Surface'], out_shader_node.outputs['BSDF'])
@@ -172,6 +182,19 @@ class UnlitTex(BaseShader):
         """
 
         pass  # NOTE: shadow bias won't be visualized as game uses it's own implementation
+
+    @staticmethod
+    def set_aux5(node_tree, aux_property):
+        """Set luminosity boost factor.
+
+        :param node_tree: node tree of current shader
+        :type node_tree: bpy.types.NodeTree
+        :param aux_property: luminosity output represented with property group
+        :type aux_property: bpy.types.IDPropertyGroup
+        """
+
+        luminance_boost = aux_property[0]['value']
+        node_tree.nodes[UnlitTex.LUM_MULT_NODE].inputs[0].default_value = (parameters.get_material_luminosity(luminance_boost),) * 3
 
     @staticmethod
     def set_base_texture(node_tree, image):

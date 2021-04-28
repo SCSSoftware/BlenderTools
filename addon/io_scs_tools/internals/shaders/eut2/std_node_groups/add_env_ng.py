@@ -16,12 +16,13 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2015-2019: SCS Software
+# Copyright (C) 2015-2021: SCS Software
 
 import bpy
 from io_scs_tools.consts import Material as _MAT_consts
 from io_scs_tools.consts import SCSLigthing as _LIGHTING_consts
-from io_scs_tools.internals.shaders.eut2.std_node_groups import fresnel_ng
+from io_scs_tools.internals.shaders.eut2.std_node_groups import fresnel_legacy_ng
+from io_scs_tools.internals.shaders.eut2.std_node_groups import fresnel_schlick_ng
 
 ADD_ENV_G = _MAT_consts.node_group_prefix + "AddEnvGroup"
 
@@ -33,7 +34,9 @@ _REFL_TEX_COL_MULT_NODE = "ReflTexColorMultiplier"
 _TEX_FRESNEL_MULT_NODE = "TextureFresnelMultiplier"
 _GLOBAL_ENV_FACTOR_NODE = "GlobalEnvFactor"
 _GLOBAL_ENV_MULT_NODE = "GlobalEnvMultiplier"
-_FRESNEL_GNODE = "FresnelGroup"
+_FRESNEL_LEGACY_GNODE = "FresnelLegacyGroup"
+_FRESNEL_SCHLICK_GNODE = "FresnelSchlickGroup"
+_FRESNEL_TYPE_MIX_NODE = "Fresnel Mix"
 
 
 def get_node_group():
@@ -121,6 +124,7 @@ def __create_node_group__():
         add_env_g.nodes.clear()
 
     # inputs defining
+    add_env_g.inputs.new("NodeSocketFloat", "Fresnel Type")
     add_env_g.inputs.new("NodeSocketFloat", "Fresnel Scale")
     add_env_g.inputs.new("NodeSocketFloat", "Fresnel Bias")
     add_env_g.inputs.new("NodeSocketVector", "Normal Vector")
@@ -148,6 +152,19 @@ def __create_node_group__():
     env_weight_mult_n.location = (start_pos_x + pos_x_shift * 1, start_pos_y - 500)
     env_weight_mult_n.operation = "MULTIPLY"
 
+    fresnel_legacy_n = add_env_g.nodes.new("ShaderNodeGroup")
+    fresnel_legacy_n.name = fresnel_legacy_n.label = _FRESNEL_LEGACY_GNODE
+    fresnel_legacy_n.location = (start_pos_x + pos_x_shift * 2, start_pos_y + 300)
+    fresnel_legacy_n.node_tree = fresnel_legacy_ng.get_node_group()
+    fresnel_legacy_n.inputs['Scale'].default_value = 0.9
+    fresnel_legacy_n.inputs['Bias'].default_value = 0.2
+
+    fresnel_schlick_n = add_env_g.nodes.new("ShaderNodeGroup")
+    fresnel_schlick_n.name = fresnel_schlick_n.label = _FRESNEL_SCHLICK_GNODE
+    fresnel_schlick_n.location = (start_pos_x + pos_x_shift * 2, start_pos_y + 100)
+    fresnel_schlick_n.node_tree = fresnel_schlick_ng.get_node_group()
+    fresnel_schlick_n.inputs['Bias'].default_value = 0.2
+
     env_spec_mult_n = add_env_g.nodes.new("ShaderNodeVectorMath")
     env_spec_mult_n.name = env_spec_mult_n.label = _ENV_SPEC_MULT_NODE
     env_spec_mult_n.location = (start_pos_x + pos_x_shift * 2, start_pos_y - 350)
@@ -158,17 +175,15 @@ def __create_node_group__():
     refl_tex_mult_n.location = (start_pos_x + pos_x_shift * 2, start_pos_y - 150)
     refl_tex_mult_n.operation = "MULTIPLY"
 
+    fresnel_type_mix_n = add_env_g.nodes.new("ShaderNodeMixRGB")
+    fresnel_type_mix_n.name = fresnel_type_mix_n.label = _FRESNEL_TYPE_MIX_NODE
+    fresnel_type_mix_n.location = (start_pos_x + pos_x_shift * 3, start_pos_y + 200)
+    fresnel_type_mix_n.blend_type = "MIX"
+
     refl_tex_col_mult_n = add_env_g.nodes.new("ShaderNodeVectorMath")
     refl_tex_col_mult_n.name = refl_tex_col_mult_n.label = _REFL_TEX_COL_MULT_NODE
     refl_tex_col_mult_n.location = (start_pos_x + pos_x_shift * 3, start_pos_y - 200)
     refl_tex_col_mult_n.operation = "MULTIPLY"
-
-    fresnel_n = add_env_g.nodes.new("ShaderNodeGroup")
-    fresnel_n.name = fresnel_n.label = _FRESNEL_GNODE
-    fresnel_n.location = (start_pos_x + pos_x_shift * 2, start_pos_y + 150)
-    fresnel_n.node_tree = fresnel_ng.get_node_group()
-    fresnel_n.inputs['Scale'].default_value = 0.9
-    fresnel_n.inputs['Bias'].default_value = 0.2
 
     tex_fresnel_mult_n = add_env_g.nodes.new("ShaderNodeMixRGB")
     tex_fresnel_mult_n.name = tex_fresnel_mult_n.label = _TEX_FRESNEL_MULT_NODE
@@ -201,11 +216,19 @@ def __create_node_group__():
     add_env_g.links.new(refl_tex_mult_n.inputs[0], input_n.outputs['Reflection Texture Color'])
     add_env_g.links.new(refl_tex_mult_n.inputs[1], input_n.outputs['Base Texture Alpha'])
 
+    add_env_g.links.new(fresnel_legacy_n.inputs['Reflection Normal Vector'], input_n.outputs['Reflection Normal Vector'])
+    add_env_g.links.new(fresnel_legacy_n.inputs['Normal Vector'], input_n.outputs['Normal Vector'])
+    add_env_g.links.new(fresnel_legacy_n.inputs['Scale'], input_n.outputs['Fresnel Scale'])
+    add_env_g.links.new(fresnel_legacy_n.inputs['Bias'], input_n.outputs['Fresnel Bias'])
+
+    add_env_g.links.new(fresnel_schlick_n.inputs['Reflection Normal Vector'], input_n.outputs['Reflection Normal Vector'])
+    add_env_g.links.new(fresnel_schlick_n.inputs['Normal Vector'], input_n.outputs['Normal Vector'])
+    add_env_g.links.new(fresnel_schlick_n.inputs['Bias'], input_n.outputs['Fresnel Bias'])
+
     # pass 3
-    add_env_g.links.new(fresnel_n.inputs['Reflection Normal Vector'], input_n.outputs['Reflection Normal Vector'])
-    add_env_g.links.new(fresnel_n.inputs['Normal Vector'], input_n.outputs['Normal Vector'])
-    add_env_g.links.new(fresnel_n.inputs['Scale'], input_n.outputs['Fresnel Scale'])
-    add_env_g.links.new(fresnel_n.inputs['Bias'], input_n.outputs['Fresnel Bias'])
+    add_env_g.links.new(fresnel_type_mix_n.inputs['Fac'], input_n.outputs['Fresnel Type'])
+    add_env_g.links.new(fresnel_type_mix_n.inputs['Color1'], fresnel_legacy_n.outputs['Fresnel Factor'])
+    add_env_g.links.new(fresnel_type_mix_n.inputs['Color2'], fresnel_schlick_n.outputs['Fresnel Factor'])
 
     add_env_g.links.new(refl_tex_col_mult_n.inputs[0], refl_tex_mult_n.outputs[0])
     add_env_g.links.new(refl_tex_col_mult_n.inputs[1], env_spec_mult_n.outputs[0])
@@ -213,7 +236,7 @@ def __create_node_group__():
     # pass 4
     add_env_g.links.new(tex_fresnel_mult_n.inputs['Fac'], input_n.outputs['Apply Fresnel'])
     add_env_g.links.new(tex_fresnel_mult_n.inputs['Color1'], refl_tex_col_mult_n.outputs[0])
-    add_env_g.links.new(tex_fresnel_mult_n.inputs['Color2'], fresnel_n.outputs['Fresnel Factor'])
+    add_env_g.links.new(tex_fresnel_mult_n.inputs['Color2'], fresnel_type_mix_n.outputs['Color'])
 
     # pass 5
     add_env_g.links.new(global_env_mult_n.inputs[0], tex_fresnel_mult_n.outputs['Color'])

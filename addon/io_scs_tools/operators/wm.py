@@ -161,7 +161,7 @@ class SCS_TOOLS_OT_Show3DViewReport(bpy.types.Operator):
 
             img_path = os.path.join(_path_utils.get_addon_installation_paths()[0], "ui", "banners", img_name)
             img = bpy.data.images.load(img_path, check_existing=True)
-            img.colorspace_settings.name = 'Raw'
+            img.colorspace_settings.name = 'sRGB'
 
         else:
 

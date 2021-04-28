@@ -16,12 +16,12 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2015: SCS Software
+# Copyright (C) 2015-2021: SCS Software
 
 import bpy
 from io_scs_tools.consts import Material as _MAT_consts
 
-FRESNEL_G = _MAT_consts.node_group_prefix + "FresnelGroup"
+FRESNEL_LEGACY_G = _MAT_consts.node_group_prefix + "FresnelLegacyGroup"
 
 
 def get_node_group():
@@ -31,10 +31,10 @@ def get_node_group():
     :rtype: bpy.types.NodeGroup
     """
 
-    if FRESNEL_G not in bpy.data.node_groups:
+    if FRESNEL_LEGACY_G not in bpy.data.node_groups:
         __create_fresnel_group__()
 
-    return bpy.data.node_groups[FRESNEL_G]
+    return bpy.data.node_groups[FRESNEL_LEGACY_G]
 
 
 def __create_fresnel_group__():
@@ -44,7 +44,7 @@ def __create_fresnel_group__():
     Outputs: Fresnel Factor
     """
 
-    fresnel_g = bpy.data.node_groups.new(type="ShaderNodeTree", name=FRESNEL_G)
+    fresnel_g = bpy.data.node_groups.new(type="ShaderNodeTree", name=FRESNEL_LEGACY_G)
 
     # inputs defining
     fresnel_g.inputs.new("NodeSocketFloat", "Scale")

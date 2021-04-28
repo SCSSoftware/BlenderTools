@@ -132,6 +132,8 @@ def get_texture_path_from_material(material, texture_type, export_path):
     :type material: bpy.types.Material
     :param texture_type: type of texture which should be readed from material (example "texture_base")
     :type texture_type: str
+    :param export_path: path where PIT of this material and texture is gonna be exported
+    :type export_path: str
     :return: relative path for Texture section data of PIT material
     :rtype: str
     """
@@ -160,7 +162,7 @@ def get_texture_path_from_material(material, texture_type, export_path):
 
             # search for relative path inside current scs project base and
             # possible dlc/mod parent folders; use first found
-            for infix in ("", "../base/", "../../base/"):
+            for infix in ("", "../base/", "../base_vehicle/", "../../base/", "../../base_vehicle/"):
 
                 curr_path = os.path.join(scs_project_path, infix + texture_raw_path[2:] + ext)
 
@@ -189,12 +191,14 @@ def get_texture_path_from_material(material, texture_type, export_path):
             # if we are exporting somewhere into SCS Project Base Path texture still can be saved
             if scs_project_path != "" and _path_utils.startswith(export_path, scs_project_path):
 
-                tex_dir, tex_filename = os.path.split(texture_raw_path_with_ext)
+                tex_dir, tex_filename = os.path.split(texture_raw_path)
                 tobj_filename = tex_filename + ".tobj"
+
+                texture_copied_path_with_ext = os.path.join(export_path, tex_filename) + ext
 
                 # copy texture beside exported files
                 try:
-                    shutil.copy2(texture_raw_path_with_ext, os.path.join(export_path, tex_filename))
+                    shutil.copy2(texture_raw_path_with_ext, texture_copied_path_with_ext)
                 except OSError as e:
                     # ignore copying the same file
                     # NOTE: happens if absolute texture paths are used
@@ -215,6 +219,13 @@ def get_texture_path_from_material(material, texture_type, export_path):
                 tobj_rel_filepath = tobj_rel_filepath + os.sep + tobj_filename[:-5]
                 tobj_abs_filepath = os.path.join(export_path, tobj_filename)
                 texture_abs_filepath = texture_raw_path_with_ext
+
+                lprint("W Material %r texture of type %r uses absolute path!\n\t    " +
+                       "Texture copied into the Project Base Path beside exported PIT file:\n\t    " +
+                       "Original path: %r\n\t    " +
+                       "Copied path: %r",
+                       (material.name, texture_type, texture_abs_filepath, texture_copied_path_with_ext))
+
                 break
 
             else:
@@ -225,7 +236,7 @@ def get_texture_path_from_material(material, texture_type, export_path):
 
     else:
         lprint("E Texture file %r from material %r doesn't exists inside current Project Base Path.\n\t   " +
-               "TOBJ  won't be exported and reference will remain empty, expect problems!",
+               "TOBJ won't be exported and reference will remain empty, expect problems!",
                (texture_raw_path, material.name))
         return ""
 
@@ -562,6 +573,8 @@ def export(root_object, filepath, name_suffix, used_parts, used_materials):
 
                             elif attr_prop == "Tag" and "aux" in attribute_dict[attr_prop]:
                                 attribute_section.props.append((attr_prop, "aux[" + attribute_dict[attr_prop][3:] + "]"))
+                            elif attr_prop == "FriendlyTag":
+                                continue
                             else:
                                 attribute_section.props.append((attr_prop, attribute_dict[attr_prop]))
 

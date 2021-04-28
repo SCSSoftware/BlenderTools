@@ -16,36 +16,29 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2013-2019: SCS Software
-
-import bpy
-from bpy.props import StringProperty
+# Copyright (C) 2021: SCS Software
 
 
-class MeshSCSTools(bpy.types.PropertyGroup):
+def get():
+    """Returns texture types names used in eut2.sky shader.
+
+    :return: set of names
+    :rtype: tuple
     """
-    SCS Tools Mesh Variables - ...Mesh.scs_props...
-    :return:
-    """
-    locator_preview_model_path: StringProperty(
-        name="Preview Model",
-        description="Preview model filepath",
-        default="",
-        subtype="FILE_PATH",
-        # subtype='NONE',
-    )
+    return 'Base A', 'Base B', 'Over A', 'Over B'
 
 
-classes = (
-    MeshSCSTools,
-)
+def get_base_a():
+    return get()[0]
 
 
-def register():
-    for cls in classes:
-        bpy.utils.register_class(cls)
+def get_base_b():
+    return get()[1]
 
 
-def unregister():
-    for cls in classes:
-        bpy.utils.unregister_class(cls)
+def get_over_a():
+    return get()[2]
+
+
+def get_over_b():
+    return get()[3]

@@ -21,6 +21,7 @@
 from mathutils import Color
 from io_scs_tools.consts import Mesh as _MESH_consts
 from io_scs_tools.internals.shaders.base import BaseShader
+from io_scs_tools.internals.shaders.eut2.parameters import get_fresnel_glass
 from io_scs_tools.internals.shaders.eut2.std_node_groups import compose_lighting_ng
 from io_scs_tools.internals.shaders.eut2.std_node_groups import add_env_ng
 from io_scs_tools.internals.shaders.eut2.std_node_groups import lighting_evaluator_ng
@@ -212,6 +213,7 @@ class Glass(BaseShader):
         add_env_n.name = add_env_n.label = Glass.ADD_ENV_GROUP_NODE
         add_env_n.location = (start_pos_x + pos_x_shift * 7, start_pos_y + 2500)
         add_env_n.node_tree = add_env_ng.get_node_group()
+        add_env_n.inputs['Fresnel Type'].default_value = 1.0
         add_env_n.inputs['Fresnel Scale'].default_value = 2.0
         add_env_n.inputs['Fresnel Bias'].default_value = 1.0
         add_env_n.inputs['Apply Fresnel'].default_value = 1.0
@@ -519,8 +521,10 @@ class Glass(BaseShader):
         :type bias_scale: (float, float)
         """
 
-        node_tree.nodes[Glass.ADD_ENV_GROUP_NODE].inputs['Fresnel Bias'].default_value = bias_scale[0]
-        node_tree.nodes[Glass.ADD_ENV_GROUP_NODE].inputs['Fresnel Scale'].default_value = bias_scale[1]
+        bias, scale = get_fresnel_glass(bias_scale[0], bias_scale[1])
+
+        node_tree.nodes[Glass.ADD_ENV_GROUP_NODE].inputs['Fresnel Bias'].default_value = bias
+        node_tree.nodes[Glass.ADD_ENV_GROUP_NODE].inputs['Fresnel Scale'].default_value = scale
 
     @staticmethod
     def set_tint_opacity(node_tree, opacity):

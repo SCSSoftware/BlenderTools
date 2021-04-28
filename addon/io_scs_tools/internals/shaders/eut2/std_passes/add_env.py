@@ -16,7 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2015-2019: SCS Software
+# Copyright (C) 2015-2021: SCS Software
 
 from io_scs_tools.internals.shaders.eut2.std_node_groups import add_env_ng
 from io_scs_tools.internals.shaders.eut2.std_node_groups import refl_normal_ng
@@ -78,12 +78,14 @@ class StdAddEnv:
         add_env_n.name = add_env_n.label = StdAddEnv.ADD_ENV_GROUP_NODE
         add_env_n.location = (start_pos_x + pos_x_shift * 3, start_pos_y + 2300)
         add_env_n.node_tree = add_env_ng.get_node_group()
+        add_env_n.inputs['Fresnel Type'].default_value = 0.0
         add_env_n.inputs['Apply Fresnel'].default_value = 1.0
         add_env_n.inputs['Fresnel Scale'].default_value = 0.9
         add_env_n.inputs['Fresnel Bias'].default_value = 0.2
-        add_env_n.inputs['Base Texture Alpha'].default_value = 0.5
+        add_env_n.inputs['Base Texture Alpha'].default_value = 1.0
         add_env_n.inputs['Weighted Color'].default_value = (1.0,) * 4
         add_env_n.inputs['Strength Multiplier'].default_value = 1.0
+        add_env_n.inputs['Specular Color'].default_value = (1.0,) * 4
 
         # geometry links
         node_tree.links.new(refl_normal_n.inputs['Incoming'], geometry_n.outputs['Incoming'])

@@ -395,7 +395,7 @@ def bm_make_uv_layer(pim_version, bm, faces, uv_layer_name, uv_layer_data):
                 loop[uv_lay].uv = _convert.change_to_scs_uv_coordinates(uv_layer_data[face_i][loop_i])
 
 
-def bm_make_vc_layer(pim_version, bm, vc_layer_name, vc_layer_data, multiplier=1.0):
+def bm_make_vc_layer(pim_version, bm, vc_layer_name, vc_layer_data):
     """Add Vertex Color Layer to the BMesh object.
 
     :param pim_version: PIM version of the File from which data have been read
@@ -435,12 +435,12 @@ def bm_make_vc_layer(pim_version, bm, vc_layer_name, vc_layer_data, multiplier=1
                     vcol = vc_layer_data[face_i][loop_i][:3]
                     alpha = vc_layer_data[face_i][loop_i][3]
 
-            vcol = (vcol[0] / 2 / multiplier, vcol[1] / 2 / multiplier, vcol[2] / 2 / multiplier, 1.0)
+            vcol = (vcol[0] / 2, vcol[1] / 2, vcol[2] / 2, 1.0)
             loop[color_lay] = vcol
 
             if alpha != -1.0:
                 assert color_a_lay
-                vcol_a = (alpha / 2 / multiplier,) * 3 + (1.0,)
+                vcol_a = (alpha / 2,) * 3 + (1.0,)
                 loop[color_a_lay] = vcol_a
 
 

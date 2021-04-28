@@ -16,7 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2019: SCS Software
+# Copyright (C) 2019-2021: SCS Software
 
 import bpy
 from io_scs_tools.consts import LampTools as _LT_consts
@@ -32,6 +32,7 @@ UV_Y_TILES = ["UV_Y_0_", "UV_Y_1_", "UV_Y_2_", "UV_Y_3_"]
 
 LAMPMASK_MIX_G = _MAT_consts.node_group_prefix + "LampmaskMixerGroup"
 
+_ALPHA_DECODE_NODE = "Alpha Decode"
 _UV_DOT_X_NODE = "UV_X_Separator"
 _UV_DOT_Y_NODE = "UV_Y_Separator"
 _TEX_COL_SEP_NODE = "TexColorSeparator"
@@ -77,29 +78,33 @@ def __create_node_group__():
     output_n.location = (pos_x_shift * 9, 0)
 
     # nodes creation
+    alpha_decode_n = lampmask_g.nodes.new("ShaderNodeMath")
+    alpha_decode_n.name = alpha_decode_n.label = _TEX_COL_SEP_NODE
+    alpha_decode_n.location = (pos_x_shift, 50)
+    alpha_decode_n.operation = "POWER"
+    alpha_decode_n.inputs[1].default_value = 2.2
+
     tex_col_sep_n = lampmask_g.nodes.new("ShaderNodeSeparateRGB")
-    tex_col_sep_n.name = _TEX_COL_SEP_NODE
-    tex_col_sep_n.label = _TEX_COL_SEP_NODE
+    tex_col_sep_n.name = tex_col_sep_n.label = _TEX_COL_SEP_NODE
     tex_col_sep_n.location = (pos_x_shift, 400)
 
     uv_x_dot_n = lampmask_g.nodes.new("ShaderNodeVectorMath")
-    uv_x_dot_n.name = _UV_DOT_X_NODE
-    uv_x_dot_n.label = _UV_DOT_X_NODE
+    uv_x_dot_n.name = uv_x_dot_n.label = _UV_DOT_X_NODE
     uv_x_dot_n.location = (pos_x_shift, -200)
     uv_x_dot_n.operation = "DOT_PRODUCT"
     uv_x_dot_n.inputs[1].default_value = (1.0, 0, 0)
 
     uv_y_dot_n = lampmask_g.nodes.new("ShaderNodeVectorMath")
-    uv_y_dot_n.name = _UV_DOT_Y_NODE
-    uv_y_dot_n.label = _UV_DOT_Y_NODE
+    uv_y_dot_n.name = uv_y_dot_n.label = _UV_DOT_Y_NODE
     uv_y_dot_n.location = (pos_x_shift, -450)
     uv_y_dot_n.operation = "DOT_PRODUCT"
     uv_y_dot_n.inputs[1].default_value = (0, 1.0, 0)
 
     # links creation
-    lampmask_g.links.new(tex_col_sep_n.inputs["Image"], input_n.outputs["Lampmask Tex Color"])
-    lampmask_g.links.new(uv_x_dot_n.inputs[0], input_n.outputs["UV Vector"])
-    lampmask_g.links.new(uv_y_dot_n.inputs[0], input_n.outputs["UV Vector"])
+    lampmask_g.links.new(alpha_decode_n.inputs[0], input_n.outputs['Lampmask Tex Alpha'])
+    lampmask_g.links.new(tex_col_sep_n.inputs['Image'], input_n.outputs['Lampmask Tex Color'])
+    lampmask_g.links.new(uv_x_dot_n.inputs[0], input_n.outputs['UV Vector'])
+    lampmask_g.links.new(uv_y_dot_n.inputs[0], input_n.outputs['UV Vector'])
 
     nodes_for_addition = []
 
@@ -144,7 +149,7 @@ def __create_node_group__():
             pos_y -= 100
 
         __init_vehicle_switch_nodes__(lampmask_g,
-                                      input_n.outputs["Lampmask Tex Alpha"],
+                                      alpha_decode_n.outputs[0],
                                       tex_col_sep_n.outputs["R"],
                                       tex_col_sep_n.outputs["G"],
                                       tex_col_sep_n.outputs["B"],
@@ -158,7 +163,7 @@ def __create_node_group__():
     for aux_lamp_type in AUX_LAMP_TYPES:
 
         __init_aux_switch_nodes__(lampmask_g,
-                                  input_n.outputs["Lampmask Tex Alpha"],
+                                  alpha_decode_n.outputs[0],
                                   tex_col_sep_n.outputs["R"],
                                   tex_col_sep_n.outputs["G"],
                                   aux_lamp_type,
@@ -172,7 +177,7 @@ def __create_node_group__():
     for traffic_light_type in TRAFFIC_LIGHT_TYPES:
 
         __init_traffic_light_switch_nodes__(lampmask_g,
-                                            input_n.outputs["Lampmask Tex Alpha"],
+                                            alpha_decode_n.outputs[0],
                                             traffic_light_type,
                                             pos_x_shift * 5, pos_y,
                                             nodes_for_addition)

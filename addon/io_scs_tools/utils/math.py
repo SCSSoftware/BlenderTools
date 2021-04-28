@@ -110,3 +110,20 @@ def saasin(fac):
         return math.pi / 2.0
     else:
         return math.asin(fac)
+
+
+def clamp(value, min_value=0, max_value=1):
+    """Clamp value to given interval. Default interval is [0,1].
+
+    :param value: value to clamp
+    :type value: float|int
+    :param min_value: minimum value allowed
+    :type min_value: float|int
+    :param max_value: maximum value allowed
+    :type max_value: float|int
+    :return: clamped value
+    :rtype: float|int
+    """
+    assert min_value < max_value
+
+    return min(max_value, max(min_value, value))

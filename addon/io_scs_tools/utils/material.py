@@ -236,9 +236,7 @@ def get_reflection_image(texture_path, report_invalid=False):
 
     # 4. setup scene, create planes, create camera projector and assign images
 
-    old_scene = bpy.context.window.scene
     tmp_scene = bpy.data.scenes.new("cubemap")
-    bpy.context.window.scene = tmp_scene
 
     meshes = []
     materials = []
@@ -353,7 +351,6 @@ def get_reflection_image(texture_path, report_invalid=False):
     bpy.data.objects.remove(cam_obj)
     bpy.data.cameras.remove(camera)
 
-    bpy.context.window.scene = old_scene
     bpy.data.scenes.remove(tmp_scene)
 
     # 7. load temp image and pack it
@@ -578,7 +575,7 @@ def set_shader_data_to_material(material, section, is_import=False, override_bac
     for tex_type in used_texture_types:
 
         # skip unknown texture type
-        if tex_type not in material.scs_props.get_texture_types().keys():
+        if tex_type not in material.scs_props.get_texture_types():
             lprint("D Trying to apply unknown texture type to SCS material: %r", (tex_type,))
             continue
 

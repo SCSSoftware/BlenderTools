@@ -41,10 +41,10 @@ Shader {
         Value: ( 0.2 0.9 )
     }
     Attribute {
-        Format: FLOAT
+        Format: FLOAT2
         Tag: "aux[5]"
-        FriendlyTag: "Luminance Boost"
-        Value: ( 0.0 )
+        FriendlyTag: "Luminance Output (Day, Night) (nit)"
+        Value: ( 0.0 0.0 )
     }
     Texture {
         Tag: "texture[X]:texture_base"
@@ -82,10 +82,10 @@ Shader {
         Value: ( 0.0 )
     }
     Attribute {
-        Format: FLOAT
+        Format: FLOAT2
         Tag: "aux[5]"
-        FriendlyTag: "Luminance Boost"
-        Value: ( 0.0 )
+        FriendlyTag: "Luminance Output (Day, Night) (nit)"
+        Value: ( 0.0 0.0 )
     }
     Texture {
         Tag: "texture[X]:texture_base"
@@ -118,10 +118,10 @@ Shader {
         Value: ( 0.0 )
     }
     Attribute {
-        Format: FLOAT
+        Format: FLOAT2
         Tag: "aux[5]"
-        FriendlyTag: "Luminance Boost"
-        Value: ( 0.0 )
+        FriendlyTag: "Luminance Output (Day, Night) (nit)"
+        Value: ( 0.0 0.0 )
     }
     Texture {
         Tag: "texture[X]:texture_base"
@@ -154,10 +154,10 @@ Shader {
         Value: ( 0.0 )
     }
     Attribute {
-        Format: FLOAT
+        Format: FLOAT2
         Tag: "aux[5]"
-        FriendlyTag: "Luminance Boost"
-        Value: ( 0.0 )
+        FriendlyTag: "Luminance Output (Day, Night) (nit)"
+        Value: ( 0.0 0.0 )
     }
     Texture {
         Tag: "texture[X]:texture_base"
@@ -205,11 +205,6 @@ Shader {
     PresetName: "decalshadow"
     Effect: "eut2.decalshadow"
     Flags: 0
-    Attribute {
-        Format: FLOAT3
-        Tag: "diffuse"
-        Value: ( 1.0 1.0 1.0 )
-    }
     Texture {
         Tag: "texture[X]:texture_base"
         Value: ""
@@ -330,6 +325,12 @@ Shader {
         Tag: "reflection"
         Value: ( 0.0 )
     }
+    Attribute {
+        Format: FLOAT2
+        Tag: "aux[5]"
+        FriendlyTag: "Luminance Output (Day, Night) (nit)"
+        Value: ( 0.0 0.0 )
+    }
     Texture {
         Tag: "texture[X]:texture_base"
         Value: ""
@@ -339,7 +340,7 @@ Shader {
 Shader {
     PresetName: "dif.lum.spec"
     Effect: "eut2.dif.lum.spec"
-    Flavors: ( "SHADOW" "PAINT" "TEXGEN0" "INVERTLUM" "LUMMULVCOL" "ASAFEW" "ALPHA" "DEPTH" "BLEND_OVER|BLEND_MULT|BLEND_ADD" )
+    Flavors: ( "SHADOW" "PAINT" "TEXGEN0" "LUMMULVCOL" "ASAFEW" "ALPHA" "DEPTH" "BLEND_OVER|BLEND_MULT|BLEND_ADD" )
     Flags: 0
     Attribute {
         Format: FLOAT3
@@ -367,10 +368,10 @@ Shader {
         Value: ( 0.0 )
     }
     Attribute {
-        Format: FLOAT
+        Format: FLOAT2
         Tag: "aux[5]"
-        FriendlyTag: "Luminance Boost"
-        Value: ( 0.0 )
+        FriendlyTag: "Luminance Output (Day, Night) (nit)"
+        Value: ( 0.0 0.0 )
     }
     Texture {
         Tag: "texture[X]:texture_base"
@@ -1220,6 +1221,12 @@ Shader {
         Tag: "diffuse"
         Value: ( 1.0 1.0 1.0 )
     }
+    Attribute {
+        Format: FLOAT2
+        Tag: "aux[5]"
+        FriendlyTag: "Luminance Output (Day, Night) (nit)"
+        Value: ( 0.0 0.0 )
+    }
     Texture {
         Tag: "texture[X]:texture_base"
         Value: "/model/flare/flare"
@@ -1238,12 +1245,12 @@ Shader {
     Attribute {
         Format: FLOAT3
         Tag: "specular"
-        Value: ( 0.5 0.5 0.5 )
+        Value: ( 1.0 1.0 1.0 )
     }
     Attribute {
         Format: FLOAT
         Tag: "shininess"
-        Value: ( 95.0 )
+        Value: ( 25.0 )
     }
     Attribute {
         Format: FLOAT
@@ -1251,24 +1258,19 @@ Shader {
         Value: ( 0.0 )
     }
     Attribute {
-        Format: FLOAT3
-        Tag: "env_factor"
-        Value: ( 3.0 3.0 3.0 )
-    }
-    Attribute {
         Format: FLOAT2
         Tag: "fresnel"
-        Value: ( 1.0 2.0 )
+        Value: ( 0.01 -1 )
     }
     Attribute {
         Format: FLOAT3
         Tag: "tint"
-        Value: ( 0.78 0.8 0.79 )
+        Value: ( 0.97 0.97 0.97 )
     }
     Attribute {
         Format: FLOAT
         Tag: "tint_opacity"
-        Value: ( -0.01 )
+        Value: ( 0.0 )
     }
     Attribute {
         Format: INT
@@ -1367,15 +1369,21 @@ Shader {
         Value: ( 0.0 0.0 0.0 )
     }
     Attribute {
-        Format: FLOAT
-        Tag: "shininess"
-        Value: ( 0.0 )
+        Format: FLOAT3
+        Tag: "env_factor"
+        Value: ( 0.0 0.0 0.0 )
     }
     Attribute {
         Format: FLOAT
         Tag: "aux[0]"
         FriendlyTag: "Depth Bias"
         Value: ( 0.0 )
+    }
+    Attribute {
+        Format: FLOAT2
+        Tag: "aux[5]"
+        FriendlyTag: "Luminance Output (Day, Night) (nit)"
+        Value: ( 0.0 0.0 )
     }
     Texture {
         Tag: "texture[X]:texture_base"
@@ -1398,15 +1406,21 @@ Shader {
         Value: ( 0.0 0.0 0.0 )
     }
     Attribute {
-        Format: FLOAT
-        Tag: "shininess"
-        Value: ( 0.0 )
+        Format: FLOAT3
+        Tag: "env_factor"
+        Value: ( 0.0 0.0 0.0 )
     }
     Attribute {
         Format: FLOAT
         Tag: "aux[0]"
         FriendlyTag: "Depth Bias"
         Value: ( 0.0 )
+    }
+    Attribute {
+        Format: FLOAT2
+        Tag: "aux[5]"
+        FriendlyTag: "Luminance Output (Day, Night) (nit)"
+        Value: ( 0.0 0.0 )
     }
     Texture {
         Tag: "texture[X]:texture_base"
@@ -1450,11 +1464,6 @@ Shader {
     PresetName: "shadowmap"
     Effect: "eut2.shadowmap"
     Flags: 0
-    Attribute {
-        Format: FLOAT3
-        Tag: "diffuse"
-        Value: ( 1.0 1.0 1.0 )
-    }
     Texture {
         Tag: "texture[X]:texture_base"
         Value: ""
@@ -1505,14 +1514,30 @@ Shader {
 Shader {
     PresetName: "sky"
     Effect: "eut2.sky"
-    Flavors: ( "BLEND_OVER" )
+    Flavors: ( "SKYPART_BACKGROUND|SKYPART_STARS" )
     Flags: 0
     Attribute {
-        Format: FLOAT
+        Format: FLOAT3
         Tag: "aux[0]"
         FriendlyTag: "Layer Blend"
-        Value: ( 0.5 )
+        Value: ( 0.0 0.0 1.0)
         PreviewOnly: "True"
+    }
+    Attribute {
+        Format: FLOAT4
+        Tag: "aux[1]"
+        FriendlyTag: "V Cutoff"
+        Value: ( 0.0 0.0 0.0 0.0 )
+        PreviewOnly: "True"
+        Hide: "False"
+    }
+    Attribute {
+        Format: FLOAT4
+        Tag: "aux[2]"
+        FriendlyTag: "V Scale"
+        Value: ( 1.0 1.0 1.0 1.0 )
+        PreviewOnly: "True"
+        Hide: "True"
     }
     Attribute {
         Format: FLOAT3
@@ -1520,19 +1545,24 @@ Shader {
         Value: ( 1.0 1.0 1.0 )
     }
     Texture {
-        Tag: "texture[X]:texture_base"
-        Value: "/model/skybox/nice0/nice0_11-15_g"
+        Tag: "texture[X]:texture_sky_weather_base_a"
+        Value: "/model/skybox/nice_00/nice00_08_80_g"
         TexCoord: ( 0 )
     }
     Texture {
-        Tag: "texture[X]:texture_over"
-        Value: "/model/skybox/nice0/nice0_11-15_g"
+        Tag: "texture[X]:texture_sky_weather_base_b"
+        Value: "/model/skybox/nice_00/nice00_08_80_g"
         TexCoord: ( 0 )
     }
     Texture {
-        Tag: "texture[X]:texture_mask"
-        Value: ""
-        TexCoord: ( 1 )
+        Tag: "texture[X]:texture_sky_weather_over_a"
+        Value: "/model/skybox/bad_00/bad00_08_80_g"
+        TexCoord: ( 0 )
+    }
+    Texture {
+        Tag: "texture[X]:texture_sky_weather_over_b"
+        Value: "/model/skybox/nice_00/nice00_08_80_g"
+        TexCoord: ( 0 )
     }
 }
 Shader {
@@ -1548,7 +1578,7 @@ Shader {
     Attribute {
         Format: FLOAT3
         Tag: "specular"
-        Value: ( 1.5 1.5 1.5 )
+        Value: ( 1.0 1.0 1.0 )
     }
     Attribute {
         Format: FLOAT
@@ -1559,11 +1589,6 @@ Shader {
         Format: FLOAT
         Tag: "add_ambient"
         Value: ( 0.0 )
-    }
-    Attribute {
-        Format: FLOAT3
-        Tag: "env_factor"
-        Value: ( 0.3 0.3 0.3 )
     }
     Attribute {
         Format: FLOAT2
@@ -1591,6 +1616,12 @@ Shader {
         Tag: "diffuse"
         Value: ( 1.0 1.0 1.0 )
     }
+    Attribute {
+        Format: FLOAT2
+        Tag: "aux[5]"
+        FriendlyTag: "Luminance Output (Day, Night) (nit)"
+        Value: ( 0.0 0.0 )
+    }
     Texture {
         Tag: "texture[X]:texture_base"
         Value: ""
@@ -1606,6 +1637,12 @@ Shader {
         Format: FLOAT3
         Tag: "diffuse"
         Value: ( 1.0 1.0 1.0 )
+    }
+    Attribute {
+        Format: FLOAT2
+        Tag: "aux[5]"
+        FriendlyTag: "Luminance Output (Day, Night) (nit)"
+        Value: ( 0.0 0.0 )
     }
     Texture {
         Tag: "texture[X]:texture_base"
@@ -1638,7 +1675,7 @@ Shader {
         Value: ( 1.0 1.0 1.0 )
     }
     Attribute {
-        Format: FLOAT3
+        Format: FLOAT2
         Tag: "fresnel"
         Value: ( 0.2 0.9 )
     }
@@ -1695,8 +1732,8 @@ Shader {
     }
 }
 Shader {
-    PresetName: "window.day"
-    Effect: "eut2.window.day"
+    PresetName: "window.lit"
+    Effect: "eut2.window.lit"
     Flags: 0
     Attribute {
         Format: FLOAT3
@@ -1717,61 +1754,6 @@ Shader {
         Format: FLOAT
         Tag: "add_ambient"
         Value: ( 0.0 )
-    }
-    Attribute {
-        Format: FLOAT3
-        Tag: "env_factor"
-        Value: ( 1.0 1.0 1.0 )
-    }
-    Attribute {
-        Format: FLOAT2
-        Tag: "fresnel"
-        Value: ( 0.200000003 0.8999999762 )
-    }
-    Texture {
-        Tag: "texture[X]:texture_base"
-        Value: "/material/special/window_interior_01"
-        TexCoord: ( 0 )
-    }
-    Texture {
-        Tag: "texture[X]:texture_reflection"
-        Value: "/material/environment/building_reflection/building_ref"
-        TexCoord: ( -1 )
-    }
-    Texture {
-        Tag: "texture[X]:texture_lightmap"
-        Value: "/material/special/window_interior_01"
-        TexCoord: ( 1 )
-    }
-}
-Shader {
-    PresetName: "window.night"
-    Effect: "eut2.window.night"
-    Flags: 0
-    Attribute {
-        Format: FLOAT3
-        Tag: "diffuse"
-        Value: ( 1.0 1.0 1.0 )
-    }
-    Attribute {
-        Format: FLOAT3
-        Tag: "specular"
-        Value: ( 0.5454490185 0.5454490185 0.5454490185 )
-    }
-    Attribute {
-        Format: FLOAT
-        Tag: "shininess"
-        Value: ( 65.0 )
-    }
-    Attribute {
-        Format: FLOAT
-        Tag: "add_ambient"
-        Value: ( 0.0 )
-    }
-    Attribute {
-        Format: FLOAT3
-        Tag: "env_factor"
-        Value: ( 1.0 1.0 1.0 )
     }
     Attribute {
         Format: FLOAT2
@@ -1907,10 +1889,6 @@ Flavor {
     Name: "indenv"
 }
 Flavor {
-    Type: "INVERTLUM"
-    Name: "linv"
-}
-Flavor {
     Type: "LUMMULVCOL"
     Name: "lvcol"
 }
@@ -1989,6 +1967,46 @@ Flavor {
         Format: FLOAT
         Tag: "shadow_bias"
         Value: ( 0.0 )
+    }
+}
+Flavor {
+    Type: "SKYPART_BACKGROUND"
+    Name: "back"
+    Attribute {
+        Format: FLOAT4
+        Tag: "aux[1]"
+        FriendlyTag: "V Cutoff"
+        Value: ( 0.0 0.0 0.0 0.0 )
+        PreviewOnly: "True"
+        Hide: "True"
+    }
+    Attribute {
+        Format: FLOAT4
+        Tag: "aux[2]"
+        FriendlyTag: "V Scale"
+        Value: ( 1.0 1.0 1.0 1.0 )
+        PreviewOnly: "True"
+        Hide: "True"
+    }
+}
+Flavor {
+    Type: "SKYPART_STARS"
+    Name: "stars"
+    Attribute {
+        Format: FLOAT4
+        Tag: "aux[1]"
+        FriendlyTag: "V Cutoff"
+        Value: ( 0.0 0.0 0.0 0.0 )
+        PreviewOnly: "True"
+        Hide: "True"
+    }
+    Attribute {
+        Format: FLOAT4
+        Tag: "aux[2]"
+        FriendlyTag: "V Scale"
+        Value: ( 1.0 1.0 1.0 1.0 )
+        PreviewOnly: "True"
+        Hide: "False"
     }
 }
 Flavor {

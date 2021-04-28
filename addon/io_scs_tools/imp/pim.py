@@ -117,7 +117,7 @@ def get_material_properties(section):
 def get_piece_properties(section):
     """Receives a Piece section and returns its properties in its own variables.
     For any item that fails to be found, it returns None."""
-    ob_index = ob_material = ob_vertex_cnt = ob_edge_cnt = ob_face_cnt = ob_stream_cnt = 0
+    ob_index = ob_material = ob_vertex_cnt = ob_tris_cnt = ob_stream_cnt = 0
     for prop in section.props:
         if prop[0] in ("", "#"):
             pass
@@ -127,15 +127,13 @@ def get_piece_properties(section):
             ob_material = prop[1]
         elif prop[0] == "VertexCount":
             ob_vertex_cnt = prop[1]
-        elif prop[0] == "EdgeCount":
-            ob_edge_cnt = prop[1]
-        elif prop[0] in ("TriangleCount", "FaceCount"):
-            ob_face_cnt = prop[1]
+        elif prop[0] == "TriangleCount":
+            ob_tris_cnt = prop[1]
         elif prop[0] == "StreamCount":
             ob_stream_cnt = prop[1]
         else:
             lprint('\nW Unknown property in "Piece" data: "%s"!', prop[0])
-    return ob_index, ob_material, ob_vertex_cnt, ob_edge_cnt, ob_face_cnt, ob_stream_cnt
+    return ob_index, ob_material, ob_vertex_cnt, ob_tris_cnt, ob_stream_cnt
 
 
 def _get_piece_streams(section):
@@ -447,18 +445,21 @@ def _create_piece(
     else:
         mesh_rgb_final = []
 
+    vcolor_corrupt = False
     for vc_layer_name in mesh_rgb_final:
-        max_value = mesh_rgb_final[vc_layer_name][0][0] / 2
 
-        for vc_entry in mesh_rgb_final[vc_layer_name]:
-            for i, value in enumerate(vc_entry):
-                if max_value < value / 2:
-                    max_value = value / 2
+        # check for vcolor bigger than possible float range (since we divide our vcolor by 2 max value is 2)
+        max_vcolor = 2.0
+        for k, vc_entry in enumerate(mesh_rgb_final[vc_layer_name]):
+            for j, value in enumerate(vc_entry):
+                if value > max_vcolor:
+                    mesh_rgb_final[vc_layer_name][k][j] = max_vcolor
+                    vcolor_corrupt = True
 
-        if max_value > mesh.scs_props.vertex_color_multiplier:
-            mesh.scs_props.vertex_color_multiplier = max_value
+        _mesh_utils.bm_make_vc_layer(5, bm, vc_layer_name, mesh_rgb_final[vc_layer_name])
 
-        _mesh_utils.bm_make_vc_layer(5, bm, vc_layer_name, mesh_rgb_final[vc_layer_name], mesh.scs_props.vertex_color_multiplier)
+    if vcolor_corrupt:
+        lprint("W Piece %r has vertices with vertex color greater the 1.0, clamping it!", (name, ))
 
     context.window_manager.progress_update(0.5)
 
@@ -742,8 +743,12 @@ def load_pim_file(context, filepath, terrain_points_trans=None, preview_model=Fa
                 ]
         elif section.type == 'Piece':
             if scs_globals.import_pim_file:
-                ob_index, ob_material, ob_vertex_cnt, ob_edge_cnt, ob_face_cnt, ob_stream_cnt = get_piece_properties(section)
+                ob_index, ob_material, ob_vertex_cnt, ob_tris_cnt, ob_stream_cnt = get_piece_properties(section)
                 piece_name = 'piece_' + str(ob_index)
+
+                if ob_vertex_cnt == 0 or ob_tris_cnt == 0:
+                    lprint("W Piece with index %i has no vertices or triangles, ignoring piece import in model:\n\t   %r!", (ob_index, filepath))
+                    continue
 
                 # print('Piece %i going to "get_piece_5_streams"...' % ob_index)
                 (mesh_vertices,
@@ -1023,8 +1028,7 @@ def load_pim_file(context, filepath, terrain_points_trans=None, preview_model=Fa
     # CREATE SKELETON (ARMATURE)
     armature = None
     if scs_globals.import_pis_file and bones:
-        bpy.ops.object.add(type='ARMATURE')
-        bpy.ops.object.editmode_toggle()
+        bpy.ops.object.add(type='ARMATURE', enter_editmode=True)
         for bone in bones:
             bpy.ops.armature.bone_primitive_add(name=bone)
         bpy.ops.object.editmode_toggle()

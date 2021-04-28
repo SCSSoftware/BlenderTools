@@ -85,8 +85,8 @@ class SCS_TOOLS_PT_Material(_shared.HeaderIconPanel, _MaterialPanelBlDefs, Panel
     def draw_shader_presets(layout, scs_props, scs_globals, scs_inventories, is_imported_shader=False):
         """Creates Shader Presets sub-panel."""
         layout_box = layout.box()
-        layout_box.enabled = not is_imported_shader
-        if scs_props.shader_presets_expand:
+
+        if scs_props.shader_presets_expand and not is_imported_shader:
             panel_header = layout_box.split(factor=0.5)
             panel_header_1 = panel_header.row()
             panel_header_1.prop(scs_props, 'shader_presets_expand', text="Shader Presets:", icon='TRIA_DOWN', icon_only=True, emboss=False)
@@ -113,10 +113,15 @@ class SCS_TOOLS_PT_Material(_shared.HeaderIconPanel, _MaterialPanelBlDefs, Panel
 
             row = column.row(align=True)
             if is_imported_shader:
-                row.prop(bpy.context.material.scs_props, "active_shader_preset_name", icon='COLOR', text="")
+                row_col = row.column()
+                row_col.enabled = False
+                row_col.prop(bpy.context.material.scs_props, "active_shader_preset_name", icon='COLOR', text="")
+                row_col = row.column()
+                row.operator("material.scs_tools_search_shader_preset", text="", icon='SOLO_ON')
             else:
                 row.prop(scs_inventories, 'shader_presets', text="")
-            row.operator("material.scs_tools_search_shader_preset", text="", icon='VIEWZOOM')
+                row.operator("material.scs_tools_search_shader_preset", text="", icon='VIEWZOOM')
+
 
     @staticmethod
     def draw_flavors(layout, mat):

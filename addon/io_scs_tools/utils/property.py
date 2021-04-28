@@ -41,7 +41,9 @@ def get_default(from_object, prop_name):
         return None
 
     bl_rna_prop = from_object.bl_rna.properties[prop_name]
-    if getattr(bl_rna_prop, "is_array", False):
+    if bl_rna_prop.type == "COLLECTION":
+        return []  # collection doesn't have default values, thus return empty array
+    elif getattr(bl_rna_prop, "is_array", False):
         return bl_rna_prop.default_array[:]
     else:
         return bl_rna_prop.default

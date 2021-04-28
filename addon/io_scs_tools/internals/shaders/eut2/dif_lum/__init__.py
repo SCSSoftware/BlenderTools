@@ -16,19 +16,17 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2015-2019: SCS Software
+# Copyright (C) 2015-2021: SCS Software
 
 from io_scs_tools.internals.shaders.eut2.dif import Dif
+from io_scs_tools.internals.shaders.eut2.std_passes.lum import StdLum
 from io_scs_tools.internals.shaders.flavors import alpha_test
 from io_scs_tools.internals.shaders.flavors import blend_over
 from io_scs_tools.internals.shaders.flavors import blend_add
 from io_scs_tools.internals.shaders.flavors import blend_mult
 
 
-class DifLum(Dif):
-    LUM_MIX_NODE = "LuminosityMix"
-    LUM_A_INVERSE_NODE = "LumTransp=1-Alpha"
-    LUM_OUT_SHADER_NODE = "LumShader"
+class DifLum(Dif, StdLum):
 
     @staticmethod
     def get_name():
@@ -43,8 +41,6 @@ class DifLum(Dif):
         :type node_tree: bpy.types.NodeTree
         """
 
-        pos_x_shift = 185
-
         # init parent
         Dif.init(node_tree)
 
@@ -52,40 +48,12 @@ class DifLum(Dif):
         compose_lighting_n = node_tree.nodes[Dif.COMPOSE_LIGHTING_NODE]
         base_tex_n = node_tree.nodes[Dif.BASE_TEX_NODE]
 
-        # move existing
-        output_n.location.x += pos_x_shift * 3
-
-        # nodes creation
-        lum_mix_n = node_tree.nodes.new("ShaderNodeMixRGB")
-        lum_mix_n.name = DifLum.LUM_MIX_NODE
-        lum_mix_n.label = DifLum.LUM_MIX_NODE
-        lum_mix_n.location = (compose_lighting_n.location.x + pos_x_shift * 2, compose_lighting_n.location.y - 100)
-        lum_mix_n.blend_type = "MIX"
-
-        lum_a_inv_n = node_tree.nodes.new("ShaderNodeMath")
-        lum_a_inv_n.name = lum_a_inv_n.label = DifLum.LUM_A_INVERSE_NODE
-        lum_a_inv_n.location = (compose_lighting_n.location.x + pos_x_shift * 2, compose_lighting_n.location.y - 300)
-        lum_a_inv_n.operation = "SUBTRACT"
-        lum_a_inv_n.use_clamp = True
-        lum_a_inv_n.inputs[0].default_value = 0.999999  # TODO: change back to 1.0 after bug is fixed: https://developer.blender.org/T71426
-
-        lum_out_shader_n = node_tree.nodes.new("ShaderNodeEeveeSpecular")
-        lum_out_shader_n.name = lum_out_shader_n.label = DifLum.LUM_OUT_SHADER_NODE
-        lum_out_shader_n.location = (compose_lighting_n.location.x + pos_x_shift * 3, compose_lighting_n.location.y - 200)
-        lum_out_shader_n.inputs["Base Color"].default_value = (0.0,) * 4
-        lum_out_shader_n.inputs["Specular"].default_value = (0.0,) * 4
-
-        # links creation
-        node_tree.links.new(lum_mix_n.inputs['Fac'], base_tex_n.outputs['Alpha'])
-        node_tree.links.new(lum_mix_n.inputs['Color1'], compose_lighting_n.outputs['Color'])
-        node_tree.links.new(lum_mix_n.inputs['Color2'], base_tex_n.outputs['Color'])
-
-        node_tree.links.new(lum_a_inv_n.inputs[1], compose_lighting_n.outputs['Alpha'])
-
-        node_tree.links.new(lum_out_shader_n.inputs['Emissive Color'], lum_mix_n.outputs['Color'])
-        node_tree.links.new(lum_out_shader_n.inputs['Transparency'], lum_a_inv_n.outputs['Value'])
-
-        node_tree.links.new(output_n.inputs['Surface'], lum_out_shader_n.outputs['BSDF'])
+        StdLum.add(node_tree,
+                   base_tex_n.outputs['Color'],
+                   base_tex_n.outputs['Alpha'],
+                   compose_lighting_n.outputs['Color'],
+                   compose_lighting_n.outputs['Alpha'],
+                   output_n.inputs['Surface'])
 
     @staticmethod
     def finalize(node_tree, material):
@@ -107,7 +75,7 @@ class DifLum(Dif):
 
             # add alpha test pass if multiply blend enabled, where alphed pixels shouldn't be multiplied as they are discarded
             if blend_mult.is_set(node_tree):
-                lum_out_shader_n = node_tree.nodes[DifLum.LUM_OUT_SHADER_NODE]
+                lum_out_shader_n = node_tree.nodes[StdLum.LUM_OUT_SHADER_NODE]
 
                 # alpha test pass has to get fully opaque input, thus remove transparency linkage
                 compose_lighting_n = node_tree.nodes[Dif.COMPOSE_LIGHTING_NODE]
@@ -128,6 +96,18 @@ class DifLum(Dif):
             material.blend_method = "BLEND"
         if blend_over.is_set(node_tree):
             material.blend_method = "BLEND"
+
+    @staticmethod
+    def set_aux5(node_tree, aux_property):
+        """Set luminosity boost factor.
+
+        :param node_tree: node tree of current shader
+        :type node_tree: bpy.types.NodeTree
+        :param aux_property: luminosity output represented with property group
+        :type aux_property: bpy.types.IDPropertyGroup
+        """
+
+        StdLum.set_aux5(node_tree, aux_property)
 
     @staticmethod
     def set_alpha_test_flavor(node_tree, switch_on):
@@ -171,7 +151,7 @@ class DifLum(Dif):
 
         if switch_on:
             out_node = node_tree.nodes[Dif.OUTPUT_NODE]
-            in_node = node_tree.nodes[DifLum.LUM_OUT_SHADER_NODE]
+            in_node = node_tree.nodes[StdLum.LUM_OUT_SHADER_NODE]
 
             # put it on location of output node & move output node for one slot to the right
             location = tuple(out_node.location)
@@ -193,13 +173,13 @@ class DifLum(Dif):
 
         if switch_on:
             out_node = node_tree.nodes[Dif.OUTPUT_NODE]
-            in_node = node_tree.nodes[DifLum.LUM_OUT_SHADER_NODE]
+            in_node = node_tree.nodes[StdLum.LUM_OUT_SHADER_NODE]
 
             # break link to lum out shader transparency as mult uses DST_COLOR as source factor in blend function
             compose_lighting_n = node_tree.nodes[Dif.COMPOSE_LIGHTING_NODE]
             if compose_lighting_n.inputs['Alpha'].links:
                 node_tree.links.remove(compose_lighting_n.inputs['Alpha'].links[0])
-            lum_out_shader_n = node_tree.nodes[DifLum.LUM_OUT_SHADER_NODE]
+            lum_out_shader_n = in_node
             if lum_out_shader_n.inputs['Transparency'].links:
                 node_tree.links.remove(lum_out_shader_n.inputs['Transparency'].links[0])
 
@@ -229,3 +209,25 @@ class DifLum(Dif):
             node_tree.links.new(lum_mix_n.inputs['Color2'], vcol_mult_n.outputs[0])
         else:
             node_tree.links.new(lum_mix_n.inputs['Color2'], base_tex_n.outputs['Color'])
+
+    @staticmethod
+    def set_lvcol_flavor(node_tree, switch_on):
+        """Set (vertex color*luminance) flavor to this shader.
+
+        :param node_tree: node tree of current shader
+        :type node_tree: bpy.types.NodeTree
+        :param switch_on: flag indication if flavor should be switched on or off
+        :type switch_on: bool
+        """
+
+        vcol_mult_n = node_tree.nodes[Dif.VCOLOR_MULT_NODE]
+        vcol_opacity_n = node_tree.nodes[Dif.OPACITY_NODE]
+        lum_col_vcol_modul_n = node_tree.nodes[StdLum.LUM_COL_LVCOL_MULT_NODE]
+        lum_a_vcol_modul_n = node_tree.nodes[StdLum.LUM_A_LVCOL_MULT_NODE]
+
+        if switch_on:
+            node_tree.links.new(lum_col_vcol_modul_n.inputs[1], vcol_mult_n.outputs[0])
+            node_tree.links.new(lum_a_vcol_modul_n.inputs[1], vcol_opacity_n.outputs[0])
+        else:
+            node_tree.links.remove(lum_col_vcol_modul_n.inputs[1].links[0])
+            node_tree.links.remove(lum_a_vcol_modul_n.inputs[1].links[0])

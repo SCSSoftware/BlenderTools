@@ -129,17 +129,12 @@ def get_abs_path(path_in, subdir_path='', is_dir=False, skip_mod_check=False):
     else:
         result = path_in
 
+    # use subdir_path as last item, so that if file/dir not found we return correct abs path, not the last checked from parents dir
+    infixes = ["../base", "../base_vehicle", "../../base", "../../base_vehicle", subdir_path]
     existance_check = os.path.isdir if is_dir else os.path.isfile
 
-    if result is not None and not existance_check(result) and not skip_mod_check:
-        result = get_abs_path(path_in, subdir_path="../base", is_dir=is_dir, skip_mod_check=True)
-
-    if result is not None and not existance_check(result) and not skip_mod_check:
-        result = get_abs_path(path_in, subdir_path="../../base", is_dir=is_dir, skip_mod_check=True)
-
-    # finally if file/dir not found return correct abs path, not the one from parent dirs
-    if result is not None and not existance_check(result) and not skip_mod_check:
-        result = get_abs_path(path_in, subdir_path=subdir_path, is_dir=is_dir, skip_mod_check=True)
+    while infixes and result is not None and not existance_check(result) and not skip_mod_check:
+        result = get_abs_path(path_in, subdir_path=infixes.pop(0), is_dir=is_dir, skip_mod_check=True)
 
     return result
 
@@ -168,7 +163,7 @@ def get_abs_paths(filepath, is_dir=False, include_nonexist_alternative_bases=Fal
 
     existance_check = os.path.isdir if is_dir else os.path.isfile
 
-    for i, sub_dir in enumerate(("", "../base", "../../base")):
+    for i, sub_dir in enumerate(("", "../base", "../base_vehicle", "../../base", "../../base_vehicle")):
 
         # only search for additional absolute paths if usage of alternative bases isn't switched off by user
         if i > 0 and not _get_scs_globals().use_alternative_bases:
@@ -300,14 +295,14 @@ def is_valid_traffic_rules_library_rel_path():
 
 def is_valid_hookup_library_rel_path():
     """It returns True if there is at least one "*.sii" file in
-    the resulting CgFX Library directory, otherwise False."""
+    the resulting unit hookup directory or it's sub-directories, otherwise False."""
     hookup_library_abs_path = get_abs_path(_get_scs_globals().hookup_library_rel_path, is_dir=True)
     if hookup_library_abs_path:
         for root, dirs, files in os.walk(hookup_library_abs_path):
             for file in files:
                 if file.endswith(".sii"):
                     return True
-            return False
+        return False
     else:
         return False
 
@@ -509,12 +504,22 @@ def get_scs_texture_str(texture_string):
             nonmatched_path_part = texture_string[common_path_len:]
 
             modif_texture_string = os.path.join(scs_project_path, infix + nonmatched_path_part)
+
             # if one or two directories up is the same path as texture string
-            # and non matched path part is starting with /base we got a hit:
-            # resulting relative path is non matched path part with stripped "/base" start
-            if is_samepath(modif_texture_string, texture_string) and startswith(nonmatched_path_part, os.sep + "base"):
-                texture_string = nonmatched_path_part[5:]
-                break
+            if is_samepath(modif_texture_string, texture_string):
+
+                strip_length = 0
+
+                # and non matched path part is starting with "/[base|base_*]/" we got a hit
+                for base_prefix in ("base_vehicle", "base"):
+                    if nonmatched_path_part.startswith(os.sep + base_prefix + os.sep):
+                        strip_length = len(base_prefix) + 1
+                        break
+
+                # resulting relative path is non matched path part with stripped "/base" start
+                if strip_length > 0:
+                    texture_string = nonmatched_path_part[strip_length:]
+                    break
 
     # check for relative TOBJ, TGA, PNG
     for ext in extensions:
@@ -725,7 +730,7 @@ def get_projects_paths(game_project_path):
         if os.path.isfile(os.path.join(game_project_path, dir_entry)):
             continue
 
-        if dir_entry == "base" or dir_entry.startswith("dlc_"):
+        if dir_entry == "base" or dir_entry.startswith("base_") or dir_entry.startswith("dlc_"):
 
             project_paths.append(readable_norm(os.path.join(game_project_path, dir_entry)))
 
@@ -738,7 +743,7 @@ def get_projects_paths(game_project_path):
                 if os.path.isfile(os.path.join(mod_dir, dir_entry)):
                     continue
 
-                if dir_entry2 == "base" or dir_entry2.startswith("dlc_"):
+                if dir_entry2 == "base" or dir_entry2.startswith("base_") or dir_entry2.startswith("dlc_"):
                     project_paths.append(readable_norm(os.path.join(mod_dir, dir_entry2)))
 
     return project_paths

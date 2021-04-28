@@ -42,6 +42,8 @@ class SCSExportHelper:
         """:type bpy.types.Scene: Scene to which we will temporarly link objects that needs to be exported."""
         self.active_scene = None
         """:type bpy.types.Scene: Scene which was active before export and should be recovered as active once export is done."""
+        self.active_view_layer = None
+        """:type bpy.types.ViewLayer: View layer which was active before export and should be recovered as active once export is done."""
 
     def get_objects_for_export(self):
         """Get objects for export, list filtered and extended depending on export scope.
@@ -103,6 +105,7 @@ class SCSExportHelper:
         # create export scene
         self.scene = bpy.data.scenes.new("SCS Export")
         self.active_scene = bpy.context.window.scene
+        self.active_view_layer = bpy.context.window.view_layer
         bpy.context.window.scene = self.scene
 
         # link objects to export scene and unhide all of them
@@ -127,6 +130,7 @@ class SCSExportHelper:
 
         # recover old active scene and remove temporary one
         bpy.context.window.scene = self.active_scene
+        bpy.context.window.view_layer = self.active_view_layer
         bpy.data.scenes.remove(self.scene)
         self.scene = None
 

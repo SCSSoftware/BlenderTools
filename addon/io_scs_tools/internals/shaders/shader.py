@@ -95,6 +95,12 @@ def setup_nodes(material, effect, attr_dict, tex_dict, tex_settings_dict, recrea
     if effect.endswith(".decal.over") and ".retroreflective" in effect:
         flavors["retroreflective_decal"] = True
 
+    if effect.endswith(".stars") and "sky" in effect:
+        flavors["sky_stars"] = True
+
+    if effect.endswith(".back") and "sky" in effect:
+        flavors["sky_back"] = True
+
     __setup_nodes__(material, effect, attr_dict, tex_dict, tex_settings_dict, {}, flavors, recreate)
 
 

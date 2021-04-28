@@ -16,9 +16,10 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2015-2019: SCS Software
+# Copyright (C) 2015-2021: SCS Software
 
 from io_scs_tools.consts import Mesh as _MESH_consts
+from io_scs_tools.internals.shaders.eut2.parameters import get_fresnel_truckpaint
 from io_scs_tools.internals.shaders.eut2.dif_spec_add_env import DifSpecAddEnv
 from io_scs_tools.utils import convert as _convert_utils
 from io_scs_tools.utils import material as _material_utils
@@ -71,6 +72,9 @@ class Truckpaint(DifSpecAddEnv):
 
         # init parent
         DifSpecAddEnv.init(node_tree)
+
+        # set fresnel type to schlick
+        node_tree.nodes[DifSpecAddEnv.ADD_ENV_GROUP_NODE].inputs['Fresnel Type'].default_value = 1.0
 
         base_tex_n = node_tree.nodes[DifSpecAddEnv.BASE_TEX_NODE]
         env_color_n = node_tree.nodes[DifSpecAddEnv.ENV_COLOR_NODE]
@@ -272,6 +276,20 @@ class Truckpaint(DifSpecAddEnv):
         # make links - level 5
         node_tree.links.new(paint_diff_mult_n.inputs['Color2'], blend_mix_n.outputs['Color'])
         node_tree.links.new(paint_spec_mult_n.inputs['Color2'], paint_tex_n.outputs['Alpha'])
+
+    @staticmethod
+    def set_fresnel(node_tree, bias_scale):
+        """Set fresnel bias and scale value to shader.
+
+        :param node_tree: node tree of current shader
+        :type node_tree: bpy.types.NodeTree
+        :param bias_scale: bias and scale factors as tuple: (bias, scale)
+        :type bias_scale: (float, float)
+        """
+
+        bias_scale_truckpaint = get_fresnel_truckpaint(bias_scale[0], bias_scale[1])
+
+        DifSpecAddEnv.set_fresnel(node_tree, bias_scale_truckpaint)
 
     @staticmethod
     def set_base_paint_color(node_tree, color):

@@ -286,16 +286,17 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
 
     def update_empty_object_type(self, context):
 
-        if context.object:
+        # get owner object with id_data since context may have different active object
+        obj = self.id_data
 
-            if self.empty_object_type == "SCS_Root":
-                context.object.empty_display_size = 5.0
-                context.object.empty_display_type = "ARROWS"
-                context.object.show_name = True
-            else:
-                context.object.empty_display_size = 1.0
-                context.object.empty_display_type = "PLAIN_AXES"
-                context.object.show_name = False
+        if self.empty_object_type == "SCS_Root":
+            obj.empty_display_size = 5.0
+            obj.empty_display_type = "ARROWS"
+            obj.show_name = True
+        else:
+            obj.empty_display_size = 1.0
+            obj.empty_display_type = "PLAIN_AXES"
+            obj.show_name = False
 
     # EMPTY OBJECT TYPE
     empty_object_type: EnumProperty(

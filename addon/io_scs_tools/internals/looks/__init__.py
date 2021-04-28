@@ -194,6 +194,11 @@ def update_look_from_material(root_obj, material, preset_change=False):
     for look_id in root_obj[_MAIN_DICT]:
         if look_id != look_id_str or preset_change:
 
+            # skip desynced material entry in the look
+            if mat_id_str not in root_obj[_MAIN_DICT][look_id]:
+                lprint("D Can't update material: %r on look entry with ID: %s", (material.name, look_id))
+                continue
+
             curr_mat = root_obj[_MAIN_DICT][look_id][mat_id_str]
 
             for key in curr_mat:
@@ -201,8 +206,38 @@ def update_look_from_material(root_obj, material, preset_change=False):
                 if preset_change:  # preset change write through
 
                     if key in ("active_shader_preset_name", "mat_effect_name") or __is_texture_locked__(material, key):  # overwrite
+
                         curr_mat[key] = new_mat[key]
+
+                    elif key.startswith("shader_attribute_aux") and key in new_mat:
+
+                        new_mat_key_size = len(new_mat[key]["entries"])
+                        curr_mat_key_size = len(curr_mat[key]["entries"])
+
+                        # don't sync if size is the same
+                        if new_mat_key_size == curr_mat_key_size:
+                            continue
+
+                        # since dynamic update of collection property is not possible we have to create new one
+                        coll_prop_entry = {"CollectionProperty": 1, "entries": []}
+                        for coll_entry in curr_mat[key]["entries"]:
+                            entry = dict(coll_entry)
+                            coll_prop_entry["entries"].append(entry)
+
+                        # clip unused values
+                        while len(coll_prop_entry["entries"]) > new_mat_key_size:
+                            coll_prop_entry["entries"].pop()
+
+                        # add default ones if missing
+                        while curr_mat_key_size < new_mat_key_size:
+                            entry_copy = dict(new_mat[key]["entries"][curr_mat_key_size])
+                            coll_prop_entry["entries"].append(entry_copy)
+                            curr_mat_key_size = curr_mat_key_size + 1
+
+                        curr_mat[key] = coll_prop_entry
+
                     elif key not in new_mat:  # delete if not in newly created material entry
+
                         del curr_mat[key]
 
                 else:  # general write through

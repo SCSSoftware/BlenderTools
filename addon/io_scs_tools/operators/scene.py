@@ -243,7 +243,13 @@ class Export:
             if 0 <= self.index < len(anim_inventory):
 
                 anim = anim_inventory[self.index]
-                _export.pia.export(scs_root_obj, armature, anim, self.directory, skeleton_filepath)
+
+                # check extension for EF format and properly assign it to name suffix
+                ef_name_suffix = ""
+                if _get_scs_globals().export_output_type == "EF":
+                    ef_name_suffix = ".ef"
+
+                _export.pia.export(scs_root_obj, armature, anim, self.directory, ef_name_suffix, skeleton_filepath)
 
             lprint("", report_errors=1, report_warnings=1)
             return {'FINISHED'}
@@ -1358,6 +1364,12 @@ class PaintjobTools:
         )
         filter_glob: StringProperty(default="*.sii", options={'HIDDEN'})
 
+        hide_collections: BoolProperty(
+            name="Hide collections after import",
+            description="Should collections be hidden or shown after import?",
+            default=False
+        )
+
         vehicle_type = _PT_consts.VehicleTypes.NONE
         start_time = None  # saving start time when initialize is called
 
@@ -1709,6 +1721,7 @@ class PaintjobTools:
             possible_upgrade_locators = {}  # dictionary holding all locators that can be used as candidates for upgrades positioning
             already_imported = set()  # set holding imported path of already imported model, to avoid double importing
             multiple_project_vehicle_models = set()  # set of model paths found in multiple projects (for reporting purposes)
+            vehicle_import_count = 0  # counter for number of properly imported vehicle models
             for project_path in project_paths:
 
                 for vehicle_model_path in vehicle_model_paths:
@@ -1746,9 +1759,12 @@ class PaintjobTools:
                                                  os.path.basename(vehicle_model_path),
                                                  vehicle_model_paths[vehicle_model_path])
 
+                    # update the import count
+                    vehicle_import_count = vehicle_import_count + 1
+
             # if none vehicle models were properly imported it makes no sense to go forward on upgrades
-            if len(already_imported) <= 0:
-                message = "No vehicle models properly imported!"
+            if vehicle_import_count <= 0:
+                message = "No vehicle models imported, either none exist or they are corrupted or they are missing 'truckpaint' material!"
                 lprint("E " + message)
                 self.report({"ERROR"}, message)
                 self.finalize()
@@ -1868,7 +1884,22 @@ class PaintjobTools:
 
             # make our layer collections hidden, as user should later select what to export
             for layer_col in bpy.context.view_layer.layer_collection.children:
-                layer_col.hide_viewport = True
+                layer_col.exclude = self.hide_collections
+
+            # move all objects still in master collection to our main collection
+            if _PT_consts.main_coll_name not in bpy.data.collections:
+                main_collection = bpy.data.collections.new(_PT_consts.main_coll_name)
+            else:
+                main_collection = bpy.data.collections[_PT_consts.main_coll_name]
+
+            bpy.context.view_layer.layer_collection.collection.children.link(main_collection)
+
+            for obj in bpy.context.view_layer.layer_collection.collection.objects:
+                main_collection.objects.link(obj)
+                bpy.context.view_layer.layer_collection.collection.objects.unlink(obj)
+
+            # hide main collection everywhere
+            main_collection.hide_viewport = main_collection.hide_render = main_collection.hide_select = True
 
             # on the end report multiple project model problems
             if len(multiple_project_vehicle_models) > 0:
@@ -2626,6 +2657,10 @@ class PaintjobTools:
                 # 2. export overrides
                 return _sii_container.write_data_to_file(config_path, tuple(export_units), create_dirs=True)
 
+        class ColorVariantItem(bpy.types.PropertyGroup):
+            """Color variant item."""
+            value: FloatVectorProperty(default=(0, 0, 0))
+
         vehicle_type = _PT_consts.VehicleTypes.NONE
 
         img_node = None
@@ -2700,6 +2735,7 @@ class PaintjobTools:
         pjs_flipflake: BoolProperty(default=False)
         pjs_airbrush: BoolProperty(default=False)
         pjs_stock: BoolProperty(default=False)
+        pjs_color_variant: CollectionProperty(type=ColorVariantItem)
 
         @staticmethod
         def do_report(the_type, message, do_report=False):
@@ -3028,9 +3064,35 @@ class PaintjobTools:
                 lprint("E Invalid property for paintjob settings: %r, contact the developer!", (prop_name,))
                 return False
 
-            # do comparison of property differently for each type
+            # do comparison of property differently for each type and convert current value if needed
             is_different = False
-            if isinstance(default_value, tuple):
+            if isinstance(default_value, list):
+
+                values_as_list = []
+                for item in current_value:
+
+                    # we need prescribed interface, which is that array unit properties needs class which defines 'value'
+                    # property where value of the property is saved
+                    if not hasattr(item, "value"):
+                        lprint("E Collection property %r is missing 'value' attribute, contact the developer!", (prop_name,))
+                        return False
+
+                    default_item_value = _get_default(item, "value")
+
+                    if isinstance(default_item_value, tuple):
+                        current_item_value = tuple(item.value)
+                    else:
+                        current_item_value = item.value
+
+                    values_as_list.append(current_item_value)
+
+                # collection properties are empty by default, thus any item added means it's different than default
+                is_different = len(values_as_list) > 0
+
+                # copy created values list back to current value to write it into unit as array item
+                current_value = values_as_list
+
+            elif isinstance(default_value, tuple):
 
                 current_value = tuple(current_value)  # convert to tuple for proper export
 
@@ -3484,6 +3546,7 @@ classes = (
     Log.SCS_TOOLS_OT_CopyLogToClipboard,
 
     PaintjobTools.SCS_TOOLS_OT_ExportPaintjobUVLayoutAndMesh,
+    PaintjobTools.SCS_TOOLS_OT_GeneratePaintjob.ColorVariantItem,
     PaintjobTools.SCS_TOOLS_OT_GeneratePaintjob,
     PaintjobTools.SCS_TOOLS_OT_ImportFromDataSII,
 

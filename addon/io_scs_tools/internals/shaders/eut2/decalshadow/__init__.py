@@ -16,12 +16,12 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2015-2019: SCS Software
+# Copyright (C) 2015-2021: SCS Software
 
-from io_scs_tools.internals.shaders.eut2.unlit_tex.a8 import UnlitTexA8
+from io_scs_tools.internals.shaders.eut2.shadowmap import Shadowmap
 
 
-class Decalshadow(UnlitTexA8):
+class Decalshadow(Shadowmap):
     @staticmethod
     def get_name():
         """Get name of this shader file with full modules path."""
@@ -36,7 +36,4 @@ class Decalshadow(UnlitTexA8):
         """
 
         # init parent
-        UnlitTexA8.init(node_tree)
-
-        # enable hardcoded flavors: DEPTH, BLEND_OVER
-        UnlitTexA8.set_blend_over_flavor(node_tree, True)
+        Shadowmap.init(node_tree)

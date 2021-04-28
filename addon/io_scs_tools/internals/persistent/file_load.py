@@ -16,7 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2015-2019: SCS Software
+# Copyright (C) 2015-2021: SCS Software
 
 import bpy
 from bpy.app.handlers import persistent
@@ -49,6 +49,7 @@ def post_load(scene):
         ("0.6", apply_fixes_for_0_6),
         ("1.4", apply_fixes_for_1_4),
         ("1.12", apply_fixes_for_1_12),
+        ("2.0", apply_fixes_for_2_0),
     )
 
     for version, func in VERSIONS_LIST:
@@ -60,6 +61,14 @@ def post_load(scene):
 
     # as last update "last load" Blender Tools version to current
     _get_scs_globals().last_load_bt_version = _info_utils.get_tools_version()
+
+
+def _reload_materials():
+    """Triggers materials nodes and UI attributes reloading.
+    """
+    override = bpy.context.copy()
+    override["window"] = bpy.data.window_managers[0].windows[0]
+    bpy.ops.material.scs_tools_reload_materials(override, 'INVOKE_DEFAULT')
 
 
 def apply_fixes_for_0_6():
@@ -80,7 +89,7 @@ def apply_fixes_for_0_6():
         if material.scs_props.mat_effect_name == "":
             continue
 
-        for tex_type in material.scs_props.get_texture_types().keys():
+        for tex_type in material.scs_props.get_texture_types():
 
             texture_attr_str = "shader_texture_" + tex_type
             if texture_attr_str in material.scs_props.keys():
@@ -153,9 +162,7 @@ def apply_fixes_for_0_6():
                 _looks.write_through(scs_root, material, "active_shader_preset_name")
 
         # 4. reload all materials once all corrections to materials has been done
-        override = bpy.context.copy()
-        override["window"] = bpy.data.window_managers[0].windows[0]
-        bpy.ops.material.scs_tools_reload_materials(override, 'INVOKE_DEFAULT')
+        _reload_materials()
 
 
 def apply_fixes_for_1_4():
@@ -168,9 +175,7 @@ def apply_fixes_for_1_4():
     print("INFO\t-  Applying fixes for version <= 1.4")
 
     # 1. reload all materials
-    override = bpy.context.copy()
-    override["window"] = bpy.data.window_managers[0].windows[0]
-    bpy.ops.material.scs_tools_reload_materials(override, 'INVOKE_DEFAULT')
+    _reload_materials()
 
     # 2. remove all obsolete ".scs_nmap_" + str(i) materials, as of 2.78 we are using new normal maps node
     i = 1
@@ -239,9 +244,7 @@ def apply_fixes_for_1_12():
                 bpy.data.collections.remove(col)
 
     # 3. reload materials node trees
-    override = bpy.context.copy()
-    override["window"] = bpy.data.window_managers[0].windows[0]
-    bpy.ops.material.scs_tools_reload_materials(override, 'INVOKE_DEFAULT')
+    _reload_materials()
 
     # 4. update preview models to get new material assigned
     _preview_models.update(force=True)
@@ -276,3 +279,52 @@ def apply_fixes_for_1_12():
     override = bpy.context.copy()
     override["window"] = bpy.data.window_managers[0].windows[0]
     bpy.ops.wm.scs_tools_show_3dview_report(override, 'INVOKE_DEFAULT', message="\n".join(msg))
+
+
+def apply_fixes_for_2_0():
+    """
+    Applies fixes for 2.0 or less:
+    1. Reload materials since some got removed/restructed attributes
+    2. Remove .linv flavor from dif.lum.spec shaders (it's not supported anymore)
+    """
+
+    print("INFO\t-  Applying fixes for version <= 2.0")
+
+    # dictinary of materials with "eut2.sky" effect and their former uv sets
+    # to be reapplied to new texture types
+    sky_uvs_mat = {}
+
+    # 1. do pre-reload changes and collect data
+    for mat in bpy.data.materials:
+
+        effect_name = mat.scs_props.mat_effect_name
+
+        # dif.lum.spec got removed linv flavor, thus remove it.
+        if effect_name.startswith("eut2.dif.lum.spec") and ".linv" in effect_name:
+            start_idx = effect_name.index(".linv")
+            end_idx = start_idx + 5
+            mat.scs_props.mat_effect_name = mat.scs_props.mat_effect_name[:start_idx] + mat.scs_props.mat_effect_name[end_idx:]
+
+        # window.[day|night] got transformed into window.lit
+        if effect_name in ("eut2.window.day", "eut2.window.night"):
+            mat.scs_props.mat_effect_name = "eut2.window.lit"
+            mat.scs_props.active_shader_preset_name = "window.lit"
+
+        # sky got different texture types preserver uvs
+        if effect_name.startswith("eut2.sky") and len(mat.scs_props.shader_texture_base_uv) == 1:
+            sky_uvs_mat[mat] = mat.scs_props.shader_texture_base_uv[0].value
+
+    # 2. reload materials node trees and possible param changes in UI as last
+    _reload_materials()
+
+    # 3. post-reload changes
+    # recover uvs for sky shaders
+    for mat in sky_uvs_mat:
+        mat.scs_props.shader_texture_sky_weather_base_a_uv[0].value = sky_uvs_mat[mat]
+        mat.scs_props.shader_texture_sky_weather_base_b_uv[0].value = sky_uvs_mat[mat]
+        mat.scs_props.shader_texture_sky_weather_over_a_uv[0].value = sky_uvs_mat[mat]
+        mat.scs_props.shader_texture_sky_weather_over_b_uv[0].value = sky_uvs_mat[mat]
+
+        # we need to update looks so that new values get propagated to all of the looks
+        for scs_root in _object_utils.gather_scs_roots(bpy.data.objects):
+            _looks.update_look_from_material(scs_root, mat)
