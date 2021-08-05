@@ -16,7 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2013-2019: SCS Software
+# Copyright (C) 2013-2021: SCS Software
 
 import bpy
 import os
@@ -84,12 +84,23 @@ def _are_shader_data_compatible(preset_section, material_attributes, material_te
 
             attr_tag = item.get_prop_value("Tag")
             attr_value = item.get_prop_value("Value")
+            attr_preview_only = item.get_prop_value("PreviewOnly")
+
+            # don't include preview only attributes into compatibility check
+            if attr_preview_only == "True":
+                continue
 
             preset_mat_attributes[attr_tag] = attr_value
 
         elif item.type == "Texture":
 
             tex_type = item.get_prop_value("Tag").split(":")[1]
+            tex_preview_only = item.get_prop_value("PreviewOnly")
+
+            # don't include preview only attributes into compatibility check
+            if tex_preview_only == "True":
+                continue
+
             preset_mat_textures.add(tex_type)
 
     # we are not saving substance in presets thus add it if found in material attributes
@@ -375,7 +386,7 @@ def load(context, filepath, name_suffix="", suppress_reports=False):
 
     # IMPORT PIP -> has to be loaded before PIM because of terrain points
     if scs_globals.import_pip_file:
-        lprint("I Importing PIP ...")
+        lprint("I Importing PIP ...", immediate_timeout=0)
         pip_filepath = filepath + ".pip" + name_suffix
         if os.path.isfile(pip_filepath):
             lprint('\nD PIP filepath:\n  %s', (pip_filepath,))
@@ -387,7 +398,7 @@ def load(context, filepath, name_suffix="", suppress_reports=False):
 
     # IMPORT PIM
     if scs_globals.import_pim_file or scs_globals.import_pis_file:
-        lprint("I Importing PIM ...")
+        lprint("I Importing PIM ...", immediate_timeout=0)
         pim_filepath = filepath + ".pim" + name_suffix
         if pim_filepath:
             if os.path.isfile(pim_filepath):
@@ -415,7 +426,7 @@ def load(context, filepath, name_suffix="", suppress_reports=False):
     # IMPORT PIT
     bpy.context.view_layer.objects.active = None
     if scs_globals.import_pit_file:
-        lprint("I Importing PIT ...")
+        lprint("I Importing PIT ...", immediate_timeout=0)
         pit_filepath = filepath + ".pit" + name_suffix
         if os.path.isfile(pit_filepath):
             lprint('\nD PIT filepath:\n  %s', (pit_filepath,))
@@ -427,7 +438,7 @@ def load(context, filepath, name_suffix="", suppress_reports=False):
 
     # IMPORT PIC
     if scs_globals.import_pic_file:
-        lprint("I Importing PIC ...")
+        lprint("I Importing PIC ...", immediate_timeout=0)
         pic_filepath = filepath + ".pic" + name_suffix
         if os.path.isfile(pic_filepath):
             lprint('\nD PIC filepath:\n  %s', (pic_filepath,))
@@ -438,7 +449,7 @@ def load(context, filepath, name_suffix="", suppress_reports=False):
             # print('INFO - No PIC file.')
 
     # SETUP 'SCS GAME OBJECTS'
-    lprint("I Setup of SCS game object ...")
+    lprint("I Setup of SCS game object ...", immediate_timeout=0)
     for item in collision_locators:
         locators.append(item)
     for item in prefab_locators:
@@ -457,10 +468,12 @@ def load(context, filepath, name_suffix="", suppress_reports=False):
                 lprint("W Can not preserve import path for export on import SCS Root %r, "
                        "as import was done from outside of current SCS Project Base Path!",
                        (scs_root_object.name,))
+    else:
+        lprint("W Model file: %r is empty, nothing could be imported!", (filename,))
 
     # IMPORT PIS
-    if scs_globals.import_pis_file:
-        lprint("I Importing PIS ...")
+    if scs_globals.import_pis_file and skeleton:
+        lprint("I Importing PIS ...", immediate_timeout=0)
         # pis file path is created from directory of pim file and skeleton definition inside pim header
         pis_filepath = os.path.dirname(filepath) + os.sep + skeleton
         if os.path.isfile(pis_filepath):
@@ -482,7 +495,7 @@ def load(context, filepath, name_suffix="", suppress_reports=False):
 
         # IMPORT PIA
         if scs_globals.import_pia_file and bones:
-            lprint("I Importing PIAs ...")
+            lprint("I Importing PIAs ...", immediate_timeout=0)
             basepath = os.path.dirname(filepath)
             # Search for PIA files in model's directory and its subdirectiories...
             lprint('\nD Searching the directory for PIA files:\n   %s', (basepath,))

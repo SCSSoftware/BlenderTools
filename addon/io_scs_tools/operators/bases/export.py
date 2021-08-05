@@ -16,7 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2019: SCS Software
+# Copyright (C) 2019-2021: SCS Software
 
 import bpy
 from io_scs_tools import exp as _export
@@ -29,6 +29,9 @@ class SCSExportHelper:
     """Class for implementation of SCS export routines, to take care of objects/collections visibilites and
     implemenet convinient methods for usage as parent class in export operators.
     """
+
+    export_scene_name = None
+    """Stores name of the export scene (used to skip custom drawing elements update on export scene)."""
 
     def __init__(self):
         self.cached_objects = None
@@ -44,6 +47,8 @@ class SCSExportHelper:
         """:type bpy.types.Scene: Scene which was active before export and should be recovered as active once export is done."""
         self.active_view_layer = None
         """:type bpy.types.ViewLayer: View layer which was active before export and should be recovered as active once export is done."""
+        self.disabled_modifiers = dict()
+        """:type dict[bpy.types.Object, tuple]"""
 
     def get_objects_for_export(self):
         """Get objects for export, list filtered and extended depending on export scope.
@@ -108,11 +113,21 @@ class SCSExportHelper:
         self.active_view_layer = bpy.context.window.view_layer
         bpy.context.window.scene = self.scene
 
+        # store name of current export scene
+        SCSExportHelper.export_scene_name = self.scene.name
+
         # link objects to export scene and unhide all of them
         for obj in objs_to_export:
             self.scene.collection.objects.link(obj)
             self.objects_states[obj] = obj.hide_viewport
             obj.hide_viewport = False
+
+        # disable modifiers before depsgraph gets updated
+        self.disabled_modifiers = _object_utils.disable_modifiers(objs_to_export)
+
+        # finally update depshraph so that all linked objects will get nneded update
+        # (properly applied modifiers, visibility states etc.)
+        bpy.context.window.view_layer.depsgraph.update()
 
         scs_globals = _get_scs_globals()
         if scs_globals.export_scope == "selection" and scs_globals.preview_export_selection:
@@ -125,14 +140,21 @@ class SCSExportHelper:
         """
         _get_scs_globals().preview_export_selection_active = False
 
+        # recover viewport states
         for obj, state in self.objects_states.items():
             obj.hide_viewport = state
+
+        # recover disabled modifiers
+        _object_utils.restore_modifiers(self.disabled_modifiers)
 
         # recover old active scene and remove temporary one
         bpy.context.window.scene = self.active_scene
         bpy.context.window.view_layer = self.active_view_layer
         bpy.data.scenes.remove(self.scene)
         self.scene = None
+
+        # unset name of current export scene since we are done
+        SCSExportHelper.export_scene_name = None
 
     def execute_export(self, context, without_preview, menu_filepath=None):
         """Executes export.

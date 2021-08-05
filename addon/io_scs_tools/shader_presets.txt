@@ -251,7 +251,7 @@ Shader {
     PresetName: "dif.anim"
     Effect: "eut2.dif.anim"
     # NOTE: intentionally disabled TEXGEN0 flavor as it conflicts with usage of aux[0] attribute
-    Flavors: ( "ALPHA" "BLEND_OVER|BLEND_MULT|BLEND_ADD" )
+    Flavors: ( "FADESHEET|FLIPSHEET" "ALPHA" "BLEND_OVER|BLEND_MULT|BLEND_ADD" )
     Flags: 0
     Attribute {
         Format: FLOAT3
@@ -285,12 +285,12 @@ Shader {
         Value: ( 1.0 )
     }
     Texture {
-        Tag: "texture[0]:texture_base"
+        Tag: "texture[X]:texture_base"
         Value: ""
         TexCoord: ( 0 )
     }
     Texture {
-        Tag: "texture[1]:texture_over"
+        Tag: "texture[X]:texture_over"
         Value: ""
         TexCoord: ( 0 )
     }
@@ -904,7 +904,7 @@ Shader {
 Shader {
     PresetName: "dif.spec.weight"
     Effect: "eut2.dif.spec.weight"
-    Flavors: ( "SHADOW" "PAINT" "TEXGEN0" "ASAFEW" "ALPHA" "DEPTH" "BLEND_OVER|BLEND_MULT|BLEND_ADD" )
+    Flavors: ( "NMAP_TS|NMAP_TS_UV|NMAP_TS_16|NMAP_TS_UV_16" "SHADOW" "PAINT" "TEXGEN0" "ASAFEW" "ALPHA" "DEPTH" "BLEND_OVER|BLEND_MULT|BLEND_ADD" )
     Flags: 0
     Attribute {
         Format: FLOAT3
@@ -1631,7 +1631,7 @@ Shader {
 Shader {
     PresetName: "unlit.vcol.tex"
     Effect: "eut2.unlit.vcol.tex"
-    Flavors: ( "PAINT" "ALPHA" "AWHITE" "DEPTH" "BLEND_OVER|BLEND_MULT|BLEND_ADD" )
+    Flavors: ( "FADESHEET|FLIPSHEET" "PAINT" "ALPHA" "AWHITE" "DEPTH" "BLEND_OVER|BLEND_MULT|BLEND_ADD" )
     Flags: 0
     Attribute {
         Format: FLOAT3
@@ -1878,6 +1878,52 @@ Flavor {
         Tag: "texture[X]:texture_reflection"
         Value: "/material/environment/vehicle_reflection"
         TexCoord: ( -1 )
+    }
+}
+Flavor {
+    Type: "FADESHEET"
+    Name: "fadesheet"
+    Attribute {
+        Format: FLOAT3
+        Tag: "aux[0]"
+        FriendlyTag: "Sheet (playback FPS, frames per row, frames total)"
+        Value: ( 30.0 1.0 1.0 )
+    }
+    Attribute {
+        Format: FLOAT2
+        Tag: "aux[1]"
+        FriendlyTag: "Sheet frame (width, height)"
+        Value: ( 0.0 0.0 )
+    }
+    Texture {
+        Tag: "texture[X]:texture_over"
+        Value: ""
+        TexCoord: ( 0 )
+        PreviewOnly: "True"
+        Hide: "True"
+    }
+}
+Flavor {
+    Type: "FLIPSHEET"
+    Name: "flipsheet"
+    Attribute {
+        Format: FLOAT3
+        Tag: "aux[0]"
+        FriendlyTag: "Sheet (playback FPS, frames per row, frames total)"
+        Value: ( 30.0 1.0 1.0 )
+    }
+    Attribute {
+        Format: FLOAT2
+        Tag: "aux[1]"
+        FriendlyTag: "Sheet frame (width, height)"
+        Value: ( 0.0 0.0 )
+    }
+    Texture {
+        Tag: "texture[X]:texture_over"
+        Value: ""
+        TexCoord: ( 0 )
+        PreviewOnly: "True"
+        Hide: "True"
     }
 }
 Flavor {

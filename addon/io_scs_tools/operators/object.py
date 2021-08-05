@@ -16,7 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2013-2019: SCS Software
+# Copyright (C) 2013-2021: SCS Software
 
 
 import bmesh
@@ -1342,7 +1342,7 @@ class Locators:
                     model_locators_count += 1
 
                     hookup_id = obj.scs_props.locator_model_hookup
-                    hookup_name = _convert_utils.hookup_id_to_hookup_name(hookup_id)
+                    hookup_name, hookup_payload = _convert_utils.hookup_id_to_hookup_name(hookup_id)
 
                     # if id is different from returned name, it means hookup was properly found in library
                     if hookup_id != hookup_name:

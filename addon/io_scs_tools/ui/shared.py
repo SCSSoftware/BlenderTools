@@ -240,23 +240,6 @@ def create_row(layout, align=False, use_split=False, use_decorate=False, enabled
     return row
 
 
-def compensate_aligning_bug(layout, number_of_items=0):
-    """Creates compensation UI label items to fix aliging, when prop_search is used.
-
-    TODO: Remove this and it's usage once blender has this bug resolved.
-
-    :param layout:
-    :type layout:
-    :param number_of_items:
-    :type number_of_items:
-    :return:
-    :rtype:
-    """
-    if number_of_items > 0:
-        for _ in range(0, number_of_items):
-            layout.label(text="", icon='BLANK1')
-
-
 def get_on_off_icon(is_state_on):
     """Returns icon string for on/off state. Should be used everywhere where we indicate on/off state in buttons.
 

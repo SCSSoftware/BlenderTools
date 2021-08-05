@@ -27,6 +27,8 @@ from sys import platform
 from io_scs_tools.utils.printout import lprint
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
 
+_KNOWN_PROJECT_BASES = ("base_vehicle", "base_share", "base")
+
 
 def strip_sep(path):
     """Strips double path separators (slashes and backslashes) on the start and the end of the given path
@@ -94,6 +96,41 @@ def relative_path(base_path, path):
         return repaired_path
 
 
+def get_possible_project_infixes(include_zero_infix=False):
+    """Gets possible project infixes in relation to currently selected SCS Project Path.
+    If path is ending with "dlc_" prefixed directory, then first infix is parent dlc.
+    Then possible base prefixes are added (sibling and parent known bases).
+
+    If alternative bases are disabled no extra infixes are added except zero infix if requested.
+
+    :param include_zero_infix: should empty infix be included into the list
+    :type include_zero_infix: bool
+    :return: list of possible project infixes
+    :rtype: list[str]
+    """
+
+    infixes = []
+
+    if include_zero_infix:
+        infixes.append("")
+
+    if not _get_scs_globals().use_alternative_bases:
+        return infixes
+
+    project_path = _get_scs_globals().scs_project_path
+    project_path_basename = os.path.basename(project_path)
+
+    # dlc infixes
+    if project_path_basename.startswith("dlc_"):
+        infixes.append(str((os.pardir + os.sep) * 2) + project_path_basename)
+
+    # base infixes
+    for known_base in _KNOWN_PROJECT_BASES:
+        infixes.extend((os.pardir + os.sep + known_base, str((os.pardir + os.sep) * 2) + known_base))
+
+    return infixes
+
+
 def get_abs_path(path_in, subdir_path='', is_dir=False, skip_mod_check=False):
     """Gets absolute path to the "SCS Project Base Path" if given path is relative (starts with: "//"),
     otherwise original path is returned.
@@ -130,7 +167,7 @@ def get_abs_path(path_in, subdir_path='', is_dir=False, skip_mod_check=False):
         result = path_in
 
     # use subdir_path as last item, so that if file/dir not found we return correct abs path, not the last checked from parents dir
-    infixes = ["../base", "../base_vehicle", "../../base", "../../base_vehicle", subdir_path]
+    infixes = get_possible_project_infixes() + [subdir_path, ]
     existance_check = os.path.isdir if is_dir else os.path.isfile
 
     while infixes and result is not None and not existance_check(result) and not skip_mod_check:
@@ -163,17 +200,15 @@ def get_abs_paths(filepath, is_dir=False, include_nonexist_alternative_bases=Fal
 
     existance_check = os.path.isdir if is_dir else os.path.isfile
 
-    for i, sub_dir in enumerate(("", "../base", "../base_vehicle", "../../base", "../../base_vehicle")):
+    for sub_dir in get_possible_project_infixes(include_zero_infix=True):
 
-        # only search for additional absolute paths if usage of alternative bases isn't switched off by user
-        if i > 0 and not _get_scs_globals().use_alternative_bases:
-            continue
+        infixed_abs_path = get_abs_path(filepath, subdir_path=sub_dir, is_dir=is_dir, skip_mod_check=True)
 
         # additionally search for infixed files (eg. sign.dlc_north.sii)
         if use_infixed_search:
-            infixed_files = get_all_infixed_file_paths(get_abs_path(filepath, subdir_path=sub_dir, is_dir=is_dir, skip_mod_check=True))
+            infixed_files = get_all_infixed_file_paths(infixed_abs_path)
         else:
-            infixed_files = [get_abs_path(filepath, subdir_path=sub_dir, is_dir=is_dir, skip_mod_check=True)]
+            infixed_files = [infixed_abs_path]
 
         for resulted_path in infixed_files:
 
@@ -472,7 +507,7 @@ def get_scs_texture_str(texture_string):
     3. find absolute file path
     4. return unchanged texture string path
 
-    :param texture_string: texture string for which texture should be found e.g.: "/material/environment/vehicle_reflection"
+    :param texture_string: texture string for which texture should be found e.g.: "/material/environment/vehicle_reflection" or absolute path
     :type texture_string: str
     :return: relative path to texture object or absolute path to texture object or unchanged texture string
     :rtype: str
@@ -497,29 +532,27 @@ def get_scs_texture_str(texture_string):
         except ValueError:  # if ValueError is raised then paths do not match for sure, thus set it to 0
             common_path_len = 0
 
-        # now check if provided texture string is the same as:
-        # current scs project path + one or two directories up + non matched path of the part
-        for infix in ("..", ".." + os.sep + ".."):
+        nonmatched_path_part = texture_string[common_path_len + 1:]
 
-            nonmatched_path_part = texture_string[common_path_len:]
+        if nonmatched_path_part.startswith("base" + os.sep) or nonmatched_path_part.startswith("base_") or nonmatched_path_part.startswith("dlc_"):
 
-            modif_texture_string = os.path.join(scs_project_path, infix + nonmatched_path_part)
+            # now check if provided texture string is the same as:
+            # current scs project path + one or two directories up + non matched path of the part
+            # NOTE: find calls is inverted in relation to number of parents dirs
+            for infix, find_calls_count in (("..", 2), (".." + os.sep + "..", 1)):
 
-            # if one or two directories up is the same path as texture string
-            if is_samepath(modif_texture_string, texture_string):
+                modif_texture_string = os.path.join(scs_project_path, infix + os.sep + nonmatched_path_part)
 
-                strip_length = 0
+                # we got a hit if one or two directories up is the same path as texture string
+                if is_samepath(modif_texture_string, texture_string):
+                    slash_idx = 0
+                    for _ in range(0, find_calls_count):
+                        slash_idx = nonmatched_path_part.find(os.sep, slash_idx)
 
-                # and non matched path part is starting with "/[base|base_*]/" we got a hit
-                for base_prefix in ("base_vehicle", "base"):
-                    if nonmatched_path_part.startswith(os.sep + base_prefix + os.sep):
-                        strip_length = len(base_prefix) + 1
-                        break
+                    # catch invalid cases that needs investigation
+                    assert slash_idx != -1
 
-                # resulting relative path is non matched path part with stripped "/base" start
-                if strip_length > 0:
-                    texture_string = nonmatched_path_part[strip_length:]
-                    break
+                    texture_string = nonmatched_path_part[slash_idx:]
 
     # check for relative TOBJ, TGA, PNG
     for ext in extensions:

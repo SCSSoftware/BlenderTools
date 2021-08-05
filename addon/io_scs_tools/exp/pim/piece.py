@@ -16,7 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2013-2014: SCS Software
+# Copyright (C) 2013-2021: SCS Software
 
 from collections import OrderedDict
 from io_scs_tools.exp.pim.piece_stream import Stream
@@ -73,16 +73,14 @@ class Piece:
         :rtype: str
         """
 
-        frmt = "%.4f"
-
         vertex_hash = str(index)
         for uv in uvs:
-            vertex_hash = ''.join((vertex_hash, frmt % uv[0], frmt % uv[1]))
+            vertex_hash = "%s%.4f%.4f" % (vertex_hash, uv[0], uv[1])
 
-        vertex_hash = ''.join((vertex_hash, frmt % rgba[0], frmt % rgba[1], frmt % rgba[2], frmt % rgba[3]))
+        vertex_hash = "%s%.4f%.4f%.4f%.4f" % (vertex_hash, rgba[0], rgba[1], rgba[2], rgba[3])
 
         if tangent:
-            vertex_hash = ''.join((vertex_hash, frmt % tangent[0], frmt % tangent[1], frmt % tangent[2], frmt % tangent[3]))
+            vertex_hash = "%s%.4f%.4f%.4f%.4f" % (vertex_hash, tangent[0], tangent[1], tangent[2], tangent[3])
 
         return vertex_hash
 
@@ -122,16 +120,17 @@ class Piece:
         :rtype:
         """
 
-        if len(triangle) != 3:
-            return False
-        else:
-            # check indecies integrity
-            for vertex in triangle:
-                if vertex < 0 or vertex >= self.__vertex_count:
-                    return False
+        # expensive safety checks not needed for release but keep them for debug purposes
+        # if len(triangle) != 3:
+        #     return False
 
-            self.__triangles.append(tuple(triangle))
-            Piece.__global_triangle_count += 1
+        # check indecies integrity
+        for vertex in triangle:
+            if vertex < 0 or vertex >= self.__vertex_count:
+                return False
+
+        self.__triangles.append(tuple(triangle))
+        Piece.__global_triangle_count += 1
 
         return True
 

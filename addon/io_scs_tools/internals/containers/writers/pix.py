@@ -16,10 +16,16 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2013-2014: SCS Software
+# Copyright (C) 2013-2021: SCS Software
 
 from io_scs_tools.utils.convert import float_to_hex_string
 from io_scs_tools.utils.printout import lprint
+
+_LIST_TYPE = list
+_STR_TYPE = str
+_FLOAT_TYPE = float
+_INT_TYPE = int
+_STR_PROHIBITED_TYPES = {"FLOAT", "FLOAT2", "FLOAT3", "FLOAT4", "FLOAT5", "FLOAT6", "FLOAT7", "FLOAT8", "FLOAT9", "FLOAT4x4", "INT", "INT2", "STRING"}
 
 
 def _format_matrix(mat, ind, offset):
@@ -49,30 +55,22 @@ def _format_bone(data_line, ind):
     return data
 
 
-def _format_data(data_line, spaces=5, data_hex=True):
-    """Takes a list or tuple of float numbers and return
-    formatted line of hexadecimal values in a string."""
-    data = ''
-    if isinstance(data_line[0], float):
+def _format_data(data_line, data_line_type, spaces=5, data_hex=True):
+    """Takes a list or tuple of values and return
+    formatted line values in a string."""
+
+    if data_line_type == _FLOAT_TYPE:
         if data_hex:
-            for val in data_line:
-                data = data + float_to_hex_string(val) + '  '
+            data = '  '.join([float_to_hex_string(x) for x in data_line])
         else:
-            for val in data_line:
-                data = data + str(val) + ' '
-        data = data.rstrip()
-    elif isinstance(data_line[0], str):
-        for val in data_line:
-            data = data + '"' + val + '" '
-        data = data.rstrip()
+            data = ' '.join([str(x) for x in data_line])
+    elif data_line_type == _STR_TYPE:
+        data = ' '.join(['"%s"' % x for x in data_line])
     else:
         if spaces == 0:
-            for val in data_line:
-                data = data + str(val) + ' '
+            data = ' '.join([str(x) for x in data_line])
         else:
-            for val in data_line:
-                data = data + str(val).ljust(spaces, ' ') + ' '
-        data = data.rstrip()
+            data = ' '.join([str(x).ljust(spaces, ' ') for x in data_line])
 
     return data
 
@@ -85,25 +83,24 @@ def _write_properties_and_data(fw, section, ind, print_info):
         if prop[1] is None:
             fw('%s%s:\n' % (ind, prop[0]))
         # elif type(prop[1]) == type([]):
-        elif isinstance(prop[1], type([])):
+        elif isinstance(prop[1], _LIST_TYPE):
             if prop[1][0] == '&':
-                fw('%s%s: %s\n' % (ind, prop[0], _format_data(prop[1][1])))
+                fw('%s%s: %s\n' % (ind, prop[0], _format_data(prop[1][1], type(prop[1][1][0]))))
             elif prop[1][0] == '&&':
                 if len(prop[1][1]) == 1:
                     fw('%s%s: ( %s )\n' % (ind, prop[0], prop[1][1][0]))
                 else:
-                    fw('%s%s: ( %s )\n' % (ind, prop[0], _format_data(prop[1][1])))
+                    fw('%s%s: ( %s )\n' % (ind, prop[0], _format_data(prop[1][1], type(prop[1][1][0]))))
             elif prop[1][0] == 'i':
-                fw('%s%s: ( %s )\n' % (ind, prop[0], _format_data(prop[1][1], 0, False)))
+                fw('%s%s: ( %s )\n' % (ind, prop[0], _format_data(prop[1][1], type(prop[1][1][0]), 0, False)))
             elif prop[1][0] == 'ii':
-                fw('%s%s: ( %s )\n' % (ind, prop[0], _format_data(prop[1][1], 0)))
+                fw('%s%s: ( %s )\n' % (ind, prop[0], _format_data(prop[1][1], type(prop[1][1][0]), 0)))
             elif prop[1][0] == '#':
                 fw('%s# %s\n' % (ind, prop[0]))
             else:
                 fw('%s%s: %s\n' % (ind, prop[0], str(prop[1])[1:-1].replace(",", "").replace("'", "\"")))
         # elif type(prop[1]) == type("") and prop[1] not in (
-        elif isinstance(prop[1], type("")) and prop[1] not in (
-                "FLOAT", "FLOAT2", "FLOAT3", "FLOAT4", "FLOAT5", "FLOAT6", "FLOAT7", "FLOAT8", "FLOAT9", "FLOAT4x4", "INT", "INT2", "STRING"):
+        elif isinstance(prop[1], _STR_TYPE) and prop[1] not in _STR_PROHIBITED_TYPES:
             if prop[0] == '#':
                 fw('%s# %s\n' % (ind, prop[1]))
             elif prop[0] == '':
@@ -115,6 +112,7 @@ def _write_properties_and_data(fw, section, ind, print_info):
         if print_info:
             print('%sProp: %s' % (ind, prop))
 
+    data_line_type = None
     for data_line_i, data_line in enumerate(section.data):
         # print('-- data_line: %s' % str(data_line))
         formated_data_line = None
@@ -151,7 +149,13 @@ def _write_properties_and_data(fw, section, ind, print_info):
             # print('TIME - data_line: %s' % str(data_line))
             fw('%s%s( %s )\n' % (ind, str(data_line_i).ljust(5, ' '), float_to_hex_string(data_line[1])))
         else:
-            formated_data_line = _format_data(data_line)
+            # acquire data type only on first line, rest should be of same type
+            if data_line_i == 0:
+                if isinstance(data_line[0], float):
+                    data_line_type = _FLOAT_TYPE
+                elif isinstance(data_line[0], str):
+                    data_line_type = _STR_TYPE
+            formated_data_line = _format_data(data_line, data_line_type)
             fw('%s%s( %s )\n' % (ind, str(data_line_i).ljust(5, ' '), formated_data_line))
         if print_info:
             print('%sdata: %s' % (ind, formated_data_line))
@@ -171,7 +175,7 @@ def _write_section(fw, section, ind, orig_ind, print_info):
     fw('%s}\n' % in_ind)
 
 
-def write_data(container, filepath, ind='    ', print_on_success=True, print_info=0):
+def write_data(container, filepath, ind, print_progress, print_info):
     """This function is called from outside of this script. It takes
     data container, file path and string of indentation characters
     and it saves all data to the file."""
@@ -181,10 +185,9 @@ def write_data(container, filepath, ind='    ', print_on_success=True, print_inf
     # WRITE TO FILE
     file = open(filepath, mode="w", encoding="utf8", newline="\n")
     fw = file.write
-    if print_on_success:
-        lprint('I WRITTING PIX FILE to: %r', (filepath,))
 
-    for section in container:
+    sections_count = len(container)
+    for section_i, section in enumerate(container):
         if section.type != "#comment":
             fw('%s {\n' % section.type)
             if print_info:
@@ -196,6 +199,8 @@ def write_data(container, filepath, ind='    ', print_on_success=True, print_inf
         else:
             for comment in section.props:
                 fw('%s\n' % comment[1])
+        if print_progress:
+            lprint("S Writting %s file - %i%% done ...", (filepath[-3:].upper(), (section_i + 1) / sections_count * 100), immediate_timeout=5)
     fw('\n')
     file.close()
 

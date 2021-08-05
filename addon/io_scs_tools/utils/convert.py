@@ -16,16 +16,20 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2013-2019: SCS Software
+# Copyright (C) 2013-2021: SCS Software
 
 import struct
 import math
+import re
 from mathutils import Matrix, Quaternion, Vector, Color
 from io_scs_tools.consts import Colors as _COL_consts
 from io_scs_tools.utils.printout import lprint
 from io_scs_tools.utils import math as _math_utils
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
 from io_scs_tools.utils import get_scs_inventories as _get_scs_inventories
+
+_FLOAT_STRUCT = struct.Struct(">f")
+_BYTE_STRUCT = struct.Struct(">I")
 
 
 def linear_to_srgb(value):
@@ -168,18 +172,14 @@ def aux_to_node_color(aux_prop, from_index=0):
 def float_to_hex_string(value):
     """Takes a float and returns it as hexadecimal number in a string format.
 
+    For speed reasons we do not have any check on the value, so beware!
+
     :param value: Value
     :type value: float
-    :return: Hexadecimal value or Error string
+    :return: Hexadecimal string value
     :rtype: str
     """
-    if type(value) is float:
-        data_bytes = struct.pack(">f", value)
-        # binary_float = "&" + ''.join('{:02x}'.format(ord(b)) for b in data_bytes) <-- original version from Python 2.6
-        binary_float = "&" + ''.join('{:02x}'.format(b) for b in data_bytes)
-        return binary_float
-    lprint('E float_to_hex_string: Wrong input data type! "%s" is not a float.', (str(value),))
-    return "Value Error"
+    return '&%s' % _FLOAT_STRUCT.pack(value).hex()
 
 
 def string_to_number(string):
@@ -205,25 +205,14 @@ def string_to_number(string):
 def hex_string_to_float(string):
     """Takes a string of a hexadecimal number and returns it as float number.
 
-    :param string: Hexadecimal value
+    For speed reasons we do not have any check on the input string, so beware!
+
+    :param string: Hexadecimal value in format &XXxxXXxx
     :type string: str
-    :return: Float value or Error string
-    :rtype: float or str
+    :return: Float value
+    :rtype: float
     """
-    if isinstance(string, str):
-        if string[0] == '&':
-            if len(string) == 9:
-                byte = bytearray.fromhex(string[1:])
-                value = struct.unpack(">f", byte)
-            else:
-                value = ""
-                # print('\tstring 1: %s' % string)
-        else:
-            value = ""
-            # print('\tstring 2: %s' % string)
-        return float(value[0])
-    lprint('E hex_string_to_float: Wrong input data type! "%s" is not a string.', (string,))
-    return "Value Error"
+    return _FLOAT_STRUCT.unpack(bytearray.fromhex(string[1:]))[0]
 
 
 def scs_to_blend_matrix():
@@ -383,6 +372,27 @@ def str_to_int(str_value):
         value = None
 
     return value
+
+
+def split_hookup_id(hookup_id):
+    """Takes a raw Hookup ID string and returns hookup id and if exists, parsed payload.
+
+    :param hookup_id: hookup ID (as saved in PIM)
+    :type hookup_id: str
+    :return: Dictionary of payload properties (property names as keys and property values as values)
+    :rtype: (str, dict[str, str])
+    """
+
+    hookup_payload = {}
+
+    hookup_splits = re.split(r'#', hookup_id)
+    if len(hookup_splits) == 2:
+        for prop_object in re.split(r';', hookup_splits[1]):
+            prop_split = re.split(r':', prop_object)
+            if len(prop_split) == 2:
+                hookup_payload[prop_split[0]] = prop_split[1]
+
+    return hookup_splits[0], hookup_payload
 
 
 def hookup_id_to_hookup_name(hookup_id):

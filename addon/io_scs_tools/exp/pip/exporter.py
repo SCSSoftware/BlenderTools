@@ -525,5 +525,6 @@ def execute(dirpath, filename, name_suffix, prefab_locator_list, offset_matrix, 
     # write to file
     ind = "    "
     pip_filepath = path.join(dirpath, str(filename + ".pip" + name_suffix))
-    result = _pix_container.write_data_to_file(pip_container, pip_filepath, ind)
+    lprint("I Writting PIP file to %r ...", (pip_filepath,), immediate_timeout=0)
+    result = _pix_container.write_data_to_file(pip_container, pip_filepath, ind, print_progress=True)
     return result

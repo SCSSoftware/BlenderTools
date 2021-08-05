@@ -166,6 +166,6 @@ def write_data(filepath, container, ind="\t", is_sui=False, create_dirs=False, p
 
     if print_on_success:
         file_type = "SUI" if is_sui else "SII"
-        lprint("I WRITTING %s FILE to: %r", (file_type, filepath))
+        lprint("I Writting %s file to: %r", (file_type, filepath))
 
     return True

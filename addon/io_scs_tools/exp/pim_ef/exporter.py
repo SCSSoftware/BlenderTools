@@ -16,7 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2017-2019: SCS Software
+# Copyright (C) 2017-2021: SCS Software
 
 import os
 import collections
@@ -42,6 +42,7 @@ from io_scs_tools.utils import get_scs_globals as _get_scs_globals
 from io_scs_tools.utils.convert import change_to_scs_uv_coordinates as _change_to_scs_uv_coordinates
 from io_scs_tools.utils.convert import get_scs_transformation_components as _get_scs_transformation_components
 from io_scs_tools.utils.convert import scs_to_blend_matrix as _scs_to_blend_matrix
+from io_scs_tools.utils.convert import hookup_name_to_hookup_id as _hookup_name_to_hookup_id
 from io_scs_tools.utils.printout import lprint
 
 
@@ -111,11 +112,16 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
             used_bones.add(bone.name)
 
     # create mesh object data sections
-    for mesh_obj in mesh_objects:
+    mesh_objects_count = len(mesh_objects)
+    for mesh_i, mesh_obj in enumerate(mesh_objects):
 
         if mesh_obj.mode != 'OBJECT':
             lprint("W Invalid object mode detected on: %r, skipping it on export!", (mesh_obj.name,))
             continue
+
+        lprint("I Preparing mesh object: %r - %i/%i (%i%%) ...",
+               (mesh_obj.name, mesh_i + 1, mesh_objects_count, ((mesh_i + 1) / mesh_objects_count * 100)),
+               immediate_timeout=2.5)
 
         vert_groups = mesh_obj.vertex_groups
 
@@ -419,7 +425,12 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
                (list(objects_with_default_material.keys()),))
 
     # create locators data sections
-    for loc_obj in model_locators:
+    model_locators_count = len(model_locators)
+    for loc_i, loc_obj in enumerate(model_locators):
+
+        lprint("I Preparing model locator: %r - %i/%i (%i%%) ...",
+               (loc_obj.name, loc_i + 1, model_locators_count, (loc_i + 1) / model_locators_count * 100),
+               immediate_timeout=2.5)
 
         pos, qua, sca = _get_scs_transformation_components(root_object.matrix_world.inverted() @ loc_obj.matrix_world)
 
@@ -428,17 +439,21 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
                    "Model locators must have positive scale!", (loc_obj.name, root_object.name))
             continue
 
-        name = _name_utils.tokenize_name(loc_obj.name)
         hookup_string = loc_obj.scs_props.locator_model_hookup
-        if hookup_string != "" and ":" in hookup_string:
-            hookup = hookup_string.split(':', 1)[1].strip()
-        else:
-            if hookup_string != "":
-                lprint("W The Hookup %r has no expected value!", hookup_string)
-            hookup = None
+        hookup_id = _hookup_name_to_hookup_id(hookup_string)
+        if hookup_id:
+            hookup_payload = _object_utils.get_hookup_payload_string(loc_obj)
+
+            if len(hookup_payload) > 0:
+                hookup_id += '#'
+                hookup_id += hookup_payload
+
+        if hookup_string != "" and hookup_id is None:
+            lprint("W Model locator %r has unexpected hookup value %r.", (loc_obj.name, loc_obj.scs_props.locator_model_hookup))
 
         # create locator object for export
-        locator = Locator(len(pim_locators), name, hookup)
+        name = _name_utils.tokenize_name(loc_obj.name)
+        locator = Locator(len(pim_locators), name, hookup_id)
         locator.set_position(pos)
         locator.set_rotation(qua)
         locator.set_scale(sca)
@@ -484,4 +499,5 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
     # write to file
     ind = "    "
     pim_filepath = os.path.join(dirpath, root_object.name + ".pim" + name_suffix)
-    return _pix_container.write_data_to_file(pim_container, pim_filepath, ind)
+    lprint("I Writting PIM file to %r ...", (pim_filepath,), immediate_timeout=0)
+    return _pix_container.write_data_to_file(pim_container, pim_filepath, ind, print_progress=True)

@@ -16,7 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2013-2014: SCS Software
+# Copyright (C) 2013-2021: SCS Software
 
 
 from io_scs_tools.internals.structure import SectionData as _SectionData
@@ -82,18 +82,19 @@ class Stream:
         :rtype: bool
         """
 
-        if self.__tag == Stream.Types.POSITION and len(value) != 3:
-            return False
-        if self.__tag == Stream.Types.NORMAL and len(value) != 3:
-            return False
-        if self.__tag == Stream.Types.TANGENT and len(value) != 4:
-            return False
-        if self.__tag == Stream.Types.RGB and len(value) != 3:
-            return False
-        if self.__tag == Stream.Types.RGBA and len(value) != 4:
-            return False
-        if self.__tag == Stream.Types.UV and len(value) != 2:
-            return False
+        # expensive safety checks not needed for release but keep them for debug purposes
+        # if self.__tag == Stream.Types.POSITION and len(value) != 3:
+        #     return False
+        # if self.__tag == Stream.Types.NORMAL and len(value) != 3:
+        #     return False
+        # if self.__tag == Stream.Types.TANGENT and len(value) != 4:
+        #     return False
+        # if self.__tag == Stream.Types.RGB and len(value) != 3:
+        #     return False
+        # if self.__tag == Stream.Types.RGBA and len(value) != 4:
+        #     return False
+        # if self.__tag == Stream.Types.UV and len(value) != 2:
+        #     return False
 
         self.__data.append(tuple(value))
         return True

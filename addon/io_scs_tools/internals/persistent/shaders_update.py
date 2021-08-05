@@ -31,6 +31,6 @@ def post_frame_change(scene):
     :type scene: bpy.type.Scene
     """
 
-    # do any shader related time updates when animation playback is active
-    if bpy.context.screen and bpy.context.screen.is_animation_playing:
+    # do any shader related time updates when animation playback is active or user reset animation timeline to first frame
+    if bpy.context.screen and (bpy.context.screen.is_animation_playing or scene.frame_current == scene.frame_start):
         _update_shaders(scene)

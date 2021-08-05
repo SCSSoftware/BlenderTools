@@ -16,12 +16,14 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2013-2019: SCS Software
+# Copyright (C) 2013-2021: SCS Software
 
 import bpy
 import bmesh
+import re
+import math
 from bpy_extras import object_utils as bpy_object_utils
-from mathutils import Vector
+from mathutils import Vector, Quaternion
 from io_scs_tools.utils.printout import lprint
 from io_scs_tools.utils import math as _math
 from io_scs_tools.utils import name as _name
@@ -627,88 +629,103 @@ def get_object_materials(obj):
 
 
 def disable_modifier(modifier, disabled_modifiers):
+    """Takes modifier and dictionary. Stores current viewport and render visibility states and
+    saves it into the dictionary together with modifier instance as a key.
+
+    :param modifier: modifier to disable
+    :type modifier: bpy.types.Modifier
+    :param disabled_modifiers: dictonary of modifiers with show states disabled
+    :type disabled_modifiers: dict[bpy.types.Object, tuple]
+    :returns: updated dictionary with newly disabled modifier
+    :rtype: dict[bpy.types.Object, tuple]
     """
-    Takes a Modifier and a list. If the Modifier is enabled in 3D Viewport it disables
-    it and adds its name to the list.
-    :param modifier:
-    :param disabled_modifiers:
-    :return:
-    """
-    if modifier.name not in disabled_modifiers:
-        disabled_modifiers[modifier.name] = (modifier.show_viewport, modifier.show_render)
+    if modifier not in disabled_modifiers:
+        disabled_modifiers[modifier] = (modifier.show_viewport, modifier.show_render)
         modifier.show_viewport = False
         modifier.show_render = False
+
     return disabled_modifiers
 
 
-def disable_modifiers(obj, modifier_type_to_disable='EDGE_SPLIT', inverse=False):
-    """
-    Disables all instances of given modifier type on provided Object and returns its names in a list.
+def disable_modifiers(objs, modifier_type_to_disable='EDGE_SPLIT', inverse=False):
+    """Disables all instances of given modifier type on provided objects and
+    returns disabled modifiers initial visibility states.
+
     If 'inverse' is True, it disables all Modifiers except given modifier type.
-    :param obj:
-    :param modifier_type_to_disable:
-    :param inverse:
+
+    :param objs: list of objects to disable modifiers
+    :type objs: iterable[bpy.types.Object]
+    :param modifier_type_to_disable: modifier type to disable
+    :type modifier_type_to_disable: str
+    :param inverse: flag indicating whether to disabel given type or all the rest except given type
+    :type inverse: bool
     :return:
     """
+
     disabled_modifiers = dict()
-    for modifier in obj.modifiers:
-        if modifier_type_to_disable == 'ANY':
-            disabled_modifiers = disable_modifier(modifier, disabled_modifiers)
+
+    for obj in objs:
+        # always disable armature modifiers from SCS animations
+        # to prevent vertex rest position change because of the animation
+        for modifier in obj.modifiers:
+            if modifier.type == "ARMATURE" and modifier.object and modifier.object.type == "ARMATURE":
+                if modifier.object in get_siblings(obj):
+                    disabled_modifiers = disable_modifier(modifier, disabled_modifiers)
+
+        if _get_scs_globals().export_output_type.startswith('EF'):
+            if _get_scs_globals().export_apply_modifiers:
+                if _get_scs_globals().export_exclude_edgesplit:
+                    disabled_modifiers.update(disable_modifiers(obj, modifier_type_to_disable='EDGE_SPLIT'))
         else:
-            if modifier.type == modifier_type_to_disable:
-                if not inverse:
-                    disabled_modifiers = disable_modifier(modifier, disabled_modifiers)
+            if not _get_scs_globals().export_apply_modifiers:
+                if _get_scs_globals().export_include_edgesplit:
+                    disabled_modifiers.update(disable_modifiers(obj, modifier_type_to_disable='EDGE_SPLIT', inverse=True))
+                else:
+                    disabled_modifiers.update(disable_modifiers(obj, modifier_type_to_disable='ANY', inverse=True))
+
+        for modifier in obj.modifiers:
+            if modifier_type_to_disable == 'ANY':
+                disabled_modifiers = disable_modifier(modifier, disabled_modifiers)
             else:
-                if inverse:
-                    disabled_modifiers = disable_modifier(modifier, disabled_modifiers)
+                if modifier.type == modifier_type_to_disable:
+                    if not inverse:
+                        disabled_modifiers = disable_modifier(modifier, disabled_modifiers)
+                else:
+                    if inverse:
+                        disabled_modifiers = disable_modifier(modifier, disabled_modifiers)
+
     return disabled_modifiers
+
+
+def restore_modifiers(disabled_modifiers):
+    """Restore modifiers viewport and render settings from the given dictionary.
+
+    :param disabled_modifiers: dictonary of modifiers with show states to recover
+    :type disabled_modifiers: dict[bpy.types.Object, tuple]
+    """
+    for modifier, show_states in disabled_modifiers.items():
+        modifier.show_viewport = show_states[0]
+        modifier.show_render = show_states[1]
+        lprint("D Restored modifier with name: %r", (modifier.name,))
 
 
 def get_mesh(obj):
+    """Returns evaluated Mesh data of provided Object.
+
+    For speed reasons there is no check if provied object is of mesh type.
+
+    :param obj: object for which mesh data should be returned
+    :type obj: bpy.types.Object
     """
-    Returns Mesh data of provided Object (un)affected with specified Modifiers, which are
-    evaluated as within provided Scene.
-    """
-    disabled_modifiers = dict()
 
-    # always disable armature modifiers from SCS animations
-    # to prevent vertex rest position change because of the animation
-    sibling_objs = get_siblings(obj)
-    for modifier in obj.modifiers:
-        if modifier.type == "ARMATURE" and modifier.object in sibling_objs and modifier.object.type == "ARMATURE":
-            disabled_modifiers = disable_modifier(modifier, disabled_modifiers)
+    # use current window view layer depsgraph, since we use extra export scene built upon export
+    # and only that scene holds view layer where all export objects are properly evaluated
+    depsgraph = bpy.context.window.view_layer.depsgraph
 
-    if _get_scs_globals().export_output_type.startswith('EF'):
-        if _get_scs_globals().export_apply_modifiers:
-            if _get_scs_globals().export_exclude_edgesplit:
-                disabled_modifiers.update(disable_modifiers(obj, modifier_type_to_disable='EDGE_SPLIT'))
-    else:
-        if not _get_scs_globals().export_apply_modifiers:
-            if _get_scs_globals().export_include_edgesplit:
-                disabled_modifiers.update(disable_modifiers(obj, modifier_type_to_disable='EDGE_SPLIT', inverse=True))
-            else:
-                disabled_modifiers.update(disable_modifiers(obj, modifier_type_to_disable='ANY', inverse=True))
-
-    depsgraph = bpy.context.evaluated_depsgraph_get()
     obj_eval = obj.evaluated_get(depsgraph)
     mesh = obj_eval.to_mesh(preserve_all_data_layers=True, depsgraph=depsgraph)
 
-    restore_modifiers(obj, disabled_modifiers)
-
     return mesh
-
-
-def restore_modifiers(obj, disabled_modifiers):
-    """
-    Make modifiers settings as they were before calling "get_mesh".
-    :param obj:
-    :param disabled_modifiers:
-    :return:
-    """
-    for modifier_name, show_states in disabled_modifiers.items():
-        obj.modifiers[modifier_name].show_viewport = show_states[0]
-        obj.modifiers[modifier_name].show_render = show_states[1]
-        lprint("D Restored modifier with name: %r on object with name: %r", (modifier_name, obj.name))
 
 
 def get_stream_vgs(obj):
@@ -805,10 +822,113 @@ def create_locator_empty(name, loc, rot=(0, 0, 0), scale=(1, 1, 1), size=1.0, da
     if data_type == "Prefab":
         locator.scs_props.scs_part = ""
 
-    if hookup:
-        locator.scs_props.locator_model_hookup = hookup
+    if hookup and data_type == "Model":
+        hookup_id, hookup_payload = _convert.split_hookup_id(hookup)
+
+        # handle name
+        locator.scs_props.locator_model_hookup = _convert.hookup_id_to_hookup_name(hookup_id)
+
+        # handle payload
+        assign_hookup_payload(locator, hookup_id, hookup_payload)
 
     return locator
+
+
+def assign_hookup_payload(locator, hookup_id, hookup_payload):
+    """Tries to assign hookup payload.
+
+    :param locator: locator object to which payload should be assigned
+    :type locator: bpy.types.Object
+    :param hookup_id: pure hookup unit name without payload part of it
+    :type hookup_id: str
+    :param hookup_payload: dictionary of payload data for the given hookup
+    :type hookup_payload: dict[str, str]
+    """
+    # lamp type payload
+    if is_lamp_hookup(hookup_id) and is_lamp_hookup_payload(hookup_payload):
+        locator.scs_props.locator_model_hookup_lamp_height = float(hookup_payload["height"])
+    else:
+        # currently we don't support payload anywhere else
+        assert len(hookup_payload) == 0
+
+
+def get_hookup_payload_string(locator):
+    """Constructs and returns hookup payload string to be used in export.
+
+    :param locator: locator object from which payload data should be gathered
+    :type locator: bpy.types.Object
+    :return: Final payload string, to be added to hookup name behind hashtag
+    :rtype: str
+    """
+    hookup_id = _convert.hookup_name_to_hookup_id(locator.scs_props.locator_model_hookup)
+    hookup_payload = ""
+
+    # lamp type payload
+    if is_lamp_hookup(hookup_id):
+        root_obj = get_scs_root(locator)
+
+        loc_q = locator.matrix_world.to_quaternion()
+        root_q = root_obj.matrix_world.to_quaternion()
+
+        # calculate dot product between down and lamp direction,
+        # to be able to calculate target distance to the ground based on given height.
+        lamp_q = loc_q.rotation_difference(root_q)
+        down_q = Quaternion((1, 0, 0), math.pi / 2)
+
+        lamp_down_dot = lamp_q.dot(down_q)
+
+        if lamp_down_dot < math.cos(math.radians(25)):
+            lprint("E Lamp hookup payload for %r can not be exported.\n\t    "
+                   "The angle between vertical axis and the lamp locator is to big (needs to be <= 25°)!",
+                   (locator.name,))
+        elif locator.scs_props.locator_model_hookup_lamp_height <= 0:
+            lprint("E Lamp hookup payload for %r can not be exported.\n\t    "
+                   "The specified lamp height can not be smaller than zero!",
+                   (locator.name,))
+        else:
+            height = locator.scs_props.locator_model_hookup_lamp_height
+            target = height / lamp_down_dot
+            hookup_payload = "height:%.1f;target:%.1f" % (height, target)
+
+    return hookup_payload
+
+
+def is_lamp_hookup(hookup_id):
+    """Is given hookup ID a lamp type hookup?
+
+    :param hookup_id: hookup ID without payload addition
+    :type hookup_id: str
+    :return: True if given hookup ID is of a lamp type, False otherwise
+    :rtype: bool
+    """
+    unit_tokens = re.split(r'\.', hookup_id)
+
+    # lamp type payload:
+    # 1. unit tokens count: 7
+    # 2. first three tokens: template, light, lamp
+    # 3. last token in format: deg<int>
+    # 4. payload dictionary has to have this pairs: ("height", "<float>"), ("target", "<float>")
+
+    if len(unit_tokens) == 7 and unit_tokens[0] == "template" and unit_tokens[1] == "light" and unit_tokens[2] == "lamp":
+        lamp_angle = unit_tokens[-1]
+        if lamp_angle[0:3] == "deg" and lamp_angle[3:].isdigit():
+            return True
+
+    return False
+
+
+def is_lamp_hookup_payload(hookup_payload):
+    """Is given hookup payload dictionary suitable for lamp type hookup?
+
+    :param hookup_payload:
+    :type hookup_payload: dict[str, str]
+    :return: True if given hookup payload dictionary is suitable for lamp hookup, False otherwise
+    :rtype: bool
+    """
+    if len(hookup_payload) == 2 and "height" in hookup_payload and "target" in hookup_payload:
+        return True
+
+    return False
 
 
 def set_attr_if_different(obj, attr, value):

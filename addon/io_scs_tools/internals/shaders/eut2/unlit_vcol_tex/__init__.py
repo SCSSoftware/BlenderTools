@@ -16,7 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2015-2019: SCS Software
+# Copyright (C) 2015-2021: SCS Software
 
 from mathutils import Color
 from io_scs_tools.consts import Mesh as _MESH_consts
@@ -28,6 +28,8 @@ from io_scs_tools.internals.shaders.flavors import awhite
 from io_scs_tools.internals.shaders.flavors import blend_add
 from io_scs_tools.internals.shaders.flavors import blend_mult
 from io_scs_tools.internals.shaders.flavors import blend_over
+from io_scs_tools.internals.shaders.flavors import fadesheet
+from io_scs_tools.internals.shaders.flavors import flipsheet
 from io_scs_tools.internals.shaders.flavors import paint
 from io_scs_tools.utils import convert as _convert_utils
 from io_scs_tools.utils import material as _material_utils
@@ -46,6 +48,10 @@ class UnlitVcolTex(BaseShader):
     ALPHA_INV_NODE = "AlphaInv"
     OUT_SHADER_NODE = "OutShader"
     OUTPUT_NODE = "Output"
+
+    BASE1_TEX_NODE = "BaseTex"
+    BASE_BASE1_MIX_NODE = "BaseBase1Mix"
+    BASE_BASE1_AMIX_NODE = "BaseBase1AMix"
 
     @staticmethod
     def get_name():
@@ -222,6 +228,40 @@ class UnlitVcolTex(BaseShader):
         pass  # NOTE: shadow bias won't be visualized as game uses it's own implementation
 
     @staticmethod
+    def set_aux0(node_tree, aux_property):
+        """Set playback FPS, frames per row and total frames in case fade/flipsheet flavor is set.
+
+        :param node_tree: node tree of current shader
+        :type node_tree: bpy.types.NodeTree
+        :param aux_property: animation speed represented with one float auxiliary entry
+        :type aux_property: bpy.types.IDPropertyGroup
+        """
+
+        if fadesheet.is_set(node_tree):
+            fadesheet.set_fps(node_tree, aux_property[0]['value'])
+            fadesheet.set_frames_row(node_tree, aux_property[1]['value'])
+            fadesheet.set_frames_total(node_tree, aux_property[2]['value'])
+        elif flipsheet.is_set(node_tree):
+            flipsheet.set_fps(node_tree, aux_property[0]['value'])
+            flipsheet.set_frames_row(node_tree, aux_property[1]['value'])
+            flipsheet.set_frames_total(node_tree, aux_property[2]['value'])
+
+    @staticmethod
+    def set_aux1(node_tree, aux_property):
+        """Set animation speed or frame size in case fade/flipsheet flavor is set.
+
+        :param node_tree: node tree of current shader
+        :type node_tree: bpy.types.NodeTree
+        :param aux_property: animation speed represented with one float auxiliary entry
+        :type aux_property: bpy.types.IDPropertyGroup
+        """
+
+        if fadesheet.is_set(node_tree):
+            fadesheet.set_frame_size(node_tree, aux_property[0]['value'], aux_property[1]['value'])
+        elif flipsheet.is_set(node_tree):
+            flipsheet.set_frame_size(node_tree, aux_property[0]['value'], aux_property[1]['value'])
+
+    @staticmethod
     def set_aux5(node_tree, aux_property):
         """Set luminosity boost factor.
 
@@ -233,7 +273,6 @@ class UnlitVcolTex(BaseShader):
 
         luminance_boost = aux_property[0]['value']
         node_tree.nodes[UnlitVcolTex.LUM_MULT_NODE].inputs[0].default_value = (parameters.get_material_luminosity(luminance_boost),) * 3
-
 
     @staticmethod
     def set_base_texture(node_tree, image):
@@ -408,3 +447,82 @@ class UnlitVcolTex(BaseShader):
 
         else:
             paint.delete(node_tree)
+
+    @staticmethod
+    def set_fadesheet_flavor(node_tree, switch_on):
+        """Set fadesheet flavor to this shader.
+
+        :param node_tree: node tree of current shader
+        :type node_tree: bpy.types.NodeTree
+        :param switch_on: flag indication if flavor should be switched on or off
+        :type switch_on: bool
+        """
+
+        uvmap_n = node_tree.nodes[UnlitVcolTex.UVMAP_NODE]
+        base_tex_n = node_tree.nodes[UnlitVcolTex.BASE_TEX_NODE]
+        tex_mult_n = node_tree.nodes[UnlitVcolTex.TEX_MULT_NODE]
+        opacity_n = node_tree.nodes[UnlitVcolTex.OPACITY_NODE]
+
+        if switch_on:
+
+            # node creation
+            base1_tex_n = node_tree.nodes.new("ShaderNodeTexImage")
+            base1_tex_n.name = base1_tex_n.label = UnlitVcolTex.BASE_TEX_NODE
+            base1_tex_n.location = (base_tex_n.location.x, base_tex_n.location.y - 300)
+            base1_tex_n.width = 140
+
+            base_base1_mix_n = node_tree.nodes.new("ShaderNodeMixRGB")
+            base_base1_mix_n.name = base_base1_mix_n.label = UnlitVcolTex.BASE_BASE1_MIX_NODE
+            base_base1_mix_n.location = (base_tex_n.location.x + 185 * 2, base_tex_n.location.y - 300)
+
+            base_base1_amix_n = node_tree.nodes.new("ShaderNodeMixRGB")
+            base_base1_amix_n.name = base_base1_amix_n.label = UnlitVcolTex.BASE_BASE1_AMIX_NODE
+            base_base1_amix_n.location = (base_tex_n.location.x + 185 * 2, base_tex_n.location.y - 500)
+
+            # links
+            node_tree.links.new(base_base1_mix_n.inputs['Color1'], base_tex_n.outputs['Color'])
+            node_tree.links.new(base_base1_mix_n.inputs['Color2'], base1_tex_n.outputs['Color'])
+
+            node_tree.links.new(base_base1_amix_n.inputs['Color1'], base_tex_n.outputs['Alpha'])
+            node_tree.links.new(base_base1_amix_n.inputs['Color2'], base1_tex_n.outputs['Alpha'])
+
+            node_tree.links.new(tex_mult_n.inputs[1], base_base1_mix_n.outputs['Color'])
+
+            node_tree.links.new(opacity_n.inputs[0], base_base1_amix_n.outputs['Color'])
+
+            # flavor creation
+            uvmap_n.location.x -= 185
+
+            location = (uvmap_n.location.x + 185, uvmap_n.location.y)
+            fadesheet.init(node_tree, location,
+                           uvmap_n.outputs['UV'],
+                           base_tex_n.inputs[0],
+                           base1_tex_n.inputs[0],
+                           base_base1_mix_n.inputs['Fac'],
+                           base_base1_amix_n.inputs['Fac'])
+
+        else:
+            fadesheet.delete(node_tree)
+
+    @staticmethod
+    def set_flipsheet_flavor(node_tree, switch_on):
+        """Set flipsheet flavor to this shader.
+
+        :param node_tree: node tree of current shader
+        :type node_tree: bpy.types.NodeTree
+        :param switch_on: flag indication if flavor should be switched on or off
+        :type switch_on: bool
+        """
+
+        uvmap_n = node_tree.nodes[UnlitVcolTex.UVMAP_NODE]
+        base_tex_n = node_tree.nodes[UnlitVcolTex.BASE_TEX_NODE]
+
+        if switch_on:
+
+            uvmap_n.location.x -= 185
+
+            location = (uvmap_n.location.x + 185, uvmap_n.location.y)
+            flipsheet.init(node_tree, location, uvmap_n.outputs['UV'], base_tex_n.inputs[0])
+
+        else:
+            flipsheet.delete(node_tree)

@@ -16,7 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2013-2019: SCS Software
+# Copyright (C) 2013-2021: SCS Software
 
 import bpy
 import blf
@@ -33,6 +33,7 @@ from io_scs_tools.utils import info as _info_utils
 from io_scs_tools.utils import object as _object_utils
 from io_scs_tools.utils import view3d as _view3d_utils
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
+from io_scs_tools.utils.printout import get_immediate_msg as _get_immediate_msg
 
 _2d_elements_cache = LocatorsCache()
 
@@ -224,16 +225,17 @@ def _draw_3dview_report(window, area, region):
     # draw actual operator title and message if shown
     if _Show3DViewReport.is_shown():
 
+        blf.enable(0, blf.SHADOW)
+
         blf.size(0, 12, 72)
         blf.color(0, 1, 1, 1, 1)
-        blf.shadow(0, 5, 0, 0, 0, 1)
+        blf.shadow(0, 0, 0, 0, 0, 1)
 
         if _Show3DViewReport.get_title() != "":
             blf.position(0, pos_x, pos_y, 0)
             blf.draw(0, _Show3DViewReport.get_title())
             pos_y -= 15
 
-        blf.enable(0, blf.SHADOW)
         _Show3DViewReport.set_out_of_bounds(False)
         for line in _Show3DViewReport.get_lines():
 
@@ -247,14 +249,62 @@ def _draw_3dview_report(window, area, region):
 
             blf.position(0, pos_x, pos_y, 0)
             if "ERROR" in line:
-                blf.shadow(0, 5, 0.5, 0., 0, 1)
+                blf.shadow(0, 0, 0.5, 0., 0, 1)
             elif "WARNING" in line:
-                blf.shadow(0, 5, 0.3, 0.15, 0, 1)
+                blf.shadow(0, 0, 0.3, 0.15, 0, 1)
 
             blf.draw(0, line)
             pos_y -= 15
 
         blf.disable(0, blf.SHADOW)
+
+
+def _draw_3dview_immediate_report(region):
+    """Draws immediate report in the middle of the region if message exists.
+
+    :param region: region of 3D viewport
+    :type region: bpy.types.Region
+    """
+    immediate_msg = _get_immediate_msg()
+
+    # if there is no message don't draw anything
+    if not immediate_msg:
+        return
+
+    blf.enable(0, blf.SHADOW)
+    blf.shadow(0, 0, 0, 0, 0, 1)
+
+    # draw bacground areas
+    _primitive.draw_rect_2d(
+        (
+            (0, region.height / 2 + 31),
+            (region.width, region.height / 2 + 31),
+            (region.width, region.height / 2 - 31),
+            (0, region.height / 2 - 31)
+        ),
+        (0, 0, 0, .9)
+    )
+
+    _primitive.draw_rect_2d(
+        (
+            (0, region.height / 2 + 30),
+            (region.width, region.height / 2 + 30),
+            (region.width, region.height / 2 - 30),
+            (0, region.height / 2 - 30)
+        ),
+        (.25, .25, .25, .9)
+    )
+
+    # set size of the immidete text
+    blf.size(0, 18, 72)
+    blf.color(0, .952, .635, .062, 1)
+
+    # draw on center of the region
+    width, height = blf.dimensions(0, immediate_msg)
+    blf.position(0, region.width / 2 - width / 2, region.height / 2 - height / 4, 0)
+    blf.draw(0, immediate_msg)
+
+    blf.disable(0, blf.SHADOW)
 
 
 def fill_buffers(object_list):
@@ -394,6 +444,9 @@ def draw_custom_2d_elements():
 
     # draw 3d view import/export reports
     _draw_3dview_report(window, area, region)
+
+    # draw 3d view immediate reports
+    _draw_3dview_immediate_report(region)
 
     # cache & get valid locators for current region boundaries
     locators = _cache_custom_2d_elements(region, region_3d, space)

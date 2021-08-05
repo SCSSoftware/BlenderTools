@@ -16,12 +16,13 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2019: SCS Software
+# Copyright (C) 2019-2021: SCS Software
 
 import bpy
 from bpy.app.handlers import persistent
 from io_scs_tools.internals.connections.wrappers import collection as _connections_wrapper
 from io_scs_tools.internals.open_gl import core as _open_gl_core
+from io_scs_tools.operators.bases.export import SCSExportHelper as _SCSExportHelper
 from io_scs_tools.utils import view3d as _view3d_utils
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
 
@@ -140,6 +141,10 @@ def post_depsgraph(scene):
     :type scene: bpy.type.Scene
     """
     scs_globals = _get_scs_globals()
+
+    # no custom drawing update needed for export scene
+    if scene.name == _SCSExportHelper.export_scene_name:
+        return
 
     # during animation playback, leave everything up to post frame change
     screen = bpy.context.screen

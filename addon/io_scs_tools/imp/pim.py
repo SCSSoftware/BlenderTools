@@ -16,7 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2013-2019: SCS Software
+# Copyright (C) 2013-2021: SCS Software
 
 import bpy
 import bmesh
@@ -255,7 +255,7 @@ def get_locator_properties(section):
         elif prop[0] == "Name":
             loc_name = prop[1]
         elif prop[0] == "Hookup":
-            loc_hookup = _convert_utils.hookup_id_to_hookup_name(prop[1])
+            loc_hookup = prop[1]
         elif prop[0] == "Position":
             loc_position = prop[1]
         elif prop[0] == "Rotation":
@@ -459,7 +459,7 @@ def _create_piece(
         _mesh_utils.bm_make_vc_layer(5, bm, vc_layer_name, mesh_rgb_final[vc_layer_name])
 
     if vcolor_corrupt:
-        lprint("W Piece %r has vertices with vertex color greater the 1.0, clamping it!", (name, ))
+        lprint("W Piece %r has vertices with vertex color greater the 1.0, clamping it!", (name,))
 
     context.window_manager.progress_update(0.5)
 
@@ -691,12 +691,12 @@ def load_pim_file(context, filepath, terrain_points_trans=None, preview_model=Fa
 
     scs_globals = _get_scs_globals()
 
-    lprint("I Reading data from PIM file...")
+    lprint("I Reading data from PIM file ...", immediate_timeout=0)
 
     ind = '    '
-    pim_container = _pix_container.get_data_from_file(filepath, ind)
+    pim_container = _pix_container.get_data_from_file(filepath, ind, print_progress=True)
 
-    lprint("I Assembling data...")
+    lprint("I Assembling data ...", immediate_timeout=0)
 
     # LOAD HEADER
     format_version, source, f_type, f_name, source_filename, author = get_header(pim_container)
@@ -904,6 +904,7 @@ def load_pim_file(context, filepath, terrain_points_trans=None, preview_model=Fa
     lprint("\nI ------ Creating mesh objects: -------")
     objects = []
     skinned_objects = []
+    objects_data_count = len(objects_data)
     for obj_i in objects_data:
 
         # PARTS - search part first so preview model can possibly ignore objects with prescribed variant
@@ -960,11 +961,13 @@ def load_pim_file(context, filepath, terrain_points_trans=None, preview_model=Fa
             else:
                 objects.append(obj)
 
-            lprint("I Created object %r (%s/%s)...", (obj.name, obj_i, len(objects_data)))
-
             # PARTS
             if part_name:
                 obj.scs_props.scs_part = part_name
+
+            lprint("I Created mesh object %r - %i/%i (%i%%) ...",
+                   (obj.name, obj_i + 1, objects_data_count, (obj_i + 1) / objects_data_count * 100),
+                   immediate_timeout=2.5)
         else:
             lprint("E %r - Object creation FAILED!", piece_name)
 
@@ -991,6 +994,7 @@ def load_pim_file(context, filepath, terrain_points_trans=None, preview_model=Fa
     if scs_globals.import_pim_file and not preview_model:
         lprint("\nI ------ Creating model locators: ------")
 
+        locators_data_count = len(locators_data)
         for loc_i in locators_data:
             # print('locators_data[loc_i]: %s' % str(locators_data[loc_i]))
             loc = _object_utils.create_locator_empty(
@@ -1012,7 +1016,6 @@ def load_pim_file(context, filepath, terrain_points_trans=None, preview_model=Fa
             # )
             locator_name = locators_data[loc_i][0]
             if loc:
-                lprint("I Created locator %r...", (locator_name,))
                 locators.append(loc)
                 for part in parts_data:
                     # print('parts_data[part]: %s' % str(parts_data[part]))
@@ -1020,6 +1023,10 @@ def load_pim_file(context, filepath, terrain_points_trans=None, preview_model=Fa
                         if loc_i in parts_data[part][1]:
                             # print('  loc_i: %s - part: %s - parts_data[part][1]: %s' % (loc_i, part, parts_data[part][1]))
                             loc.scs_props.scs_part = part.lower()
+
+                lprint("I Created locator %r - %i/%i (%i%%) ...",
+                       (locator_name, loc_i + 1, locators_data_count, (loc_i + 1) / locators_data_count * 100),
+                       immediate_timeout=2.5)
             else:
                 lprint("E %r - Locator creation FAILED!", (locator_name,))
 

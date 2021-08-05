@@ -23,6 +23,7 @@ from io_scs_tools.internals.shaders.eut2.dif_anim import anim_blend_factor_ng
 from io_scs_tools.internals.shaders.eut2.water import water_stream_ng
 from io_scs_tools.internals.shaders.eut2.truckpaint import Truckpaint
 from io_scs_tools.internals.shaders.flavors import paint
+from io_scs_tools.internals.shaders.std_node_groups import animsheet_loop_frame_ng
 
 
 def update_shaders(scene):
@@ -34,6 +35,9 @@ def update_shaders(scene):
 
     # update animation blend factor group node
     anim_blend_factor_ng.update_time(scene)
+
+    # update animsheet loop frame calculation group node
+    animsheet_loop_frame_ng.update_time(scene)
 
     # update water streams
     water_stream_ng.update_time(scene)

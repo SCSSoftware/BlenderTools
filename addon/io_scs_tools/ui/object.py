@@ -16,7 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2013-2019: SCS Software
+# Copyright (C) 2013-2021: SCS Software
 
 import os
 import bpy
@@ -24,6 +24,7 @@ from bpy.types import Panel
 from io_scs_tools.consts import Operators as _OP_consts
 from io_scs_tools.consts import PrefabLocators as _PL_consts
 from io_scs_tools.internals.connections.wrappers import collection as _connections_wrapper
+from io_scs_tools.utils import convert as _convert_utils
 from io_scs_tools.utils import object as _object_utils
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
 from io_scs_tools.utils import get_scs_inventories as _get_scs_inventories
@@ -268,12 +269,17 @@ class SCS_TOOLS_PT_Locator(_ObjectPanelBlDefs, Panel):
 
         # locator hookup
         row = layout.row(align=True)
-        _shared.compensate_aligning_bug(row, number_of_items=2)
         row.prop_search(obj.scs_props, 'locator_model_hookup', _get_scs_inventories(), 'hookups', text="Hookup")
         props = row.operator('scene.scs_tools_reload_library', icon='FILE_REFRESH', text="")
         props.library_path_attr = "hookup_library_rel_path"
         props = row.operator("object.scs_tools_select_model_locators_with_same_hookup", icon='ZOOM_SELECTED', text="")
         props.source_object = obj.name
+
+        # locator hookup payload
+        if obj.scs_props.locator_model_hookup != "":
+            hookup_id = _convert_utils.hookup_name_to_hookup_id(obj.scs_props.locator_model_hookup)
+            if _object_utils.is_lamp_hookup(hookup_id):
+                layout.prop(obj.scs_props, 'locator_model_hookup_lamp_height')
 
     @staticmethod
     def draw_collision_locator(layout, obj):
@@ -351,7 +357,6 @@ class SCS_TOOLS_PT_Locator(_ObjectPanelBlDefs, Panel):
         layout.use_property_decorate = False
 
         row = layout.row(align=True)
-        _shared.compensate_aligning_bug(row, number_of_items=1)
         row.prop_search(obj.scs_props, 'locator_prefab_sign_model', _get_scs_inventories(), 'sign_models', text="Sign Model")
         props = row.operator('scene.scs_tools_reload_library', icon='FILE_REFRESH', text="")
         props.library_path_attr = "sign_library_rel_path"
@@ -373,7 +378,6 @@ class SCS_TOOLS_PT_Locator(_ObjectPanelBlDefs, Panel):
 
         # profile
         row = layout.row(align=True)
-        _shared.compensate_aligning_bug(row, number_of_items=1)
         row.prop_search(obj.scs_props, 'locator_prefab_tsem_profile', _get_scs_inventories(), 'tsem_profiles')
         props = row.operator('scene.scs_tools_reload_library', icon='FILE_REFRESH', text="")
         props.library_path_attr = "tsem_library_rel_path"
@@ -429,7 +433,6 @@ class SCS_TOOLS_PT_Locator(_ObjectPanelBlDefs, Panel):
 
         # traffic rule
         row = layout.row(align=True)
-        _shared.compensate_aligning_bug(row, number_of_items=1)
         row.prop_search(obj.scs_props, 'locator_prefab_np_traffic_rule', _get_scs_inventories(), 'traffic_rules')
         props = row.operator('scene.scs_tools_reload_library', icon='FILE_REFRESH', text="")
         props.library_path_attr = "traffic_rules_library_rel_path"
@@ -521,7 +524,6 @@ class SCS_TOOLS_PT_Locator(_ObjectPanelBlDefs, Panel):
         layout.use_property_decorate = False
 
         row = layout.row(align=True)
-        _shared.compensate_aligning_bug(row, number_of_items=1)
         row.prop_search(obj.scs_props, 'locator_prefab_tp_action', _get_scs_inventories(), 'trigger_actions')
         props = row.operator('scene.scs_tools_reload_library', icon='FILE_REFRESH', text="")
         props.library_path_attr = "trigger_actions_rel_path"

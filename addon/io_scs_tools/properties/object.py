@@ -16,7 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2013-2019: SCS Software
+# Copyright (C) 2013-2021: SCS Software
 
 import bpy
 from bpy.props import (StringProperty,
@@ -664,6 +664,12 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
         description="Hookup",
         default="",
         subtype='NONE',
+    )
+
+    locator_model_hookup_lamp_height: FloatProperty(
+        name="Hookup Lamp Height",
+        description="Payload information of the special hookup in this case: lamp height.",
+        default=0.0,
     )
 
     def locator_collider_type_items(self, context):

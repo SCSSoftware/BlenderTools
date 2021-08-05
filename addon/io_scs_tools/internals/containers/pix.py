@@ -178,13 +178,15 @@ def make_vertex_stream(stream_raw, name=''):
     return stream
 
 
-def get_data_from_file(filepath, ind, print_info=False):
+def get_data_from_file(filepath, ind, print_progress=False, print_info=False):
     """Returns entire data in data container from specified PIX file.
 
     :param filepath: File path to be read
     :type filepath: str
     :param ind: Indentation which is expected in the file
     :type ind: str
+    :param print_progress: should progress be reported with immediate reports
+    :type print_progress: bool
     :param print_info: Whether to print the debug printouts
     :type print_info: bool
     :return: PIX Section Object Data
@@ -196,7 +198,7 @@ def get_data_from_file(filepath, ind, print_info=False):
         return None
 
     # print('    filepath: "%s"\n' % filepath)
-    container, state = _pix_parser.read_data(filepath, ind, print_info)
+    container, state = _pix_parser.read_data(filepath, ind, print_progress, print_info)
     if len(container) < 1:
         lprint('\nE File "%s" is empty!', (_path_utils.readable_norm(filepath),))
         return None
@@ -207,7 +209,7 @@ def get_data_from_file(filepath, ind, print_info=False):
     return container
 
 
-def write_data_to_file(container, filepath, ind, print_info=False):
+def write_data_to_file(container, filepath, ind, print_progress=False, print_info=False):
     """Exports given container in given filepath.
 
     :param container:
@@ -216,6 +218,8 @@ def write_data_to_file(container, filepath, ind, print_info=False):
     :type filepath: str
     :param ind: intendention for printout
     :type ind: str
+    :param print_progress: should progress be reported with immediate reports
+    :type print_progress: bool
     :param print_info: should infos be printed
     :type print_info: bool
     :return: True if export was successfull, otherwise False
@@ -226,10 +230,10 @@ def write_data_to_file(container, filepath, ind, print_info=False):
     # path will be properly readable even on windows. Without mixed back and forward slashes.
     filepath = _path_utils.readable_norm(filepath)
 
-    result = _pix_writer.write_data(container, filepath, ind, print_info=print_info)
+    result = _pix_writer.write_data(container, filepath, ind, print_progress, print_info)
     if result != {'FINISHED'}:
         lprint("E Unable to export data into file:\n\t   %r\n\t   For details check printouts above.", (filepath,))
         return False
     else:
-        lprint("I File created!")
+        lprint("I File %r successfully written!", (os.path.basename(filepath),))
         return True

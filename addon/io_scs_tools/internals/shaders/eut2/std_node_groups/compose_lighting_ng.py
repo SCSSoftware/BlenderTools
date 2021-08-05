@@ -152,6 +152,7 @@ def __create_node_group__():
     out_mat_node.location = (start_pos_x + pos_x_shift * 7, 0)
     out_mat_node.inputs["Base Color"].default_value = (0.0,) * 4
     out_mat_node.inputs["Specular"].default_value = (0.0,) * 4
+    out_mat_node.inputs["Roughness"].default_value = 1.0  # use 1 to disable roughness completely in our shaders
 
     # links creation
     compose_light_g.links.new(mult_aa_node.inputs[0], add_ambient_col_n.outputs["Color"])

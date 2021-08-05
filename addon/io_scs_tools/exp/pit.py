@@ -162,9 +162,9 @@ def get_texture_path_from_material(material, texture_type, export_path):
 
             # search for relative path inside current scs project base and
             # possible dlc/mod parent folders; use first found
-            for infix in ("", "../base/", "../base_vehicle/", "../../base/", "../../base_vehicle/"):
+            for infix in _path_utils.get_possible_project_infixes(include_zero_infix=True):
 
-                curr_path = os.path.join(scs_project_path, infix + texture_raw_path[2:] + ext)
+                curr_path = os.path.join(scs_project_path, infix + os.sep + texture_raw_path[2:] + ext)
 
                 if os.path.isfile(curr_path):
 

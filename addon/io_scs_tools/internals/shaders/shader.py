@@ -16,7 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2015-2019: SCS Software
+# Copyright (C) 2015-2021: SCS Software
 
 import bpy
 from io_scs_tools.utils.printout import lprint
@@ -100,6 +100,12 @@ def setup_nodes(material, effect, attr_dict, tex_dict, tex_settings_dict, recrea
 
     if effect.endswith(".back") and "sky" in effect:
         flavors["sky_back"] = True
+
+    if effect.endswith(".fadesheet") or ".fadesheet." in effect:
+        flavors["fadesheet"] = True
+
+    if effect.endswith(".flipsheet") or ".flipsheet." in effect:
+        flavors["flipsheet"] = True
 
     __setup_nodes__(material, effect, attr_dict, tex_dict, tex_settings_dict, {}, flavors, recreate)
 

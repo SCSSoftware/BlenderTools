@@ -16,11 +16,14 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2013-2014: SCS Software
+# Copyright (C) 2013-2021: SCS Software
 
 import bpy
 import atexit
+from time import time
 from tempfile import NamedTemporaryFile
+
+_PRECH_TABLE = {'E', 'W', 'I', 'D', 'S'}
 
 
 class _FileLogger:
@@ -87,7 +90,56 @@ class _FileLogger:
         return log
 
 
+class _ImmediateMsgHandler:
+    """Immediate message handler.
+
+    Used to hold last reported message in lprint with with immediate timeout flag.
+    """
+
+    __message = None
+    __last_time = None
+
+    def __init__(self):
+        self.__message = ""
+        self.__last_time = 0
+
+    def report_message_and_redraw(self, message, timeout):
+        """Reports given message as the immediate message and redraws window.
+
+        TODO: Try to find more suitable solution for redraw. Current one is marked as hack in official docs.
+
+        :param message: new message
+        :type message: str
+        :param timeout: time from last report needed for message to be reported
+        :type timeout: float
+        """
+        if timeout > 0 and time() - self.__last_time < timeout:
+            return
+
+        self.__message = message
+        self.__last_time = time()
+
+        bpy.ops.wm.redraw_timer(type='DRAW_WIN_SWAP', iterations=1)
+
+    def reset_message(self):
+        """Resets current immediate message.
+        """
+        self.__message = ""
+
+    def get_message(self):
+        """Gets immediate message if exists.
+
+        :return: immediate message or None if none exists
+        :rtype: str | None
+        """
+        if self.__message != "":
+            return self.__message
+
+        return None
+
+
 file_logger = _FileLogger()
+immediate_messenger = _ImmediateMsgHandler()
 
 dev_error_messages = []
 error_messages = []
@@ -95,7 +147,7 @@ dev_warning_messages = []
 warning_messages = []
 
 
-def lprint(string, values=(), report_errors=0, report_warnings=0):
+def lprint(string, values=(), report_errors=0, report_warnings=0, immediate_timeout=-1):
     """Handy printout function with alert levels and more fancy stuff.
 
     :param string: Message string which will be printed.
@@ -106,16 +158,23 @@ def lprint(string, values=(), report_errors=0, report_warnings=0):
     :type report_errors: int
     :param report_warnings: 0 - don't print anything, but store the warnings; 1 - print warning summary; -1 - clear stored warnings
     :type report_warnings: int
+    :param immediate_timeout: -1 - skip immediate report, >=0 - do immediate report if elapsed time from last report is bigger than specified timeout
+    :type immediate_timeout: float
     """
     from io_scs_tools.utils import get_scs_globals as _get_scs_globals
 
     dump_level = int(_get_scs_globals().dump_level)
 
     prech = ''
-    if string is not "":
+    if string != "":
         while string[0] in '\n\t':
             prech += string[0]
             string = string[1:]
+
+        # no matter the dump level always report message to immediate messenger
+        immediate_messenger.reset_message()
+        if immediate_timeout >= 0:
+            immediate_messenger.report_message_and_redraw(string[2:] % values, immediate_timeout)
 
         message = None
         if string[0] == 'E':
@@ -141,7 +200,7 @@ def lprint(string, values=(), report_errors=0, report_warnings=0):
             print(message)
             file_logger.write(message + "\n")
 
-        if string[0] not in 'EWIDS':
+        if string[0] not in _PRECH_TABLE:
             print(prech + '!!! UNKNOWN MESSAGE SIGN !!! - "' + string + '"' % values)
 
     # CLEAR ERROR AND WARNING STACK IF REQUESTED
@@ -223,6 +282,15 @@ def get_log():
     :rtype: str
     """
     return file_logger.get_log()
+
+
+def get_immediate_msg():
+    """Gets immediate message for drawing.
+
+    :return: immediate message if exists, otherwise None
+    :rtype: str | None
+    """
+    return immediate_messenger.get_message()
 
 
 def dev_lprint():

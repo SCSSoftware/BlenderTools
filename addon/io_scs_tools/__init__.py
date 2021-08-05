@@ -16,13 +16,13 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2013-2019: SCS Software
+# Copyright (C) 2013-2021: SCS Software
 
 bl_info = {
     "name": "SCS Tools",
     "description": "Setup models, Import-Export SCS data format",
     "author": "Simon Lusenc (50keda), Milos Zajic (4museman)",
-    "version": (2, 1, "6a6b38a4"),
+    "version": (2, 2, "325a3a7a"),
     "blender": (2, 90, 0),
     "location": "File > Import-Export",
     "wiki_url": "http://modding.scssoft.com/wiki/Documentation/Tools/SCS_Blender_Tools",
@@ -33,6 +33,7 @@ bl_info = {
 import bpy
 import os
 import traceback
+from time import time
 from bpy.props import CollectionProperty, StringProperty, PointerProperty, BoolProperty
 from bpy_extras.io_utils import ImportHelper, ExportHelper
 from io_scs_tools.consts import Icons as _ICONS_consts
@@ -98,6 +99,8 @@ class SCS_TOOLS_OT_Import(bpy.types.Operator, ImportHelper):
         if not paths:
             paths.append(self.path)
 
+        start_time = time()
+
         failed_files = []
         for filepath in paths:
 
@@ -137,6 +140,8 @@ class SCS_TOOLS_OT_Import(bpy.types.Operator, ImportHelper):
 
             lprint(err_message, tuple(failed_files), report_warnings=1, report_errors=1)
 
+        end_time = time()
+        self.report({'INFO'}, "Import finished and took %.3f sec." % (end_time - start_time))
         return {'FINISHED'}
 
     def draw(self, context):

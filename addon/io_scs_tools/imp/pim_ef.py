@@ -16,7 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2017-2020: SCS Software
+# Copyright (C) 2017-2021: SCS Software
 
 import bpy
 import bmesh
@@ -466,9 +466,13 @@ def load_pim_file(context, filepath, terrain_points_trans=None, preview_model=Fa
     if terrain_points_trans is None:
         terrain_points_trans = TerrainPntsTrans()
 
+    lprint("I Reading data from PIM file ...", immediate_timeout=0)
+
     scs_globals = _get_scs_globals()
     ind = '    '
-    pim_container = _pix_container.get_data_from_file(filepath, ind)
+    pim_container = _pix_container.get_data_from_file(filepath, ind, print_progress=True)
+
+    lprint("I Assembling data ...", immediate_timeout=0)
 
     # LOAD HEADER
     format_version, source, f_type, f_name, source_filename, author = get_header(pim_container)
@@ -667,6 +671,7 @@ def load_pim_file(context, filepath, terrain_points_trans=None, preview_model=Fa
     lprint('\nI OBJECTS:')
     objects = []
     skinned_objects = []
+    objects_data_count = len(objects_data)
     for obj_i in objects_data:
         # print('objects_data[obj_i]: %s' % str(objects_data[obj_i]))
         obj = _create_piece(
@@ -703,8 +708,6 @@ def load_pim_file(context, filepath, terrain_points_trans=None, preview_model=Fa
             else:
                 objects.append(obj)
 
-            lprint('I Created Object "%s"...', (obj.name,))
-
             # PARTS
             for part in parts_data:
                 # print('parts_data["%s"]: %s' % (str(part), str(parts_data[part])))
@@ -712,6 +715,10 @@ def load_pim_file(context, filepath, terrain_points_trans=None, preview_model=Fa
                     if obj_i in parts_data[part][0]:
                         # print('  obj_i: %s - part: %s - parts_data[part][0]: %s' % (obj_i, part, parts_data[part][0]))
                         obj.scs_props.scs_part = part.lower()
+
+            lprint("I Created mesh object %r - %i/%i (%i%%) ...",
+                   (obj.name, obj_i + 1, objects_data_count, (obj_i + 1) / objects_data_count * 100),
+                   immediate_timeout=2.5)
         else:
             lprint('E "%s" - Object creation FAILED!', piece_name)
 
@@ -741,6 +748,8 @@ def load_pim_file(context, filepath, terrain_points_trans=None, preview_model=Fa
     locators = []
     if scs_globals.import_pim_file and not preview_model:
         lprint('\nI MODEL LOCATORS:')
+
+        locators_data_count = len(locators_data)
         for loc_i in locators_data:
             # print('locators_data[loc_i]: %s' % str(locators_data[loc_i]))
             loc = _object_utils.create_locator_empty(
@@ -762,7 +771,6 @@ def load_pim_file(context, filepath, terrain_points_trans=None, preview_model=Fa
             # )
             locator_name = locators_data[loc_i][0]
             if loc:
-                lprint('I Created Locator "%s"...', locator_name)
                 locators.append(loc)
                 for part in parts_data:
                     # print('parts_data[part]: %s' % str(parts_data[part]))
@@ -770,6 +778,10 @@ def load_pim_file(context, filepath, terrain_points_trans=None, preview_model=Fa
                         if loc_i in parts_data[part][1]:
                             # print('  loc_i: %s - part: %s - parts_data[part][1]: %s' % (loc_i, part, parts_data[part][1]))
                             loc.scs_props.scs_part = part.lower()
+
+                lprint("I Created locator %r - %i/%i (%i%%) ...",
+                       (locator_name, loc_i + 1, locators_data_count, (loc_i + 1) / locators_data_count * 100),
+                       immediate_timeout=2.5)
             else:
                 lprint('E "%s" - Locator creation FAILED!', locator_name)
 
