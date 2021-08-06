@@ -16,7 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2013-2019: SCS Software
+# Copyright (C) 2013-2021: SCS Software
 
 
 import bpy
@@ -96,7 +96,7 @@ def relative_path(base_path, path):
         return repaired_path
 
 
-def get_possible_project_infixes(include_zero_infix=False):
+def get_possible_project_infixes(include_zero_infix=False, append_sep=False):
     """Gets possible project infixes in relation to currently selected SCS Project Path.
     If path is ending with "dlc_" prefixed directory, then first infix is parent dlc.
     Then possible base prefixes are added (sibling and parent known bases).
@@ -105,6 +105,8 @@ def get_possible_project_infixes(include_zero_infix=False):
 
     :param include_zero_infix: should empty infix be included into the list
     :type include_zero_infix: bool
+    :param append_sep: should we add final separator to the paths for easy path concatenation
+    :type append_sep: bool
     :return: list of possible project infixes
     :rtype: list[str]
     """
@@ -120,13 +122,17 @@ def get_possible_project_infixes(include_zero_infix=False):
     project_path = _get_scs_globals().scs_project_path
     project_path_basename = os.path.basename(project_path)
 
+    final_sep = ""
+    if append_sep:
+        final_sep = os.sep
+
     # dlc infixes
     if project_path_basename.startswith("dlc_"):
-        infixes.append(str((os.pardir + os.sep) * 2) + project_path_basename)
+        infixes.append(str((os.pardir + os.sep) * 2) + project_path_basename + final_sep)
 
     # base infixes
     for known_base in _KNOWN_PROJECT_BASES:
-        infixes.extend((os.pardir + os.sep + known_base, str((os.pardir + os.sep) * 2) + known_base))
+        infixes.extend((os.pardir + os.sep + known_base + final_sep, str((os.pardir + os.sep) * 2) + known_base + final_sep))
 
     return infixes
 
