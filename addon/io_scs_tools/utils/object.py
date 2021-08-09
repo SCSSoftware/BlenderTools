@@ -635,9 +635,9 @@ def disable_modifier(modifier, disabled_modifiers):
     :param modifier: modifier to disable
     :type modifier: bpy.types.Modifier
     :param disabled_modifiers: dictonary of modifiers with show states disabled
-    :type disabled_modifiers: dict[bpy.types.Object, tuple]
+    :type disabled_modifiers: dict[bpy.types.Modifier, tuple]
     :returns: updated dictionary with newly disabled modifier
-    :rtype: dict[bpy.types.Object, tuple]
+    :rtype: dict[bpy.types.Modifier, tuple]
     """
     if modifier not in disabled_modifiers:
         disabled_modifiers[modifier] = (modifier.show_viewport, modifier.show_render)
@@ -647,43 +647,41 @@ def disable_modifier(modifier, disabled_modifiers):
     return disabled_modifiers
 
 
-def disable_modifiers(objs, modifier_type_to_disable='EDGE_SPLIT', inverse=False):
-    """Disables all instances of given modifier type on provided objects and
-    returns disabled modifiers initial visibility states.
-
-    If 'inverse' is True, it disables all Modifiers except given modifier type.
+def disable_modifiers(objs):
+    """Disables modifiers on providded object depending on scs global settings and
+    returns disabled modifiers initial visibility states for all disabled modifiers.
 
     :param objs: list of objects to disable modifiers
     :type objs: iterable[bpy.types.Object]
-    :param modifier_type_to_disable: modifier type to disable
-    :type modifier_type_to_disable: str
-    :param inverse: flag indicating whether to disabel given type or all the rest except given type
-    :type inverse: bool
-    :return:
+    :returns: dictionary with disabled modifiers
+    :rtype: dict[bpy.types.Modifier, tuple]
     """
 
     disabled_modifiers = dict()
 
+    modifier_type_to_disable = 'NONE'
+    inverse = False
+
+    if _get_scs_globals().export_output_type.startswith('EF'):
+        if _get_scs_globals().export_apply_modifiers:
+            if _get_scs_globals().export_exclude_edgesplit:
+                modifier_type_to_disable = 'EDGE_SPLIT'
+    else:
+        if not _get_scs_globals().export_apply_modifiers:
+            if _get_scs_globals().export_include_edgesplit:
+                modifier_type_to_disable = 'EDGE_SPLIT'
+                inverse = True
+            else:
+                modifier_type_to_disable = 'ANY'
+
     for obj in objs:
-        # always disable armature modifiers from SCS animations
-        # to prevent vertex rest position change because of the animation
         for modifier in obj.modifiers:
+            # always disable armature modifiers from SCS animations
+            # to prevent vertex rest position change because of the animation
             if modifier.type == "ARMATURE" and modifier.object and modifier.object.type == "ARMATURE":
                 if modifier.object in get_siblings(obj):
                     disabled_modifiers = disable_modifier(modifier, disabled_modifiers)
 
-        if _get_scs_globals().export_output_type.startswith('EF'):
-            if _get_scs_globals().export_apply_modifiers:
-                if _get_scs_globals().export_exclude_edgesplit:
-                    disabled_modifiers.update(disable_modifiers(obj, modifier_type_to_disable='EDGE_SPLIT'))
-        else:
-            if not _get_scs_globals().export_apply_modifiers:
-                if _get_scs_globals().export_include_edgesplit:
-                    disabled_modifiers.update(disable_modifiers(obj, modifier_type_to_disable='EDGE_SPLIT', inverse=True))
-                else:
-                    disabled_modifiers.update(disable_modifiers(obj, modifier_type_to_disable='ANY', inverse=True))
-
-        for modifier in obj.modifiers:
             if modifier_type_to_disable == 'ANY':
                 disabled_modifiers = disable_modifier(modifier, disabled_modifiers)
             else:

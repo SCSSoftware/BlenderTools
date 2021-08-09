@@ -489,6 +489,7 @@ def _create_piece(
         mesh.loops.foreach_get("normal", clnors)
         mesh.normals_split_custom_set(tuple(zip(*(iter(clnors),) * 3)))
         mesh.use_auto_smooth = True
+        mesh.auto_smooth_angle = 3.14
 
         mesh.free_normals_split()
     else:
