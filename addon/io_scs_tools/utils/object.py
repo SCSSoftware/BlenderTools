@@ -870,10 +870,11 @@ def get_hookup_payload_string(locator):
 
         # calculate dot product between down and lamp direction,
         # to be able to calculate target distance to the ground based on given height.
-        lamp_q = loc_q.rotation_difference(root_q)
-        down_q = Quaternion((1, 0, 0), math.pi / 2)
+        lamp_q = root_q.rotation_difference(loc_q)
+        lamp_dir = lamp_q @ Vector((0.0, 1.0, 0.0))  # Y axis on locator is our forward direction
+        down_dir = Vector((0.0, 0.0, -1.0))  # -Z axis is our model down direction
 
-        lamp_down_dot = lamp_q.dot(down_q)
+        lamp_down_dot = lamp_dir.dot(down_dir)
 
         if lamp_down_dot < math.cos(math.radians(25)):
             lprint("E Lamp hookup payload for %r can not be exported.\n\t    "
