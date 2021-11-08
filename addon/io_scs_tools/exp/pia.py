@@ -82,6 +82,48 @@ def _get_custom_channels(scs_animation, action):
         bone_data = ("Prism Movement", bone_anim)
         custom_channels.append(bone_data)
 
+    rot_curves = {}  # dictionary for storing "rotation_quaternion" curves of action
+    for fcurve in action.fcurves:
+        if fcurve.data_path == 'rotation_quaternion':
+            rot_curves[fcurve.array_index] = fcurve
+
+    # write custom channel only if rotation curves were found
+    if len(rot_curves) > 0:
+
+        # GO THROUGH FRAMES
+        actual_frame = frame_start
+        previous_frame_value = None
+        timings_stream = []
+        rotation_stream = []
+        while actual_frame <= frame_end:
+            rotation = Quaternion()
+
+            # ROTATION MATRIX
+            if len(rot_curves) > 0:
+                for index in range(4):
+                    if index in rot_curves:
+                        rotation[index] = rot_curves[index].evaluate(actual_frame)
+
+                # COMPUTE SCS FRAME ROTATION
+                frame_rot = _convert_utils.change_to_scs_quaternion_coordinates(rotation)
+
+            if previous_frame_value is None:
+                previous_frame_value = frame_rot
+
+            frame_rotation = frame_rot.rotation_difference( previous_frame_value )
+            previous_frame_value = frame_rot
+
+            lprint('S actual_frame: %s - value: %s', (actual_frame, frame_rot))
+            timings_stream.append(("__time__", scs_animation.length / total_frames), )
+            rotation_stream.append(frame_rotation)
+            actual_frame += anim_export_step
+
+        anim_timing = ("_TIME", timings_stream)
+        anim_movement = ("_ROTATION", rotation_stream)
+        bone_anim = (anim_timing, anim_movement)
+        bone_data = ("Prism Rotation", bone_anim)
+        custom_channels.append(bone_data)
+
     return custom_channels
 
 

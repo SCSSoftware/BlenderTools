@@ -20,7 +20,7 @@
 
 import os
 import re
-from mathutils import Vector
+from mathutils import Vector, Quaternion
 from io_scs_tools.internals.containers.parsers import pix as _pix_parser
 from io_scs_tools.internals.containers.writers import pix as _pix_writer
 from io_scs_tools.internals.structure import SectionData as _SectionData
@@ -129,6 +129,8 @@ def make_stream_section(data, data_tag, aliases):
         elif type(data[0][0]) is type(0):
             data_type = 'INT'
         data_format = str(data_type + str(len(data[0])))
+    elif type(data[0]) is Quaternion:
+        data_format = 'FLOAT4'
     elif data[0][0] == "__matrix__":
         data_format = 'FLOAT4x4'
     elif data[0][0] == "__time__":

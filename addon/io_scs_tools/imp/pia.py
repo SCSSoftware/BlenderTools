@@ -21,7 +21,7 @@
 import os
 
 import bpy
-from mathutils import Matrix, Vector
+from mathutils import Matrix, Vector, Quaternion
 from io_scs_tools.consts import Bones as _BONE_consts
 from io_scs_tools.internals.containers import pix as _pix_container
 from io_scs_tools.imp import pis as _pis
@@ -406,6 +406,49 @@ def load(root_object, pia_files, armature, pis_filepath=None, bones=None):
 
                         # SET LINEAR INTERPOLATION FOR ALL CURVES
                         for curve in pos_fcurves:
+                            for keyframe in curve.keyframe_points:
+                                keyframe.interpolation = 'LINEAR'
+                    elif channel_name == 'Prism Rotation':
+                        '''
+                        NOTE: skipped for now as no data needs to be readed
+                        stream_count = custom_channels[channel_name][0]
+                        keyframe_count = custom_channels[channel_name][1]
+                        '''
+                        streams = custom_channels[channel_name][2]
+                        # print('  channel %r - streams %s - keyframes %s' % (channel_name, stream_count, keyframe_count))
+
+                        anim_group = anim_action.groups.new('Rotation')
+
+                        fcurve_rot_w = anim_action.fcurves.new('rotation_quaternion', index=0)
+                        fcurve_rot_x = anim_action.fcurves.new('rotation_quaternion', index=1)
+                        fcurve_rot_y = anim_action.fcurves.new('rotation_quaternion', index=2)
+                        fcurve_rot_z = anim_action.fcurves.new('rotation_quaternion', index=3)
+                        fcurve_rot_w.group = anim_group
+                        fcurve_rot_x.group = anim_group
+                        fcurve_rot_y.group = anim_group
+                        fcurve_rot_z.group = anim_group
+                        rot_fcurves = (fcurve_rot_w, fcurve_rot_x, fcurve_rot_y, fcurve_rot_z)
+
+                        rotation = None
+                        for key_time_i, key_time in enumerate(streams[0]):
+                            # print(' key_time: %s' % str(key_time[0]))
+                            # keyframe = key_time_i * (key_time[0] * 10) ## TODO: Do proper timing...
+                            keyframe = key_time_i + 1
+                            scs_offset = _convert_utils.change_to_scs_quaternion_coordinates(custom_channels[channel_name][2][1][key_time_i])
+                            offset = Quaternion(scs_offset)
+                            if rotation is None:
+                                rotation = offset
+                            else:
+                                rotation.rotate(offset)
+                            #print(' > rotation: %s' % str(rotation))
+
+                            rot_fcurves[0].keyframe_points.insert(frame=float(keyframe), value=rotation.w, options={'FAST'})
+                            rot_fcurves[1].keyframe_points.insert(frame=float(keyframe), value=rotation.x, options={'FAST'})
+                            rot_fcurves[2].keyframe_points.insert(frame=float(keyframe), value=rotation.y, options={'FAST'})
+                            rot_fcurves[3].keyframe_points.insert(frame=float(keyframe), value=rotation.z, options={'FAST'})
+
+                        # SET LINEAR INTERPOLATION FOR ALL CURVES
+                        for curve in rot_fcurves:
                             for keyframe in curve.keyframe_points:
                                 keyframe.interpolation = 'LINEAR'
                     else:
