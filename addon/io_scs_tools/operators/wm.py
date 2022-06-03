@@ -332,8 +332,8 @@ class SCS_TOOLS_OT_Show3DViewReport(bpy.types.Operator):
         if SCS_TOOLS_OT_Show3DViewReport.__static_main_instance != self:
             return {'FINISHED'}
 
-        # if global abort was requested finish this modal operator instance
-        if SCS_TOOLS_OT_Show3DViewReport.__static_abort:
+        # only finish on global abort if there is no lines to display
+        if SCS_TOOLS_OT_Show3DViewReport.__static_abort and not SCS_TOOLS_OT_Show3DViewReport.has_lines():
             return {'FINISHED'}
 
         # if operator doesn't have controls, then it can not be cancelled by user,
@@ -431,13 +431,11 @@ class SCS_TOOLS_OT_Show3DViewReport(bpy.types.Operator):
         # if abort is requested just cancel operator
         if self.abort:
 
+            # when aborting progress message reset it's buffer and
+            # always return operator controls to none hidden state
             if self.is_progress_message:
                 SCS_TOOLS_OT_Show3DViewReport.__static_progress_message_l.clear()
-
-                if len(SCS_TOOLS_OT_Show3DViewReport.__static_message_l) > 0:
-                    SCS_TOOLS_OT_Show3DViewReport.__static_hide_controls = False
-                else:
-                    SCS_TOOLS_OT_Show3DViewReport.discard_drawing_data()
+                SCS_TOOLS_OT_Show3DViewReport.__static_hide_controls = False
             else:
                 SCS_TOOLS_OT_Show3DViewReport.discard_drawing_data()
 
