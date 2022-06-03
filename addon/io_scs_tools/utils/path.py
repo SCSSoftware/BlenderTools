@@ -869,7 +869,7 @@ def ensure_symlink(src, dest):
         os.remove(dest)  # use os.remove instead os.unlink, as we can't remove mklink junction with os.unlink.
 
     if platform == "win32":
-        subprocess.check_call(["mklink", "/J", dest, src], shell=True)
+        subprocess.check_call(["mklink", "/J", os.path.normcase(dest), os.path.normcase(src)], shell=True)
     else:
         os.symlink(src, dest)
 

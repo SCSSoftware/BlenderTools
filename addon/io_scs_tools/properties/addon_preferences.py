@@ -331,7 +331,7 @@ class SCSGlobals(bpy.types.PropertyGroup):
         # otherwise textures might not be properly loaded from parent and parent sibling directories
         # (we assign property directly to prevent recursive property update calls)
         if self.scs_project_path:
-            self["scs_project_path"] = _path_utils.readable_norm(self.scs_project_path)
+            self["scs_project_path"] = _path_utils.full_norm(self.scs_project_path)
 
         _config_container.update_scs_project_path(self.scs_project_path)
         return None
