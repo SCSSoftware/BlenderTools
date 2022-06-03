@@ -528,8 +528,8 @@ def load(context, filepath, name_suffix="", suppress_reports=False):
     # FINAL FEEDBACK
     bpy.context.window.cursor_modal_restore()
     if suppress_reports:
-        lprint('\nI Import compleeted in %.3f sec.', time.time() - t)
+        lprint('\nI Import completed in %.3f sec.', time.time() - t)
     else:
-        lprint('\nI Import compleeted in %.3f sec.', time.time() - t, report_errors=True, report_warnings=True)
+        lprint('\nI Import completed in %.3f sec.', time.time() - t, report_errors=True, report_warnings=True)
 
     return True

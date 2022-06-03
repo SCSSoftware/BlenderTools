@@ -1,21 +1,20 @@
 def showAll():
-    keyDown(Key.ALT); type("h"); keyUp(Key.ALT); type("a" + Key.ESC); type(" ");
+    hover(Location(600, 300)); keyDown(Key.ALT); type("h"); keyUp(Key.ALT); type("aa" + Key.ESC)
 
-def confirmInput():
-    type(Key.ENTER); type(Key.ESC)
-
-import configurator, os
-p = configurator.start_it_up(getBundlePath(), "all_objects.blend", delete_pix=False)
+load("scs_bt_configurator.jar")
+import scs_bt_configurator
+p = scs_bt_configurator.start_it_up(getBundlePath(), "all_objects.blend", delete_pix=False)
 try:
-    wait("3dview_all_objects.png", 5); hover("3dview_all_objects.png"); type(Key.ESC); type(" ");
+    wait(Pattern("3dview_all_objects.png").exact(), 5)
+    visibility_tools_region = find(Pattern("visibility_tools.png").exact())
     # MODEL OBJECTS
-    type("Switch Visibility of Model Objects"); confirmInput(); find(Pattern("3dview_view_only_models.png").similar(0.96)); showAll()
+    visibility_tools_region.click(Pattern("view_only_models.png").exact()); wait(Pattern("3dview_view_only_models.png").similar(0.96), 1); showAll(); wait(Pattern("3dview_all_objects.png").similar(0.96), 2)
     # SHADOW CASTERS
-    type("Switch Visibility of Shadow Casters"); confirmInput(); find(Pattern("3dview_view_only_shadow_casters.png").similar(0.96)); showAll()
+    visibility_tools_region.click(Pattern("view_only_shadow_casters.png").exact()); wait(Pattern("3dview_view_only_shadow_casters.png").similar(0.96), 1); showAll(); wait(Pattern("3dview_all_objects.png").similar(0.96), 2)
     # GLASS
-    type("Switch Visibility of Glass Objects"); confirmInput(); find(Pattern("3dview_view_only_glass.png").similar(0.96));
+    visibility_tools_region.click(Pattern("view_only_glass.png").exact()); wait(Pattern("3dview_view_only_glass.png").similar(0.96), 1); showAll(); wait(Pattern("3dview_all_objects.png").similar(0.96), 2)
 except:
-    configurator.save_screenshot(getBundlePath(), Screen())
+    scs_bt_configurator.save_screenshot(getBundlePath(), Screen())
     raise
 finally:
-    configurator.close_blender(p)
+    scs_bt_configurator.close_blender(p)

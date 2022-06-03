@@ -150,7 +150,7 @@ def get_loaded_themes():
     :return: random ordered theme names
     :rtype: list[str]
     """
-    return _cache[PCOLLS].keys()
+    return list(_cache[PCOLLS].keys())
 
 
 def has_loaded_themes():

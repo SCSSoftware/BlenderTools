@@ -111,7 +111,7 @@ def has_valid_unit_instance(container, unit_type, req_props=tuple(), one_of_prop
 
     # invalid unit type
     if unit_type != "" and container[unit_instance].type != unit_type:
-        lprint("D Validation failed: Invalid unit instance type!")
+        lprint("D Validation failed: Invalid unit instance type (wanted: %r actual: %r)!", (unit_type, container[unit_instance].type))
         return False
 
     for prop in req_props:

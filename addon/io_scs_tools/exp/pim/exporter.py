@@ -295,18 +295,22 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
                 position = tuple(pos_transf_mat @ mesh.vertices[vert_i].co)
 
                 # 2. normal -> mesh_for_normals.loops[loop_i].normal -> calc_normals_split() has to be called before
-                normal = (0, 0, 0)
-                for i, normals_poly_loop_i in enumerate(normals_poly_loop_indices):
-                    normal_loop = mesh_for_normals.loops[normals_poly_loop_i]
+                vert_normal = (0, 0, 0)
+                if mesh_for_normals.has_custom_normals or poly.use_smooth:
+                    for i, normals_poly_loop_i in enumerate(normals_poly_loop_indices):
+                        normal_loop = mesh_for_normals.loops[normals_poly_loop_i]
 
-                    # match by vertex index as triangle will for sure have three unique vertices
-                    if vert_i == normal_loop.vertex_index:
-                        normal = nor_transf_mat @ normal_loop.normal
-                        normal = tuple(Vector(normal).normalized())
-                        del normals_poly_loop_indices[i]
-                        break
+                        # match by vertex index as triangle will for sure have three unique vertices
+                        if vert_i == normal_loop.vertex_index:
+                            vert_normal = normal_loop.normal
+                            del normals_poly_loop_indices[i]
+                            break
+                    else:
+                        lprint("E Normals data gathering went wrong, expect corrupted mesh! Shouldn't happen...")
                 else:
-                    lprint("E Normals data gathering went wrong, expect corrupted mesh! Shouldn't happen...")
+                    vert_normal = poly.normal
+                normal = nor_transf_mat @ vert_normal
+                normal = tuple(Vector(normal).normalized())
 
                 # 3. uvs -> uv_lay = mesh.uv_layers[0].data; uv_lay[loop_i].uv
                 uvs = []

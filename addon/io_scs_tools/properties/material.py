@@ -220,7 +220,7 @@ class MaterialSCSTools(bpy.types.PropertyGroup):
                         if "Tag" in tex_entry:
                             curr_tex_type = tex_entry["Tag"].split(":")[1][8:]
                             if curr_tex_type != self.texture_type:  # if different texture from current
-                                texture_mappings = getattr(material.scs_props, "shader_texture_" + curr_tex_type + "_uv")
+                                texture_mappings = getattr(material.scs_props, "shader_texture_" + curr_tex_type + "_uv", [])
                                 if texture_mappings and len(texture_mappings) > 0:
                                     for tex_mapping in texture_mappings:
                                         # if tex_coord props are the same and uv mapping differs then set current uv mapping value to it

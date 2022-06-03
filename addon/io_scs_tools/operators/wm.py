@@ -107,13 +107,6 @@ class SCS_TOOLS_OT_Show3DViewReport(bpy.types.Operator):
     __static_is_out_of_bounds = False
     """Used for indicating whether all lines could be drawn into the region."""
 
-    esc_abort = 0
-    """Used for staging ESC key press in operator:
-    0 - no ESC request
-    1 - ESC was pressed
-    2 - ESC was released, ESC is finally captured
-    """
-
     title: StringProperty(default="")
     message: StringProperty(default="")
     abort: BoolProperty(default=False)
@@ -348,82 +341,85 @@ class SCS_TOOLS_OT_Show3DViewReport(bpy.types.Operator):
         if not SCS_TOOLS_OT_Show3DViewReport.has_controls(SCS_TOOLS_OT_Show3DViewReport.__static_window_instance):
             return {'PASS_THROUGH'}
 
-        # handle ESC press
-        # NOTE: do it in stages to prevent canceling operator while user tries to abort
-        # current action in blender (for example user entered scaling and then aborted with ESC)
-        if event.type == "ESC" and event.value == "PRESS" and self.esc_abort == 0:
-            self.esc_abort = 1
-        elif event.type == "ESC" and event.value == "RELEASE" and self.esc_abort == 1:
-            self.esc_abort = 2
-        elif event.type != "MOUSEMOVE":
-            self.esc_abort = 0
+        if (event.type == 'LEFTMOUSE' and event.value == 'PRESS') or (event.type == 'ESC' and event.value == 'CLICK'):
 
-        if (event.type == "LEFTMOUSE" and event.value in {'PRESS'}) or self.esc_abort == 2:
-
-            # make sure to reset ESC abort state to 0 so next press will be properly handled
-            if self.esc_abort == 2:
-                self.esc_abort = 0
-
+            # search for first 3d view region
+            # we need this as a workaround since provided context region and area are None for some reason
+            view3d_region = None
+            view3d_area = None
             for area in context.screen.areas:
                 if area.type != 'VIEW_3D':
                     continue
 
                 for region in area.regions:
-                    if region.type != 'WINDOW':
-                        continue
+                    if region.type == 'WINDOW':
+                        view3d_region = region
+                        break
 
-                    curr_x = event.mouse_x - region.x
-                    curr_y = region.height - (event.mouse_y - region.y)
+                if view3d_region:
+                    view3d_area = area
+                    break
 
-                    # if mouse cursor is over 3D view and ESC was pressed then switch to hide mode or exit operator
-                    if event.type == "ESC" and area.x < event.mouse_x < area.x + area.width and area.y < event.mouse_y < area.y + area.height:
+            # cancel operator if no 3dview present
+            if not view3d_region:
+                SCS_TOOLS_OT_Show3DViewReport.discard_drawing_data()
+                return {'FINISHED'}
 
-                        # if shown first hide extended view and then if hidden it can be closed
-                        # NOTE: there is two stage exit on ESC because user might hit ESC unintentionally.
-                        # Plus in case some transformation was in progress (like translation) ESC will cancel it and
-                        # in worst case only hide 3d view logging operator, if stage ESC handling fails to capture that
-                        if SCS_TOOLS_OT_Show3DViewReport.__static_is_shown:
+            curr_x = event.mouse_x - view3d_region.x
+            curr_y = view3d_region.height - (event.mouse_y - view3d_region.y)
 
-                            SCS_TOOLS_OT_Show3DViewReport.__static_is_shown = False
+            area_y_max = view3d_area.y + view3d_area.height
+            aray_x_max = view3d_area.x + view3d_area.width
 
-                            _view3d_utils.tag_redraw_all_view3d()
-                            return {'RUNNING_MODAL'}
+            # if mouse cursor is over 3D view and ESC was pressed then switch to hide mode or exit operator
+            if event.type == 'ESC' and view3d_area.x < event.mouse_x < aray_x_max and view3d_area.y < event.mouse_y < area_y_max:
 
-                        else:
+                # if shown first hide extended view and then if hidden it can be closed
+                # NOTE: there is two stage exit on ESC because user might hit ESC unintentionally.
+                # Plus in case some transformation was in progress (like translation) ESC will cancel it and
+                # in worst case only hide 3d view logging operator, if stage ESC handling fails to capture that
+                if SCS_TOOLS_OT_Show3DViewReport.__static_is_shown:
 
-                            SCS_TOOLS_OT_Show3DViewReport.discard_drawing_data()
-                            return {'FINISHED'}
+                    SCS_TOOLS_OT_Show3DViewReport.__static_is_shown = False
 
-                    # also exit/cancel operator if Close button area was clicked
-                    if SCS_TOOLS_OT_Show3DViewReport.is_in_btn_area(curr_x, curr_y, _OP_consts.View3DReport.CLOSE_BTN_AREA):  # close
-                        SCS_TOOLS_OT_Show3DViewReport.discard_drawing_data()
-                        return {'FINISHED'}
+                    _view3d_utils.tag_redraw_all_view3d()
+                    return {'RUNNING_MODAL'}
 
-                    if SCS_TOOLS_OT_Show3DViewReport.is_in_btn_area(curr_x, curr_y, _OP_consts.View3DReport.HIDE_BTN_AREA):  # show/hide
+                else:
 
-                        SCS_TOOLS_OT_Show3DViewReport.__static_is_shown = not SCS_TOOLS_OT_Show3DViewReport.__static_is_shown
-                        _view3d_utils.tag_redraw_all_view3d()
-                        return {'RUNNING_MODAL'}
+                    SCS_TOOLS_OT_Show3DViewReport.discard_drawing_data()
+                    return {'FINISHED'}
 
-                    # scroll up/down
-                    if SCS_TOOLS_OT_Show3DViewReport.is_shown() and SCS_TOOLS_OT_Show3DViewReport.is_scrolled():
+            # also exit/cancel operator if Close button area was clicked
+            if SCS_TOOLS_OT_Show3DViewReport.is_in_btn_area(curr_x, curr_y, _OP_consts.View3DReport.CLOSE_BTN_AREA):  # close
+                SCS_TOOLS_OT_Show3DViewReport.discard_drawing_data()
+                return {'FINISHED'}
 
-                        if SCS_TOOLS_OT_Show3DViewReport.is_in_btn_area(curr_x, curr_y, _OP_consts.View3DReport.SCROLLUP_BTN_AREA):
-                            new_position = SCS_TOOLS_OT_Show3DViewReport.__static_scroll_pos - 5
-                            min_position = 0
-                            SCS_TOOLS_OT_Show3DViewReport.__static_scroll_pos = max(new_position, min_position)
-                            _view3d_utils.tag_redraw_all_view3d()
-                            return {'RUNNING_MODAL'}
+            if SCS_TOOLS_OT_Show3DViewReport.is_in_btn_area(curr_x, curr_y, _OP_consts.View3DReport.HIDE_BTN_AREA):  # show/hide
 
-                        if SCS_TOOLS_OT_Show3DViewReport.is_in_btn_area(curr_x, curr_y, _OP_consts.View3DReport.SCROLLDOWN_BTN_AREA):
-                            new_position = SCS_TOOLS_OT_Show3DViewReport.__static_scroll_pos + 5
-                            max_position = (
-                                    len(SCS_TOOLS_OT_Show3DViewReport.__static_message_l) +
-                                    len(SCS_TOOLS_OT_Show3DViewReport.__static_progress_message_l) - 1
-                            )
-                            SCS_TOOLS_OT_Show3DViewReport.__static_scroll_pos = min(new_position, max_position)
-                            _view3d_utils.tag_redraw_all_view3d()
-                            return {'RUNNING_MODAL'}
+                SCS_TOOLS_OT_Show3DViewReport.__static_is_shown = not SCS_TOOLS_OT_Show3DViewReport.__static_is_shown
+                _view3d_utils.tag_redraw_all_view3d()
+                return {'RUNNING_MODAL'}
+
+            # scroll up/down
+            if SCS_TOOLS_OT_Show3DViewReport.is_shown() and SCS_TOOLS_OT_Show3DViewReport.is_scrolled():
+
+                if SCS_TOOLS_OT_Show3DViewReport.is_in_btn_area(curr_x, curr_y, _OP_consts.View3DReport.SCROLLUP_BTN_AREA):
+                    new_position = SCS_TOOLS_OT_Show3DViewReport.__static_scroll_pos - 5
+                    min_position = 0
+                    SCS_TOOLS_OT_Show3DViewReport.__static_scroll_pos = max(new_position, min_position)
+                    _view3d_utils.tag_redraw_all_view3d()
+                    return {'RUNNING_MODAL'}
+
+                if SCS_TOOLS_OT_Show3DViewReport.is_in_btn_area(curr_x, curr_y, _OP_consts.View3DReport.SCROLLDOWN_BTN_AREA):
+                    new_position = SCS_TOOLS_OT_Show3DViewReport.__static_scroll_pos + 5
+                    max_position = (
+                            len(SCS_TOOLS_OT_Show3DViewReport.__static_message_l) +
+                            len(SCS_TOOLS_OT_Show3DViewReport.__static_progress_message_l) - 1
+                    )
+                    SCS_TOOLS_OT_Show3DViewReport.__static_scroll_pos = min(new_position, max_position)
+                    _view3d_utils.tag_redraw_all_view3d()
+                    return {'RUNNING_MODAL'}
 
         return {'PASS_THROUGH'}
 

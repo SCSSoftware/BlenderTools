@@ -264,6 +264,7 @@ def get_reflection_image(texture_path, report_invalid=False):
         emission_node = material.node_tree.nodes.new("ShaderNodeEmission")
         tex_node = material.node_tree.nodes.new("ShaderNodeTexImage")
         tex_node.image = images[i]
+        tex_node.extension = "EXTEND"
 
         material.node_tree.links.new(emission_node.inputs['Color'], tex_node.outputs['Color'])
         material.node_tree.links.new(out_node.inputs['Surface'], emission_node.outputs['Emission'])
@@ -471,7 +472,7 @@ def set_shader_data_to_material(material, section, is_import=False, override_bac
             textures[str(texture_i)] = texture_data
             texture_i += 1
 
-    scs_props_keys = material.scs_props.keys()
+    scs_props_keys = set(material.scs_props.keys())
     # if overriding back data also make sure to clear attribute values for current shader
     # to prevent storing of unused values from blend data block
     # NOTE: looks also takes into account that all the unused properties are omitted from scs_props dict
@@ -558,7 +559,7 @@ def set_shader_data_to_material(material, section, is_import=False, override_bac
     old_texture_mappings = {}
     for tex_type in used_texture_types:
 
-        texture_mappings = getattr(material.scs_props, "shader_texture_" + tex_type + "_uv")
+        texture_mappings = getattr(material.scs_props, "shader_texture_" + tex_type + "_uv", [])
         if override_back_data:
             while len(texture_mappings) > 0:
 

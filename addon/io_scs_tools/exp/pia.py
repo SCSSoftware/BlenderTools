@@ -170,19 +170,30 @@ def _get_bone_channels(scs_root_obj, armature, scs_animation, action, export_sca
                 mat_loc = Matrix.Translation(location)
 
             # ROTATION MATRIX
-            if len(euler_rot_curves) > 0:
+            if len(euler_rot_curves) > 0 and pose_bone.rotation_mode != 'QUATERNION':
                 rotation = Euler()
                 for index in range(3):
                     if index in euler_rot_curves:
                         rotation[index] = euler_rot_curves[index].evaluate(actual_frame)
                 mat_rot = Euler(rotation, pose_bone.rotation_mode).to_matrix().to_4x4()  # calc rotation by pose rotation mode
 
-            elif len(quat_rot_curves) > 0:
+            elif len(quat_rot_curves) > 0 and pose_bone.rotation_mode == 'QUATERNION':
                 rotation = Quaternion()
                 for index in range(4):
                     if index in quat_rot_curves:
                         rotation[index] = quat_rot_curves[index].evaluate(actual_frame)
                 mat_rot = rotation.to_matrix().to_4x4()
+            else:
+                if len(euler_rot_curves) > 0 and pose_bone.rotation_mode == 'QUATERNION':
+                    lprint("W Rotation mode of bone %r from scs animation %r is desycned with it's stored keyframes mode\n\t   "
+                           "(keyframes are stored in Eulers but bone pose rotation mode is set to Quaternions), "
+                           "no rotation will be stored for this bone!",
+                           (bone_name, scs_animation.name))
+                elif len(quat_rot_curves) > 0 and pose_bone.rotation_mode != 'QUATERNION':
+                    lprint("W Rotation mode of bone %r from scs animation %r is desycned with it's stored keyframes mode\n\t   "
+                           "(keyframes are stored in Eulers but bone pose rotation mode is set to Quaternions), "
+                           "no rotation will be stored for this bone!",
+                           (bone_name, scs_animation.name))
 
             # SCALE MATRIX
             if len(sca_curves) > 0:

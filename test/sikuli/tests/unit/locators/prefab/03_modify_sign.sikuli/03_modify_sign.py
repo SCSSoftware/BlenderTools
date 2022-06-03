@@ -1,20 +1,23 @@
-import configurator, os
-p = configurator.start_it_up(getBundlePath(), "prefab_locator_sign.blend")
+load("scs_bt_configurator.jar")
+import scs_bt_configurator
+p = scs_bt_configurator.start_it_up(getBundlePath(), "prefab_locator_sign.blend")
 try:
-    mouseMove(Location(0,0)); wait("3dview_prefab_loc_sign.png", 5)
+    mouseMove(Location(0,0)); wait(Pattern("3dview_init_scene.png").exact(), 5)
     hover(Location(450, 400))
     type("g")
     type(".2"); type(Key.TAB)
-    type("1"); type(Key.TAB)
-    type("1"); type(Key.ENTER)
-    click("add_root.png")
-    rightClick("3dview_prefab_sign_select.png")
-    click(Pattern("prefab_sign_sign_model.png").similar(0.95).targetOffset(37,0)); type("roadsign")
-    click(Pattern("prefab_uk-al_roadsign_popup_pick.png").similar(0.90))
-    click(Pattern("panel_expand_parts.png").similar(0.95))
-    find(Pattern("panel_parts_list.png").similar(0.95))
+    type(".5"); type(Key.TAB)
+    type(".3"); type(Key.ENTER)
+    type(Key.F3); type("add scs root"); type(Key.ENTER)
+    click(Pattern("3dview_sign_added_to_root.png").exact().targetOffset(135,-3))
+    click("object_properties_icon.png")
+    click("prefab_sign_model_select.png"); type("roadsign")
+    click("prefab_sign_roadsign_item_select.png")
+    find("prefab_sign_roadsign_item_selected.png")
+    click("parts_panel_expand.png")
+    find(Pattern("default_part_item_list.png").exact())
 except:
-    configurator.save_screenshot(getBundlePath(), Screen())
+    scs_bt_configurator.save_screenshot(getBundlePath(), Screen())
     raise
 finally:
-    configurator.close_blender(p)
+    scs_bt_configurator.close_blender(p)

@@ -59,10 +59,12 @@ class Piece:
         return Piece.__global_triangle_count
 
     @staticmethod
-    def __calc_vertex_hash(index, uvs, rgba, tangent):
+    def __calc_vertex_hash(index, normal, uvs, rgba, tangent):
         """Calculates vertex hash from original vertex index, uvs components and vertex color.
         :param index: original index from Blender mesh
         :type index: int
+        :param normal: normalized vector representation of the normal
+        :type normal: tuple | mathutils.Vector
         :param uvs: list of uvs used on vertex (each uv must be in SCS coordinates)
         :type uvs: list of (tuple | mathutils.Vector)
         :param rgba: rgba representation of vertex color in SCS values
@@ -74,6 +76,9 @@ class Piece:
         """
 
         vertex_hash = str(index)
+
+        vertex_hash = "%s%.4f%.4f%.4f" % (vertex_hash, normal[0], normal[1], normal[2])
+
         for uv in uvs:
             vertex_hash = "%s%.4f%.4f" % (vertex_hash, uv[0], uv[1])
 
@@ -154,7 +159,7 @@ class Piece:
         :rtype: int
         """
 
-        vertex_hash = self.__calc_vertex_hash(vert_index, uvs, rgba, tangent)
+        vertex_hash = self.__calc_vertex_hash(vert_index, normal, uvs, rgba, tangent)
 
         # save vertex if the vertex with the same properties doesn't exists yet in streams
         if vertex_hash not in self.__vertices_hash:

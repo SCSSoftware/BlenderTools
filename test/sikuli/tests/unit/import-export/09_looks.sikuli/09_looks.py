@@ -1,24 +1,21 @@
-import configurator, subprocess
-reload(configurator)
-p = configurator.start_it_up(getBundlePath(), "looks.blend")
-
+load("scs_bt_configurator.jar")
+import scs_bt_configurator
+p = scs_bt_configurator.start_it_up(getBundlePath(), "looks.blend")
 try:
-    wait(Pattern("3dview_first_look.png").similar(0.95),5)
-    click(Pattern("looks_entries.png").similar(0.92).targetOffset(-3,10)); wait(Pattern("3dview_second_look.png").similar(0.91))
-    click(Pattern("export_selected_button.png").similar(0.91));
+    wait(Pattern("3dview_first_look.png").exact(),5)
+    click(Pattern("looks_entries.png").exact().targetOffset(-3,10)); wait(Pattern("3dview_second_look.png").exact())
+    click(Pattern("export_selected_button.png").similar(0.91))
     wait(1); type(Key.ESC)
-    hover(Pattern("3dview_second_look.png").similar(0.91)); type("2")
-    type(Key.SPACE + "SCS Import"); type(Key.ENTER)
-    scs_base = configurator.get_path_property("SCSBasePath")
-    find(Pattern("filebrowser_import_button.png").exact()).left().paste(Pattern("empty_input_field.png").exact(), scs_base)
-    type(Key.ENTER)
-    click("game_object_file.png")
-    type(Key.ENTER)
-    wait(Pattern("3dview_first_look.png").similar(0.95))
-    click(Pattern("looks_entries.png").similar(0.92).targetOffset(-3,10));
-    wait(Pattern("3dview_second_look.png").similar(0.91))
+    hover(Pattern("3dview_second_look.png").exact());
+    type("2")  # switch to 2nd collection
+    type(Key.F3 + "SCS Import" + Key.ENTER)  # do import
+    hover(Pattern("new_folder_button.png").exact()); mouseMove(50, 0); paste(scs_bt_configurator.get_path_property("SCSBasePath"))
+    wait(0.1); click(Pattern("game_object_pim.png").similar(0.95)); type(Key.ENTER)
+    wait(Pattern("3dview_first_look.png").exact())
+    click(Pattern("looks_entries.png").exact().targetOffset(-3,10));
+    wait(Pattern("3dview_second_look.png").exact())
 except:
-    configurator.save_screenshot(getBundlePath(), Screen())
+    scs_bt_configurator.save_screenshot(getBundlePath(), Screen())
     raise
 finally:
-    configurator.close_blender(p)
+    scs_bt_configurator.close_blender(p)

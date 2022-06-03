@@ -106,7 +106,7 @@ def exists(data_block):
                         # some kinda data integrity check
                         if len(cache[LOCATORS]) == len(refs[LOCATORS]):
 
-                            if len(cache[LOCATORS]) == 0 or len(cache[LOCATORS].values()[0]) == 6:
+                            if len(cache[LOCATORS]) == 0 or len(next(iter(cache[LOCATORS].values()))) == 6:
 
                                 return True
 
@@ -116,7 +116,7 @@ def exists(data_block):
                         OBJS_COUNT: len(bpy.data.objects)
                     }
 
-                    for loc_name in refs[LOCATORS].keys():
+                    for loc_name in list(refs[LOCATORS].keys()):
                         __create_locator_entries__(data_block, bpy.data.objects[loc_name])
 
                     return True
@@ -730,7 +730,7 @@ def cleanup_check(data_block):
     data[CACHE][OBJS_COUNT] = len(bpy.data.objects)
 
     i = j = 0
-    for conn_key in conn_entries.keys():
+    for conn_key in list(conn_entries.keys()):
 
         if conn_key in conn_entries:
 

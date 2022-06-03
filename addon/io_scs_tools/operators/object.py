@@ -137,13 +137,17 @@ class ConvexCollider:
                         self.report({'WARNING'}, "Could not create convex mesh, selected object(s) seems to form a flat surface!")
                         return {'CANCELLED'}
 
+                    # ensure we have active object
+                    if not active_object:
+                        active_object = objects[0]
+
                     parent = active_object.parent
-                    paernt_inverse_mat = active_object.matrix_parent_inverse
+                    parent_inverse_mat = active_object.matrix_parent_inverse
                     locator = _object_utils.create_collider_convex_locator(geom, convex_props, objects, self.delete_mesh_objects)
                     if locator:
                         locator.parent = parent
                         # make sure to apply parent inverse matrix so object is oriented as origin object
-                        locator.matrix_parent_inverse = paernt_inverse_mat
+                        locator.matrix_parent_inverse = parent_inverse_mat
                         _object_utils.make_objects_selected((locator,))
             return {'FINISHED'}
 

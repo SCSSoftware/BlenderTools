@@ -2016,8 +2016,8 @@ class PaintjobTools:
             bm.free()
 
         @staticmethod
-        def prepare_uvs(obj, orig_uvs_name_2nd, orig_uvs_name_3rd):
-            """Prepare uvs for export by creating a copy of the ones used in SCS truckpaint material.
+        def check_and_prepare_uvs(obj, orig_uvs_name_2nd, orig_uvs_name_3rd, export_2nd_uvs, export_3rd_uvs):
+            """Check and prepare uvs for export by creating a copy of the ones used in SCS truckpaint material.
 
             :param obj: Blender mesh object to be transformed
             :type obj: bpy.types.Object
@@ -2025,19 +2025,47 @@ class PaintjobTools:
             :type orig_uvs_name_2nd: str
             :param orig_uvs_name_3rd: name of the uv used in second paintjob slot from truckpaint material
             :type orig_uvs_name_3rd: str
+            :param export_2nd_uvs: is 2nd uv layer used for export?
+            :type export_2nd_uvs: bool
+            :param export_3rd_uvs: is 3rd uv layer used for export?
+            :type export_3rd_uvs: bool
+            :return: True if check is successful and none of the UVs is out of bounds; False otherwise
+            :rtype: bool
             """
+
+            invalid_uv = False
 
             bm = bmesh.new()
             bm.from_mesh(obj.data)
 
-            bm.loops.layers.uv.new(_PT_consts.uvs_name_2nd)
-            bm.loops.layers.uv[_PT_consts.uvs_name_2nd].copy_from(bm.loops.layers.uv[orig_uvs_name_2nd])
+            uv_lay_2nd = bm.loops.layers.uv[orig_uvs_name_2nd]
+            uv_lay_3rd = bm.loops.layers.uv[orig_uvs_name_3rd]
 
-            bm.loops.layers.uv.new(_PT_consts.uvs_name_3rd)
-            bm.loops.layers.uv[_PT_consts.uvs_name_3rd].copy_from(bm.loops.layers.uv[orig_uvs_name_3rd])
+            # check for validity
+            for face in bm.faces:
+                for loop in face.loops:
+                    if export_2nd_uvs and (1 < loop[uv_lay_2nd].uv[0] < 0 or 1 < loop[uv_lay_2nd].uv[1] < 0):
+                        invalid_uv = True
+                        break
+                    if export_3rd_uvs and (1 < loop[uv_lay_3rd].uv[0] < 0 or 1 < loop[uv_lay_3rd].uv[1] < 0):
+                        invalid_uv = True
+                        break
+
+                if invalid_uv:
+                    break
+
+            # copy over if valid
+            if not invalid_uv:
+                bm.loops.layers.uv.new(_PT_consts.uvs_name_2nd)
+                bm.loops.layers.uv[_PT_consts.uvs_name_2nd].copy_from(uv_lay_2nd)
+
+                bm.loops.layers.uv.new(_PT_consts.uvs_name_3rd)
+                bm.loops.layers.uv[_PT_consts.uvs_name_3rd].copy_from(uv_lay_3rd)
 
             bm.to_mesh(obj.data)
             bm.free()
+
+            return not invalid_uv
 
         @staticmethod
         def cleanup(*args):
@@ -2123,6 +2151,9 @@ class PaintjobTools:
                 if layer_col.hide_viewport:
                     continue
 
+                if layer_col.exclude:
+                    continue
+
                 collection = layer_col.collection
 
                 if _PT_consts.model_refs_to_sii not in collection:
@@ -2176,9 +2207,14 @@ class PaintjobTools:
 
                 # rename paintjob uvs to our constant ones,
                 # so exporting at the end is easy as all objects will result in same uv layers names
-                self.prepare_uvs(curr_merged_object,
-                                 curr_truckpaint_mat.scs_props.shader_texture_base_uv[1].value,
-                                 curr_truckpaint_mat.scs_props.shader_texture_base_uv[2].value)
+                uvs_2nd_name = curr_truckpaint_mat.scs_props.shader_texture_base_uv[1].value
+                uvs_3rd_name = curr_truckpaint_mat.scs_props.shader_texture_base_uv[2].value
+                if not self.check_and_prepare_uvs(curr_merged_object, uvs_2nd_name, uvs_3rd_name, self.export_2nd_uvs, self.export_3rd_uvs):
+                    self.do_report({'WARNING'},
+                                   "Collection %r won't be exported as one or more objects have UVs out of <0;1> bounds!" % collection.name,
+                                   do_report=True)
+                    self.cleanup((curr_merged_object,))
+                    continue
 
                 # remove all none needed & colliding data-blocks from object: materials, collections
                 while len(curr_merged_object.material_slots) > 0:
@@ -2250,7 +2286,7 @@ class PaintjobTools:
                     self.do_report({'ERROR'}, "Invalid texture portion with name %r as 'model_sii' is not defined!" % unit_id, do_report=True)
                     return {'CANCELLED'}
 
-            lprint("S Found texture portions: %r", (texture_portions.keys(),))
+            lprint("S Found texture portions: %r", (list(texture_portions.keys()),))
 
             # 2. bind each merged object to it's texture portion and filter to four categories:
 
@@ -2701,6 +2737,8 @@ class PaintjobTools:
         pjs_price: IntProperty(default=10000)
         pjs_unlock: IntProperty(default=0)
         pjs_icon: StringProperty(default="")
+        pjs_part_type: StringProperty(default="unknown")
+        pjs_steam_inventory_id: IntProperty(default=-1)
 
         pjs_paint_job_mask: StringProperty(default="")
 
@@ -3014,10 +3052,12 @@ class PaintjobTools:
 
             unit = _UnitData("", "", is_headless=True)
 
-            # if old settings file has steam_inventory_id attribute, recover it!
-            old_settings_container = _sii_container.get_data_from_file(settings_sui_path, is_sui=True)
-            if old_settings_container and "steam_inventory_id" in old_settings_container[0].props:
-                unit.props["steam_inventory_id"] = int(old_settings_container[0].props["steam_inventory_id"])
+            # NOTE: steam inventory id attribute is part of paintjob settings now, thus don't recover it
+            #
+            # # if old settings file has steam_inventory_id attribute, recover it!
+            # old_settings_container = _sii_container.get_data_from_file(settings_sui_path, is_sui=True)
+            # if old_settings_container and "steam_inventory_id" in old_settings_container[0].props:
+            #    unit.props[] = int(old_settings_container[0].props["steam_inventory_id"])
 
             # force export of mandatory properties
             unit.props["name"] = self.pjs_name
@@ -3292,7 +3332,7 @@ class PaintjobTools:
                                           "Either define model SII path for all of them or use only one master portion without it!")
                 return {'CANCELLED'}
 
-            lprint("D Found texture portions: %r", (texture_portions.keys(),))
+            lprint("D Found texture portions: %r", (list(texture_portions.keys()),))
 
             ##################################
             #

@@ -1,24 +1,19 @@
-import configurator, subprocess
-reload(configurator)
-p = configurator.start_it_up(getBundlePath(), "3_Ico_Sphere_2_Materials.blend")
+load("scs_bt_configurator.jar")
+import scs_bt_configurator
+p = scs_bt_configurator.start_it_up(getBundlePath(), "3_Ico_Sphere_2_Materials.blend")
 try:
     wait(Pattern("3dview_3_Ico_Sphere_2_Materials.png").exact(), 5); hover(Pattern("3dview_3_Ico_Sphere_2_Materials.png").similar(0.90)); type(Key.ESC)
-    click(Pattern("export_scene_button.png").similar(0.90))
-    wait(1.5); type(Key.ENTER)
-    click(Pattern("second_layer_button.png").exact())
+    click(Pattern("export_scene_button.png").exact())
+    wait(Pattern("3dview_3_Ico_Sphere_2_Materials.png").exact(), 5);  # no warnings should appear !
     hover(Location(300, 400))  # move cursor to 3D view
-    type(Key.SPACE + "Cursor to Center" + Key.ENTER)
-    type(Key.SPACE + "SCS Import" + Key.ENTER)
-    scs_base = configurator.get_path_property("SCSBasePath")
-    find(Pattern("filebrowser_import_button.png").exact()).left().paste(Pattern("empty_input_field.png").exact(), scs_base)
-    type(Key.ENTER)
-    click(Pattern("3_ico_sphere_2_materials.png").similar(0.95))
-    type(Key.ENTER)
-    keyDown(Key.SHIFT); click(Pattern("lamps_layer_button.png").exact()); keyUp(Key.SHIFT)
-    click(Pattern("3dview_user_persp.png").similar(0.95))
-    find(Pattern("3dview_3_Ico_Sphere_2_Materials.png").exact())
+    type(Key.ESC); wait(0.5); type(Key.ESC)  # hide warnings
+    type("2")  # switch to 2nd collection
+    type(Key.F3 + "SCS Import" + Key.ENTER)  # do import
+    hover(Pattern("new_folder_button.png").exact()); mouseMove(50, 0); paste(scs_bt_configurator.get_path_property("SCSBasePath"))
+    wait(0.1); click(Pattern("3_ico_sphere_2_materials.png").similar(0.95)); type(Key.ENTER)
+    wait(Pattern("3dview_3_Ico_Sphere_2_Materials.png").exact(), 5)
 except:
-    configurator.save_screenshot(getBundlePath(), Screen())
+    scs_bt_configurator.save_screenshot(getBundlePath(), Screen())
     raise
 finally:
-    configurator.close_blender(p)
+    scs_bt_configurator.close_blender(p)

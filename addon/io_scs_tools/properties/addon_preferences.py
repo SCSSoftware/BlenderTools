@@ -227,12 +227,12 @@ class SCSInventories(bpy.types.PropertyGroup):
 
         name: StringProperty(name="Name", default="")
 
-        low_elevation: IntProperty(
+        low_elevation: FloatProperty(
             name="Low Elevation",
             options={'HIDDEN'},
             update=sun_profile_item_update
         )
-        high_elevation: IntProperty(
+        high_elevation: FloatProperty(
             name="High Elevation",
             options={'HIDDEN'},
             update=sun_profile_item_update
@@ -327,6 +327,12 @@ class SCSGlobals(bpy.types.PropertyGroup):
 
     # SCS TOOLS - PROJECT RELATED GLOBAL PATHS
     def scs_project_path_update(self, context):
+        # ensure normalized for of project path, particularly removed end directory separator,
+        # otherwise textures might not be properly loaded from parent and parent sibling directories
+        # (we assign property directly to prevent recursive property update calls)
+        if self.scs_project_path:
+            self["scs_project_path"] = _path_utils.readable_norm(self.scs_project_path)
+
         _config_container.update_scs_project_path(self.scs_project_path)
         return None
 

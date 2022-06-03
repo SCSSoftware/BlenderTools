@@ -71,7 +71,7 @@ class LocatorsCache:
 
             # pop first element if we have too many of entries already
             if len(cache) >= 10:
-                first_key = list(cache.keys())[0]
+                first_key = next(iter(cache.keys()))
                 del cache[first_key]
 
             cache[persp_matrix_str] = {}
@@ -92,7 +92,7 @@ class LocatorsCache:
                 continue
 
             # calculate 2d location!
-            loc_2d = location_3d_to_region_2d(region, region_3d, loc_ws, None)
+            loc_2d = location_3d_to_region_2d(region, region_3d, loc_ws, default=None)
 
             # if out of bounds, ignore it!
             if not loc_2d or loc_2d.x < 0 or loc_2d.x > region.width or loc_2d.y < 0 or loc_2d.y > region.height:

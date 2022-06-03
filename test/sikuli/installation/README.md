@@ -1,24 +1,14 @@
-SIKULI INSTALLATION
+SIKULIX INSTALLATION
 ===================
 
-1. Install dependencies:
+1. Download SikuliX from:
+https://raiman.github.io/SikuliX1/downloads.html
 
-sudo apt-get install tesseract-ocr libtesseract-dev
-sudo apt-get install python-opencv
+2. Put it to some intended installation directory like:
+~/Programs/sikulixide-X.X.X.jar
+NOTE: In time of writing latest version that we used was version 2.0.5.
 
-2. Download Sikuli from:
-https://launchpad.net/sikuli/sikulix/1.0.1/+download/sikuli-setup.jar
+3. Go to the directory:
+cd ~/Programs
 
-3. Put it to some intended installation directory like:
-~/Programs/Sikuli/sikuli-setup.jar
-
-4. Go to the directory:
-cd ~/Programs/Sikuli
-
-5. Run Sikuli setup:
-java -jar sikuli-setup.jar
-
-6. In "SikuliX-Setup" window choose:
-        1 - Pack1
-        5 - Tesseract
-        6 - OS packages
+4. Run SikuliX with double click on downloaded jar (on linux executable bit needs to be set first).

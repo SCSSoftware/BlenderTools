@@ -16,9 +16,9 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2015-2019: SCS Software
+# Copyright (C) 2015-2022: SCS Software
 
-from collections import Iterable
+from collections.abc import Iterable
 from io_scs_tools.consts import Look as _LOOK_consts
 from io_scs_tools.utils import property as _property_utils
 from io_scs_tools.utils.printout import lprint
@@ -145,7 +145,7 @@ def apply_active_look(root_obj, force_apply=False):
                 update_func(material)
 
         # unset any unused
-        for prop in material.scs_props.keys():
+        for prop in list(material.scs_props.keys()):
             valid_prefix = (prop.startswith("shader_attribute") or prop.startswith("shader_texture"))
             is_not_ignored = not ((prop.startswith("shader_texture") and prop.endswith(_IGNORED_TEXTURE_PROPS)) or prop in _IGNORED_PROPS)
             if prop not in mat_data and valid_prefix and is_not_ignored:
@@ -201,7 +201,7 @@ def update_look_from_material(root_obj, material, preset_change=False):
 
             curr_mat = root_obj[_MAIN_DICT][look_id][mat_id_str]
 
-            for key in curr_mat:
+            for key in list(curr_mat.keys()):
 
                 if preset_change:  # preset change write through
 
@@ -381,7 +381,8 @@ def add_materials(root_obj, mat_list):
     if _MAIN_DICT not in root_obj or len(root_obj[_MAIN_DICT]) <= 0:
         return
 
-    existing_mats_ids = root_obj[_MAIN_DICT][root_obj[_MAIN_DICT].keys()[0]].keys()
+    first_look_id = next(iter(root_obj[_MAIN_DICT].keys()))
+    existing_mats_ids = root_obj[_MAIN_DICT][first_look_id].keys()
     new_mats_added = 0
     for new_mat in mat_list:
 
@@ -412,7 +413,8 @@ def clean_unused(root_obj):
         return
 
     # create unused materials id list with removing used materials ids from exisiting
-    unused_mats_ids = list(root_obj[_MAIN_DICT][root_obj[_MAIN_DICT].keys()[0]].keys())
+    first_look_id = next(iter(root_obj[_MAIN_DICT].keys()))
+    unused_mats_ids = list(root_obj[_MAIN_DICT][first_look_id].keys())
     for mat in __collect_materials__(root_obj):
 
         mat_id_str = str(mat.scs_props.id)
@@ -451,7 +453,8 @@ def reassign_material(root_obj, new_mat, old_mat):
     if _MAIN_DICT not in root_obj or len(root_obj[_MAIN_DICT]) <= 0:
         return
 
-    existing_mats_ids = root_obj[_MAIN_DICT][root_obj[_MAIN_DICT].keys()[0]].keys()
+    first_look_id = next(iter(root_obj[_MAIN_DICT].keys()))
+    existing_mats_ids = root_obj[_MAIN_DICT][first_look_id].keys()
 
     new_mat_id_str = str(new_mat.scs_props.id)
     old_mat_id_str = str(old_mat.scs_props.id)
@@ -487,7 +490,8 @@ def get_material_entries(root_obj, material):
     if _MAIN_DICT not in root_obj or len(root_obj[_MAIN_DICT]) <= 0:
         return {}
 
-    existing_mats_ids = root_obj[_MAIN_DICT][root_obj[_MAIN_DICT].keys()[0]].keys()
+    first_look_id = next(iter(root_obj[_MAIN_DICT].keys()))
+    existing_mats_ids = root_obj[_MAIN_DICT][first_look_id].keys()
 
     mat_id_str = str(material.scs_props.id)
 

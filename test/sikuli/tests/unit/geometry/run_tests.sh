@@ -2,13 +2,13 @@
 # and expects 1 argument as path to installed Sikuli IDE.
 # Additionaly second argument "skip_reset" can be passed which will
 # cancel searching and executing *reset_blender.sikuli test
-# 
+#
 # Usage examples:
-# 
-# -> Running directly in console: 
+#
+# -> Running directly in console:
 #  ./run_tests.sh ~/Programs/Sikuli
-# 
-# -> Running and writing to log file: 
+#
+# -> Running and writing to log file:
 #  ./run_tests.sh ~/Programs/Sikuli > ~/Work/BlenderTools/Testing/BlenderTestsOutput/sikuli.log
 
 # try to find reset_blender.sikuli test and run it
@@ -30,7 +30,7 @@ if [[ $2 != skip_reset ]]; then
       cd ..
       for dir in *.sikuli ; do
          echo -e "$red--> Running reset test!$nc"
-         $1/runIDE -r "$dir"
+         java -jar $1 -r "$dir"
          i=$((i+1))
          echo -e "$red--> Done!\n$nc"
       done
@@ -44,7 +44,7 @@ for dir in * ; do
    if [ -d "$dir" ]; then #for each directory
       if  [[ $dir == *.sikuli ]]; then #if directory ends with .sikuli then run it
          echo -e "$nc--> Running test $i/$tests_count: $dir"
-         $1/runIDE -r "$dir"
+         java -jar $1 -r "$dir"
          i=$((i+1))
          echo -e "--> Done!\n"
       else #otherwise check if within directory exists run_tests.sh and run it

@@ -321,7 +321,20 @@ def fill_buffers(object_list):
 
     for visib_obj in object_list:
 
-        if visib_obj.type != 'EMPTY' or visib_obj.scs_props.empty_object_type != 'Locator' or not visib_obj.visible_get():
+        # passed object reference got removed
+        try:
+            # do simple name access, to trigger possible reference error.
+            _ = visib_obj.name
+        except ReferenceError:
+            continue
+
+        if visib_obj.type != 'EMPTY':
+            continue
+
+        if visib_obj.scs_props.empty_object_type != 'Locator':
+            continue
+
+        if not visib_obj.visible_get():
             continue
 
         if visib_obj.scs_props.locator_type == 'Prefab':

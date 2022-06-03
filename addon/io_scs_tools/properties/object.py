@@ -913,28 +913,28 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
     )
     locator_prefab_tsem_gs: FloatProperty(
         name="G",
-        description="Time interval/Distance for Green light",
+        description="Time interval or distance (from locator to object rear) for Green light.",
         default=15.0,
         min=-1.0,
         options={'HIDDEN'},
     )
     locator_prefab_tsem_os1: FloatProperty(
         name="O",
-        description="Time interval/Distance for after-green Orange light",
+        description="Time interval or distance (from object front to locator) for after-green Orange light.",
         default=2.0,
         min=-1.0,
         options={'HIDDEN'},
     )
     locator_prefab_tsem_rs: FloatProperty(
         name="R",
-        description="Time interval/Distance for Red light",
+        description="Time interval or distance (from object front to locator) for Red light.",
         default=23.0,
         min=-1.0,
         options={'HIDDEN'},
     )
     locator_prefab_tsem_os2: FloatProperty(
         name="O",
-        description="Time interval/Distance for after-red Orange light",
+        description="Time interval or distance (from locator to object rear) for after-red Orange light",
         default=2.0,
         min=-1.0,
         options={'HIDDEN'},

@@ -1,10 +1,11 @@
-import configurator, os
-p = configurator.start_it_up(getBundlePath(), "prefab_locator_node.blend")
+load("scs_bt_configurator.jar")
+import scs_bt_configurator
+p = scs_bt_configurator.start_it_up(getBundlePath(), "prefab_locator_node.blend")
 try:
-    mouseMove(Location(0,0)); wait("3dview_model_loc-1.png", 5)
-    #TODO: I guess this is not done test!
+    mouseMove(Location(0,0)); wait(Pattern("3dview_scene_init.png").exact(), 5)
+    find(Pattern("control_node_panel.png").exact())  # since nothing cna be visually changed just check if panel is present
 except:
-    configurator.save_screenshot(getBundlePath(), Screen())
+    scs_bt_configurator.save_screenshot(getBundlePath(), Screen())
     raise
 finally:
-    configurator.close_blender(p)
+    scs_bt_configurator.close_blender(p)

@@ -62,7 +62,7 @@ class Material:
                 self.__used_textures_count += 1
                 if "Tag" in tex_entry:
                     tex_type = tex_entry["Tag"].split(":")[1][8:].strip()
-                    mappings = getattr(blend_mat.scs_props, "shader_texture_" + tex_type + "_uv")
+                    mappings = getattr(blend_mat.scs_props, "shader_texture_" + tex_type + "_uv", [])
 
                     # if imported just use custom mappings defined separetly
                     if blend_mat.scs_props.active_shader_preset_name == "<imported>":

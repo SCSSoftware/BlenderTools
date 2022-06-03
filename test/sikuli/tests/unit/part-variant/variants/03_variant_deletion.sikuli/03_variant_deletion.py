@@ -1,20 +1,16 @@
-def showAll():
-    keyDown(Key.ALT); type("h"); keyUp(Key.ALT); type("a" + Key.ESC)
-
-def confirmInput():
-    type(Key.ENTER); type(Key.ESC)
-
-import configurator, os
-p = configurator.start_it_up(getBundlePath(), "default_3_variants_named.blend", delete_pix=False)
+load("scs_bt_configurator.jar")
+import scs_bt_configurator
+p = scs_bt_configurator.start_it_up(getBundlePath(), "default_3_variants_named.blend", delete_pix=False)
 try:
-    mouseMove(Location(0,0)); wait("3dview_variants_cubes_01.png", 5); hover("3dview_variants_cubes_01.png"); type(Key.ESC)
-    click(Pattern("variant_list_add_10.png").similar(0.95).targetOffset(0,10))
-    click(Pattern("variant_list_deletion_01.png").similar(0.95).targetOffset(-2,-14))
-    click(Pattern("variant_list_add_10.png").similar(0.95).targetOffset(0,10))
-    find(Pattern("variant_list_deletion_02.png").similar(0.95))
+    mouseMove(Location(0,0)); wait(Pattern("3dview_variants_cubes_01.png").exact(), 5); hover(Pattern("3dview_variants_cubes_01.png").exact()); type(Key.ESC)
+    click(Pattern("variant_list_add_10.png").exact().targetOffset(0,-11))
+    click(Pattern("variant_list_deletion_01.png").exact().targetOffset(-58,-25))
+    click(Pattern("variant_list_add_10.png").exact().targetOffset(0,-12))
+    find(Pattern("variant_list_deletion_02.png").exact())
+    find(Pattern("variant_list_deletion_03.png").exact())
     hover(Location(450, 400))  # move cursor to the safe location
 except:
-    configurator.save_screenshot(getBundlePath(), Screen())
+    scs_bt_configurator.save_screenshot(getBundlePath(), Screen())
     raise
 finally:
-    configurator.close_blender(p)
+    scs_bt_configurator.close_blender(p)

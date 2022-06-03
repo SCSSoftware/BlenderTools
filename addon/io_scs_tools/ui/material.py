@@ -663,7 +663,7 @@ class SCS_TOOLS_PT_MaterialTextures(_MaterialPanelBlDefs, Panel):
                 )
 
             # UV LAYERS FOR TEXTURE
-            uv_mappings = getattr(mat.scs_props, "shader_" + tag_id_string + "_uv", None)
+            uv_mappings = getattr(mat.scs_props, "shader_" + tag_id_string + "_uv", [])
 
             if len(uv_mappings) > 0:
 

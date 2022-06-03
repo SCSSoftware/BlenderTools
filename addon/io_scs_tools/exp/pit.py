@@ -588,12 +588,18 @@ def export(root_object, filepath, name_suffix, used_parts, used_materials):
 
                             if tex_prop == "Tag":
                                 tag_id_string = texture_dict[tex_prop].split(':')[1]
+                                texture_section.props.append((tex_prop, texture_dict[tex_prop]))
 
-                            if tex_prop == "Value" and tag_id_string != "":
-
-                                tobj_rel_path = get_texture_path_from_material(material, tag_id_string, os.path.dirname(filepath))
-                                texture_section.props.append((tex_prop, tobj_rel_path))
-
+                            elif tex_prop == "Value":
+                                if tag_id_string[8:] in material.scs_props.get_texture_types():
+                                    tobj_rel_path = get_texture_path_from_material(material, tag_id_string, os.path.dirname(filepath))
+                                    texture_section.props.append((tex_prop, tobj_rel_path))
+                                else:
+                                    texture_section.props.append((tex_prop, texture_dict[tex_prop]))
+                                    if looks_count > 1:
+                                        lprint("W Texture of type %r on material %r with imported shader is not supported in Blender, "
+                                               "thus imported texture path from first look will be used on all of them!",
+                                               (tag_id_string, material_name))
                             else:
                                 texture_section.props.append((tex_prop, texture_dict[tex_prop]))
 

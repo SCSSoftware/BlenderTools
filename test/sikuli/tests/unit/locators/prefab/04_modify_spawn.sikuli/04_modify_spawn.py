@@ -1,11 +1,13 @@
-import configurator, os
-p = configurator.start_it_up(getBundlePath(), "prefab_locator_spawn.blend")
+load("scs_bt_configurator.jar")
+import scs_bt_configurator
+p = scs_bt_configurator.start_it_up(getBundlePath(), "prefab_locator_spawn.blend")
 try:
-    mouseMove(Location(0,0)); wait("3dview_prefab_loc_spawn.png", 5)
-    click(Pattern("prefab_spawn_spawn_type_none.png").similar(0.90).targetOffset(35,0))
-    click(Pattern("prefab_spawn_trailer_popup_pick.png").similar(0.95))
+    mouseMove(Location(0,0)); wait(Pattern("3dview_scene_init.png").exact(), 5)
+    click(Pattern("spawn_type_prop.png").exact())
+    click(Pattern("trailer_spaw_type_selection.png").exact())
+    find(Pattern("spawn_type_prop_trailer.png").exact())
 except:
-    configurator.save_screenshot(getBundlePath(), Screen())
+    scs_bt_configurator.save_screenshot(getBundlePath(), Screen())
     raise
 finally:
-    configurator.close_blender(p)
+    scs_bt_configurator.close_blender(p)

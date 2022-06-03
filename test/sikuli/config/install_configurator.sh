@@ -1,4 +1,4 @@
-rm configurator-1.0.jar
-file-roller --foce --add-to=configurator-1.0.jar configurator/ META-INF/
-cp configurator-1.0.jar ~/.sikuli/extensions/configurator-1.0.jar
-cp config.ini ~/.sikuli/extensions/config.ini
+rm scs_bt_configurator.jar
+file-roller --foce --add-to=scs_bt_configurator.jar scs_bt_configurator/ META-INF/
+cp scs_bt_configurator.jar ~/.Sikulix/Extensions/scs_bt_configurator.jar
+cp scs_bt_config.ini ~/.Sikulix/Extensions/scs_bt_config.ini
