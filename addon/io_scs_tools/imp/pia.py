@@ -415,8 +415,8 @@ def load(root_object, pia_files, armature, pis_filepath=None, bones=None):
             animation = _animation_utils.add_animation_to_root(root_object, animation_name)
             animation.export = True
             animation.action = anim_action.name
-            animation.anim_start = anim_action.frame_range[0]
-            animation.anim_end = anim_action.frame_range[1]
+            animation.anim_start = int(anim_action.frame_range[0])
+            animation.anim_end = int(anim_action.frame_range[1])
 
             if total_time:
                 animation.length = total_time
