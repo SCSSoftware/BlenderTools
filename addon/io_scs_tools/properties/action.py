@@ -32,7 +32,7 @@ class ActionSCSTools(bpy.types.PropertyGroup):
         name="Export Step",
         description="Number of frames to step in action for each iteration trough exporting.",
         default=1,
-        min=0, max=128,
+        min=1, max=128,
         step=1,
         options={'HIDDEN'},
         subtype='NONE',

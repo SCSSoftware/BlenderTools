@@ -798,22 +798,22 @@ class Animation:
                     # print('      %i keyframe: %s' % (keyframe_i, str(keyframe.co)))
 
                 # INCREASE GLOBAL RANGE
-                scene.frame_start /= 2
-                scene.frame_end /= 2
+                scene.frame_start //= 2
+                scene.frame_end //= 2
 
                 # INCREASE PREVIEW RANGE
-                scene.frame_preview_start /= 2
-                scene.frame_preview_end /= 2
+                scene.frame_preview_start //= 2
+                scene.frame_preview_end //= 2
 
                 # INCREASE END FRAME NUMBER IN ALL ANIMATIONS THAT USES THE ACTUAL ACTION
                 for anim in inventory:
                     if anim.action == action.name:
-                        anim.anim_start /= 2
-                        anim.anim_end /= 2
+                        anim.anim_start //= 2
+                        anim.anim_end //= 2
 
                 # INCREASE EXPORT STEP
                 # print('anim_export_step: %s' % str(action.scs_props.anim_export_step))
-                action.scs_props.anim_export_step /= 2
+                action.scs_props.anim_export_step //= 2
 
             return {'FINISHED'}
 
