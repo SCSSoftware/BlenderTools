@@ -273,7 +273,8 @@ class MaterialSCSTools(bpy.types.PropertyGroup):
         """
         return {'base', 'reflection', 'over', 'oclu', 'mask', 'mult', 'iamod', 'lightmap', 'paintjob',
                 'flakenoise', 'nmap', 'base_1', 'mult_1', 'detail', 'nmap_detail', 'layer0', 'layer1',
-                'sky_weather_base_a', 'sky_weather_base_b', 'sky_weather_over_a', 'sky_weather_over_b'}
+                'sky_weather_base_a', 'sky_weather_base_b', 'sky_weather_over_a', 'sky_weather_over_b',
+                'nmap_over'}
 
     def get_id(self):
         """Gets unique ID for material within current Blend file. If ID does not exists yet it's calculated.
@@ -419,6 +420,12 @@ class MaterialSCSTools(bpy.types.PropertyGroup):
 
     def update_shader_texture_nmap_detail_settings(self, context):
         __update_shader_texture_tobj_file__(self, context, "nmap_detail")
+
+    def update_shader_texture_nmap_over(self, context):
+        __update_shader_texture__(self, context, "nmap_over")
+
+    def update_shader_texture_nmap_over_settings(self, context):
+        __update_shader_texture_tobj_file__(self, context, "nmap_over")
 
     def update_shader_texture_oclu(self, context):
         __update_shader_texture__(self, context, "oclu")
@@ -1376,6 +1383,57 @@ class MaterialSCSTools(bpy.types.PropertyGroup):
     shader_texture_nmap_detail_uv: CollectionProperty(
         name="Texture Base UV Sets",
         description="Texture base UV sets for active Material",
+        type=UVMappingItem,
+        options={'HIDDEN'},
+    )
+
+    # TEXTURE: NMAP_OVER
+    shader_texture_nmap_over: StringProperty(
+        name="Texture NMap Over",
+        description="Texture Nmap Over for active Material",
+        default=_MAT_consts.unset_bitmap_filepath,
+        options={'HIDDEN'},
+        subtype='NONE',
+        update=update_shader_texture_nmap_over,
+    )
+    shader_texture_nmap_over_imported_tobj: StringProperty(
+        name="Imported TOBJ Path",
+        description="Use imported TOBJ path reference which will be exported into material (NOTE: export will not take care of any TOBJ files!)",
+        default="",
+        update=__update_look__
+    )
+    shader_texture_nmap_over_locked: BoolProperty(
+        name="Texture Locked",
+        description="Tells if texture is locked and should not be changed by user(intended for internal usage only)",
+        default=False
+    )
+    shader_texture_nmap_over_map_type: StringProperty(
+        name="Texture Map Type",
+        description="Stores texture mapping type and should not be changed by user(intended for internal usage only)",
+        default="2d"
+    )
+    shader_texture_nmap_over_settings: EnumProperty(
+        name="Settings",
+        description="TOBJ settings for this texture",
+        items=__get_texture_settings__(),
+        default=set(),
+        options={'ENUM_FLAG'},
+        update=update_shader_texture_nmap_over_settings
+    )
+    shader_texture_nmap_over_tobj_load_time: StringProperty(
+        name="Last TOBJ load time",
+        description="Time string of last loading",
+        default="",
+    )
+    shader_texture_nmap_over_use_imported: BoolProperty(
+        name="Use Imported",
+        description="Use custom provided path for TOBJ reference",
+        default=False,
+        update=__update_look__
+    )
+    shader_texture_nmap_over_uv: CollectionProperty(
+        name="Texture Nmap Over UV Sets",
+        description="Texture Nmap Over UV sets for active Material",
         type=UVMappingItem,
         options={'HIDDEN'},
     )
