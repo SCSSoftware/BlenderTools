@@ -16,7 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2015-2021: SCS Software
+# Copyright (C) 2015-2022: SCS Software
 
 import bpy
 from bpy.app.handlers import persistent
@@ -24,7 +24,6 @@ from io_scs_tools.consts import SCSLigthing as _LIGHTING_consts
 from io_scs_tools.internals import looks as _looks
 from io_scs_tools.internals import preview_models as _preview_models
 from io_scs_tools.internals import shader_presets as _shader_presets
-from io_scs_tools.utils import collection as _collection_utils
 from io_scs_tools.utils import material as _material_utils
 from io_scs_tools.utils import object as _object_utils
 from io_scs_tools.utils import info as _info_utils
@@ -50,6 +49,7 @@ def post_load(scene):
         ("1.4", apply_fixes_for_1_4),
         ("1.12", apply_fixes_for_1_12),
         ("2.0", apply_fixes_for_2_0),
+        ("2.4", apply_fixes_for_2_4),
     )
 
     for version, func in VERSIONS_LIST:
@@ -66,9 +66,12 @@ def post_load(scene):
 def _reload_materials():
     """Triggers materials nodes and UI attributes reloading.
     """
-    override = bpy.context.copy()
-    override["window"] = bpy.data.window_managers[0].windows[0]
-    bpy.ops.material.scs_tools_reload_materials(override, 'INVOKE_DEFAULT')
+    windows = bpy.data.window_managers[0].windows
+
+    assert len(windows) > 0
+
+    with bpy.context.temp_override(window=windows[0]):
+        bpy.ops.material.scs_tools_reload_materials('INVOKE_DEFAULT')
 
 
 def apply_fixes_for_0_6():
@@ -265,20 +268,21 @@ def apply_fixes_for_1_12():
     for obj in bpy.data.objects:
         obj.hide_viewport = False
 
-    # due to big version bump after this one, we let user know he is migrating to 2.0
-    msg = (
-        "\nWelcome back, your scene just migrated to SCS Blender Tools 2.0!\n",
-        "To give you idea what just happened, here is a summary:",
-        "1. SCS Materials were reloaded and adopted to the new renderer in Blender!",
-        "2. SCS preview models were reloaded to apply new material to them!",
-        "3. Old SCS Lighting was removed and replaced by new one!",
-        "4. Old textures and images were purged!",
-        "5. Old layers were migrated over as collections, thus everything got visible in your scene!"
-    )
+    windows = bpy.data.window_managers[0].windows
+    if len(windows) > 0:
+        # due to big version bump after this one, we let user know he is migrating to 2.0
+        msg = (
+            "\nWelcome back, your scene just migrated to SCS Blender Tools 2.0!\n",
+            "To give you idea what just happened, here is a summary:",
+            "1. SCS Materials were reloaded and adopted to the new renderer in Blender!",
+            "2. SCS preview models were reloaded to apply new material to them!",
+            "3. Old SCS Lighting was removed and replaced by new one!",
+            "4. Old textures and images were purged!",
+            "5. Old layers were migrated over as collections, thus everything got visible in your scene!"
+        )
 
-    override = bpy.context.copy()
-    override["window"] = bpy.data.window_managers[0].windows[0]
-    bpy.ops.wm.scs_tools_show_3dview_report(override, 'INVOKE_DEFAULT', message="\n".join(msg))
+        with bpy.context.temp_override(window=windows[0]):
+            bpy.ops.wm.scs_tools_show_3dview_report('INVOKE_DEFAULT', message="\n".join(msg))
 
 
 def apply_fixes_for_2_0():
@@ -328,3 +332,15 @@ def apply_fixes_for_2_0():
         # we need to update looks so that new values get propagated to all of the looks
         for scs_root in _object_utils.gather_scs_roots(bpy.data.objects):
             _looks.update_look_from_material(scs_root, mat)
+
+
+def apply_fixes_for_2_4():
+    """
+    Applies fixes for 2.4 or less:
+    1. Reload materials since some got removed/restructed attributes
+    """
+
+    print("INFO\t-  Applying fixes for version <= 2.4")
+
+    # 1. reload all materials
+    _reload_materials()

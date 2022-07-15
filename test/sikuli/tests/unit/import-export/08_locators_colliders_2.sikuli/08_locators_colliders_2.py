@@ -3,7 +3,7 @@ import scs_bt_configurator
 p = scs_bt_configurator.start_it_up(getBundlePath(), "8_locators_collision_rotated.blend")
 try:
     wait(Pattern("3dview_8_locators_collision_rotated.png").exact(), 5); hover(Pattern("3dview_8_locators_collision_rotated.png").exact()); type(Key.ESC)
-    click(Pattern("export_scene_button-1.png").exact())
+    click("export_scene_button-1.png")
     hover(Location(300, 400))  # move cursor to 3D view
     type(Key.ESC); wait(1); type(Key.ESC)  # hide warnings
     wait(Pattern("3dview_8_locators_collision_rotated.png").exact())

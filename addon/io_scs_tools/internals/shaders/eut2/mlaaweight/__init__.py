@@ -16,7 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2015-2019: SCS Software
+# Copyright (C) 2015-2022: SCS Software
 
 from io_scs_tools.internals.shaders.eut2.none import NNone
 
@@ -41,4 +41,4 @@ class MlaaWeight(NNone):
 
         # change emissive color
         shader_n = node_tree.nodes[NNone.SHADER_NODE]
-        shader_n.inputs['Emissive Color'].default_value = (0.0,) * 3 + (1.0,)
+        shader_n.inputs['Color'].default_value = (0.0,) * 3 + (1.0,)

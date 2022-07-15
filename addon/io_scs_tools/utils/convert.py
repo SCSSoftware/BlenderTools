@@ -169,6 +169,35 @@ def aux_to_node_color(aux_prop, from_index=0):
     return to_node_color(col)
 
 
+def float_array_to_hex_string(value):
+    """Takes a float array and returns it as hexadecimal number in a string format.
+    There are direct implementations for array sizes of 3, 4, 2.
+
+    For speed reasons we do not have any check on the value, so beware!
+
+    :param value: Value
+    :type value: iter
+    :return: Hexadecimal string value
+    :rtype: str
+    """
+
+    items_count = len(value)
+    if items_count == 3:
+        return'&%s  &%s  &%s' % (_FLOAT_STRUCT.pack(value[0]).hex(),
+                                 _FLOAT_STRUCT.pack(value[1]).hex(),
+                                 _FLOAT_STRUCT.pack(value[2]).hex())
+    elif items_count == 4:
+        return '&%s  &%s  &%s  &%s' % (_FLOAT_STRUCT.pack(value[0]).hex(),
+                                       _FLOAT_STRUCT.pack(value[1]).hex(),
+                                       _FLOAT_STRUCT.pack(value[2]).hex(),
+                                       _FLOAT_STRUCT.pack(value[3]).hex())
+    elif items_count == 2:
+        return '&%s  &%s' % (_FLOAT_STRUCT.pack(value[0]).hex(),
+                             _FLOAT_STRUCT.pack(value[1]).hex())
+    else:
+        return '  '.join([float_to_hex_string(x) for x in value])
+
+
 def float_to_hex_string(value):
     """Takes a float and returns it as hexadecimal number in a string format.
 
@@ -284,7 +313,7 @@ def change_to_scs_uv_coordinates(uvs):
     :return: Transposed UV coordinates
     :rtype: tuple of float
     """
-    return uvs[0], -uvs[1] + 1
+    return uvs[0], 1 - uvs[1]
 
 
 def get_scs_transformation_components(matrix):

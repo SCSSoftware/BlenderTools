@@ -16,11 +16,12 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2016-2019: SCS Software
+# Copyright (C) 2016-2022: SCS Software
 
 import bpy
 from io_scs_tools.consts import Material as _MAT_consts
 from io_scs_tools.consts import SCSLigthing as _LIGHTING_consts
+from io_scs_tools.internals.shaders.std_node_groups import output_shader_ng
 from io_scs_tools.utils import convert as _convert_utils
 
 COMPOSE_LIGHTING_G = _MAT_consts.node_group_prefix + "ComposeLighting"
@@ -32,7 +33,6 @@ _MULT_DIFFUSE_NODE = "Diffuse=DC*DLF"
 _MULT_SPECULAR_NODE = "Specular=SC*SL"
 _SUM_DIFF_SPEC_NODE = "DiffSpec=Diffuse+Specular"
 _SUM_FINAL_NODE = "Result=DiffSpec+Env"
-_ALPHA_INV_NODE = "AlphaInvert"
 _OUT_MAT_NODE = "OutMaterial"
 
 
@@ -140,19 +140,10 @@ def __create_node_group__():
     sum_final_n.location = (start_pos_x + pos_x_shift * 6, 0)
     sum_final_n.operation = "ADD"
 
-    alpha_inv_n = compose_light_g.nodes.new("ShaderNodeMath")
-    alpha_inv_n.name = alpha_inv_n.label = _ALPHA_INV_NODE
-    alpha_inv_n.location = (start_pos_x + pos_x_shift * 6, -200)
-    alpha_inv_n.operation = "SUBTRACT"
-    alpha_inv_n.inputs[0].default_value = 0.999999  # TODO: change back to 1.0 after bug is fixed: https://developer.blender.org/T71426
-    alpha_inv_n.use_clamp = True
-
-    out_mat_node = compose_light_g.nodes.new("ShaderNodeEeveeSpecular")
+    out_mat_node = compose_light_g.nodes.new("ShaderNodeGroup")
     out_mat_node.name = out_mat_node.label = _OUT_MAT_NODE
     out_mat_node.location = (start_pos_x + pos_x_shift * 7, 0)
-    out_mat_node.inputs["Base Color"].default_value = (0.0,) * 4
-    out_mat_node.inputs["Specular"].default_value = (0.0,) * 4
-    out_mat_node.inputs["Roughness"].default_value = 1.0  # use 1 to disable roughness completely in our shaders
+    out_mat_node.node_tree = output_shader_ng.get_node_group()
 
     # links creation
     compose_light_g.links.new(mult_aa_node.inputs[0], add_ambient_col_n.outputs["Color"])
@@ -173,12 +164,10 @@ def __create_node_group__():
     compose_light_g.links.new(sum_final_n.inputs[0], sum_diff_spec_n.outputs["Vector"])
     compose_light_g.links.new(sum_final_n.inputs[1], input_n.outputs["Env Color"])
 
-    compose_light_g.links.new(alpha_inv_n.inputs[1], input_n.outputs["Alpha"])
+    compose_light_g.links.new(out_mat_node.inputs["Color"], sum_final_n.outputs["Vector"])
+    compose_light_g.links.new(out_mat_node.inputs["Alpha"], input_n.outputs["Alpha"])
 
-    compose_light_g.links.new(out_mat_node.inputs["Emissive Color"], sum_final_n.outputs["Vector"])
-    compose_light_g.links.new(out_mat_node.inputs["Transparency"], alpha_inv_n.outputs["Value"])
-
-    compose_light_g.links.new(output_n.inputs["Shader"], out_mat_node.outputs["BSDF"])
+    compose_light_g.links.new(output_n.inputs["Shader"], out_mat_node.outputs["Shader"])
     compose_light_g.links.new(output_n.inputs["Color"], sum_final_n.outputs["Vector"])
     compose_light_g.links.new(output_n.inputs["Alpha"], input_n.outputs["Alpha"])
 

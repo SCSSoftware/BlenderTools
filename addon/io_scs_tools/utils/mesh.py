@@ -27,91 +27,6 @@ from io_scs_tools.utils.printout import lprint
 from io_scs_tools.utils import convert as _convert
 
 
-def make_per_vertex_uv_layer(mesh, mesh_uv, uv_layer_name):
-    """Creates UV layer in mesh per-vertex..."""
-    uvlay = mesh.tessface_uv_textures.new(name=uv_layer_name)
-
-    for i, uv_l in enumerate(uvlay.data):
-        fac = mesh.tessfaces[i]
-        for j, uv in enumerate(uv_l.uv):
-            vert = fac.vertices[j]
-            vert_uv = mesh_uv[uv_layer_name][vert]
-            # print('vert_uv: %s - uv: %s' % (str(vert_uv), str(uv)))
-            uv[0], uv[1] = (vert_uv[0], -vert_uv[1] + 1)
-
-    return {'FINISHED'}
-
-
-def make_per_face_uv_layer(mesh, uv_layer, layer_name):
-    """Creates UV layer in mesh per-face..."""
-    uvlay = mesh.tessface_uv_textures.new(name=layer_name)
-
-    for i, fac in enumerate(uvlay.data):
-        # print('uv_layer: %s' % str(uv_layer))
-        fac_uv = uv_layer[i]
-        # print('fac_uv: %s' % str(fac_uv))
-        for j, uv in enumerate(fac.uv):
-            # print('fac_uv[j]: %s - uv: %s' % (str(fac_uv[j]), str(uv)))
-            uv[0], uv[1] = (fac_uv[j][0], -fac_uv[j][1] + 1)
-
-    return {'FINISHED'}
-
-
-def make_vcolor_layer(mesh, mesh_rgb, mesh_rgba):
-    """Creates UV layers in mesh..."""
-    vcol_lay = mesh.tessface_vertex_colors.new()
-
-    for i, col_l in enumerate(vcol_lay.data):
-        fac = mesh.tessfaces[i]
-        if len(fac.vertices) == 4:
-            f_col = col_l.color1, col_l.color2, col_l.color3, col_l.color4
-        else:
-            f_col = col_l.color1, col_l.color2, col_l.color3
-        for j, col in enumerate(f_col):
-            vert = fac.vertices[j]
-            if mesh_rgba:
-                col.r = mesh_rgba[vert][0]
-                col.g = mesh_rgba[vert][1]
-                col.b = mesh_rgba[vert][2]
-            elif mesh_rgb:
-                col.r, col.g, col.b = mesh_rgb[vert]
-    return {'FINISHED'}
-
-
-def make_per_face_rgb_layer(mesh, rgb_layer, layer_name):
-    """Creates color (RGB) layer in mesh per-face..."""
-    vcol_lay = mesh.tessface_vertex_colors.new(name=layer_name)
-    # print('vcol_lay: %s' % str(vcol_lay))
-
-    for i, fac in enumerate(vcol_lay.data):
-        print('fac: %s' % str(fac))
-        print('rgb_layer: %s' % str(rgb_layer))
-        fac_rgb = rgb_layer[i]
-        print('fac_rgb: %s' % str(fac_rgb))
-        print('fac.color1: %s' % str(fac.color1))
-        print('fac.color2: %s' % str(fac.color2))
-        print('fac.color3: %s' % str(fac.color3))
-        print('fac.color4: %s' % str(fac.color4))
-        # for j, rgb in enumerate(fac.color2):
-        for j, fac_vert_rgb in enumerate(fac_rgb):
-            # print('rgb: %s' % str(rgb))
-            print('fac_rgb[j]: %s - fac_vert_rgb: %s' % (str(fac_rgb[j]), str(fac_vert_rgb)))
-            # rgb[0], rgb[1], rgb[2] = fac_rgb[j]
-
-    # for i, f in enumerate(vcol_lay.data):
-    # NOTE: Colors dont come in right, needs further investigation.
-    # ply_col = mesh_colors[i]
-    # if len(ply_col) == 4:
-    # f_col = f.color1, f.color2, f.color3, f.color4
-    # else:
-    # f_col = f.color1, f.color2, f.color3
-    #
-    # for j, col in enumerate(f_col):
-    # col.r, col.g, col.b = ply_col[j]
-
-    return {'FINISHED'}
-
-
 def make_points_to_weld_list(mesh_vertices, mesh_normals, mesh_rgb, mesh_rgba, equal_decimals_count):
     """Makes a map of duplicated vertices indices into it's original counter part."""
 
@@ -151,131 +66,6 @@ def make_points_to_weld_list(mesh_vertices, mesh_normals, mesh_rgb, mesh_rgba, e
             verts_map[idx] = indices[0]  # fist index is original, rest are duplicates
 
     return verts_map
-
-
-def set_sharp_edges(mesh, mesh_edges):
-    """
-    Takes a mesh and list of edges (2 vertex indices) and sets those edges
-    as sharp in the mesh.
-    :param mesh:
-    :param mesh_edges:
-    :return:
-    """
-    for edge in mesh.edges:
-        edge_verts = [edge.vertices[0], edge.vertices[1]]
-        if edge_verts in mesh_edges or edge_verts[::-1] in mesh_edges:
-            edge.use_edge_sharp = True
-
-
-def get_stream_rgb(mesh, output_type, dummy_alpha=False):
-    """
-    Takes a mesh and returns all vertex color layers existing in the mesh and requested
-    number of empty containers for streams ("section_data" data type).
-    :param mesh:
-    :param output_type:
-    :param dummy_alpha:
-    :return:
-    """
-    if mesh.vertex_colors:
-        rgb_all_layers = mesh.vertex_colors
-        streams_vcolor = []
-        for rgb_i in range(len(rgb_all_layers)):
-            if output_type == 'def1':
-                if dummy_alpha:
-                    streams_vcolor.append(('_RGBA' + str(rgb_i), []))
-                else:
-                    streams_vcolor.append(('_RGB' + str(rgb_i), []))
-            else:
-                if dummy_alpha:
-                    streams_vcolor.append(('_RGBA', []))
-                else:
-                    streams_vcolor.append(('_RGB', []))
-                break
-                # print('rgb_layer: %s' % str(rgb_all_layers))
-                # for item in rgb_all_layers:
-                # print('\trgb_layer: %s' % str(item))
-    else:
-        rgb_all_layers = None
-        streams_vcolor = None
-        lprint('I NO RGB layers in "%s" mesh!' % mesh.name)
-    return rgb_all_layers, streams_vcolor
-
-
-def get_stream_uvs(mesh, active_uv_only):
-    """
-    Takes a mesh and returns requested number of UV layers from the mesh and
-    the same number of empty containers for streams ("section_data" data type).
-    :param mesh:
-    :param active_uv_only:
-    :return:
-    """
-    if mesh.uv_layers:
-        streams_uv = []
-        if active_uv_only:
-            requested_uv_layers = (mesh.uv_layers.active,)
-            streams_uv.append(('_UV0', []))
-        else:
-            requested_uv_layers = mesh.uv_layers
-            for uv_i in range(len(requested_uv_layers)):
-                streams_uv.append(('_UV' + str(uv_i), []))
-                # print('uv_layer: %s' % str(requested_uv_layers))
-                # for item in requested_uv_layers:
-                # print('\tuv_layer: %s' % str(item))
-    else:
-        requested_uv_layers = None
-        streams_uv = None
-        lprint('I NO UV layers in "%s" mesh!' % mesh.name)
-    return requested_uv_layers, streams_uv
-
-
-def get_vertex_normal(mesh, vert_index):
-    """
-    Takes a mesh and vertex index and returns normal of the vertex.
-    :param mesh:
-    :param vert_index:
-    :return:
-    """
-    loop_vert_no = mesh.vertices[vert_index].normal
-    # vrt_no = (loop_vert_no[0], loop_vert_no[1], loop_vert_no[2])
-    vrt_no = (loop_vert_no[0], loop_vert_no[2], loop_vert_no[1] * -1)
-    # print('\tNO   x:%f y:%f z:%f' % vrt_no)
-    return vrt_no
-
-
-def get_face_vertex_color(layer, loop_index, dummy_alpha=False, index=0):
-    """
-    Takes a vertex color layer and loop index and returns RGB values
-    of the starting vertex of the loop part specified by loop index.
-    :param layer:
-    :param loop_index:
-    :param dummy_alpha:
-    :param index:
-    :return:
-    """
-    # loop_vert_rgb = mesh.vertex_colors[0]
-    loop_vert_rgb = layer[loop_index].color
-    # print('\tRGB%i  %s' % (index, loop_vert_rgb))
-    if dummy_alpha:
-        vrt_rgb = (loop_vert_rgb[0], loop_vert_rgb[1], loop_vert_rgb[2], 1.0)
-    else:
-        vrt_rgb = (loop_vert_rgb[0], loop_vert_rgb[1], loop_vert_rgb[2])
-    # print('\tRGB%i r:%f g:%f b:%f' % (index, vrt_rgb[0], vrt_rgb[1], vrt_rgb[2]))
-    return vrt_rgb
-
-
-def get_face_vertex_uv(layer, loop_index, index=0):
-    """
-    Takes a UV layer and loop index and returns UV values
-    of the starting vertex of the loop part specified by loop index.
-    :param layer:
-    :param loop_index:
-    :param index:
-    :return:
-    """
-    loop_vert_uv = layer[loop_index].uv
-    vrt_uv = (loop_vert_uv[0], -loop_vert_uv[1] + 1)
-    # print('\tUV%i  u:%f v:%f' % (index, vrt_uv[0], vrt_uv[1]))
-    return vrt_uv
 
 
 def bm_make_vertices(bm, vertices):
@@ -560,7 +350,7 @@ def vcoloring_rebake(mesh, vcolor_arrays, old_array_hash):
     :return: newly calculated hashed string of active vertex color array, that should be passed next time when rebake is called.
     :rtype: str | None
     """
-    mesh_vcolors = mesh.vertex_colors
+    mesh_vcolors = mesh.color_attributes
 
     # abort any baking if one of layers is missing or buffer arrays are not sufficitent
     if _VCT_consts.ColoringLayersTypes.Color not in mesh_vcolors:
@@ -589,11 +379,11 @@ def vcoloring_rebake(mesh, vcolor_arrays, old_array_hash):
     ao2_loops = mesh_vcolors[_VCT_consts.ColoringLayersTypes.AO2].data
 
     # ensure the layers used to bake to
-    if "Col" not in mesh_vcolors:
-        mesh_vcolors.new(name="Col")
+    if _MESH_consts.default_vcol not in mesh_vcolors:
+        mesh_vcolors.new(name=_MESH_consts.default_vcol, type='FLOAT_COLOR', domain='CORNER')
 
-    if "Col_alpha" not in mesh_vcolors:
-        mesh_vcolors.new(name="Col_alpha")
+    if _MESH_consts.default_vcol + _MESH_consts.vcol_a_suffix not in mesh_vcolors:
+        mesh_vcolors.new(name=_MESH_consts.default_vcol + _MESH_consts.vcol_a_suffix, type='FLOAT_COLOR', domain='CORNER')
 
     # get vertex color data for hash calculation
     if mesh_vcolors.active.name == _VCT_consts.ColoringLayersTypes.Color:
@@ -620,7 +410,7 @@ def vcoloring_rebake(mesh, vcolor_arrays, old_array_hash):
     # alpha is donated only by decal layer color, thus we just comment it out
     # vcolor_arrays[1] = vcolor_arrays[1]
 
-    mesh_vcolors["Col"].data.foreach_set("color", vcolor_arrays[0])
-    mesh_vcolors["Col_alpha"].data.foreach_set("color", vcolor_arrays[1])
+    mesh_vcolors[_MESH_consts.default_vcol].data.foreach_set("color", vcolor_arrays[0])
+    mesh_vcolors[_MESH_consts.default_vcol + _MESH_consts.vcol_a_suffix].data.foreach_set("color", vcolor_arrays[1])
 
     return new_array_hash

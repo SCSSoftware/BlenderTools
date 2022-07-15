@@ -16,7 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2013-2021: SCS Software
+# Copyright (C) 2013-2022: SCS Software
 
 import bpy
 import bmesh
@@ -467,6 +467,11 @@ def _create_piece(
     mesh.update()
     bm.free()
 
+    if _MESH_consts.default_vcol in mesh.color_attributes:
+        # make sure to set default vcolor attribute as active
+        mesh.color_attributes.active_color = mesh.color_attributes[_MESH_consts.default_vcol]
+        mesh.color_attributes.render_color_index = mesh.color_attributes.active_color_index
+
     # NORMALS - has to be applied after bmesh creation as they are set directly to mesh
     if _get_scs_globals().import_use_normals:
 
@@ -622,10 +627,8 @@ def _create_piece(
         back_obj.data = _mesh_utils.bm_delete_loose(back_obj.data)
 
         # finally join back object with original
-        override = context.copy()
-        override["active_object"] = obj
-        override["selected_editable_objects"] = (obj, back_obj)
-        bpy.ops.object.join(override)
+        with context.temp_override(active_object=obj, selected_editable_objects=back_obj):
+            bpy.ops.object.join()
 
     return obj
 
@@ -983,10 +986,8 @@ def load_pim_file(context, filepath, terrain_points_trans=None, preview_model=Fa
         # get active object for joining meshes into it
         active_object = objects[0] if len(objects) > 0 else skinned_objects[0]
 
-        override = context.copy()
-        override["active_object"] = active_object
-        override["selected_editable_objects"] = objects + skinned_objects
-        bpy.ops.object.join(override)
+        with context.temp_override(active_object=active_object, selected_editable_objects=objects + skinned_objects):
+            bpy.ops.object.join()
 
         return active_object
 

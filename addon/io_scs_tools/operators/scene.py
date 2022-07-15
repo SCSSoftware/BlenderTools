@@ -16,7 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2013-2019: SCS Software
+# Copyright (C) 2013-2022: SCS Software
 
 import bpy
 import bmesh
@@ -1561,9 +1561,9 @@ class PaintjobTools:
 
                 bpy.ops.object.select_all(action="DESELECT")
 
-                override = bpy.context.copy()
-                override["active_object"] = scs_root  # operator searches for scs root from active object, so make sure context will be correct
-                bpy.ops.object.scs_tools_de_select_objects_with_variant(override, select_type=_OP_consts.SelectionType.select, variant_index=i)
+                # operator searches for scs root from active object, so make sure context will be correct
+                with bpy.context.temp_override(active_object=scs_root):
+                    bpy.ops.object.scs_tools_de_select_objects_with_variant(select_type=_OP_consts.SelectionType.select, variant_index=i)
 
                 collection_name = model_type + " | " + model_name + " | " + variant_name
                 collection = bpy.data.collections.new(collection_name)
@@ -2207,8 +2207,19 @@ class PaintjobTools:
 
                 # rename paintjob uvs to our constant ones,
                 # so exporting at the end is easy as all objects will result in same uv layers names
-                uvs_2nd_name = curr_truckpaint_mat.scs_props.shader_texture_base_uv[1].value
-                uvs_3rd_name = curr_truckpaint_mat.scs_props.shader_texture_base_uv[2].value
+                if curr_truckpaint_mat.scs_props.active_shader_preset_name == "<imported>":
+                    tex_coords = curr_truckpaint_mat.scs_props.custom_tex_coord_maps
+                    if 'tex_coord_1' in tex_coords and 'tex_coord_2' in tex_coords:
+                        uvs_2nd_name = curr_truckpaint_mat.scs_props.custom_tex_coord_maps['tex_coord_1'].value
+                        uvs_3rd_name = curr_truckpaint_mat.scs_props.custom_tex_coord_maps['tex_coord_2'].value
+                    else:
+                        self.do_report({'WARNING'},
+                                       "Collection %r won't be exported as some objects with <imported> truckpaint material are missing tex_coords!" %
+                                       collection.name,
+                                       do_report=True)
+                else:
+                    uvs_2nd_name = curr_truckpaint_mat.scs_props.shader_texture_base_uv[1].value
+                    uvs_3rd_name = curr_truckpaint_mat.scs_props.shader_texture_base_uv[2].value
                 if not self.check_and_prepare_uvs(curr_merged_object, uvs_2nd_name, uvs_3rd_name, self.export_2nd_uvs, self.export_3rd_uvs):
                     self.do_report({'WARNING'},
                                    "Collection %r won't be exported as one or more objects have UVs out of <0;1> bounds!" % collection.name,
@@ -2218,9 +2229,8 @@ class PaintjobTools:
 
                 # remove all none needed & colliding data-blocks from object: materials, collections
                 while len(curr_merged_object.material_slots) > 0:
-                    override = context.copy()
-                    override["object"] = curr_merged_object
-                    bpy.ops.object.material_slot_remove(override)
+                    with context.temp_override(object=curr_merged_object):
+                        bpy.ops.object.material_slot_remove()
 
                 while len(curr_merged_object.users_collection) > 0:
                     curr_merged_object.users_collection[0].objects.unlink(curr_merged_object)
@@ -2453,46 +2463,36 @@ class PaintjobTools:
                 # set active uv layer so export will take proper
                 final_merged_object.data.uv_layers.active = final_merged_object.data.uv_layers[_PT_consts.uvs_name_2nd]
 
-                override = context.copy()
-                override["active_object"] = final_merged_object
-                bpy.ops.uv.export_layout(override,
-                                         filepath=self.filepath + ".2nd.png",
-                                         export_all=True,
-                                         mode="PNG",
-                                         size=common_texture_size,
-                                         opacity=1)
+                with context.temp_override(active_object=final_merged_object):
+                    bpy.ops.uv.export_layout(filepath=self.filepath + ".2nd.png",
+                                             export_all=True,
+                                             mode="PNG",
+                                             size=common_texture_size,
+                                             opacity=1)
 
                 if self.export_mesh:
-                    override = context.copy()
-                    override["active_object"] = final_merged_object
-                    override["selected_objects"] = (final_merged_object,)
-                    bpy.ops.export_scene.obj(override,
-                                             filepath=self.filepath + ".2nd.obj",
-                                             use_selection=True,
-                                             use_materials=False)
+                    with context.temp_override(active_object=final_merged_object, selected_objects=(final_merged_object,)):
+                        bpy.ops.export_scene.obj(filepath=self.filepath + ".2nd.obj",
+                                                 use_selection=True,
+                                                 use_materials=False)
 
             if self.export_3rd_uvs:
 
                 # set active uv layer so export will take proper
                 final_merged_object.data.uv_layers.active = final_merged_object.data.uv_layers[_PT_consts.uvs_name_3rd]
 
-                override = context.copy()
-                override["active_object"] = final_merged_object
-                bpy.ops.uv.export_layout(override,
-                                         filepath=self.filepath + ".3rd.png",
-                                         export_all=True,
-                                         mode="PNG",
-                                         size=common_texture_size,
-                                         opacity=1)
+                with context.temp_override(active_object=final_merged_object):
+                    bpy.ops.uv.export_layout(filepath=self.filepath + ".3rd.png",
+                                             export_all=True,
+                                             mode="PNG",
+                                             size=common_texture_size,
+                                             opacity=1)
 
                 if self.export_mesh:
-                    override = context.copy()
-                    override["active_object"] = final_merged_object
-                    override["selected_objects"] = (final_merged_object,)
-                    bpy.ops.export_scene.obj(override,
-                                             filepath=self.filepath + ".3rd.obj",
-                                             use_selection=True,
-                                             use_materials=False)
+                    with context.temp_override(active_object=final_merged_object, selected_objects=(final_merged_object,)):
+                        bpy.ops.export_scene.obj(filepath=self.filepath + ".3rd.obj",
+                                                 use_selection=True,
+                                                 use_materials=False)
 
             # remove final merged object now as we done our work here
             bpy.data.objects.remove(final_merged_object, do_unlink=True)

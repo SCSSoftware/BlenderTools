@@ -142,7 +142,10 @@ def apply_active_look(root_obj, force_apply=False):
             update_func = getattr(material.scs_props, "update_" + prop, None)
             # invoke update function on property if exists
             if update_func and different:
-                update_func(material)
+                try:
+                    update_func(material)
+                except KeyError:
+                    lprint("E Can't update material attribute: %r on material: %r, expect desynced looks!" % (prop, material.name))
 
         # unset any unused
         for prop in list(material.scs_props.keys()):
@@ -510,6 +513,40 @@ def get_material_entries(root_obj, material):
         material_entries[look_id] = mat_entries
 
     return material_entries
+
+
+def get_active_look_data(root_obj, material):
+    """Get material entries from active look for given material on given root object.
+    NOTE: we expose whole object so changing it will change underlying material data
+
+    :param root_obj: scs root object on which looks datablock should be read from
+    :type root_obj: bpy.types.Object
+    :param material: blender material for which material entries should be gathered
+    :type material: bpy.type.Material
+    :return:
+    :rtype:
+    """
+    if not root_obj or not material:
+        return {}
+
+    if _MAIN_DICT not in root_obj or len(root_obj[_MAIN_DICT]) <= 0:
+        return {}
+
+    look_id_str = str(root_obj.scs_object_look_inventory[root_obj.scs_props.active_scs_look].id)
+
+    if look_id_str not in root_obj[_MAIN_DICT]:
+        lprint("D Look entry with ID: %s does not exists in %r", (look_id_str, root_obj.name))
+        return
+
+    look_data = root_obj[_MAIN_DICT][look_id_str]
+
+    mat_id_str = str(material.scs_props.id)
+
+    # material not found, nothing to do
+    if mat_id_str not in look_data:
+        return {}
+
+    return look_data[mat_id_str]
 
 
 def __collect_materials__(root_obj):

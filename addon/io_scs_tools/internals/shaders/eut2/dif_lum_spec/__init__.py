@@ -16,7 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2015-2021: SCS Software
+# Copyright (C) 2015-2022: SCS Software
 
 from io_scs_tools.internals.shaders.eut2.dif_spec import DifSpec
 from io_scs_tools.internals.shaders.eut2.std_passes.lum import StdLum
@@ -81,12 +81,12 @@ class DifLumSpec(DifSpec, StdLum):
                 compose_lighting_n = node_tree.nodes[DifSpec.COMPOSE_LIGHTING_NODE]
                 if compose_lighting_n.inputs['Alpha'].links:
                     node_tree.links.remove(compose_lighting_n.inputs['Alpha'].links[0])
-                if lum_out_shader_n.inputs['Transparency'].links:
-                    node_tree.links.remove(lum_out_shader_n.inputs['Transparency'].links[0])
+                if lum_out_shader_n.inputs['Alpha'].links:
+                    node_tree.links.remove(lum_out_shader_n.inputs['Alpha'].links[0])
 
-                shader_from = lum_out_shader_n.outputs['BSDF']
+                shader_from = lum_out_shader_n.outputs['Shader']
                 alpha_from = node_tree.nodes[DifSpec.OPACITY_NODE].outputs[0]
-                shader_to = lum_out_shader_n.outputs['BSDF'].links[0].to_socket
+                shader_to = lum_out_shader_n.outputs['Shader'].links[0].to_socket
 
                 alpha_test.add_pass(node_tree, shader_from, alpha_from, shader_to)
 
@@ -96,6 +96,9 @@ class DifLumSpec(DifSpec, StdLum):
             material.blend_method = "BLEND"
         if blend_over.is_set(node_tree):
             material.blend_method = "BLEND"
+
+        if material.blend_method == "OPAQUE" and node_tree.nodes[DifSpec.COMPOSE_LIGHTING_NODE].inputs['Alpha'].links:
+            node_tree.links.remove(node_tree.nodes[DifSpec.COMPOSE_LIGHTING_NODE].inputs['Alpha'].links[0])
 
     @staticmethod
     def set_aux5(node_tree, aux_property):
@@ -157,7 +160,7 @@ class DifLumSpec(DifSpec, StdLum):
             location = tuple(out_node.location)
             out_node.location.x += 185
 
-            blend_add.init(node_tree, location, in_node.outputs['BSDF'], out_node.inputs['Surface'])
+            blend_add.init(node_tree, location, in_node.outputs['Shader'], out_node.inputs['Surface'])
         else:
             blend_add.delete(node_tree)
 
@@ -180,14 +183,14 @@ class DifLumSpec(DifSpec, StdLum):
             if compose_lighting_n.inputs['Alpha'].links:
                 node_tree.links.remove(compose_lighting_n.inputs['Alpha'].links[0])
             lum_out_shader_n = in_node
-            if lum_out_shader_n.inputs['Transparency'].links:
-                node_tree.links.remove(lum_out_shader_n.inputs['Transparency'].links[0])
+            if lum_out_shader_n.inputs['Alpha'].links:
+                node_tree.links.remove(lum_out_shader_n.inputs['Alpha'].links[0])
 
             # put it on location of output node & move output node for one slot to the right
             location = tuple(out_node.location)
             out_node.location.x += 185
 
-            blend_mult.init(node_tree, location, in_node.outputs['BSDF'], out_node.inputs['Surface'])
+            blend_mult.init(node_tree, location, in_node.outputs['Shader'], out_node.inputs['Surface'])
         else:
             blend_mult.delete(node_tree)
 

@@ -16,7 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2013-2019: SCS Software
+# Copyright (C) 2013-2022: SCS Software
 
 
 import bpy
@@ -155,6 +155,7 @@ class SCS_TOOLS_OT_Show3DViewReport(bpy.types.Operator):
             img_path = os.path.join(_path_utils.get_addon_installation_paths()[0], "ui", "banners", img_name)
             img = bpy.data.images.load(img_path, check_existing=True)
             img.colorspace_settings.name = 'sRGB'
+            img.alpha_mode = 'CHANNEL_PACKED'
 
         else:
 
@@ -319,9 +320,8 @@ class SCS_TOOLS_OT_Show3DViewReport(bpy.types.Operator):
         # when operator get's cancelled, either user closed blender or window itself, in which our operator was handled.
         # Thus make sure to re-call on exisiting oldest main window, so that 3d view opearator "reopens"
         if oldest_main_window and SCS_TOOLS_OT_Show3DViewReport.__static_window_instance != oldest_main_window:
-            override = bpy.context.copy()
-            override["window"] = oldest_main_window
-            bpy.ops.wm.scs_tools_show_3dview_report(override, 'INVOKE_DEFAULT', modal_handler_reassign=True)
+            with bpy.context.temp_override(window=oldest_main_window):
+                bpy.ops.wm.scs_tools_show_3dview_report('INVOKE_DEFAULT', modal_handler_reassign=True)
             _view3d_utils.tag_redraw_all_view3d()
         else:
             SCS_TOOLS_OT_Show3DViewReport.discard_drawing_data()

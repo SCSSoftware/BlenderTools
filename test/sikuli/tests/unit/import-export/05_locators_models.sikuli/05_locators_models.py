@@ -3,7 +3,7 @@ import scs_bt_configurator
 p = scs_bt_configurator.start_it_up(getBundlePath(), "5_locators_model.blend")
 try:
     wait(Pattern("3dview_start.png").exact(), 5); hover(Pattern("3dview_start.png").exact()); type(Key.ESC)
-    click(Pattern("export_scene_button.png").exact())
+    click("export_scene_button.png")
     wait("3dview_start.png", 5);  # no warnings should appear !
     hover(Location(300, 400))  # move cursor to 3D view
     type(Key.ESC); wait(0.5); type(Key.ESC)  # hide warnings

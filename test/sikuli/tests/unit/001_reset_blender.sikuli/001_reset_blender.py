@@ -47,7 +47,7 @@ try:
     new_folder_loc.x += 50
     click(new_folder_loc)
     paste(scs_bt_configurator.get_path_property("SCSToolsPath") + "/" + "shader_presets.txt")
-    doubleClick(Pattern("select_presets_library_file_button-1.png").similar(0.95))
+    doubleClick(Pattern("select_presets_library_file_button-1.png").similar(0.90))
 
     # FINAL CHECK WHERE PATHS SHOULD BE PROPERLY SET
 

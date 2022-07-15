@@ -16,11 +16,12 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2015-2019: SCS Software
+# Copyright (C) 2015-2022: SCS Software
 
 import bmesh
 import bpy
 import numpy
+from mathutils import Color
 from time import time
 from bpy.props import StringProperty, FloatProperty
 from io_scs_tools.consts import Mesh as _MESH_consts
@@ -171,7 +172,7 @@ class VertexColorTools:
 
         @classmethod
         def poll(cls, context):
-            return context.object is not None and context.object.mode == "VERTEX_PAINT" and len(context.object.data.vertex_colors) > 0
+            return context.object is not None and context.object.mode == "VERTEX_PAINT" and len(context.object.data.color_attributes) > 0
 
         def __init__(self):
             self.original_col = {}
@@ -183,26 +184,34 @@ class VertexColorTools:
 
             mesh = context.object.data
             interval = self.max - self.min
-            vcolor_layer = mesh.vertex_colors[mesh.vertex_colors.active_index]
+            vcolor_layer = mesh.color_attributes.active_color
 
             for poly in mesh.polygons:
 
                 # calculate wrapped value for face it wrap type is all or face is selected
                 if self.wrap_type == _VCT_consts.WrapType.All or (self.wrap_type == _VCT_consts.WrapType.Selected and poly.select):
 
-                    for loop_i in poly.loop_indices:
+                    if vcolor_layer.domain == 'POINT':
+                        data_iterator = poly.vertices
+                    elif vcolor_layer.domain == 'CORNER':
+                        data_iterator = poly.loop_indices
+                    else:
+                        raise TypeError("Invalid vertex color domain type!")
+
+                    for idx in data_iterator:
 
                         # cache original vertex colors because of update on interval change
-                        if loop_i not in self.original_col:
-                            color = vcolor_layer.data[loop_i].color
-                            self.original_col[loop_i] = (color[0], color[1], color[2], color[3])
+                        if idx not in self.original_col:
+                            color = Color(vcolor_layer.data[idx].color[:3]).from_scene_linear_to_srgb()
+                            self.original_col[idx] = (color[0], color[1], color[2])
 
-                        vcolor_layer.data[loop_i].color = (
-                            self.original_col[loop_i][0] * interval + self.min,
-                            self.original_col[loop_i][1] * interval + self.min,
-                            self.original_col[loop_i][2] * interval + self.min,
-                            self.original_col[loop_i][3]
-                        )
+                        new_color = Color((
+                            self.original_col[idx][0] * interval + self.min,
+                            self.original_col[idx][1] * interval + self.min,
+                            self.original_col[idx][2] * interval + self.min,
+                        )).from_srgb_to_scene_linear()
+
+                        vcolor_layer.data[idx].color[:3] = new_color[:]
 
             self.report({"INFO"}, "Vertex colors wrapped!")
             return {'FINISHED'}
@@ -215,35 +224,39 @@ class VertexColorTools:
 
         @classmethod
         def poll(cls, context):
-            return context.object is not None and context.object.mode == "VERTEX_PAINT" and len(context.object.data.vertex_colors) > 0
+            return context.object is not None and context.object.mode == "VERTEX_PAINT" and len(context.object.data.color_attributes) > 0
 
         def execute(self, context):
 
             mesh = context.object.data
-            vcolor_layer = mesh.vertex_colors[mesh.vertex_colors.active_index]
+            vcolor_layer = mesh.color_attributes.active_color
 
             c_min = [100] * 3
             c_max = [0] * 3
             c_sum = [0] * 3
             colors_count = 0
-            for poly in mesh.polygons:
-                for loop_i in poly.loop_indices:
-                    curr_col = vcolor_layer.data[loop_i].color
+            for vcol_item in vcolor_layer.data:
+                curr_col = vcol_item.color
 
-                    for i in range(0, 3):
-                        if curr_col[i] < c_min[i]:
-                            c_min[i] = curr_col[i]
+                for i in range(0, 3):
+                    if curr_col[i] < c_min[i]:
+                        c_min[i] = curr_col[i]
 
-                        if curr_col[i] > c_max[i]:
-                            c_max[i] = curr_col[i]
+                    if curr_col[i] > c_max[i]:
+                        c_max[i] = curr_col[i]
 
-                        c_sum[i] += curr_col[i]
+                    c_sum[i] += curr_col[i]
 
-                    colors_count += 1
+                colors_count += 1
 
             c_avg = []
             for i in range(0, 3):
                 c_avg.append(c_sum[i] / colors_count)
+
+            # we want to represent srgb values, that we would/will export
+            c_min = list(Color(c_min).from_scene_linear_to_srgb())
+            c_max = list(Color(c_max).from_scene_linear_to_srgb())
+            c_avg = list(Color(c_avg).from_scene_linear_to_srgb())
 
             self.report({"INFO"}, "Vertex color stats: MIN(%.2f, %.2f, %.2f), MAX(%.2f, %.2f, %.2f), AVG(%.2f, %.2f, %.2f)" %
                         (c_min[0], c_min[1], c_min[2],
@@ -260,23 +273,31 @@ class VertexColorTools:
 
         @classmethod
         def poll(cls, context):
-            return context.object is not None and context.object.active_material is not None
+            return context.object is not None and context.object.type == 'MESH' and context.object.active_material is not None
 
         def execute(self, context):
+            default_color = tuple(Color((0.5,) * 3).from_srgb_to_scene_linear()) + (1.0,)
 
             layer_name = _MESH_consts.default_vcol
             layer_a_name = _MESH_consts.default_vcol + _MESH_consts.vcol_a_suffix
+            old_active_col_i = context.object.data.color_attributes.active_index
 
             for curr_lay_name in (layer_name, layer_a_name):
 
-                if curr_lay_name not in context.object.data.vertex_colors:
+                if curr_lay_name not in context.object.data.color_attributes:
 
-                    vcolor = context.object.data.vertex_colors.new(name=curr_lay_name)
+                    vcolor = context.object.data.color_attributes.new(name=curr_lay_name, type='FLOAT_COLOR', domain='CORNER')
                     vcolor.name = curr_lay_name  # repeat naming step to make sure it's properly named
 
                     # setting neutral value (0.5) to all colors
-                    for vertex_col_data in context.object.data.vertex_colors[curr_lay_name].data:
-                        vertex_col_data.color = (0.5,) * 3 + (1.0,)
+                    for vertex_col_data in context.object.data.color_attributes[curr_lay_name].data:
+                        vertex_col_data.color = default_color
+
+            # restore active or set to default vcol if there was none
+            if old_active_col_i is None:
+                context.object.data.color_attributes.active_color = context.object.data.color_attributes[layer_name]
+            else:
+                context.object.data.color_attributes.active_color = context.object.data.color_attributes[old_active_col_i]
 
             return {'FINISHED'}
 
@@ -288,9 +309,10 @@ class VertexColorTools:
 
         @classmethod
         def poll(cls, context):
-            return context.object is not None and context.object.active_material is not None
+            return context.object is not None and context.object.type == 'MESH' and context.object.active_material is not None
 
         def execute(self, context):
+            default_color = tuple(Color((0.5,) * 3).from_srgb_to_scene_linear()) + (1.0,)
 
             layer_name = _MESH_consts.default_vcol
             layer_a_name = _MESH_consts.default_vcol + _MESH_consts.vcol_a_suffix
@@ -299,24 +321,36 @@ class VertexColorTools:
 
             # search for all objects using active material and put them into list
             for obj in bpy.data.objects:
-                for mat_slot in obj.material_slots:
 
+                # ignore none mesh objects
+                if obj.type != 'MESH':
+                    continue
+
+                for mat_slot in obj.material_slots:
                     if mat_slot.material and mat_slot.material.name == context.object.active_material.name:
                         objs_using_active_material.append(obj)
                         break
 
             # add missing vertex color layers to found objects
             for obj in objs_using_active_material:
+                old_active_col_i = obj.data.color_attributes.active_index
+
                 for curr_lay_name in (layer_name, layer_a_name):
 
-                    if curr_lay_name not in obj.data.vertex_colors:
+                    if curr_lay_name not in obj.data.color_attributes:
 
-                        vcolor = obj.data.vertex_colors.new(name=curr_lay_name)
+                        vcolor = obj.data.color_attributes.new(name=curr_lay_name, type='FLOAT_COLOR', domain='CORNER')
                         vcolor.name = curr_lay_name  # repeat naming step to make sure it's properly named
 
                         # setting neutral value (0.5) to all colors
-                        for vertex_col_data in obj.data.vertex_colors[curr_lay_name].data:
-                            vertex_col_data.color = (0.5,) * 3 + (1.0,)
+                        for vertex_col_data in obj.data.color_attributes[curr_lay_name].data:
+                            vertex_col_data.color = default_color
+
+                # restore active or set to default vcol if there was none
+                if old_active_col_i is None:
+                    obj.data.color_attributes.active_color = obj.data.color_attributes[layer_name]
+                else:
+                    obj.data.color_attributes.active_color = obj.data.color_attributes[old_active_col_i]
 
             return {'FINISHED'}
 
@@ -376,10 +410,10 @@ class VertexColorTools:
             mesh = self.__get_active_object__().data
             for layer_name in _VCT_consts.ColoringLayersTypes.as_list():
 
-                if layer_name in mesh.vertex_colors:
+                if layer_name in mesh.color_attributes:
                     continue
 
-                vcolor = mesh.vertex_colors.new(name=layer_name)
+                vcolor = mesh.color_attributes.new(name=layer_name, type='FLOAT_COLOR', domain='CORNER')
 
                 buffer = None
                 if layer_name == _VCT_consts.ColoringLayersTypes.Color:
@@ -415,15 +449,15 @@ class VertexColorTools:
             :rtype: bool
             """
 
-            obj_vcolors = self.__get_active_object__().data.vertex_colors
+            obj_vcolors = self.__get_active_object__().data.color_attributes
 
             if layer_name not in obj_vcolors:
                 return False
 
-            if layer_name == obj_vcolors.active.name:
+            if layer_name == obj_vcolors.active_color.name:
                 return True
 
-            obj_vcolors.active = obj_vcolors[layer_name]
+            obj_vcolors.active_color = obj_vcolors[layer_name]
             lprint("D Changed active vertex layer to: %s" % layer_name)
             return True
 
@@ -515,10 +549,8 @@ class VertexColorTools:
 
             # finish operator execution - go back to object mode
             if active_obj.mode == "VERTEX_PAINT":
-                override = context.copy()
-                override['mode'] = "OBJECT"
-                override['active_object'] = active_obj
-                bpy.ops.object.mode_set(override)
+                with context.temp_override(mode='OBJECT', active_object=active_obj):
+                    bpy.ops.object.mode_set()
 
             # one last time rebake
             start_time = time()
@@ -569,10 +601,10 @@ class VertexColorTools:
                 return False
 
             has_needed_vcolors = (
-                _VCT_consts.ColoringLayersTypes.Color in context.object.data.vertex_colors and
-                _VCT_consts.ColoringLayersTypes.Decal in context.object.data.vertex_colors and
-                _VCT_consts.ColoringLayersTypes.AO in context.object.data.vertex_colors and
-                _VCT_consts.ColoringLayersTypes.AO2 in context.object.data.vertex_colors
+                _VCT_consts.ColoringLayersTypes.Color in context.object.data.color_attributes and
+                _VCT_consts.ColoringLayersTypes.Decal in context.object.data.color_attributes and
+                _VCT_consts.ColoringLayersTypes.AO in context.object.data.color_attributes and
+                _VCT_consts.ColoringLayersTypes.AO2 in context.object.data.color_attributes
             )
             return has_needed_vcolors
 

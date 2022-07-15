@@ -5,7 +5,7 @@ try:
     wait(Pattern("startup_screen.png").exact(), 5); type(Key.ESC); hover(Pattern("startup_screen.png").exact()); type(Key.ESC)
     keyDown(Key.SHIFT); type(Key.RIGHT); keyUp(Key.SHIFT);
     find(Pattern("startup_screen_last_frame.png").exact())
-    click(Pattern("export_scene_button.png").similar(0.90))
+    click("export_scene_button.png")
     wait(1.5)
     hover(Location(300, 400))  # move cursor to 3D view
     type(2 * Key.ESC)  # hide warnings

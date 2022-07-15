@@ -16,7 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2013-2019: SCS Software
+# Copyright (C) 2013-2022: SCS Software
 
 import bpy
 from math import pi
@@ -124,7 +124,7 @@ class SCS_TOOLS_OT_DisableLighting(bpy.types.Operator):
         lprint('D ' + self.bl_label + "...")
 
         old_scene = None
-        if context.scene and context.scene != _LIGHTING_consts.scene_name:
+        if context.scene and context.scene.name != _LIGHTING_consts.scene_name:
             old_scene = context.scene
 
         # if scs lighting scene is not present in blend file anymore, we are done
@@ -132,10 +132,7 @@ class SCS_TOOLS_OT_DisableLighting(bpy.types.Operator):
             return {'FINISHED'}
 
         # firstly remove the lighting scene
-        override = context.copy()
-        override['window'] = context.window_manager.windows[-1]
-        override['scene'] = bpy.data.scenes[_LIGHTING_consts.scene_name]
-        bpy.ops.scene.delete(override, 'INVOKE_DEFAULT')
+        bpy.data.scenes.remove(bpy.data.scenes[_LIGHTING_consts.scene_name])
 
         if _LIGHTING_consts.sun_lamp_name in bpy.data.objects:
             bpy.data.objects.remove(bpy.data.objects[_LIGHTING_consts.sun_lamp_name], do_unlink=True)

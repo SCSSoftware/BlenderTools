@@ -16,16 +16,16 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2019: SCS Software
+# Copyright (C) 2019-2022: SCS Software
 
 import bpy
 from io_scs_tools.consts import Material as _MAT_consts
+from io_scs_tools.internals.shaders.std_node_groups import output_shader_ng
 
 ALPHA_TEST_G = _MAT_consts.node_group_prefix + "AlphaTestPass"
 
 _SHADER_TO_RGB_NODE = "ShaderToRGB"
 _ALPHA_TEST_NODE = "AlphaTest"
-_ALPHA_INV_NODE = "AlphaInv"
 _ALPHA_SHADER_NODE = "AlphaShader"
 
 
@@ -104,26 +104,16 @@ def __create_node_group__():
     alpha_test_n.operation = "GREATER_THAN"
     alpha_test_n.inputs[1].default_value = 0.05
 
-    alpha_test_inv_n = alpha_test_g.nodes.new("ShaderNodeMath")
-    alpha_test_inv_n.name = alpha_test_inv_n.label = _ALPHA_INV_NODE
-    alpha_test_inv_n.location = (start_pos_x + pos_x_shift * 2, start_pos_y - 200)
-    alpha_test_inv_n.operation = "SUBTRACT"
-    alpha_test_inv_n.use_clamp = True
-    alpha_test_inv_n.inputs[0].default_value = 1
-
-    alpha_shader_n = alpha_test_g.nodes.new("ShaderNodeEeveeSpecular")
+    alpha_shader_n = alpha_test_g.nodes.new("ShaderNodeGroup")
     alpha_shader_n.name = alpha_shader_n.label = _ALPHA_SHADER_NODE
     alpha_shader_n.location = (start_pos_x + pos_x_shift * 3, start_pos_y)
-    alpha_shader_n.inputs["Base Color"].default_value = (0.0,) * 4
-    alpha_shader_n.inputs["Specular"].default_value = (0.0,) * 4
+    alpha_shader_n.node_tree = output_shader_ng.get_node_group()
 
     # create extra links
     alpha_test_g.links.new(shader_to_rgb_n.inputs['Shader'], input_n.outputs['Shader'])
     alpha_test_g.links.new(alpha_test_n.inputs[0], input_n.outputs['Alpha'])
 
-    alpha_test_g.links.new(alpha_test_inv_n.inputs[1], alpha_test_n.outputs[0])
+    alpha_test_g.links.new(alpha_shader_n.inputs['Color'], shader_to_rgb_n.outputs['Color'])
+    alpha_test_g.links.new(alpha_shader_n.inputs['Alpha'], alpha_test_n.outputs[0])
 
-    alpha_test_g.links.new(alpha_shader_n.inputs['Emissive Color'], shader_to_rgb_n.outputs['Color'])
-    alpha_test_g.links.new(alpha_shader_n.inputs['Transparency'], alpha_test_inv_n.outputs[0])
-
-    alpha_test_g.links.new(output_n.inputs['Shader'], alpha_shader_n.outputs['BSDF'])
+    alpha_test_g.links.new(output_n.inputs['Shader'], alpha_shader_n.outputs['Shader'])

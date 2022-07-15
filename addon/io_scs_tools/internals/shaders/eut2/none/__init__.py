@@ -16,15 +16,15 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2015-2019: SCS Software
+# Copyright (C) 2015-2022: SCS Software
 
 from io_scs_tools.internals.shaders.base import BaseShader
+from io_scs_tools.internals.shaders.std_node_groups import output_shader_ng
 from io_scs_tools.utils import convert as _convert_utils
 
 
 class NNone(BaseShader):
     WIREFRAME_NODE = "Wire"
-    INVERT_NODE = "Invert"
     SHADER_NODE = "Shader"
     OUTPUT_NODE = "Output"
 
@@ -49,26 +49,19 @@ class NNone(BaseShader):
         wireframe_n.use_pixel_size = True
         wireframe_n.inputs['Size'].default_value = 2
 
-        invert_n = node_tree.nodes.new("ShaderNodeInvert")
-        invert_n.name = invert_n.label = NNone.INVERT_NODE
-        invert_n.location = (wireframe_n.location.x + pos_x_shift, wireframe_n.location.y)
-        invert_n.inputs['Fac'].default_value = 1
-
-        shader_n = node_tree.nodes.new("ShaderNodeEeveeSpecular")
+        shader_n = node_tree.nodes.new("ShaderNodeGroup")
         shader_n.name = shader_n.label = NNone.SHADER_NODE
-        shader_n.location = (invert_n.location.x + pos_x_shift, invert_n.location.y)
-        shader_n.inputs['Base Color'].default_value = (0,) * 4
-        shader_n.inputs['Specular'].default_value = (0,) * 4
-        shader_n.inputs['Emissive Color'].default_value = _convert_utils.to_node_color((0.3,) * 3 + (1.0,))
+        shader_n.location = (wireframe_n.location.x + pos_x_shift, wireframe_n.location.y)
+        shader_n.node_tree = output_shader_ng.get_node_group()
+        shader_n.inputs['Color'].default_value = _convert_utils.to_node_color((0.3,) * 3 + (1.0,))
 
         output_n = node_tree.nodes.new("ShaderNodeOutputMaterial")
         output_n.name = output_n.label = NNone.OUTPUT_NODE
         output_n.location = (shader_n.location.x + pos_x_shift, shader_n.location.y)
 
         # links creation
-        node_tree.links.new(invert_n.inputs['Color'], wireframe_n.outputs['Fac'])
-        node_tree.links.new(shader_n.inputs['Transparency'], invert_n.outputs['Color'])
-        node_tree.links.new(output_n.inputs['Surface'], shader_n.outputs['BSDF'])
+        node_tree.links.new(shader_n.inputs['Alpha'], wireframe_n.outputs['Fac'])
+        node_tree.links.new(output_n.inputs['Surface'], shader_n.outputs['Shader'])
 
     @staticmethod
     def finalize(node_tree, material):

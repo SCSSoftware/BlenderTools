@@ -943,8 +943,10 @@ class ModelObjects:
         bl_idname = "object.scs_tools_search_degenerated_polys"
         bl_description = "Searches selected objects for degenerated polygons which should be removed before exporting for game!"
 
-        EPSILON = 0.001 * 0.01
-        """Epsilon taken from maya tools which is for centimeters. So we have to multiply it with 0.01 to get to blender units aka meters."""
+        EPSILON = 0.00001
+        DEGENERATED_EPSILON = 0.0005
+        SPIKE_EDGE_LEN_TRESHOLD = 1
+        SPIKE_RATIO_THRESHOLD = 1000
 
         @classmethod
         def poll(cls, context):
@@ -967,7 +969,29 @@ class ModelObjects:
             for edge_length in edge_lengths:
                 dx = abs(s - edge_length)
 
-                if dx < cls.EPSILON:
+                if dx < cls.DEGENERATED_EPSILON:
+                    return True
+
+            return False
+
+        @classmethod
+        def is_triangle_spiked(cls, edge_lengths):
+            """Check if triangle is spiked.
+
+            :param edge_lengths: edges lengths represented as enumerable of 3 float values
+            :type edge_lengths: list[float]
+            :return: True if spiked; False if triangle is good
+            :rtype: bool
+            """
+
+            assert len(edge_lengths) == 3
+
+            shortest_edge = min(edge_lengths)
+            longest_edge = max(edge_lengths)
+
+            if shortest_edge < cls.SPIKE_EDGE_LEN_TRESHOLD:
+                shortest_edge = max(shortest_edge, cls.EPSILON)
+                if longest_edge / shortest_edge > cls.SPIKE_RATIO_THRESHOLD:
                     return True
 
             return False
@@ -1000,7 +1024,7 @@ class ModelObjects:
                     for e in f.edges:
                         edge_lengths.append(e.calc_length())
 
-                    if self.is_triangle_degenerated(edge_lengths):
+                    if self.is_triangle_degenerated(edge_lengths) or self.is_triangle_spiked(edge_lengths):
                         for v in f.verts:
                             degen_verts.add(v.index)
 

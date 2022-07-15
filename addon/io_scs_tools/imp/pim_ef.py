@@ -16,12 +16,13 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2017-2021: SCS Software
+# Copyright (C) 2017-2022: SCS Software
 
 import bpy
 import bmesh
 import array
 from mathutils import Vector
+from io_scs_tools.consts import Mesh as _MESH_consts
 from io_scs_tools.consts import Operators as _OP_consts
 from io_scs_tools.imp.pim import get_header
 from io_scs_tools.imp.pim import get_global
@@ -306,6 +307,11 @@ def _create_piece(
     bm.to_mesh(mesh)
     mesh.update()
     bm.free()
+
+    if _MESH_consts.default_vcol in mesh.color_attributes:
+        # make sure to set default vcolor attribute as active
+        mesh.color_attributes.active_color = mesh.color_attributes[_MESH_consts.default_vcol]
+        mesh.color_attributes.render_color_index = mesh.color_attributes.active_color_index
 
     # NORMALS - has to be applied after bmesh creation as they are set directly to mesh
     if _get_scs_globals().import_use_normals:

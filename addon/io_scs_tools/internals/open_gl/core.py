@@ -16,7 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2013-2021: SCS Software
+# Copyright (C) 2013-2022: SCS Software
 
 import bpy
 import blf
@@ -120,16 +120,21 @@ def _draw_3dview_report(window, area, region):
 
     # calculate dynamic left and top margins
     if bpy.context.preferences.system.use_region_overlap:
-        pos_x = 75
+        pos_x = 65
         # try to find tools region and properly adopt position X
         for reg in area.regions:
             if reg.type == 'TOOLS':
-                pos_x = reg.width + 20
+                pos_x = reg.width + 10
                 break
         pos_y = region.height - 105
     else:
-        pos_x = 20
+        pos_x = 10
         pos_y = region.height - 80
+
+    for space in area.spaces:
+        if space.type == 'VIEW_3D' and space.overlay.show_stats:
+            pos_y = pos_y - 105
+            break
 
     # draw BT banner
     (bindcode, width, height) = _Show3DViewReport.get_scs_banner_img_data(window)
@@ -154,8 +159,8 @@ def _draw_3dview_report(window, area, region):
             (
                 (pos_x + _OP_consts.View3DReport.CLOSE_BTN_AREA[0], pos_y - _OP_consts.View3DReport.CLOSE_BTN_AREA[2]),
                 (pos_x + _OP_consts.View3DReport.CLOSE_BTN_AREA[1], pos_y - _OP_consts.View3DReport.CLOSE_BTN_AREA[2]),
-                (pos_x + _OP_consts.View3DReport.CLOSE_BTN_AREA[1], pos_y - _OP_consts.View3DReport.CLOSE_BTN_AREA[3]),
-                (pos_x + _OP_consts.View3DReport.CLOSE_BTN_AREA[0], pos_y - _OP_consts.View3DReport.CLOSE_BTN_AREA[3])
+                (pos_x + _OP_consts.View3DReport.CLOSE_BTN_AREA[0], pos_y - _OP_consts.View3DReport.CLOSE_BTN_AREA[3]),
+                (pos_x + _OP_consts.View3DReport.CLOSE_BTN_AREA[1], pos_y - _OP_consts.View3DReport.CLOSE_BTN_AREA[3])
             ),
             (.25, .25, .25, 1)
         )
@@ -169,8 +174,8 @@ def _draw_3dview_report(window, area, region):
             (
                 (pos_x + _OP_consts.View3DReport.HIDE_BTN_AREA[0], pos_y - _OP_consts.View3DReport.HIDE_BTN_AREA[2]),
                 (pos_x + _OP_consts.View3DReport.HIDE_BTN_AREA[1], pos_y - _OP_consts.View3DReport.HIDE_BTN_AREA[2]),
-                (pos_x + _OP_consts.View3DReport.HIDE_BTN_AREA[1], pos_y - _OP_consts.View3DReport.HIDE_BTN_AREA[3]),
-                (pos_x + _OP_consts.View3DReport.HIDE_BTN_AREA[0], pos_y - _OP_consts.View3DReport.HIDE_BTN_AREA[3])
+                (pos_x + _OP_consts.View3DReport.HIDE_BTN_AREA[0], pos_y - _OP_consts.View3DReport.HIDE_BTN_AREA[3]),
+                (pos_x + _OP_consts.View3DReport.HIDE_BTN_AREA[1], pos_y - _OP_consts.View3DReport.HIDE_BTN_AREA[3])
             ),
             (.25, .25, .25, 1)
         )
@@ -185,12 +190,22 @@ def _draw_3dview_report(window, area, region):
             blf.size(0, 16, 72)
 
             # draw scroll up button
-            _primitive.draw_rect_2d(
-                (
+            scroll_up_pos = (
                     (pos_x + _OP_consts.View3DReport.SCROLLUP_BTN_AREA[0], pos_y - _OP_consts.View3DReport.SCROLLUP_BTN_AREA[2]),
                     (pos_x + _OP_consts.View3DReport.SCROLLUP_BTN_AREA[1], pos_y - _OP_consts.View3DReport.SCROLLUP_BTN_AREA[2]),
-                    (pos_x + _OP_consts.View3DReport.SCROLLUP_BTN_AREA[1], pos_y - _OP_consts.View3DReport.SCROLLUP_BTN_AREA[3]),
-                    (pos_x + _OP_consts.View3DReport.SCROLLUP_BTN_AREA[0], pos_y - _OP_consts.View3DReport.SCROLLUP_BTN_AREA[3])
+                    (pos_x + _OP_consts.View3DReport.SCROLLUP_BTN_AREA[0], pos_y - _OP_consts.View3DReport.SCROLLUP_BTN_AREA[3]),
+                    (pos_x + _OP_consts.View3DReport.SCROLLUP_BTN_AREA[1], pos_y - _OP_consts.View3DReport.SCROLLUP_BTN_AREA[3])
+            )
+            _primitive.draw_rect_2d(
+                scroll_up_pos,
+                (.01, .01, .01, 1)
+            )
+            _primitive.draw_rect_2d(
+                (
+                    (scroll_up_pos[0][0] + 1, scroll_up_pos[0][1] - 1),
+                    (scroll_up_pos[1][0] - 1, scroll_up_pos[1][1] - 1),
+                    (scroll_up_pos[2][0] + 1, scroll_up_pos[2][1] + 1),
+                    (scroll_up_pos[3][0] - 1, scroll_up_pos[3][1] + 1)
                 ),
                 (.25, .25, .25, 1)
             )
@@ -200,12 +215,22 @@ def _draw_3dview_report(window, area, region):
             blf.draw(0, _OP_consts.View3DReport.SCROLLUP_BTN_TEXT)
 
             # draw scroll down button
+            scroll_down_pos = (
+                (pos_x + _OP_consts.View3DReport.SCROLLDOWN_BTN_AREA[0], pos_y - _OP_consts.View3DReport.SCROLLDOWN_BTN_AREA[2]),
+                (pos_x + _OP_consts.View3DReport.SCROLLDOWN_BTN_AREA[1], pos_y - _OP_consts.View3DReport.SCROLLDOWN_BTN_AREA[2]),
+                (pos_x + _OP_consts.View3DReport.SCROLLDOWN_BTN_AREA[0], pos_y - _OP_consts.View3DReport.SCROLLDOWN_BTN_AREA[3]),
+                (pos_x + _OP_consts.View3DReport.SCROLLDOWN_BTN_AREA[1], pos_y - _OP_consts.View3DReport.SCROLLDOWN_BTN_AREA[3])
+            )
+            _primitive.draw_rect_2d(
+                scroll_down_pos,
+                (.01, .01, .01, 1)
+            )
             _primitive.draw_rect_2d(
                 (
-                    (pos_x + _OP_consts.View3DReport.SCROLLDOWN_BTN_AREA[0], pos_y - _OP_consts.View3DReport.SCROLLDOWN_BTN_AREA[2]),
-                    (pos_x + _OP_consts.View3DReport.SCROLLDOWN_BTN_AREA[1], pos_y - _OP_consts.View3DReport.SCROLLDOWN_BTN_AREA[2]),
-                    (pos_x + _OP_consts.View3DReport.SCROLLDOWN_BTN_AREA[1], pos_y - _OP_consts.View3DReport.SCROLLDOWN_BTN_AREA[3]),
-                    (pos_x + _OP_consts.View3DReport.SCROLLDOWN_BTN_AREA[0], pos_y - _OP_consts.View3DReport.SCROLLDOWN_BTN_AREA[3])
+                    (scroll_down_pos[0][0] + 1, scroll_down_pos[0][1] - 1),
+                    (scroll_down_pos[1][0] - 1, scroll_down_pos[1][1] - 1),
+                    (scroll_down_pos[2][0] + 1, scroll_down_pos[2][1] + 1),
+                    (scroll_down_pos[3][0] - 1, scroll_down_pos[3][1] + 1)
                 ),
                 (.25, .25, .25, 1)
             )
@@ -214,18 +239,19 @@ def _draw_3dview_report(window, area, region):
             blf.position(0, pos_x + _OP_consts.View3DReport.SCROLLDOWN_BTN_TEXT_POS[0], pos_y - _OP_consts.View3DReport.SCROLLDOWN_BTN_TEXT_POS[1], 0)
             blf.draw(0, _OP_consts.View3DReport.SCROLLDOWN_BTN_TEXT)
 
+    blf.enable(0, blf.SHADOW)
+
     # draw version string
     pos_y -= 12
-    blf.size(0, 10, 72)
-    blf.color(0, .952, .635, .062, 1)
+    blf.size(0, 11, 72)
+    blf.color(0, 0.909803921568627, .631372549019608, .0627450980392157, 1)
+    blf.shadow(0, 0, 0, 0, 0, 1)
     blf.position(0, pos_x, pos_y, 0)
     blf.draw(0, _info_utils.get_combined_ver_str(only_version_numbers=True))
     pos_y -= 20
 
     # draw actual operator title and message if shown
     if _Show3DViewReport.is_shown():
-
-        blf.enable(0, blf.SHADOW)
 
         blf.size(0, 12, 72)
         blf.color(0, 1, 1, 1, 1)
@@ -256,7 +282,7 @@ def _draw_3dview_report(window, area, region):
             blf.draw(0, line)
             pos_y -= 15
 
-        blf.disable(0, blf.SHADOW)
+    blf.disable(0, blf.SHADOW)
 
 
 def _draw_3dview_immediate_report(region):
@@ -279,8 +305,8 @@ def _draw_3dview_immediate_report(region):
         (
             (0, region.height / 2 + 31),
             (region.width, region.height / 2 + 31),
-            (region.width, region.height / 2 - 31),
-            (0, region.height / 2 - 31)
+            (0, region.height / 2 - 31),
+            (region.width, region.height / 2 - 31)
         ),
         (0, 0, 0, .9)
     )
@@ -289,8 +315,8 @@ def _draw_3dview_immediate_report(region):
         (
             (0, region.height / 2 + 30),
             (region.width, region.height / 2 + 30),
-            (region.width, region.height / 2 - 30),
-            (0, region.height / 2 - 30)
+            (0, region.height / 2 - 30),
+            (region.width, region.height / 2 - 30)
         ),
         (.25, .25, .25, .9)
     )

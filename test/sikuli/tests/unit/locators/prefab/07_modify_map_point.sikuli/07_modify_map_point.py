@@ -1,4 +1,8 @@
 load("scs_bt_configurator.jar")
+
+def slowDoubleClick(pattern):
+    click(pattern); wait(0.2); click()
+
 import scs_bt_configurator
 p = scs_bt_configurator.start_it_up(getBundlePath(), "prefab_locator_map_point.blend")
 try:
@@ -21,13 +25,13 @@ try:
 
     keyDown(Key.SHIFT); click(Pattern("3dview_prefab_loc_map_set_1.png").exact().targetOffset(66,-86)); keyUp(Key.SHIFT)  # check for the result in the same time
     click(Pattern("prefab_connect_map_points.png").similar(0.90))
-    click(Pattern("3dview_prefab_map_select_01.png").targetOffset(-32,-22))
+    slowDoubleClick(Pattern("3dview_prefab_map_select_01.png").targetOffset(-35,-24))
     keyDown(Key.SHIFT); click(Pattern("3dview_prefab_map_select_02.png").exact().targetOffset(-118,-88)); keyUp(Key.SHIFT)
     click(Pattern("prefab_connect_map_points.png").similar(0.90))
-    click(Pattern("3dview_prefab_map_select_03.png").exact().targetOffset(-32,-22))
+    slowDoubleClick(Pattern("3dview_prefab_map_select_03.png").exact().targetOffset(-32,-22))
     keyDown(Key.SHIFT); click(Pattern("3dview_prefab_map_select_04.png").exact().targetOffset(111,91)); keyUp(Key.SHIFT)
     click(Pattern("prefab_connect_map_points.png").similar(0.90))
-    click(Pattern("3dview_prefab_map_select_05.png").exact().targetOffset(-32,-20))
+    slowDoubleClick(Pattern("3dview_prefab_map_select_05.png").exact().targetOffset(-32,-20))
     keyDown(Key.SHIFT); click(Pattern("3dview_prefab_map_select_06.png").exact().targetOffset(-189,76)); keyUp(Key.SHIFT)
     click(Pattern("prefab_connect_map_points.png").similar(0.90))
     find(Pattern("3dview_prefab_loc_map_set_2.png").exact())
