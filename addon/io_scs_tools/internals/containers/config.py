@@ -16,7 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2013-2019: SCS Software
+# Copyright (C) 2013-2022: SCS Software
 
 import bpy
 import os
@@ -655,13 +655,12 @@ class AsyncPathsInit:
         # we need window, otherwise 3d view report can't add modal handler for user close/minimize/scroll actions
         assert len(windows) > 0
 
-        override = bpy.context.copy()
-        override["window"] = windows[-1]  # using first one borks filebrowser UI for unknown reason, but last one works
-        bpy.ops.wm.scs_tools_show_3dview_report(override, 'INVOKE_DEFAULT',
-                                                message=message,
-                                                abort=abort,
-                                                hide_controls=hide_controls,
-                                                is_progress_message=True)
+        with bpy.context.temp_override(window=windows[-1]):  # using first one borks filebrowser UI for unknown reason, but last one works
+            bpy.ops.wm.scs_tools_show_3dview_report('INVOKE_DEFAULT',
+                                                    message=message,
+                                                    abort=abort,
+                                                    hide_controls=hide_controls,
+                                                    is_progress_message=True)
 
     @staticmethod
     def _finish():

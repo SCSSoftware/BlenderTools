@@ -3,7 +3,7 @@ import scs_bt_configurator
 p = scs_bt_configurator.start_it_up(getBundlePath(), "Default_Scene_with_Cube.blend")
 try:
     wait(Pattern("startup_screen.png").similar(0.96), 5); type(Key.ESC); hover(Pattern("startup_screen.png").similar(0.90)); type(Key.ESC)
-    click(Pattern("export_scene_button.png").similar(0.90))
+    click("export_scene_button.png")
     wait(1.5)
     hover(Location(300, 400))  # move cursor to 3D view
     type(Key.ESC); wait(0.5); type(Key.ESC)  # hide warnings

@@ -517,7 +517,7 @@ class SCS_TOOLS_PT_VColoring(_ToolShelfBlDefs, Panel):
 
         layout = self.layout
         body_col = layout.column(align=True)
-        active_vcol_name = context.vertex_paint_object.data.vertex_colors.active.name
+        active_vcol_name = context.vertex_paint_object.data.color_attributes.active_color.name
 
         for layer_name in _VCT_consts.ColoringLayersTypes.as_list():
 

@@ -1,7 +1,7 @@
 load("scs_bt_configurator.jar")
 
 def slowDoubleClick(pattern):
-    click(pattern); wait(0.1); click()
+    click(pattern); wait(0.2); click()
 
 import scs_bt_configurator
 p = scs_bt_configurator.start_it_up(getBundlePath(), "prefab_locator_navigation.blend")

@@ -7,7 +7,7 @@ try:
     # Purpose of the test is checking if everything works as expected
     # while removing material from object and consequentially from looks in scs root (QA: 174475)
 
-    click(Pattern("material_selection.png").exact().targetOffset(96,-1))
+    click(Pattern("material_selection.png").similar(0.98).targetOffset(96,-1))
     find(Pattern("3dview_init.png").exact())
 except:
     scs_bt_configurator.save_screenshot(getBundlePath(), Screen())

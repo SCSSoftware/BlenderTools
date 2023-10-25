@@ -7,8 +7,8 @@ try:
     # Purpose of the test is checking if everything works as expected
     # when duplicating material and then switching between them on object parented to scs root with looks (QA: 174475)
 
-    click(Pattern("material_selection.png").exact().targetOffset(75,-1))
-    click(Pattern("material001_selection.png").exact().targetOffset(-91,2))
+    click(Pattern("material_selection.png").similar(0.98).targetOffset(75,-1))
+    click(Pattern("material001_selection.png").similar(0.98).targetOffset(-91,2))
     click(Pattern("material001_selection_popup.png").exact().targetOffset(-1,-10))
     wait(0.1)
     find(Pattern("3dview_init.png").exact())

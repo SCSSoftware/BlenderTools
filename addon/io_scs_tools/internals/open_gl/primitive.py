@@ -904,7 +904,7 @@ def draw_rect_2d(positions, color):
     """
     shader = gpu.shader.from_builtin('2D_UNIFORM_COLOR')
     batch = batch_for_shader(
-        shader, 'TRI_FAN',
+        shader, 'TRI_STRIP',
         {
             "pos": positions,
         },

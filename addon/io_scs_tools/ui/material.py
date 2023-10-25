@@ -16,13 +16,14 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2013-2019: SCS Software
+# Copyright (C) 2013-2022: SCS Software
 
 import bpy
 import os
 from bpy.types import Panel
 from io_scs_tools.consts import Mesh as _MESH_consts
 from io_scs_tools.internals import shader_presets as _shader_presets
+from io_scs_tools.internals import looks as _looks
 from io_scs_tools.utils import material as _material_utils
 from io_scs_tools.utils import object as _object_utils
 from io_scs_tools.utils import path as _path_utils
@@ -38,6 +39,22 @@ class _MaterialPanelBlDefs:
     bl_region_type = "WINDOW"
     bl_context = "material"
     bl_ui_units_x = 15
+
+    @staticmethod
+    def draw_desynced_look(layout, context):
+        mat = context.active_object.active_material
+        obj = context.active_object
+        root_obj = _object_utils.get_scs_root(obj)
+        shader_data = mat.get("scs_shader_attributes", {})
+        active_look_data = _looks.get_active_look_data(root_obj, mat)
+        if active_look_data and 'mat_effect_name' in active_look_data and 'effect' in shader_data:
+            if active_look_data['mat_effect_name'] != shader_data['effect']:
+                info_box = layout.column()
+                info_box.label(text="Look and shader data are desynced!", icon='ERROR')
+                info_box.label(text="Try reselecting shader from the preset list!", icon='HELP')
+                return True
+
+        return False
 
     @classmethod
     def poll(cls, context):
@@ -81,6 +98,16 @@ class SCS_TOOLS_PT_Material(_shared.HeaderIconPanel, _MaterialPanelBlDefs, Panel
     """Creates a Panel in the Material properties window"""
     bl_label = "SCS Material"
 
+    @classmethod
+    def poll(cls, context):
+        if not _MaterialPanelBlDefs.poll(context):
+            return False
+
+        if context.active_object.type != 'MESH':
+            return False
+
+        return True
+
     @staticmethod
     def draw_shader_presets(layout, scs_props, scs_globals, scs_inventories, is_imported_shader=False):
         """Creates Shader Presets sub-panel."""
@@ -116,12 +143,10 @@ class SCS_TOOLS_PT_Material(_shared.HeaderIconPanel, _MaterialPanelBlDefs, Panel
                 row_col = row.column()
                 row_col.enabled = False
                 row_col.prop(bpy.context.material.scs_props, "active_shader_preset_name", icon='COLOR', text="")
-                row_col = row.column()
                 row.operator("material.scs_tools_search_shader_preset", text="", icon='SOLO_ON')
             else:
                 row.prop(scs_inventories, 'shader_presets', text="")
                 row.operator("material.scs_tools_search_shader_preset", text="", icon='VIEWZOOM')
-
 
     @staticmethod
     def draw_flavors(layout, mat):
@@ -216,7 +241,7 @@ class SCS_TOOLS_PT_Material(_shared.HeaderIconPanel, _MaterialPanelBlDefs, Panel
         else:
 
             # MISSING VERTEX COLOR
-            active_vcolors = bpy.context.active_object.data.vertex_colors
+            active_vcolors = bpy.context.active_object.data.color_attributes
             is_valid_vcolor = _MESH_consts.default_vcol in active_vcolors
             is_valid_vcolor_a = _MESH_consts.default_vcol + _MESH_consts.vcol_a_suffix in active_vcolors
             if not is_valid_vcolor or not is_valid_vcolor_a:
@@ -499,6 +524,11 @@ class SCS_TOOLS_PT_MaterialAttributes(_MaterialPanelBlDefs, Panel):
         mat = context.active_object.active_material
 
         layout = self.get_layout()
+
+        # DESYNCED LOOK!
+        if self.draw_desynced_look(layout, context):
+            return
+
         layout.enabled = not self.is_imported_shader
 
         attrs_column = layout.column()  # create column for compact display with alignment
@@ -526,6 +556,9 @@ class SCS_TOOLS_PT_MaterialTextures(_MaterialPanelBlDefs, Panel):
             return False
 
         if len(shader_data["textures"]) == 0:
+            return False
+
+        if context.active_object.type != 'MESH':
             return False
 
         cls.textures_data = shader_data['textures']
@@ -706,6 +739,10 @@ class SCS_TOOLS_PT_MaterialTextures(_MaterialPanelBlDefs, Panel):
 
     def draw(self, context):
         mat = context.active_object.active_material
+
+        # DESYNCED LOOK!
+        if self.draw_desynced_look(self.layout, context):
+            return
 
         if self.is_imported_shader:
 

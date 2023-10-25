@@ -4,7 +4,7 @@ p = scs_bt_configurator.start_it_up(getBundlePath(), "2_Triangles_2_Materials.bl
 try:
     mouseMove(Location(0,0))
     wait(Pattern("2_materials_and_triangles_startup.png").similar(0.96), 5); hover(Pattern("2_materials_and_triangles_startup.png").similar(0.96)); type(Key.ESC)
-    export_region = find(Pattern("export_buttons_region.png").exact())
+    export_region = find("export_buttons_region.png")
     export_region.click("export_selection_button.png")
     export_region.click(Pattern("preview_selection_button.png").exact().targetOffset(-37,0))
     mouseMove(0, 20)  # move away from the checkbox

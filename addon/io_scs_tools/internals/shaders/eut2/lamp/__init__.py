@@ -16,11 +16,12 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2015-2019: SCS Software
+# Copyright (C) 2015-2022: SCS Software
 
 from io_scs_tools.consts import Mesh as _MESH_consts
 from io_scs_tools.internals.shaders.eut2.dif_spec import DifSpec
 from io_scs_tools.internals.shaders.eut2.std_node_groups import lampmask_mixer_ng
+from io_scs_tools.internals.shaders.std_node_groups import output_shader_ng
 from io_scs_tools.utils import material as _material_utils
 
 
@@ -29,7 +30,6 @@ class Lamp(DifSpec):
     MASK_TEX_NODE = "MaskTex"
     LAMPMASK_MIX_GROUP_NODE = "LampmaskMix"
     OUT_ADD_LAMPMASK_NODE = "LampmaskAdd"
-    OUT_ALPHA_INVERSE_NODE = "OutAlphaInverse"
     OUT_MAT_NODE = "OutMat"
 
     @staticmethod
@@ -93,18 +93,10 @@ class Lamp(DifSpec):
         out_add_lampmask_n.location = (output_n.location.x - pos_x_shift * 2, compose_lighting_n.location.y + 200)
         out_add_lampmask_n.operation = "ADD"
 
-        out_a_inv_n = node_tree.nodes.new("ShaderNodeMath")
-        out_a_inv_n.name = out_a_inv_n.label = Lamp.OUT_ALPHA_INVERSE_NODE
-        out_a_inv_n.location = (output_n.location.x - pos_x_shift * 2, output_n.location.y - 100)
-        out_a_inv_n.operation = "SUBTRACT"
-        out_a_inv_n.use_clamp = True
-        out_a_inv_n.inputs[0].default_value = 0.999999  # TODO: change back to 1.0 after bug is fixed: https://developer.blender.org/T71426
-
-        out_mat_n = node_tree.nodes.new("ShaderNodeEeveeSpecular")
+        out_mat_n = node_tree.nodes.new("ShaderNodeGroup")
         out_mat_n.name = out_mat_n.label = Lamp.OUT_MAT_NODE
         out_mat_n.location = (output_n.location.x - pos_x_shift, output_n.location.y)
-        out_mat_n.inputs["Base Color"].default_value = (0.0,) * 4
-        out_mat_n.inputs["Specular"].default_value = (0.0,) * 4
+        out_mat_n.node_tree = output_shader_ng.get_node_group()
 
         # links creation
         node_tree.links.new(mask_tex_n.inputs['Vector'], sec_uvmap_n.outputs["UV"])
@@ -116,12 +108,10 @@ class Lamp(DifSpec):
         node_tree.links.new(out_add_lampmask_n.inputs[0], lampmask_mixer_n.outputs['Lampmask Addition Color'])
         node_tree.links.new(out_add_lampmask_n.inputs[1], compose_lighting_n.outputs['Color'])
 
-        node_tree.links.new(out_a_inv_n.inputs[1], compose_lighting_n.outputs['Alpha'])
+        node_tree.links.new(out_mat_n.inputs['Color'], out_add_lampmask_n.outputs[0])
+        node_tree.links.new(out_mat_n.inputs['Alpha'], compose_lighting_n.outputs['Alpha'])
 
-        node_tree.links.new(out_mat_n.inputs['Emissive Color'], out_add_lampmask_n.outputs[0])
-        node_tree.links.new(out_mat_n.inputs['Transparency'], out_a_inv_n.outputs['Value'])
-
-        node_tree.links.new(output_n.inputs["Surface"], out_mat_n.outputs['BSDF'])
+        node_tree.links.new(output_n.inputs["Surface"], out_mat_n.outputs['Shader'])
 
     @staticmethod
     def set_mask_texture(node_tree, image):

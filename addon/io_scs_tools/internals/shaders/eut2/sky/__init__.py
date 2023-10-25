@@ -16,7 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2015-2019: SCS Software
+# Copyright (C) 2015-2022: SCS Software
 
 from mathutils import Color
 from io_scs_tools.consts import Mesh as _MESH_consts
@@ -25,6 +25,7 @@ from io_scs_tools.internals.shaders.flavors import sky_back, sky_stars
 from io_scs_tools.internals.shaders.eut2.std_node_groups import vcolor_input_ng
 from io_scs_tools.internals.shaders.eut2.sky import texture_types
 from io_scs_tools.internals.shaders.eut2.sky import uv_rescale_ng
+from io_scs_tools.internals.shaders.std_node_groups import output_shader_ng
 from io_scs_tools.utils import convert as _convert_utils
 from io_scs_tools.utils import material as _material_utils
 from io_scs_tools.utils import math as _math_utils
@@ -46,7 +47,6 @@ class Sky(BaseShader):
     WEATHER_DIFF_MULT_NODE = "WeatherDiffMult"
     OPACITY_STARS_MIX_NODE = "OpacityStarsMix"
 
-    ALPHA_INV_NODE = "AlphaInv"
     OUT_SHADER_NODE = "OutShader"
     OUTPUT_NODE = "Output"
 
@@ -160,23 +160,14 @@ class Sky(BaseShader):
         opacity_stars_mix_n.operation = "MULTIPLY"
         opacity_stars_mix_n.inputs[1].default_value = (1.0,) * 3
 
-        alpha_inv_n = node_tree.nodes.new("ShaderNodeMath")
-        alpha_inv_n.name = alpha_inv_n.label = Sky.ALPHA_INV_NODE
-        alpha_inv_n.location = (start_pos_x + pos_x_shift * 8, 1300)
-        alpha_inv_n.operation = "SUBTRACT"
-        alpha_inv_n.inputs[0].default_value = 0.999999  # TODO: change back to 1.0 after bug is fixed: https://developer.blender.org/T71426
-        alpha_inv_n.inputs[1].default_value = 1.0
-        alpha_inv_n.use_clamp = True
-
-        out_shader_node = node_tree.nodes.new("ShaderNodeEeveeSpecular")
+        out_shader_node = node_tree.nodes.new("ShaderNodeGroup")
         out_shader_node.name = out_shader_node.label = Sky.OUT_SHADER_NODE
-        out_shader_node.location = (start_pos_x + pos_x_shift * 9, 1500)
-        out_shader_node.inputs["Base Color"].default_value = (0.0,) * 4
-        out_shader_node.inputs["Specular"].default_value = (0.0,) * 4
+        out_shader_node.location = (start_pos_x + pos_x_shift * 8, 1500)
+        out_shader_node.node_tree = output_shader_ng.get_node_group()
 
         output_n = node_tree.nodes.new("ShaderNodeOutputMaterial")
         output_n.name = output_n.label = Sky.OUTPUT_NODE
-        output_n.location = (start_pos_x + + pos_x_shift * 10, start_pos_y + 1500)
+        output_n.location = (start_pos_x + + pos_x_shift * 9, start_pos_y + 1500)
 
         # links creation
         # pass 1
@@ -219,14 +210,11 @@ class Sky(BaseShader):
         node_tree.links.new(opacity_stars_mix_n.inputs[0], weather_alpha_mix_n.outputs[0])
 
         # pass 7
-        node_tree.links.new(alpha_inv_n.inputs[1], opacity_stars_mix_n.outputs[0])
-
-        # pass 8
-        node_tree.links.new(out_shader_node.inputs['Emissive Color'], weather_diff_mult_n.outputs[0])
-        node_tree.links.new(out_shader_node.inputs['Transparency'], alpha_inv_n.outputs['Value'])
+        node_tree.links.new(out_shader_node.inputs['Color'], weather_diff_mult_n.outputs[0])
+        node_tree.links.new(out_shader_node.inputs['Alpha'], opacity_stars_mix_n.outputs[0])
 
         # output pass
-        node_tree.links.new(output_n.inputs['Surface'], out_shader_node.outputs['BSDF'])
+        node_tree.links.new(output_n.inputs['Surface'], out_shader_node.outputs['Shader'])
 
     @staticmethod
     def __create_texel_component_nodes__(node_tree, tex_type, location):
@@ -313,6 +301,9 @@ class Sky(BaseShader):
             material.blend_method = "BLEND"
         if sky_back.is_set(node_tree):
             material.blend_method = "OPAQUE"
+
+        if material.blend_method == "OPAQUE" and node_tree.nodes[Sky.OUT_SHADER_NODE].inputs['Alpha'].links:
+            node_tree.links.remove(node_tree.nodes[Sky.OUT_SHADER_NODE].inputs['Alpha'].links[0])
 
     @staticmethod
     def set_diffuse(node_tree, color):

@@ -16,7 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2013-2019: SCS Software
+# Copyright (C) 2013-2022: SCS Software
 
 import bpy
 import bmesh
@@ -1561,9 +1561,9 @@ class PaintjobTools:
 
                 bpy.ops.object.select_all(action="DESELECT")
 
-                override = bpy.context.copy()
-                override["active_object"] = scs_root  # operator searches for scs root from active object, so make sure context will be correct
-                bpy.ops.object.scs_tools_de_select_objects_with_variant(override, select_type=_OP_consts.SelectionType.select, variant_index=i)
+                # operator searches for scs root from active object, so make sure context will be correct
+                with bpy.context.temp_override(active_object=scs_root):
+                    bpy.ops.object.scs_tools_de_select_objects_with_variant(select_type=_OP_consts.SelectionType.select, variant_index=i)
 
                 collection_name = model_type + " | " + model_name + " | " + variant_name
                 collection = bpy.data.collections.new(collection_name)
@@ -1798,8 +1798,9 @@ class PaintjobTools:
 
                     target_dirpath = os.path.join(vehicle_accessory_def_dirpath, upgrade_type)
 
-                    curr_models = self.gather_model_paths(target_dirpath, "accessory_addon_data", ("exterior_model",))
-                    self.update_model_paths_dict(upgrade_model_paths[upgrade_type], curr_models)
+                    for unit_type in ("accessory_addon_data", "accessory_addon_tank_data"):
+                        curr_models = self.gather_model_paths(target_dirpath, unit_type, ("exterior_model",))
+                        self.update_model_paths_dict(upgrade_model_paths[upgrade_type], curr_models)
 
                     if len(upgrade_model_paths[upgrade_type]) <= 0:  # if no models for upgrade, remove set also
                         del upgrade_model_paths[upgrade_type]
@@ -1981,6 +1982,10 @@ class PaintjobTools:
         )
 
         @staticmethod
+        def is_out_of_uv_bounds(uv):
+            return uv[0] > 1 or uv[0] < 0 or uv[1] > 1 or uv[1] < 0
+
+        @staticmethod
         def transform_uvs(obj, texture_portion):
             """Transform paintjob uvs on given object by data from texture portion.
 
@@ -2014,58 +2019,6 @@ class PaintjobTools:
 
             bm.to_mesh(obj.data)
             bm.free()
-
-        @staticmethod
-        def check_and_prepare_uvs(obj, orig_uvs_name_2nd, orig_uvs_name_3rd, export_2nd_uvs, export_3rd_uvs):
-            """Check and prepare uvs for export by creating a copy of the ones used in SCS truckpaint material.
-
-            :param obj: Blender mesh object to be transformed
-            :type obj: bpy.types.Object
-            :param orig_uvs_name_2nd: name of the uv used in first paintjob slot from truckpaint material
-            :type orig_uvs_name_2nd: str
-            :param orig_uvs_name_3rd: name of the uv used in second paintjob slot from truckpaint material
-            :type orig_uvs_name_3rd: str
-            :param export_2nd_uvs: is 2nd uv layer used for export?
-            :type export_2nd_uvs: bool
-            :param export_3rd_uvs: is 3rd uv layer used for export?
-            :type export_3rd_uvs: bool
-            :return: True if check is successful and none of the UVs is out of bounds; False otherwise
-            :rtype: bool
-            """
-
-            invalid_uv = False
-
-            bm = bmesh.new()
-            bm.from_mesh(obj.data)
-
-            uv_lay_2nd = bm.loops.layers.uv[orig_uvs_name_2nd]
-            uv_lay_3rd = bm.loops.layers.uv[orig_uvs_name_3rd]
-
-            # check for validity
-            for face in bm.faces:
-                for loop in face.loops:
-                    if export_2nd_uvs and (1 < loop[uv_lay_2nd].uv[0] < 0 or 1 < loop[uv_lay_2nd].uv[1] < 0):
-                        invalid_uv = True
-                        break
-                    if export_3rd_uvs and (1 < loop[uv_lay_3rd].uv[0] < 0 or 1 < loop[uv_lay_3rd].uv[1] < 0):
-                        invalid_uv = True
-                        break
-
-                if invalid_uv:
-                    break
-
-            # copy over if valid
-            if not invalid_uv:
-                bm.loops.layers.uv.new(_PT_consts.uvs_name_2nd)
-                bm.loops.layers.uv[_PT_consts.uvs_name_2nd].copy_from(uv_lay_2nd)
-
-                bm.loops.layers.uv.new(_PT_consts.uvs_name_3rd)
-                bm.loops.layers.uv[_PT_consts.uvs_name_3rd].copy_from(uv_lay_3rd)
-
-            bm.to_mesh(obj.data)
-            bm.free()
-
-            return not invalid_uv
 
         @staticmethod
         def cleanup(*args):
@@ -2138,6 +2091,53 @@ class PaintjobTools:
             for line in message.split("\n"):
                 self.report(type, line.replace("\t", "").replace("  ", " "))
 
+        def check_and_prepare_uvs(self, obj, orig_uvs_name_2nd, orig_uvs_name_3rd):
+            """Check and prepare uvs for export by creating a copy of the ones used in SCS truckpaint material.
+
+            :param obj: Blender mesh object to be transformed
+            :type obj: bpy.types.Object
+            :param orig_uvs_name_2nd: name of the uv used in first paintjob slot from truckpaint material
+            :type orig_uvs_name_2nd: str
+            :param orig_uvs_name_3rd: name of the uv used in second paintjob slot from truckpaint material
+            :type orig_uvs_name_3rd: str
+            :return: True if check is successful and none of the UVs is out of bounds; False otherwise
+            :rtype: bool
+            """
+
+            invalid_uv = False
+
+            bm = bmesh.new()
+            bm.from_mesh(obj.data)
+
+            uv_lay_2nd = bm.loops.layers.uv[orig_uvs_name_2nd]
+            uv_lay_3rd = bm.loops.layers.uv[orig_uvs_name_3rd]
+
+            # check for validity
+            for face in bm.faces:
+                for loop in face.loops:
+                    if self.export_2nd_uvs and self.is_out_of_uv_bounds(loop[uv_lay_2nd].uv):
+                        invalid_uv = True
+                        break
+                    if self.export_3rd_uvs and self.is_out_of_uv_bounds(loop[uv_lay_3rd].uv):
+                        invalid_uv = True
+                        break
+
+                if invalid_uv:
+                    break
+
+            # copy over if valid
+            if not invalid_uv:
+                bm.loops.layers.uv.new(_PT_consts.uvs_name_2nd)
+                bm.loops.layers.uv[_PT_consts.uvs_name_2nd].copy_from(uv_lay_2nd)
+
+                bm.loops.layers.uv.new(_PT_consts.uvs_name_3rd)
+                bm.loops.layers.uv[_PT_consts.uvs_name_3rd].copy_from(uv_lay_3rd)
+
+            bm.to_mesh(obj.data)
+            bm.free()
+
+            return not invalid_uv
+
         def execute(self, context):
 
             ##################################
@@ -2207,20 +2207,31 @@ class PaintjobTools:
 
                 # rename paintjob uvs to our constant ones,
                 # so exporting at the end is easy as all objects will result in same uv layers names
-                uvs_2nd_name = curr_truckpaint_mat.scs_props.shader_texture_base_uv[1].value
-                uvs_3rd_name = curr_truckpaint_mat.scs_props.shader_texture_base_uv[2].value
-                if not self.check_and_prepare_uvs(curr_merged_object, uvs_2nd_name, uvs_3rd_name, self.export_2nd_uvs, self.export_3rd_uvs):
+                if curr_truckpaint_mat.scs_props.active_shader_preset_name == "<imported>":
+                    tex_coords = curr_truckpaint_mat.scs_props.custom_tex_coord_maps
+                    if 'tex_coord_1' in tex_coords and 'tex_coord_2' in tex_coords:
+                        uvs_2nd_name = curr_truckpaint_mat.scs_props.custom_tex_coord_maps['tex_coord_1'].value
+                        uvs_3rd_name = curr_truckpaint_mat.scs_props.custom_tex_coord_maps['tex_coord_2'].value
+                    else:
+                        self.do_report({'WARNING'},
+                                       "Collection %r won't be exported as some objects with <imported> truckpaint material are missing tex_coords!" %
+                                       collection.name)
+                        continue
+                else:
+                    uvs_2nd_name = curr_truckpaint_mat.scs_props.shader_texture_base_uv[1].value
+                    uvs_3rd_name = curr_truckpaint_mat.scs_props.shader_texture_base_uv[2].value
+
+                if not self.check_and_prepare_uvs(curr_merged_object, uvs_2nd_name, uvs_3rd_name):
                     self.do_report({'WARNING'},
-                                   "Collection %r won't be exported as one or more objects have UVs out of <0;1> bounds!" % collection.name,
-                                   do_report=True)
+                                   "Collection %r won't be exported as one or more objects have UVs out of <0;1> bounds!" %
+                                   collection.name)
                     self.cleanup((curr_merged_object,))
                     continue
 
                 # remove all none needed & colliding data-blocks from object: materials, collections
                 while len(curr_merged_object.material_slots) > 0:
-                    override = context.copy()
-                    override["object"] = curr_merged_object
-                    bpy.ops.object.material_slot_remove(override)
+                    with context.temp_override(object=curr_merged_object):
+                        bpy.ops.object.material_slot_remove()
 
                 while len(curr_merged_object.users_collection) > 0:
                     curr_merged_object.users_collection[0].objects.unlink(curr_merged_object)
@@ -2231,7 +2242,7 @@ class PaintjobTools:
                 merged_objects_to_export[curr_merged_object] = collection
 
             if len(merged_objects_to_export) <= 0:
-                self.do_report({'ERROR'}, "No objects to export!")
+                self.do_report({'ERROR'}, "No objects to export!", do_report=True)
                 return {'CANCELLED'}
 
             lprint("S Merged objects to export: %s", (merged_objects_to_export.values(),))
@@ -2249,7 +2260,7 @@ class PaintjobTools:
                                                           unit_type="paintjobs_metadata",
                                                           req_props=("common_texture_size",)):
 
-                self.do_report({'ERROR'}, "Validation failed on SII: %r" % _path_utils.readable_norm(self.config_meta_filepath))
+                self.do_report({'ERROR'}, "Validation failed on SII: %r" % _path_utils.readable_norm(self.config_meta_filepath), do_report=True)
                 self.cleanup(merged_objects_to_export.keys())
                 return {'CANCELLED'}
 
@@ -2275,6 +2286,25 @@ class PaintjobTools:
                                        "Ignoring used texture portion with name %r as it's parent: %r "
                                        "is not defined in paintjob layout meta data!" % (unit_id, parent))
                         continue
+
+                    position = texture_portion.get_prop("position")
+                    size = texture_portion.get_prop("size")
+                    if position is not None and size is not None:
+                        position = [float(x) for x in position]
+                        size = [float(x) for x in size]
+                        if self.is_out_of_uv_bounds(position):
+                            self.do_report({'WARNING'},
+                                           "Ignoring used texture portion with name %r as it's position is not within (0,1) bounds: %r" %
+                                           (unit_id, position))
+                            continue
+                        else:
+                            position_size = (position[0] + size[0], position[1] + size[1])
+                            if self.is_out_of_uv_bounds(position_size):
+                                self.do_report({'WARNING'},
+                                               "Ignoring used texture portion with name %r as it's calculated "
+                                               "position+size is not within (0,1) bounds: %r" %
+                                               (unit_id, position_size))
+                                continue
 
                     texture_portions[unit_id] = texture_portion
 
@@ -2453,46 +2483,36 @@ class PaintjobTools:
                 # set active uv layer so export will take proper
                 final_merged_object.data.uv_layers.active = final_merged_object.data.uv_layers[_PT_consts.uvs_name_2nd]
 
-                override = context.copy()
-                override["active_object"] = final_merged_object
-                bpy.ops.uv.export_layout(override,
-                                         filepath=self.filepath + ".2nd.png",
-                                         export_all=True,
-                                         mode="PNG",
-                                         size=common_texture_size,
-                                         opacity=1)
+                with context.temp_override(active_object=final_merged_object):
+                    bpy.ops.uv.export_layout(filepath=self.filepath + ".2nd.png",
+                                             export_all=True,
+                                             mode="PNG",
+                                             size=common_texture_size,
+                                             opacity=1)
 
                 if self.export_mesh:
-                    override = context.copy()
-                    override["active_object"] = final_merged_object
-                    override["selected_objects"] = (final_merged_object,)
-                    bpy.ops.export_scene.obj(override,
-                                             filepath=self.filepath + ".2nd.obj",
-                                             use_selection=True,
-                                             use_materials=False)
+                    with context.temp_override(active_object=final_merged_object, selected_objects=(final_merged_object,)):
+                        bpy.ops.export_scene.obj(filepath=self.filepath + ".2nd.obj",
+                                                 use_selection=True,
+                                                 use_materials=False)
 
             if self.export_3rd_uvs:
 
                 # set active uv layer so export will take proper
                 final_merged_object.data.uv_layers.active = final_merged_object.data.uv_layers[_PT_consts.uvs_name_3rd]
 
-                override = context.copy()
-                override["active_object"] = final_merged_object
-                bpy.ops.uv.export_layout(override,
-                                         filepath=self.filepath + ".3rd.png",
-                                         export_all=True,
-                                         mode="PNG",
-                                         size=common_texture_size,
-                                         opacity=1)
+                with context.temp_override(active_object=final_merged_object):
+                    bpy.ops.uv.export_layout(filepath=self.filepath + ".3rd.png",
+                                             export_all=True,
+                                             mode="PNG",
+                                             size=common_texture_size,
+                                             opacity=1)
 
                 if self.export_mesh:
-                    override = context.copy()
-                    override["active_object"] = final_merged_object
-                    override["selected_objects"] = (final_merged_object,)
-                    bpy.ops.export_scene.obj(override,
-                                             filepath=self.filepath + ".3rd.obj",
-                                             use_selection=True,
-                                             use_materials=False)
+                    with context.temp_override(active_object=final_merged_object, selected_objects=(final_merged_object,)):
+                        bpy.ops.export_scene.obj(filepath=self.filepath + ".3rd.obj",
+                                                 use_selection=True,
+                                                 use_materials=False)
 
             # remove final merged object now as we done our work here
             bpy.data.objects.remove(final_merged_object, do_unlink=True)
@@ -2508,7 +2528,7 @@ class PaintjobTools:
                 start_time = time()
 
                 # intialize pixel values for id mask texture
-                img_pixels = [0.0] * common_texture_size[0] * common_texture_size[1] * 4
+                img_pixels = numpy.zeros((common_texture_size[1], common_texture_size[0], 4), numpy.float16)
 
                 id_mask_color_idx = 0
                 for unit_id in texture_portions:
@@ -2533,26 +2553,16 @@ class PaintjobTools:
                     portion_col[2] /= 255.0
                     portion_col.append(self.id_mask_alpha)
 
-                    # define array buffers for application of id masking color
-                    img_pixels_buffer = numpy.array([0.0] * 4 * portion_width)
-                    portion_col_buffer = numpy.array(portion_col * portion_width)
-
-                    # write proper pixels row by row
-                    for row_i in range(0, portion_height):
-
-                        start_px = (row_i + portion_pos_y) * common_texture_size[0] * 4 + portion_pos_x * 4
-                        end_px = start_px + portion_width * 4
-
-                        img_pixels_buffer[:] = img_pixels[start_px:end_px]
-                        img_pixels_buffer += portion_col_buffer
-
-                        img_pixels[start_px:end_px] = img_pixels_buffer
+                    img_pixels[portion_pos_y:portion_pos_y + portion_height, portion_pos_x:portion_pos_x + portion_width, 0] = portion_col[0]
+                    img_pixels[portion_pos_y:portion_pos_y + portion_height, portion_pos_x:portion_pos_x + portion_width, 1] = portion_col[1]
+                    img_pixels[portion_pos_y:portion_pos_y + portion_height, portion_pos_x:portion_pos_x + portion_width, 2] = portion_col[2]
+                    img_pixels[portion_pos_y:portion_pos_y + portion_height, portion_pos_x:portion_pos_x + portion_width, 3] = portion_col[3]
 
                 # create image data block
                 img = bpy.data.images.new("tmp_img", common_texture_size[0], common_texture_size[1], alpha=True)
                 img.colorspace_settings.name = "sRGB"  # make sure we use sRGB color-profile
                 img.alpha_mode = 'CHANNEL_PACKED'
-                img.pixels[:] = img_pixels
+                img.pixels[:] = img_pixels.reshape((common_texture_size[1] * common_texture_size[0] * 4,))
 
                 # save
                 scene = bpy.context.scene
@@ -2770,6 +2780,7 @@ class PaintjobTools:
         pjs_flake_noise: StringProperty(default="/material/custom/flake_noise.tobj")
 
         pjs_alternate_uvset: BoolProperty(default=False)
+        pjs_alternate_flipflake_uvset: BoolProperty(default=False)
         pjs_flipflake: BoolProperty(default=False)
         pjs_airbrush: BoolProperty(default=False)
         pjs_stock: BoolProperty(default=False)
@@ -3162,6 +3173,9 @@ class PaintjobTools:
 
             start_time = time()
 
+            # clear message queue so that we will report only warnings and errors from this export!
+            lprint("", report_warnings=1, report_errors=1)
+
             ##################################
             #
             # 1. parse & validate input settings
@@ -3169,7 +3183,7 @@ class PaintjobTools:
             ##################################
 
             if not os.path.isfile(self.config_meta_filepath):
-                self.do_report({'WARNING'}, "Given paintjob layout META file does not exist: %r!" % self.config_meta_filepath)
+                self.do_report({'WARNING'}, "Given paintjob layout META file does not exist: %r!" % self.config_meta_filepath, do_report=True)
                 return {'CANCELLED'}
 
             # get vehicle brand model token
@@ -3183,15 +3197,15 @@ class PaintjobTools:
             elif os.path.basename(curr_dir) == _PT_consts.VehicleTypes.TRAILER:
                 self.vehicle_type = _PT_consts.VehicleTypes.TRAILER
             else:
-                self.do_report({'ERROR'}, "Given paintjob layout META file is in wrong directory!")
+                self.do_report({'ERROR'}, "Given paintjob layout META file is in wrong directory!", do_report=True)
                 return {'CANCELLED'}
 
             if not self.common_texture_path.endswith(".tif"):
-                self.do_report({'ERROR'}, "Given common texture is not TIF file: %r!" % self.common_texture_path)
+                self.do_report({'ERROR'}, "Given common texture is not TIF file: %r!" % self.common_texture_path, do_report=True)
                 return {'CANCELLED'}
 
             if not os.path.isfile(self.common_texture_path):
-                self.do_report({'ERROR'}, "Given common texture file does not exist: %r!" % self.common_texture_path)
+                self.do_report({'ERROR'}, "Given common texture file does not exist: %r!" % self.common_texture_path, do_report=True)
                 return {'CANCELLED'}
 
             # solve project path, if not given try to get it from given common texture path
@@ -3200,12 +3214,13 @@ class PaintjobTools:
                 orig_project_path = _path_utils.readable_norm(self.project_path)
 
                 if not os.path.isdir(orig_project_path):
-                    self.do_report({'ERROR'}, "Given paintjob project path does not exist: %r!" % orig_project_path)
+                    self.do_report({'ERROR'}, "Given paintjob project path does not exist: %r!" % orig_project_path, do_report=True)
                     return {'CANCELLED'}
 
                 # there has to be sibling base directory, otherwise we for sure aren't in right place
                 if not os.path.isdir(os.path.join(os.path.join(orig_project_path, os.pardir), "base")):
-                    self.do_report({'ERROR'}, "Given pointjob project path is invalid, can't find sibling 'base' project: %r" % orig_project_path)
+                    self.do_report({'ERROR'}, "Given pointjob project path is invalid, can't find sibling 'base' project: %r" % orig_project_path,
+                                   do_report=True)
                     return {'CANCELLED'}
 
             else:
@@ -3217,9 +3232,11 @@ class PaintjobTools:
                     orig_project_path = _path_utils.readable_norm(os.path.join(orig_project_path, os.pardir))
 
                 if not os.path.isdir(orig_project_path):
-                    self.do_report({'ERROR'}, "Paintjob TGA seems to be saved outside proper structure, should be inside\n"
-                                              "'<project_path>/vehicle/<vehicle_type>/upgrade/paintjob/<brand_model>/', instead is in:\n"
-                                              "%r" % self.common_texture_path)
+                    self.do_report({'ERROR'},
+                                   "Paintjob TGA seems to be saved outside proper structure, should be inside\n"
+                                   "'<project_path>/vehicle/<vehicle_type>/upgrade/paintjob/<brand_model>/', instead is in:\n"
+                                   "%r" % self.common_texture_path,
+                                   do_report=True)
                     return {'CANCELLED'}
 
             # get paint job token from texture name
@@ -3228,7 +3245,8 @@ class PaintjobTools:
             if _name_utils.tokenize_name(pj_token) != pj_token:
                 self.do_report({'ERROR'},
                                "Given common texture name is invalid, can't be tokenized (max. length: 11, accepted chars: a-z, 0-9, _): %r"
-                               % pj_token)
+                               % pj_token,
+                               do_report=True)
                 return {'CANCELLED'}
 
             # get brand & model unit name from texture path
@@ -3239,7 +3257,8 @@ class PaintjobTools:
             if underscore_idx == -1:
                 self.do_report({'ERROR'},
                                "Paintjob TGA file parent directory name seems to be invalid should be '<brand_model>' instead is: %r." %
-                               brand_model_dir)
+                               brand_model_dir,
+                               do_report=True)
                 return {'CANCELLED'}
 
             brand_token = brand_model_dir[0:underscore_idx]
@@ -3251,9 +3270,11 @@ class PaintjobTools:
             )
 
             if is_common_tex_path_invalid:
-                self.do_report({'ERROR'}, "Paintjob TGA file isn't saved on correct place, should be inside\n"
-                                          "'<project_path>/vehicle/<vehicle_type>/upgrade/paintjob/%s' instead is saved in:\n"
-                                          "%r." % (brand_model_token.replace(".", "_"), common_tex_dirpath))
+                self.do_report({'ERROR'},
+                               "Paintjob TGA file isn't saved on correct place, should be inside\n"
+                               "'<project_path>/vehicle/<vehicle_type>/upgrade/paintjob/%s' instead is saved in:\n"
+                               "%r." % (brand_model_token.replace(".", "_"), common_tex_dirpath),
+                               do_report=True)
                 return {'CANCELLED'}
 
             lprint("D <brand>: %r, <model>: %r, <paintjob_unit_name>: %r" % (brand_token, model_token, pj_token))
@@ -3269,7 +3290,7 @@ class PaintjobTools:
                                                           unit_type="paintjobs_metadata",
                                                           req_props=("common_texture_size",)):
 
-                self.do_report({'ERROR'}, "Validation failed on SII: %r" % _path_utils.readable_norm(self.config_meta_filepath))
+                self.do_report({'ERROR'}, "Validation failed on SII: %r" % _path_utils.readable_norm(self.config_meta_filepath), do_report=True)
                 return {'CANCELLED'}
 
             # interpret common texture size vector as two ints
@@ -3314,8 +3335,10 @@ class PaintjobTools:
 
                 # check unique suffixes
                 if master_unit_suffix in master_unit_suffixes:
-                    self.do_report({'ERROR'}, "Multiple master textures using same unit suffix: %r. "
-                                              "Make sure all unit suffixes are unique." % master_unit_suffix)
+                    self.do_report({'ERROR'},
+                                   "Multiple master textures using same unit suffix: %r. "
+                                   "Make sure all unit suffixes are unique." % master_unit_suffix,
+                                   do_report=True)
                     return {'CANCELLED'}
 
                 # check for no model sii definition
@@ -3328,8 +3351,10 @@ class PaintjobTools:
                 master_portions.append(texture_portion)
 
             if no_model_sii_master_count > 0 and (no_model_sii_master_count + model_sii_master_count) > 1:
-                self.do_report({'ERROR'}, "One or more master texture portions detected without model SII path. "
-                                          "Either define model SII path for all of them or use only one master portion without it!")
+                self.do_report({'ERROR'},
+                               "One or more master texture portions detected without model SII path. "
+                               "Either define model SII path for all of them or use only one master portion without it!",
+                               do_report=True)
                 return {'CANCELLED'}
 
             lprint("D Found texture portions: %r", (list(texture_portions.keys()),))
@@ -3347,8 +3372,10 @@ class PaintjobTools:
             self.initialize_nodes(context, common_tex_img)
 
             if tuple(common_tex_img.size) != tuple(common_texture_size) and not self.export_configs_only:
-                self.do_report({'ERROR'}, "Wrong size of common texture TGA: [%s, %s], paintjob layout META is prescribing different size: %r!"
-                               % (common_tex_img.size[0], common_tex_img.size[1], common_texture_size))
+                self.do_report({'ERROR'},
+                               "Wrong size of common texture TGA: [%s, %s], paintjob layout META is prescribing different size: %r!" %
+                               (common_tex_img.size[0], common_tex_img.size[1], common_texture_size),
+                               do_report=True)
                 return {'CANCELLED'}
 
             # get textures export dir
@@ -3450,7 +3477,10 @@ class PaintjobTools:
                         break
 
                 if not sii_exists and requires_valid_model_sii:
-                    lprint("E Can't find referenced 'model_sii' file for texture portion %r, aborting overrides SII write!", (texture_portion.id,))
+                    self.do_report({'ERROR'},
+                                   "Can't find referenced 'model_sii' file for texture portion %r, aborting overrides SII write!" %
+                                   texture_portion.id,
+                                   do_report=True)
                     return {'CANCELLED'}
 
                 # assamble paintjob properties that will be written in overrides SII (currently: paint_job_mask, flake_uvscale, flake_vratio)
@@ -3468,15 +3498,19 @@ class PaintjobTools:
                     master_unit_suffix = texture_portion.get_prop("master_unit_suffix", "")
                     suffixed_pj_unit_name = pj_token + master_unit_suffix
                     if _name_utils.tokenize_name(suffixed_pj_unit_name) != suffixed_pj_unit_name:
-                        lprint("E Can't tokenize generated paintjob unit name: %r for texture portion %r, aborting SII write!",
-                               (suffixed_pj_unit_name, texture_portion.id))
+                        self.do_report({'ERROR'},
+                                       "Can't tokenize generated paintjob unit name: %r for texture portion %r, aborting SII write!" %
+                                       (suffixed_pj_unit_name, texture_portion.id),
+                                       do_report=True)
                         return {'CANCELLED'}
 
                     # get model sii unit name to use it in suitable for field
                     model_sii_cont = _sii_container.get_data_from_file(model_sii_path)
                     if not model_sii_cont and requires_valid_model_sii:
-                        lprint("E SII is there but getting unit name from 'model_sii' failed for texture portion %r, aborting SII write!",
-                               (texture_portion.id,))
+                        self.do_report({'ERROR'},
+                                       "SII is there but getting unit name from 'model_sii' failed for texture portion %r, aborting SII write!" %
+                                       texture_portion.id,
+                                       do_report=True)
                         return {'CANCELLED'}
 
                     # unit name of referenced model sii used for suitable_for field in master paint jobs
@@ -3544,9 +3578,11 @@ class PaintjobTools:
 
                     else:
 
-                        lprint("E Can not collect override for texture portion: %r, as 'model_sii' property is not one of: "
-                               "accessory, cabin or chassis neither is texture portion marked with 'is_master'!",
-                               (texture_portion.id,))
+                        self.do_report({'ERROR'},
+                                       "Can not collect override for texture portion: %r, as 'model_sii' property is not one of: "
+                                       "accessory, cabin or chassis neither is texture portion marked with 'is_master'!" %
+                                       texture_portion.id,
+                                       do_report=True)
                         return {'CANCELLED'}
 
             # export overrides SII files
@@ -3558,8 +3594,7 @@ class PaintjobTools:
             if not self.preserve_common_texture and os.path.isfile(self.common_texture_path):
                 os.remove(self.common_texture_path)
 
-            lprint("\nI Export of paintjobs took: %0.3f sec" % (time() - start_time))
-
+            self.do_report({'INFO'}, "Export of paintjobs took: %0.3f sec" % (time() - start_time), do_report=True)
             return {'FINISHED'}
 
 

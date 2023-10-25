@@ -68,19 +68,19 @@ class Operators:
         """Constants related to 3D view report operator.
         """
         # constants defining BT banner image and texts/positions of close/hide controls
-        BT_BANNER_IMG_NAME = ".scs_bt_banner.png"
-        BT_BANNER_WITH_CTRLS_IMG_NAME = ".scs_bt_banner_with_ctrls.png"
-        CLOSE_BTN_AREA = (270, 290, -25, -5)
-        CLOSE_BTN_TEXT_POS = (272, -9)
+        BT_BANNER_IMG_NAME = ".scs_bt_banner.tga"
+        BT_BANNER_WITH_CTRLS_IMG_NAME = ".scs_bt_banner_with_ctrls.tga"
+        CLOSE_BTN_AREA = (240, 260, -25, -5)
+        CLOSE_BTN_TEXT_POS = (242, -9)
         CLOSE_BTN_TEXT = "×"
-        HIDE_BTN_AREA = (245, 265, -25, -5)
-        HIDE_BTN_TEXT_POS = (250, -5)
+        HIDE_BTN_AREA = (215, 235, -25, -5)
+        HIDE_BTN_TEXT_POS = (220, -5)
         HIDE_BTN_TEXT = "–"
-        SCROLLUP_BTN_AREA = (225, 240, -25, -5)
-        SCROLLUP_BTN_TEXT_POS = (226, -9)
+        SCROLLUP_BTN_AREA = (-17, -3, 22, 47)
+        SCROLLUP_BTN_TEXT_POS = (-18, 40)
         SCROLLUP_BTN_TEXT = "↑"
-        SCROLLDOWN_BTN_AREA = (205, 220, -25, -5)
-        SCROLLDOWN_BTN_TEXT_POS = (206, -9)
+        SCROLLDOWN_BTN_AREA = (-17, -3, 52, 77)
+        SCROLLDOWN_BTN_TEXT_POS = (-18, 71)
         SCROLLDOWN_BTN_TEXT = "↓"
 
     class InventoryMoveType:

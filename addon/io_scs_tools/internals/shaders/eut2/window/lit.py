@@ -16,12 +16,13 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2015-2021: SCS Software
+# Copyright (C) 2015-2022: SCS Software
 
 from io_scs_tools.consts import Mesh as _MESH_consts
 from io_scs_tools.internals.shaders.eut2.parameters import get_fresnel_window
 from io_scs_tools.internals.shaders.eut2.dif_spec_add_env import DifSpecAddEnv
 from io_scs_tools.internals.shaders.eut2.window import window_uv_offset_ng
+from io_scs_tools.internals.shaders.std_node_groups import output_shader_ng
 from io_scs_tools.utils import material as _material_utils
 
 
@@ -110,11 +111,10 @@ class WindowLit(DifSpecAddEnv):
         final_mix_n.location = (output_n.location.x - pos_x_shift * 2, output_n.location.y - 200)
         final_mix_n.operation = "ADD"
 
-        out_shader_n = node_tree.nodes.new("ShaderNodeEeveeSpecular")
+        out_shader_n = node_tree.nodes.new("ShaderNodeGroup")
         out_shader_n.name = out_shader_n.label = WindowLit.WINDOW_OUT_SHADER_NODE
         out_shader_n.location = (output_n.location.x - pos_x_shift * 1, output_n.location.y)
-        out_shader_n.inputs["Base Color"].default_value = (0.0,) * 4
-        out_shader_n.inputs["Specular"].default_value = (0.0,) * 4
+        out_shader_n.node_tree = output_shader_ng.get_node_group()
 
         # create links
         node_tree.links.new(uv_recalc_n.inputs['UV'], uv_map_n.outputs['UV'])
@@ -143,10 +143,10 @@ class WindowLit(DifSpecAddEnv):
         node_tree.links.new(final_mix_n.inputs[1], interior_light_n.outputs[0])
 
         # pass 5
-        node_tree.links.new(out_shader_n.inputs['Emissive Color'], final_mix_n.outputs[0])
+        node_tree.links.new(out_shader_n.inputs['Color'], final_mix_n.outputs[0])
 
         # output
-        node_tree.links.new(output_n.inputs['Surface'], out_shader_n.outputs['BSDF'])
+        node_tree.links.new(output_n.inputs['Surface'], out_shader_n.outputs['Shader'])
 
     @staticmethod
     def set_fresnel(node_tree, bias_scale):

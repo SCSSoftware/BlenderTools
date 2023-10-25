@@ -9,7 +9,7 @@ def go_to_current_dir():
 p = scs_bt_configurator.start_it_up(getBundlePath(), "startup.blend")
 try:
     wait(Pattern("3dview_init.png").exact(), 5); hover(Pattern("3dview_init.png").exact()); type(Key.ESC)
-    click(Pattern("export_selected_button.png").exact())
+    click("export_selected_button.png")
     wait(Pattern("export_panel_preview.png").exact(), 2); hover(Pattern("3dview_local_view.png").exact())
     type(Key.ESC); wait(Pattern("3dview_init.png").exact(), 2)
     click(Pattern("export_selected_button.png").similar(0.90))

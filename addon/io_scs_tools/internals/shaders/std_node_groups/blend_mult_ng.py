@@ -16,7 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2019: SCS Software
+# Copyright (C) 2019-2022: SCS Software
 
 import bpy
 from io_scs_tools.consts import Material as _MAT_consts
@@ -118,8 +118,8 @@ def __create_node_group__():
 
     # pass 2
     blend_mult_g.links.new(mix_shader_n.inputs['Fac'], shader_to_rgb_n.outputs['Alpha'])
-    blend_mult_g.links.new(mix_shader_n.inputs[1], transparent_mult_n.outputs['BSDF'])
-    blend_mult_g.links.new(mix_shader_n.inputs[2], transparent_a_n.outputs['BSDF'])
+    blend_mult_g.links.new(mix_shader_n.inputs[1], transparent_a_n.outputs['BSDF'])
+    blend_mult_g.links.new(mix_shader_n.inputs[2], transparent_mult_n.outputs['BSDF'])
 
     # output pass
     blend_mult_g.links.new(output_n.inputs['Shader'], mix_shader_n.outputs['Shader'])

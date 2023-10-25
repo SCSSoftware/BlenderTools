@@ -16,7 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2013-2021: SCS Software
+# Copyright (C) 2013-2022: SCS Software
 
 import bpy
 import atexit
@@ -103,18 +103,21 @@ class _ImmediateMsgHandler:
         self.__message = ""
         self.__last_time = 0
 
-    def report_message_and_redraw(self, message, timeout):
+    def can_report(self, timeout):
+        """Checks if it can report already depending on given timeout.
+        :param timeout: time from last report needed for message to be reported
+        :type timeout: float
+        """
+        return 0 < timeout < time() - self.__last_time
+
+    def report_message_and_redraw(self, message):
         """Reports given message as the immediate message and redraws window.
 
         TODO: Try to find more suitable solution for redraw. Current one is marked as hack in official docs.
 
         :param message: new message
         :type message: str
-        :param timeout: time from last report needed for message to be reported
-        :type timeout: float
         """
-        if timeout > 0 and time() - self.__last_time < timeout:
-            return
 
         self.__message = message
         self.__last_time = time()
@@ -173,8 +176,8 @@ def lprint(string, values=(), report_errors=0, report_warnings=0, immediate_time
 
         # no matter the dump level always report message to immediate messenger
         immediate_messenger.reset_message()
-        if immediate_timeout >= 0:
-            immediate_messenger.report_message_and_redraw(string[2:] % values, immediate_timeout)
+        if immediate_messenger.can_report(immediate_timeout):
+            immediate_messenger.report_message_and_redraw(string[2:] % values)
 
         message = None
         if string[0] == 'E':

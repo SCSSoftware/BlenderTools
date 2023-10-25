@@ -16,12 +16,12 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2017-2021: SCS Software
+# Copyright (C) 2017-2022: SCS Software
 
 import os
 import collections
 from re import match
-from mathutils import Matrix, Vector
+from mathutils import Matrix, Vector, Color
 from io_scs_tools.consts import Mesh as _MESH_consts
 from io_scs_tools.consts import Operators as _OP_consts
 from io_scs_tools.consts import PrefabLocators as _PL_consts
@@ -166,6 +166,14 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
 
         _mesh_utils.bm_prepare_mesh_for_export(mesh, mesh_transf_mat)
 
+        # cache terrain points status, to avoid vertex group checking on each vertex if not present
+        terrain_point_vert_groups_names = set()
+        for vert_group in vert_groups:
+            # if vertex group name doesn't match prescribed one ignore this vertex group
+            if match(_OP_consts.TerrainPoints.vg_name_regex, vert_group.name):
+                terrain_point_vert_groups_names.add(vert_group.name)
+        has_terrain_points = len(terrain_point_vert_groups_names) > 0
+
         missing_uv_layers = {}  # stores missing uvs specified by materials of this object
         missing_vcolor = False  # indicates if object is missing vertex color layer
         missing_vcolor_a = False  # indicates if object is missing vertex color alpha layer
@@ -184,7 +192,7 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
         else:
             skin_stream = None
 
-        for poly in mesh.polygons:
+        for poly_i, poly in enumerate(mesh.polygons):
 
             mat_index = poly.material_index
 
@@ -228,8 +236,11 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
                 position = tuple(pos_transf_mat @ mesh.vertices[vert_i].co)
 
                 # 2. normal -> loop.normal -> calc_normals_split() has to be called before
-                normal = nor_transf_mat @ mesh_for_normals.loops[loop_i].normal
-                normal = tuple(Vector(normal).normalized())
+                if mesh_for_normals.has_custom_normals or poly.use_smooth:
+                    vert_normal = mesh_for_normals.loops[loop_i].normal
+                else:
+                    vert_normal = mesh_for_normals.polygons[poly_i].normal
+                normal = tuple((nor_transf_mat @ vert_normal).normalized())
                 vert_normals.append(normal)
 
                 # 3. uvs -> uv_lay = mesh.uv_layers[0].data; uv_lay[loop_i].uv
@@ -264,27 +275,45 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
 
                 vert_uvs.append(uvs)
 
-                # 4. vcol -> vcol_lay = mesh.vertex_colors[0].data; vcol_lay[loop_i].color
+                # 4. vcol -> vcol_lay = mesh.color_attributes[0].data; vcol_lay[loop_i].color
                 rgbas = []
-                if _MESH_consts.default_vcol not in mesh.vertex_colors:  # get RGB component of RGBA
+                if _MESH_consts.default_vcol not in mesh.color_attributes:  # get RGB component of RGBA
                     vcol = (1.0,) * 3
                     missing_vcolor = True
                 else:
-                    color = mesh.vertex_colors[_MESH_consts.default_vcol].data[loop_i].color
+                    vcolors = mesh.color_attributes[_MESH_consts.default_vcol]
+
+                    if vcolors.domain == 'POINT':
+                        color = Color(vcolors.data[vert_i].color[:3])
+                    elif vcolors.domain == 'CORNER':
+                        color = Color(vcolors.data[loop_i].color[:3])
+                    else:
+                        raise TypeError("Invalid vertex color domain type!")
+
+                    color = color.from_scene_linear_to_srgb()
                     vcol = (color[0] * 2, color[1] * 2, color[2] * 2)
 
-                if _MESH_consts.default_vcol + _MESH_consts.vcol_a_suffix not in mesh.vertex_colors:  # get A component of RGBA
+                if _MESH_consts.default_vcol + _MESH_consts.vcol_a_suffix not in mesh.color_attributes:  # get A component of RGBA
                     vcol += (1.0,)
                     missing_vcolor_a = True
                 else:
-                    alpha = mesh.vertex_colors[_MESH_consts.default_vcol + _MESH_consts.vcol_a_suffix].data[loop_i].color
+                    vcolors = mesh.color_attributes[_MESH_consts.default_vcol + _MESH_consts.vcol_a_suffix]
+
+                    if vcolors.domain == 'POINT':
+                        alpha = Color(vcolors.data[vert_i].color[:3])
+                    elif vcolors.domain == 'CORNER':
+                        alpha = Color(vcolors.data[loop_i].color[:3])
+                    else:
+                        raise TypeError("Invalid vertex color domain type!")
+
+                    alpha = alpha.from_scene_linear_to_srgb()
                     vcol += ((alpha[0] + alpha[1] + alpha[2]) / 3.0 * 2,)  # take avg of colors for alpha
 
                 rgbas.append(vcol)
                 rgbas_names[_MESH_consts.default_vcol] = True
 
                 # export rest of the vertex colors too (also multiply with 2 and with vcol multiplicator)
-                for vcol_layer in mesh.vertex_colors:
+                for vcol_layer in mesh.color_attributes:
 
                     # we already computed thoose so ignore them
                     if vcol_layer.name in [_MESH_consts.default_vcol, _MESH_consts.default_vcol + _MESH_consts.vcol_a_suffix]:
@@ -325,45 +354,46 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
                             has_unnormalized_skin = True
 
                 # save to terrain points storage if present in correct vertex group
-                for group in mesh.vertices[vert_i].groups:
+                if has_terrain_points:
+                    for group in mesh.vertices[vert_i].groups:
 
-                    # if current object doesn't have vertex group found in mesh data, then ignore that group
-                    # This can happen if multiple objects are using same mesh and
-                    # some of them have vertex groups, but others not.
-                    if group.group >= len(mesh_obj.vertex_groups):
-                        continue
+                        # if current object doesn't have vertex group found in mesh data, then ignore that group
+                        # This can happen if multiple objects are using same mesh and
+                        # some of them have vertex groups, but others not.
+                        if group.group >= len(mesh_obj.vertex_groups):
+                            continue
 
-                    curr_vg_name = mesh_obj.vertex_groups[group.group].name
+                        curr_vg_name = mesh_obj.vertex_groups[group.group].name
 
-                    # if vertex group name doesn't match prescribed one ignore this vertex group
-                    if not match(_OP_consts.TerrainPoints.vg_name_regex, curr_vg_name):
-                        continue
+                        # if vertex group name doesn't match prescribed one ignore this vertex group
+                        if curr_vg_name not in terrain_point_vert_groups_names:
+                            continue
 
-                    # if node index is not in bounds ignore this vertex group
-                    node_index = int(curr_vg_name[-1])
-                    if node_index >= _PL_consts.PREFAB_NODE_COUNT_MAX:
-                        continue
+                        # if node index is not in bounds ignore this vertex group
+                        node_index = int(curr_vg_name[-1])
+                        if node_index >= _PL_consts.PREFAB_NODE_COUNT_MAX:
+                            continue
 
-                    # if no variants defined add globally (without variant block)
-                    if len(root_object.scs_object_variant_inventory) == 0:
-                        used_terrain_points.add(-1, node_index, position, normal)
-                        continue
+                        # if no variants defined add globally (without variant block)
+                        if len(root_object.scs_object_variant_inventory) == 0:
+                            used_terrain_points.add(-1, node_index, position, normal)
+                            continue
 
-                    # finally iterate variant parts entries to find where this part is included
-                    # and add terrain points to transitional structure
-                    #
-                    # NOTE: variant index is donated by direct order of variants in inventory
-                    # so export in PIT has to use the same order otherwise variant
-                    # indices will be misplaced
-                    for variant_i, variant in enumerate(root_object.scs_object_variant_inventory):
+                        # finally iterate variant parts entries to find where this part is included
+                        # and add terrain points to transitional structure
+                        #
+                        # NOTE: variant index is donated by direct order of variants in inventory
+                        # so export in PIT has to use the same order otherwise variant
+                        # indices will be misplaced
+                        for variant_i, variant in enumerate(root_object.scs_object_variant_inventory):
 
-                        used_terrain_points.ensure_entry(variant_i, node_index)
+                            used_terrain_points.ensure_entry(variant_i, node_index)
 
-                        for variant_part in variant.parts:
-                            if variant_part.name == mesh_obj.scs_props.scs_part and variant_part.include:
+                            for variant_part in variant.parts:
+                                if variant_part.name == mesh_obj.scs_props.scs_part and variant_part.include:
 
-                                used_terrain_points.add(variant_i, node_index, position, normal)
-                                break
+                                    used_terrain_points.add(variant_i, node_index, position, normal)
+                                    break
 
             assert mesh_piece.add_face(pim_materials[pim_mat_name],
                                        tuple(piece_vert_indices[::winding_order * -1]),  # invert indices because of conversion to scs system

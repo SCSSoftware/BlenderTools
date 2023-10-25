@@ -326,6 +326,9 @@ def get_reflection_image(texture_path, report_invalid=False):
 
     tmp_scene.render.engine = "CYCLES"
     tmp_scene.cycles.samples = 1
+    tmp_scene.cycles.use_adaptive_sampling = False
+    tmp_scene.cycles.use_denoising = False
+    tmp_scene.cycles.max_bounces = 0
     tmp_scene.camera = cam_obj
     tmp_scene.render.image_settings.file_format = "TARGA"
     tmp_scene.render.image_settings.color_mode = "RGBA"

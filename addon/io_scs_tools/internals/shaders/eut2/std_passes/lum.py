@@ -16,9 +16,10 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2021: SCS Software
+# Copyright (C) 2021-2022: SCS Software
 
 from io_scs_tools.internals.shaders.eut2 import parameters
+from io_scs_tools.internals.shaders.std_node_groups import output_shader_ng
 
 
 class StdLum:
@@ -29,7 +30,6 @@ class StdLum:
     LUM_A_LVCOL_MULT_NODE = "LumAVColModulate"
     LUM_RESULT_MULT_NODE = "LumResult=RGB*A"
     LUM_MIX_FINAL_NODE = "LumOutFinal=LitResult+LuminanceResult"
-    LUM_A_INVERSE_NODE = "LumTransp=1-Alpha"
     LUM_OUT_SHADER_NODE = "LumShader"
 
     @staticmethod
@@ -100,18 +100,10 @@ class StdLum:
         lum_mix_final_n.location = (output_n.location.x - pos_x_shift * 2, output_n.location.y)
         lum_mix_final_n.operation = "ADD"
 
-        lum_a_inv_n = node_tree.nodes.new("ShaderNodeMath")
-        lum_a_inv_n.name = lum_a_inv_n.label = StdLum.LUM_A_INVERSE_NODE
-        lum_a_inv_n.location = (output_n.location.x - pos_x_shift * 2, output_n.location.y - 200)
-        lum_a_inv_n.operation = "SUBTRACT"
-        lum_a_inv_n.use_clamp = True
-        lum_a_inv_n.inputs[0].default_value = 0.999999  # TODO: change back to 1.0 after bug is fixed: https://developer.blender.org/T71426
-
-        lum_out_shader_n = node_tree.nodes.new("ShaderNodeEeveeSpecular")
+        lum_out_shader_n = node_tree.nodes.new("ShaderNodeGroup")
         lum_out_shader_n.name = lum_out_shader_n.label = StdLum.LUM_OUT_SHADER_NODE
         lum_out_shader_n.location = (output_n.location.x - pos_x_shift * 1, output_n.location.y)
-        lum_out_shader_n.inputs["Base Color"].default_value = (0.0,) * 4
-        lum_out_shader_n.inputs["Specular"].default_value = (0.0,) * 4
+        lum_out_shader_n.node_tree = output_shader_ng.get_node_group()
 
         # geometry links
         node_tree.links.new(lum_a_decode_n.inputs[0], base_texel_a_socket)
@@ -128,12 +120,11 @@ class StdLum:
 
         node_tree.links.new(lum_mix_final_n.inputs[0], lit_result_col_socket)
         node_tree.links.new(lum_mix_final_n.inputs[1], lum_result_mult_n.outputs[0])
-        node_tree.links.new(lum_a_inv_n.inputs[1], lit_result_a_socket)
 
-        node_tree.links.new(lum_out_shader_n.inputs['Emissive Color'], lum_mix_final_n.outputs[0])
-        node_tree.links.new(lum_out_shader_n.inputs['Transparency'], lum_a_inv_n.outputs[0])
+        node_tree.links.new(lum_out_shader_n.inputs['Color'], lum_mix_final_n.outputs[0])
+        node_tree.links.new(lum_out_shader_n.inputs['Alpha'], lit_result_a_socket)
 
-        node_tree.links.new(output_socket, lum_out_shader_n.outputs['BSDF'])
+        node_tree.links.new(output_socket, lum_out_shader_n.outputs['Shader'])
 
     @staticmethod
     def set_aux5(node_tree, aux_property):

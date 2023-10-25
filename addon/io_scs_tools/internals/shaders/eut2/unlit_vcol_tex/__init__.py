@@ -16,7 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2015-2021: SCS Software
+# Copyright (C) 2015-2022: SCS Software
 
 from mathutils import Color
 from io_scs_tools.consts import Mesh as _MESH_consts
@@ -31,6 +31,7 @@ from io_scs_tools.internals.shaders.flavors import blend_over
 from io_scs_tools.internals.shaders.flavors import fadesheet
 from io_scs_tools.internals.shaders.flavors import flipsheet
 from io_scs_tools.internals.shaders.flavors import paint
+from io_scs_tools.internals.shaders.std_node_groups import output_shader_ng
 from io_scs_tools.utils import convert as _convert_utils
 from io_scs_tools.utils import material as _material_utils
 
@@ -45,7 +46,6 @@ class UnlitVcolTex(BaseShader):
     DIFF_MULT_NODE = "DiffMultiplier"
     TEX_MULT_NODE = "TextureMultiplier"
     LUM_MULT_NODE = "LuminanceMultiplier"
-    ALPHA_INV_NODE = "AlphaInv"
     OUT_SHADER_NODE = "OutShader"
     OUTPUT_NODE = "Output"
 
@@ -119,19 +119,10 @@ class UnlitVcolTex(BaseShader):
         lum_mult_n.operation = "MULTIPLY"
         lum_mult_n.inputs[0].default_value = (1.0,) * 3
 
-        alpha_inv_n = node_tree.nodes.new("ShaderNodeMath")
-        alpha_inv_n.name = alpha_inv_n.label = UnlitVcolTex.ALPHA_INV_NODE
-        alpha_inv_n.location = (start_pos_x + pos_x_shift * 7, 1300)
-        alpha_inv_n.operation = "SUBTRACT"
-        alpha_inv_n.inputs[0].default_value = 0.999999  # TODO: change back to 1.0 after bug is fixed: https://developer.blender.org/T71426
-        alpha_inv_n.inputs[1].default_value = 1.0
-        alpha_inv_n.use_clamp = True
-
-        out_shader_node = node_tree.nodes.new("ShaderNodeEeveeSpecular")
+        out_shader_node = node_tree.nodes.new("ShaderNodeGroup")
         out_shader_node.name = out_shader_node.label = UnlitVcolTex.OUT_SHADER_NODE
         out_shader_node.location = (start_pos_x + pos_x_shift * 8, 1500)
-        out_shader_node.inputs["Base Color"].default_value = (0.0,) * 4
-        out_shader_node.inputs["Specular"].default_value = (0.0,) * 4
+        out_shader_node.node_tree = output_shader_ng.get_node_group()
 
         output_n = node_tree.nodes.new("ShaderNodeOutputMaterial")
         output_n.name = output_n.label = UnlitVcolTex.OUTPUT_NODE
@@ -151,14 +142,12 @@ class UnlitVcolTex(BaseShader):
         node_tree.links.new(tex_mult_n.inputs[0], diff_mult_n.outputs[0])
         node_tree.links.new(tex_mult_n.inputs[1], base_tex_n.outputs['Color'])
 
-        node_tree.links.new(alpha_inv_n.inputs[1], opacity_n.outputs['Value'])
-
         node_tree.links.new(lum_mult_n.inputs[1], tex_mult_n.outputs[0])
 
-        node_tree.links.new(out_shader_node.inputs['Emissive Color'], lum_mult_n.outputs[0])
-        node_tree.links.new(out_shader_node.inputs['Transparency'], alpha_inv_n.outputs['Value'])
+        node_tree.links.new(out_shader_node.inputs['Color'], lum_mult_n.outputs[0])
+        node_tree.links.new(out_shader_node.inputs['Alpha'], opacity_n.outputs['Value'])
 
-        node_tree.links.new(output_n.inputs['Surface'], out_shader_node.outputs['BSDF'])
+        node_tree.links.new(output_n.inputs['Surface'], out_shader_node.outputs['Shader'])
 
     @staticmethod
     def finalize(node_tree, material):
@@ -185,12 +174,12 @@ class UnlitVcolTex(BaseShader):
                 out_shader_n = node_tree.nodes[UnlitVcolTex.OUT_SHADER_NODE]
 
                 # alpha test pass has to get fully opaque input, thus remove transparency linkage
-                if out_shader_n.inputs['Transparency'].links:
-                    node_tree.links.remove(out_shader_n.inputs['Transparency'].links[0])
+                if out_shader_n.inputs['Alpha'].links:
+                    node_tree.links.remove(out_shader_n.inputs['Alpha'].links[0])
 
-                shader_from = out_shader_n.outputs['BSDF']
+                shader_from = out_shader_n.outputs['Shader']
                 alpha_from = node_tree.nodes[UnlitVcolTex.OPACITY_NODE].outputs[0]
-                shader_to = out_shader_n.outputs['BSDF'].links[0].to_socket
+                shader_to = out_shader_n.outputs['Shader'].links[0].to_socket
 
                 alpha_test.add_pass(node_tree, shader_from, alpha_from, shader_to)
 
@@ -200,6 +189,9 @@ class UnlitVcolTex(BaseShader):
             material.blend_method = "BLEND"
         if blend_over.is_set(node_tree):
             material.blend_method = "BLEND"
+
+        if material.blend_method == "OPAQUE" and node_tree.nodes[UnlitVcolTex.OUT_SHADER_NODE].inputs['Alpha'].links:
+            node_tree.links.remove(node_tree.nodes[UnlitVcolTex.OUT_SHADER_NODE].inputs['Alpha'].links[0])
 
     @staticmethod
     def set_diffuse(node_tree, color):
@@ -369,7 +361,7 @@ class UnlitVcolTex(BaseShader):
             location = tuple(out_node.location)
             out_node.location.x += 185
 
-            blend_add.init(node_tree, location, in_node.outputs['BSDF'], out_node.inputs['Surface'])
+            blend_add.init(node_tree, location, in_node.outputs['Shader'], out_node.inputs['Surface'])
         else:
             blend_add.delete(node_tree)
 
@@ -388,14 +380,14 @@ class UnlitVcolTex(BaseShader):
             in_node = node_tree.nodes[UnlitVcolTex.OUT_SHADER_NODE]
 
             # break link to out shader node as mult uses DST_COLOR as source factor in blend function
-            if in_node.inputs['Transparency'].links:
-                node_tree.links.remove(in_node.inputs['Transparency'].links[0])
+            if in_node.inputs['Alpha'].links:
+                node_tree.links.remove(in_node.inputs['Alpha'].links[0])
 
             # put it on location of output node & move output node for one slot to the right
             location = tuple(out_node.location)
             out_node.location.x += 185
 
-            blend_mult.init(node_tree, location, in_node.outputs['BSDF'], out_node.inputs['Surface'])
+            blend_mult.init(node_tree, location, in_node.outputs['Shader'], out_node.inputs['Surface'])
         else:
             blend_mult.delete(node_tree)
 
@@ -415,11 +407,11 @@ class UnlitVcolTex(BaseShader):
             from_color_socket = node_tree.nodes[UnlitVcolTex.LUM_MULT_NODE].outputs[0]
 
             # remove link to transparency as awhite sets alpha to 1
-            if out_shader_node.inputs['Transparency'].links:
-                node_tree.links.remove(out_shader_node.inputs['Transparency'].links[0])
+            if out_shader_node.inputs['Alpha'].links:
+                node_tree.links.remove(out_shader_node.inputs['Alpha'].links[0])
 
             location = (out_shader_node.location.x - 185, out_shader_node.location.y)
-            awhite.init(node_tree, location, from_mix_factor, from_color_socket, out_shader_node.inputs['Emissive Color'])
+            awhite.init(node_tree, location, from_mix_factor, from_color_socket, out_shader_node.inputs['Color'])
         else:
             awhite.delete(node_tree)
 

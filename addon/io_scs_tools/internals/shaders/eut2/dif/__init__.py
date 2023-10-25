@@ -16,7 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2015-2019: SCS Software
+# Copyright (C) 2015-2022: SCS Software
 
 from io_scs_tools.consts import Mesh as _MESH_consts
 from io_scs_tools.internals.shaders.base import BaseShader
@@ -206,6 +206,9 @@ class Dif(BaseShader):
             material.blend_method = "BLEND"
         if blend_over.is_set(node_tree):
             material.blend_method = "BLEND"
+
+        if material.blend_method == "OPAQUE" and node_tree.nodes[Dif.COMPOSE_LIGHTING_NODE].inputs['Alpha'].links:
+            node_tree.links.remove(node_tree.nodes[Dif.COMPOSE_LIGHTING_NODE].inputs['Alpha'].links[0])
 
     @staticmethod
     def set_add_ambient(node_tree, factor):

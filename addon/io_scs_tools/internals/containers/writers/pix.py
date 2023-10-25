@@ -16,9 +16,9 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2013-2021: SCS Software
+# Copyright (C) 2013-2022: SCS Software
 
-from io_scs_tools.utils.convert import float_to_hex_string
+from io_scs_tools.utils.convert import float_to_hex_string, float_array_to_hex_string
 from io_scs_tools.utils.printout import lprint
 
 _LIST_TYPE = list
@@ -61,7 +61,8 @@ def _format_data(data_line, data_line_type, spaces=5, data_hex=True):
 
     if data_line_type == _FLOAT_TYPE:
         if data_hex:
-            data = '  '.join([float_to_hex_string(x) for x in data_line])
+            data = float_array_to_hex_string(data_line)
+            # data = '  '.join([float_to_hex_string(x) for x in data_line])
         else:
             data = ' '.join([str(x) for x in data_line])
     elif data_line_type == _STR_TYPE:

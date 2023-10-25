@@ -16,7 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2013-2021: SCS Software
+# Copyright (C) 2013-2022: SCS Software
 
 from collections import OrderedDict
 from io_scs_tools.exp.pim.piece_stream import Stream
@@ -62,7 +62,7 @@ class Piece:
     def __calc_vertex_hash(index, normal, uvs, rgba, tangent):
         """Calculates vertex hash from original vertex index, uvs components and vertex color.
         :param index: original index from Blender mesh
-        :type index: int
+        :type index: str
         :param normal: normalized vector representation of the normal
         :type normal: tuple | mathutils.Vector
         :param uvs: list of uvs used on vertex (each uv must be in SCS coordinates)
@@ -74,18 +74,34 @@ class Piece:
         :return: calculated vertex hash
         :rtype: str
         """
-
-        vertex_hash = str(index)
-
-        vertex_hash = "%s%.4f%.4f%.4f" % (vertex_hash, normal[0], normal[1], normal[2])
-
-        for uv in uvs:
-            vertex_hash = "%s%.4f%.4f" % (vertex_hash, uv[0], uv[1])
-
-        vertex_hash = "%s%.4f%.4f%.4f%.4f" % (vertex_hash, rgba[0], rgba[1], rgba[2], rgba[3])
+        fprec = 10 ** 4
 
         if tangent:
-            vertex_hash = "%s%.4f%.4f%.4f%.4f" % (vertex_hash, tangent[0], tangent[1], tangent[2], tangent[3])
+            vertex_hash = (index,
+                           int(normal[0] * fprec),
+                           int(normal[1] * fprec),
+                           int(normal[2] * fprec),
+                           int(rgba[0] * fprec),
+                           int(rgba[1] * fprec),
+                           int(rgba[2] * fprec),
+                           int(rgba[3] * fprec),
+                           int(tangent[0] * fprec),
+                           int(tangent[1] * fprec),
+                           int(tangent[2] * fprec),
+                           int(tangent[3] * fprec))
+        else:
+            vertex_hash = (index,
+                           int(normal[0] * fprec),
+                           int(normal[1] * fprec),
+                           int(normal[2] * fprec),
+                           int(rgba[0] * fprec),
+                           int(rgba[1] * fprec),
+                           int(rgba[2] * fprec),
+                           int(rgba[3] * fprec))
+
+        for uv in uvs:
+            vertex_hash += (int(uv[0] * fprec),
+                            int(uv[1] * fprec))
 
         return vertex_hash
 
@@ -142,7 +158,7 @@ class Piece:
     def add_vertex(self, vert_index, position, normal, uvs, uvs_aliases, rgba, tangent):
         """Adds new vertex to position and normal streams
         :param vert_index: original vertex index from Blender mesh
-        :type vert_index: int | str
+        :type vert_index: str
         :param position: vector or tuple of vertex position in SCS coordinates
         :type position: tuple | mathutils.Vector
         :param normal: vector or tuple of vertex normal in SCS coordinates
@@ -171,7 +187,7 @@ class Piece:
             stream.add_entry(normal)
 
             for i, uv in enumerate(uvs):
-                uv_type = Stream.Types.UV + str(i)
+                uv_type = "%s%i" % (Stream.Types.UV, i)
                 # create more uv streams on demand
                 if uv_type not in self.__streams:
                     self.__streams[uv_type] = Stream(Stream.Types.UV, i)
@@ -249,8 +265,7 @@ class Piece:
 
         # APPEND TRIANGLES
         triangle_section = _SectionData("Triangles")
-        for triangle in self.__triangles:
-            triangle_section.data.append(triangle)
+        triangle_section.data = self.__triangles
 
         section.sections.append(triangle_section)
 

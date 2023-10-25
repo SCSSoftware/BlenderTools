@@ -16,17 +16,17 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2015-2019: SCS Software
+# Copyright (C) 2015-2022: SCS Software
 
-from io_scs_tools.internals.shaders.base import BaseShader
 from io_scs_tools.consts import Mesh as _MESH_consts
+from io_scs_tools.internals.shaders.base import BaseShader
+from io_scs_tools.internals.shaders.std_node_groups import output_shader_ng
 from io_scs_tools.utils import material as _material_utils
 
 
 class Shadowmap(BaseShader):
     UV_MAP_NODE = "UVMap"
     BASE_TEX_NODE = "BaseTex"
-    ALPHA_INV_NODE = "AlphaInv"
     OUT_SHADER_NODE = "OutShader"
     OUTPUT_NODE = "Output"
 
@@ -59,20 +59,11 @@ class Shadowmap(BaseShader):
         base_tex_n.location = (start_pos_x + pos_x_shift, start_pos_y + 1500)
         base_tex_n.width = 140
 
-        alpha_inv_n = node_tree.nodes.new("ShaderNodeMath")
-        alpha_inv_n.name = alpha_inv_n.label = Shadowmap.ALPHA_INV_NODE
-        alpha_inv_n.location = (start_pos_x + pos_x_shift * 2, 1300)
-        alpha_inv_n.operation = "SUBTRACT"
-        alpha_inv_n.inputs[0].default_value = 0.999999  # TODO: change back to 1.0 after bug is fixed: https://developer.blender.org/T71426
-        alpha_inv_n.inputs[1].default_value = 1.0
-        alpha_inv_n.use_clamp = True
-
-        out_shader_node = node_tree.nodes.new("ShaderNodeEeveeSpecular")
+        out_shader_node = node_tree.nodes.new("ShaderNodeGroup")
         out_shader_node.name = out_shader_node.label = Shadowmap.OUT_SHADER_NODE
         out_shader_node.location = (start_pos_x + pos_x_shift * 3, 1500)
-        out_shader_node.inputs["Emissive Color"].default_value = (0.0,) * 4
-        out_shader_node.inputs["Base Color"].default_value = (0.0,) * 4
-        out_shader_node.inputs["Specular"].default_value = (0.0,) * 4
+        out_shader_node.node_tree = output_shader_ng.get_node_group()
+        out_shader_node.inputs["Color"].default_value = (0.0,) * 4
 
         output_n = node_tree.nodes.new("ShaderNodeOutputMaterial")
         output_n.name = output_n.label = Shadowmap.OUTPUT_NODE
@@ -81,11 +72,9 @@ class Shadowmap(BaseShader):
         # links creation
         node_tree.links.new(base_tex_n.inputs['Vector'], uv_map_n.outputs['UV'])
 
-        node_tree.links.new(alpha_inv_n.inputs[1], base_tex_n.outputs['Color'])
+        node_tree.links.new(out_shader_node.inputs['Alpha'], base_tex_n.outputs['Color'])
 
-        node_tree.links.new(out_shader_node.inputs['Transparency'], alpha_inv_n.outputs['Value'])
-
-        node_tree.links.new(output_n.inputs['Surface'], out_shader_node.outputs['BSDF'])
+        node_tree.links.new(output_n.inputs['Surface'], out_shader_node.outputs['Shader'])
 
     @staticmethod
     def finalize(node_tree, material):
