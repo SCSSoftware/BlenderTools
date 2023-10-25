@@ -416,14 +416,15 @@ class VertexColorTools:
                 vcolor = mesh.color_attributes.new(name=layer_name, type='FLOAT_COLOR', domain='CORNER')
 
                 buffer = None
+                color = list(Color((0.5,) * 3).from_srgb_to_scene_linear()) + [1.0, ]  # our default is 0.5, even for alpha where 0.5 is also max
                 if layer_name == _VCT_consts.ColoringLayersTypes.Color:
-                    buffer = numpy.array([0.5] * (len(mesh.loops) * 4))
+                    buffer = numpy.array(color * len(mesh.loops))
                 elif layer_name == _VCT_consts.ColoringLayersTypes.Decal:
-                    buffer = numpy.array([1.0] * (len(mesh.loops) * 4))
+                    buffer = numpy.array(color * len(mesh.loops))
                 elif layer_name == _VCT_consts.ColoringLayersTypes.AO:
-                    buffer = numpy.array([0.5] * (len(mesh.loops) * 4))
+                    buffer = numpy.array(color * len(mesh.loops))
                 elif layer_name == _VCT_consts.ColoringLayersTypes.AO2:
-                    buffer = numpy.array([0.5] * (len(mesh.loops) * 4))
+                    buffer = numpy.array(color * len(mesh.loops))
 
                 if buffer is not None:
                     vcolor.data.foreach_set("color", buffer)
@@ -534,6 +535,19 @@ class VertexColorTools:
             if VertexColorTools.SCS_TOOLS_OT_StartVColoring.__static_is_active:
                 return {'CANCELLED'}
 
+            # ensure our output layers definition
+            #
+            # NOTE: here is the deal: when switching to vertex paint mode
+            # blender creates first color attribute if none is present.
+            # As it happens it's name is the same as we use, so to ensure it creates proper
+            # color type and domain we rather create our output layers beforehand.
+            mesh_vcolors = context.active_object.data.color_attributes
+            if _MESH_consts.default_vcol not in mesh_vcolors:
+                mesh_vcolors.new(name=_MESH_consts.default_vcol, type='FLOAT_COLOR', domain='CORNER')
+
+            if _MESH_consts.default_vcol + _MESH_consts.vcol_a_suffix not in mesh_vcolors:
+                mesh_vcolors.new(name=_MESH_consts.default_vcol + _MESH_consts.vcol_a_suffix, type='FLOAT_COLOR', domain='CORNER')
+
             bpy.ops.object.mode_set(mode="VERTEX_PAINT")
 
             # NOTE: We have to push undo event otherwise undo was just
@@ -629,7 +643,8 @@ class VertexColorTools:
                 lprint(message)
                 self.report({'INFO'}, message[2:])
 
-                _view3d_utils.tag_redraw_all_view3d()  # trigger view update to see rebaked colors
+                # trigger view update to see rebaked colors, with fake reassignment.
+                mesh.color_attributes.active_color = mesh.color_attributes.active_color
 
             else:
 

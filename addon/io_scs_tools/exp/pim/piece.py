@@ -74,7 +74,7 @@ class Piece:
         :return: calculated vertex hash
         :rtype: str
         """
-        fprec = 10 * 4
+        fprec = 10 ** 4
 
         if tangent:
             vertex_hash = (index,

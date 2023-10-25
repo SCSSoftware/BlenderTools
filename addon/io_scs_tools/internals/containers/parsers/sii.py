@@ -108,7 +108,7 @@ class _Tokenizer():
 
                 else:
 
-                    lprint("W No included SII file found, ignoring include: %r\n\t   from: %r",
+                    lprint("D No included SII file found, ignoring include: %r\n\t   from: %r",
                            (match.group(1), self.filepath))
 
                 new_array = self.input[:self.current_line]

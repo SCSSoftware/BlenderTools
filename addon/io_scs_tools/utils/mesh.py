@@ -16,7 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2013-2019: SCS Software
+# Copyright (C) 2013-2022: SCS Software
 
 import bpy
 import bmesh
@@ -386,13 +386,14 @@ def vcoloring_rebake(mesh, vcolor_arrays, old_array_hash):
         mesh_vcolors.new(name=_MESH_consts.default_vcol + _MESH_consts.vcol_a_suffix, type='FLOAT_COLOR', domain='CORNER')
 
     # get vertex color data for hash calculation
-    if mesh_vcolors.active.name == _VCT_consts.ColoringLayersTypes.Color:
+    active_color_name = mesh_vcolors.active_color.name
+    if active_color_name == _VCT_consts.ColoringLayersTypes.Color:
         color_loops.foreach_get("color", vcolor_arrays[0])
-    elif mesh_vcolors.active.name == _VCT_consts.ColoringLayersTypes.Decal:
+    elif active_color_name == _VCT_consts.ColoringLayersTypes.Decal:
         decal_loops.foreach_get("color", vcolor_arrays[0])
-    elif mesh_vcolors.active.name == _VCT_consts.ColoringLayersTypes.AO:
+    elif active_color_name == _VCT_consts.ColoringLayersTypes.AO:
         ao_loops.foreach_get("color", vcolor_arrays[0])
-    elif mesh_vcolors.active.name == _VCT_consts.ColoringLayersTypes.AO2:
+    elif active_color_name == _VCT_consts.ColoringLayersTypes.AO2:
         ao2_loops.foreach_get("color", vcolor_arrays[0])
 
     new_array_hash = hash(vcolor_arrays[0].tobytes())
@@ -406,7 +407,16 @@ def vcoloring_rebake(mesh, vcolor_arrays, old_array_hash):
     ao_loops.foreach_get("color", vcolor_arrays[2])
     ao2_loops.foreach_get("color", vcolor_arrays[3])
 
+    # convert to srgb
+    for i in (0, 2, 3):
+        vcolor_arrays[i] = _convert.np_linear_to_srgb(vcolor_arrays[i])
+
+    # combine
     vcolor_arrays[0] = vcolor_arrays[0] * vcolor_arrays[2] * vcolor_arrays[3] * 4.0
+
+    # convert back to scene linear
+    vcolor_arrays[0] = _convert.np_srgb_to_linear(vcolor_arrays[0])
+
     # alpha is donated only by decal layer color, thus we just comment it out
     # vcolor_arrays[1] = vcolor_arrays[1]
 

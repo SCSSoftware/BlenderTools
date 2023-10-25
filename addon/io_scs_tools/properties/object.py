@@ -16,7 +16,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2013-2021: SCS Software
+# Copyright (C) 2013-2022: SCS Software
 
 import bpy
 from bpy.props import (StringProperty,
@@ -293,6 +293,10 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
             obj.empty_display_size = 5.0
             obj.empty_display_type = "ARROWS"
             obj.show_name = True
+
+            # ensure default part
+            part_inventory = obj.scs_object_part_inventory
+            _inventory.add_item(part_inventory, _PART_consts.default_name, conditional=True)
         else:
             obj.empty_display_size = 1.0
             obj.empty_display_type = "PLAIN_AXES"

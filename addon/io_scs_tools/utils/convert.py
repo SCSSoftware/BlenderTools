@@ -16,11 +16,12 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2013-2021: SCS Software
+# Copyright (C) 2013-2022: SCS Software
 
 import struct
 import math
 import re
+from numpy import vectorize
 from mathutils import Matrix, Quaternion, Vector, Color
 from io_scs_tools.consts import Colors as _COL_consts
 from io_scs_tools.utils.printout import lprint
@@ -32,9 +33,44 @@ _FLOAT_STRUCT = struct.Struct(">f")
 _BYTE_STRUCT = struct.Struct(">I")
 
 
+def __linear_to_srgb(x):
+    """Converts value from linear to srgb
+    NOTE: taken from game and blender code
+
+    :param x: value to convert
+    :type x: float
+    """
+
+    if x <= 0.0031308:
+        return 12.92 * x
+    else:
+        return (x ** (1.0 / 2.4)) * 1.055 - 0.055
+
+
+def __srgb_to_linear(x):
+    """Converts value from linear to srgb
+    NOTE: taken from game and blender code
+
+    :param x: value to convert
+    :type x: float
+    """
+
+    if x <= 0.04045:
+        return x / 12.92
+    else:
+        return ((x + 0.055) / 1.055) ** 2.4
+
+
+np_linear_to_srgb = vectorize(__linear_to_srgb)
+"""Vectorizes linear to srgb function to be used with numpy arrays."""
+
+
+np_srgb_to_linear = vectorize(__srgb_to_linear)
+"""Vectorizes srgb to linear function to be used with numpy arrays."""
+
+
 def linear_to_srgb(value):
     """Converts linear color to srgb colorspace. Function can convert single float or list of floats.
-    NOTE: taken from game code
 
     :param value: list of floats or float
     :type value: float | collections.Iterable[float]
@@ -44,26 +80,13 @@ def linear_to_srgb(value):
 
     is_float = isinstance(value, float)
     if is_float:
-        vals = [value]
+        return __linear_to_srgb(value)
     else:
-        vals = list(value)
-
-    for i, v in enumerate(vals):
-        if v <= 0.0031308:
-            vals[i] = 12.92 * v
-        else:
-            a = 0.055
-            vals[i] = (v ** (1.0 / 2.4) * (1.0 + a)) - a
-
-    if is_float:
-        return vals[0]
-    else:
-        return vals
+        return [__linear_to_srgb(v) for v in list(value)]
 
 
 def srgb_to_linear(value):
     """Converts srgb color to linear colorspace. Function can convert single float or list of floats.
-    NOTE: taken from game code
 
     :param value: list of floats or float
     :type value: float | collections.Iterable[float]
@@ -73,22 +96,9 @@ def srgb_to_linear(value):
 
     is_float = isinstance(value, float)
     if is_float:
-        vals = [value]
+        return __srgb_to_linear(value)
     else:
-        vals = list(value)
-
-    for i, v in enumerate(vals):
-
-        if v <= 0.04045:
-            vals[i] = v / 12.92
-        else:
-            a = 0.055
-            vals[i] = ((v + a) / (1.0 + a)) ** 2.4
-
-    if is_float:
-        return vals[0]
-    else:
-        return vals
+        return [__srgb_to_linear(v) for v in list(value)]
 
 
 def pre_gamma_corrected_col(color):
