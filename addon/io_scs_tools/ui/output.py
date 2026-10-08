@@ -21,9 +21,9 @@
 import os
 import bpy
 from bpy.types import Panel, UIList
-from io_scs_tools.utils import path as _path_utils
-from io_scs_tools.utils import get_scs_globals as _get_scs_globals
-from io_scs_tools.ui import shared as _shared
+from . import shared as _shared
+from ..utils import path as _path_utils
+from ..utils import get_scs_globals as _get_scs_globals
 
 
 class _OutputPanelBlDefs(_shared.HeaderIconPanel):
@@ -166,8 +166,7 @@ class SCS_TOOLS_PT_ConversionHelper(_OutputPanelBlDefs, Panel):
                 active_propname="conv_hlpr_custom_paths_active",
                 rows=4,
                 maxrows=5,
-                type='DEFAULT',
-                columns=9
+                type='DEFAULT'
             )
 
             side_bar = row.column(align=True)
@@ -229,7 +228,7 @@ def register():
     for cls in classes:
         bpy.utils.register_class(cls)
 
-    from io_scs_tools import SCS_TOOLS_MT_MainMenu
+    from .. import SCS_TOOLS_MT_MainMenu
     SCS_TOOLS_MT_MainMenu.append_output_entry("Output - Export", SCS_TOOLS_PT_ExportPanel.__name__)
     SCS_TOOLS_MT_MainMenu.append_output_entry("Output - Conversion", SCS_TOOLS_PT_ConversionHelper.__name__)
 

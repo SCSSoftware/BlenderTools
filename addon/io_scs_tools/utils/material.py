@@ -308,11 +308,11 @@ def get_reflection_image(texture_path, report_invalid=False):
     camera.type = "PANO"
     camera.lens = 5
     camera.sensor_width = 32
-    camera.cycles.panorama_type = "EQUIRECTANGULAR"
-    camera.cycles.latitude_min = -pi * 0.5
-    camera.cycles.latitude_max = pi * 0.5
-    camera.cycles.longitude_min = pi
-    camera.cycles.longitude_max = -pi
+    camera.panorama_type = "EQUIRECTANGULAR"
+    camera.latitude_min = -pi * 0.5
+    camera.latitude_max = pi * 0.5
+    camera.longitude_min = pi
+    camera.longitude_max = -pi
 
     cam_obj = bpy.data.objects.new(camera.name, camera)
     cam_obj.location = (0,) * 3
@@ -392,8 +392,8 @@ def get_material_info(obj):
         for slot in obj.material_slots:
 
             if slot.material:
-
-                if obj.scs_props.scs_part.startswith("coll"):
+                # "_col..." used in additional parts, "..._c" used in curve models
+                if obj.scs_props.scs_part.startswith(("coll", "_col")) or obj.scs_props.scs_part.endswith(("_c")):
                     has_static_collision = True
 
                 effect_name = slot.material.scs_props.mat_effect_name.lower()
@@ -436,10 +436,13 @@ def set_shader_data_to_material(material, section, is_import=False, override_bac
 
     attributes = {}
     textures = {}
+    mappings = {}
     attribute_i = 0
     texture_i = 0
+    mapping_i = 0
     used_attribute_types = {}  # attribute types used by current shader
     used_texture_types = {}  # texture types used by current shader and should be overlooked during clearing of texture slots
+    used_mapping_types = {}  # UV mapping types used by current shader (created especially for shaders that use UV without textures like 'interior' shader) 
     for item in section.sections:
 
         if item.type == "Attribute":
@@ -475,6 +478,20 @@ def set_shader_data_to_material(material, section, is_import=False, override_bac
             textures[str(texture_i)] = texture_data
             texture_i += 1
 
+        elif item.type == "Mapping":
+            uvmapping_data = {}
+            for prop in item.props:
+                # print('      prop: "%s"' % str(prop))
+                uvmapping_data[prop[0]] = prop[1]
+
+            # APPLY SECTION MAPPING VALUES
+            mapping_type = uvmapping_data['Tag']
+
+            used_mapping_types[mapping_type] = uvmapping_data
+
+            mappings[str(mapping_i)] = uvmapping_data
+            mapping_i += 1
+
     scs_props_keys = set(material.scs_props.keys())
     # if overriding back data also make sure to clear attribute values for current shader
     # to prevent storing of unused values from blend data block
@@ -490,6 +507,11 @@ def set_shader_data_to_material(material, section, is_import=False, override_bac
             if key.startswith("shader_texture"):
                 for used_tex_type in used_texture_types:
                     if used_tex_type in key[14:]:
+                        is_key_used = True
+
+            if key.startswith("shader_mapping"):
+                for used_map_type in used_mapping_types:
+                    if used_map_type in key[14:]:
                         is_key_used = True
 
             # delete only unused shader keys everything else should stay in the place
@@ -677,12 +699,72 @@ def set_shader_data_to_material(material, section, is_import=False, override_bac
             settings, map_type = _tobj_imp.get_settings_and_type(tobj_abs_path)
             created_tex_settings[tex_type] = settings
 
+    # collect old uv mappings per tex_coord values and delete them from material (they will be set back later)
+    old_uv_mappings = {}
+    for mapping_type in used_mapping_types:
+
+        uv_mappings = getattr(material.scs_props, "shader_mapping_" + mapping_type, [])
+        if override_back_data:
+            while len(uv_mappings) > 0:
+
+                # save only set uv mapping tex_cord:value pairs
+                if uv_mappings[0].value != "":
+                    old_uv_mappings[uv_mappings[0].tex_coord] = uv_mappings[0].value
+
+                uv_mappings.remove(0)
+
+    # apply used mappings
+    created_uv_mappings = []
+    for mapping_type in used_mapping_types.keys():
+
+        # skip unknown mapping type
+        if mapping_type not in ("perturbation", "vertex_pos", "unknown"):
+            lprint("D Trying to apply unknown mapping type to SCS material: %r", (mapping_type,))
+            continue
+
+        uvmapping_data = used_mapping_types[mapping_type]
+
+        uv_mappings = getattr(material.scs_props, "shader_mapping_" + mapping_type)
+
+        # if there is an info about mapping in shader use it (in case of imported material this condition will fall!)
+        if "TexCoord" in uvmapping_data:
+
+            for tex_coord_i, tex_coord in enumerate(uvmapping_data['TexCoord']):
+                tex_coord = int(tex_coord)
+
+                if tex_coord != -1:
+                    mapping = uv_mappings.add()
+                    mapping['mapping_type'] = mapping_type
+                    mapping['tex_coord'] = tex_coord
+
+                    # apply uv mappings either from imported data or from old mappings of previous shader
+                    if "scs_tex_aliases" in material:  # scs_tex_aliases are present only on import
+
+                        # if mesh is corrupted then tex aliases won't be filled in properly in material from PIM importer,
+                        # so report error and skip creation of texture mapping for current tex_coord.
+                        if str(tex_coord) not in material["scs_tex_aliases"]:
+                            lprint("E Material %r is missing mapping coordinate aliases, some UV mappings in Material will remain empty!",
+                                   (material.name,))
+                            continue
+
+                        mapping['value'] = material["scs_tex_aliases"][str(tex_coord)]
+                        created_uv_mappings.append((mapping_type, mapping.value, tex_coord))
+
+                    elif tex_coord in old_uv_mappings:
+
+                        mapping['value'] = old_uv_mappings[tex_coord]
+                        created_uv_mappings.append((mapping_type, mapping.value, tex_coord))
+
+                else: 
+                    lprint("D Trying to apply negative tex_coord in SCS Material Mappings: %r", (mapping_type,))
+
     # override shader data for identifying used attributes and textures in UI
     if override_back_data:
 
         shader_data = {'effect': preset_effect,
                        'attributes': attributes,
-                       'textures': textures}
+                       'textures': textures,
+                       'mappings' : mappings}
         material["scs_shader_attributes"] = shader_data
 
     # setup nodes for 3D view visualization
@@ -695,6 +777,14 @@ def set_shader_data_to_material(material, section, is_import=False, override_bac
         # data[1] = uv mapping value;
         # data[2] = tex coord value
         _shader.set_uv(material, mapping_data[0], mapping_data[1], mapping_data[2])
+
+    for mapping_data in created_uv_mappings:
+
+        # data[0] = mapping type;
+        # data[1] = uv mapping value;
+        # data[2] = tex coord value
+
+        _shader.set_mapping(material, mapping_data[0], mapping_data[1], mapping_data[2])
 
 
 def reload_tobj_settings(material, tex_type):
@@ -806,7 +896,7 @@ def set_texture_settings_to_node(tex_node, settings):
 
     # linear colorspace
     if settings[0] == "1":
-        image.colorspace_settings.name = "Linear"
+        image.colorspace_settings.name = "Linear Rec.709"
     else:
         image.colorspace_settings.name = "sRGB"
 
@@ -815,7 +905,7 @@ def set_texture_settings_to_node(tex_node, settings):
         if image.filepath[-4:] in (".tga", ".dds"):
             image.colorspace_settings.name = "Non-Color"
         elif image.filepath[-4:] == ".png" and image.is_float:
-            image.colorspace_settings.name = "Linear"
+            image.colorspace_settings.name = "Linear Rec.709"
 
 
 def has_valid_color_management(scene):

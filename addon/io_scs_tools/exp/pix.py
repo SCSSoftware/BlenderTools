@@ -20,22 +20,24 @@
 
 import bpy
 import os
-from io_scs_tools.utils import path as _path_utils
-from io_scs_tools.utils import object as _object_utils
-from io_scs_tools.utils import get_scs_globals as _get_scs_globals
-from io_scs_tools.utils.printout import lprint
-from io_scs_tools.exp import pia as _pia
-from io_scs_tools.exp import pic as _pic
-from io_scs_tools.exp import pis as _pis
-from io_scs_tools.exp import pit as _pit
-from io_scs_tools.exp import pit_ef as _pit_ef
-from io_scs_tools.exp.pim import exporter as _pim_exporter
-from io_scs_tools.exp.pim_ef import exporter as _pim_ef_exporter
-from io_scs_tools.exp.pip import exporter as _pip_exporter
-from io_scs_tools.exp.transition_structs.bones import BonesTrans
-from io_scs_tools.exp.transition_structs.materials import MaterialsTrans
-from io_scs_tools.exp.transition_structs.parts import PartsTrans
-from io_scs_tools.exp.transition_structs.terrain_points import TerrainPntsTrans
+from . import pia as _pia
+from . import pia as _pia
+from . import pic as _pic
+from . import pis as _pis
+from . import pit as _pit
+from . import pit_am as _pit_am
+from . import pit_ef as _pit_ef
+from .pim import exporter as _pim_exporter
+from .pim_ef import exporter as _pim_ef_exporter
+from .pip import exporter as _pip_exporter
+from ..utils import path as _path_utils
+from ..utils import object as _object_utils
+from ..utils import get_scs_globals as _get_scs_globals
+from ..utils.printout import lprint
+from .transition_structs.bones import BonesTrans
+from .transition_structs.materials import MaterialsTrans
+from .transition_structs.parts import PartsTrans
+from .transition_structs.terrain_points import TerrainPntsTrans
 
 
 def _get_objects_by_type(blender_objects, parts):
@@ -165,7 +167,7 @@ def export(dirpath, name_suffix, root_object, game_object_list):
         in_args = (dirpath, name_suffix, root_object, armature_object, skeleton_filepath, mesh_objects, model_locators)
         trans_structs_args = (parts, materials, bones, terrain_points)
 
-        if scs_globals.export_output_type == "5":
+        if scs_globals.export_output_type in ("5", "5_AM"):
             export_success = _pim_exporter.execute(*(in_args + trans_structs_args))
         elif scs_globals.export_output_type == "EF":
             export_success = _pim_ef_exporter.execute(*(in_args + trans_structs_args))
@@ -192,7 +194,9 @@ def export(dirpath, name_suffix, root_object, game_object_list):
         in_args = (root_object, dirpath + os.sep + root_object.name, name_suffix)
         trans_structs_args = (parts, materials)
 
-        if scs_globals.export_output_type == "5":
+        if scs_globals.export_output_type == "5_AM":
+            export_success = _pit_am.export(*(in_args + trans_structs_args))
+        elif scs_globals.export_output_type == "5":
             export_success = _pit.export(*(in_args + trans_structs_args))
         elif scs_globals.export_output_type == "EF":
             export_success = _pit_ef.export(*(in_args + trans_structs_args))

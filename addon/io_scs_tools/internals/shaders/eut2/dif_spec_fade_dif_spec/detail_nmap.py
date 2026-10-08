@@ -18,9 +18,8 @@
 
 # Copyright (C) 2015-2019: SCS Software
 
-import bpy
-from io_scs_tools.internals.shaders.flavors import nmap
-from io_scs_tools.utils import material as _material_utils
+from ...flavors import nmap
+from .....utils import material as _material_utils
 
 DET_NMAP_NODE = "DetailNormalMapMat"
 DET_NMAP_TEX_NODE = "DetailNMapTex"

@@ -50,4 +50,4 @@ class DifSpecOcluAddEnv(DifSpecOclu, StdAddEnv):
         add_env_gn = node_tree.nodes[StdAddEnv.ADD_ENV_GROUP_NODE]
 
         # links creation
-        node_tree.links.new(add_env_gn.inputs['Strength Multiplier'], oclu_sep_n.outputs['R'])
+        node_tree.links.new(add_env_gn.inputs['Strength Multiplier'], oclu_sep_n.outputs['Red'])

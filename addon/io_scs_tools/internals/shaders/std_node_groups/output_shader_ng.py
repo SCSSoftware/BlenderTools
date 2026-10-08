@@ -24,6 +24,9 @@ from io_scs_tools.consts import Material as _MAT_consts
 OUTPUT_SHADER_G = _MAT_consts.node_group_prefix + "OutputShaderGroup"
 
 _ALPHA_CLAMP = "AlphaClamp"
+_ALPHA_THRESHOLD = "AlphaThreshold"
+_ALPHA_TYPE_SWITCH = "AlphaTypeSwitch"
+_ALPHA_TYPE_MIX_SWITCH = "AlphaTypeMixSwitch"
 _EMISSION_OUT_SHADER = "EmissionMaterial"
 _TRANSPARENT_OUT_SHADER = "TransparentMaterial"
 _MIX_SHADER = "MixShader"
@@ -85,48 +88,77 @@ def __create_node_group__():
         output_shader_g.nodes.clear()
 
     # inputs defining
-    output_shader_g.inputs.new("NodeSocketColor", "Color")
-    output_shader_g.inputs.new("NodeSocketFloat", "Alpha")
+    output_shader_g.interface.new_socket(in_out = "INPUT", socket_type = "NodeSocketColor", name = "Color")
+    output_shader_g.interface.new_socket(in_out = "INPUT", socket_type = "NodeSocketFloat", name = "Alpha")
+    output_shader_g.interface.new_socket(in_out = "INPUT", socket_type = "NodeSocketFloat", name = "Alpha Type", description = "0 = CLIP\n1 = BLEND")
 
     # always set to full opaque by default since this behaviour is expected by shaders
     # since this behaviour is epxected by effects from before.
-    output_shader_g.inputs['Alpha'].default_value = 1
+    output_shader_g.interface.items_tree['Alpha'].default_value = 1
+    output_shader_g.interface.items_tree['Alpha Type'].default_value = -1
 
     # outputs defining
-    output_shader_g.outputs.new("NodeSocketShader", "Shader")
+    output_shader_g.interface.new_socket(in_out = "OUTPUT", socket_type = "NodeSocketShader", name = "Shader")
+
 
     # node creation
     input_n = output_shader_g.nodes.new("NodeGroupInput")
     input_n.location = (start_pos_x - pos_x_shift, start_pos_y)
 
     output_n = output_shader_g.nodes.new("NodeGroupOutput")
-    output_n.location = (start_pos_x + pos_x_shift * 3, start_pos_y)
+    output_n.location = (start_pos_x + pos_x_shift * 4, start_pos_y)
 
     emission_shader_n = output_shader_g.nodes.new("ShaderNodeEmission")
     emission_shader_n.name = emission_shader_n.label = _EMISSION_OUT_SHADER
-    emission_shader_n.location = (start_pos_x + pos_x_shift * 1, start_pos_y + 200)
+    emission_shader_n.location = (start_pos_x + pos_x_shift * 2, start_pos_y + 200)
 
     alpha_clamp_n = output_shader_g.nodes.new("ShaderNodeClamp")
     alpha_clamp_n.name = alpha_clamp_n.label = _ALPHA_CLAMP
-    alpha_clamp_n.location = (start_pos_x + pos_x_shift * 1, start_pos_y)
+    alpha_clamp_n.location = (start_pos_x, start_pos_y - 150)
     alpha_clamp_n.inputs['Min'].default_value = 0.000001  # blender clips if alpha is way above, so it's safe to use it
     alpha_clamp_n.inputs['Max'].default_value = 1
 
+    alpha_threshold_n = output_shader_g.nodes.new("ShaderNodeMath")
+    alpha_threshold_n.name = alpha_threshold_n.label = _ALPHA_THRESHOLD
+    alpha_threshold_n.location = (start_pos_x + pos_x_shift * 1, start_pos_y - 150)
+    alpha_threshold_n.operation = "GREATER_THAN"
+    alpha_threshold_n.inputs[1].default_value = 0.05
+
+    alpha_type_switch_n = output_shader_g.nodes.new("ShaderNodeMath")
+    alpha_type_switch_n.name = alpha_type_switch_n.label = _ALPHA_TYPE_SWITCH
+    alpha_type_switch_n.location = (start_pos_x, start_pos_y)
+    alpha_type_switch_n.operation = "GREATER_THAN"
+    alpha_type_switch_n.inputs[1].default_value = 0.0
+
+    alpha_type_mix_switch_n = output_shader_g.nodes.new("ShaderNodeMix")
+    alpha_type_mix_switch_n.name = alpha_type_mix_switch_n.label = _ALPHA_TYPE_MIX_SWITCH
+    alpha_type_mix_switch_n.location = (start_pos_x + pos_x_shift * 2, start_pos_y)
+    alpha_type_mix_switch_n.data_type = "FLOAT"
+
     transparent_shader_n = output_shader_g.nodes.new("ShaderNodeBsdfTransparent")
     transparent_shader_n.name = transparent_shader_n.label = _TRANSPARENT_OUT_SHADER
-    transparent_shader_n.location = (start_pos_x + pos_x_shift * 1, start_pos_y - 200)
+    transparent_shader_n.location = (start_pos_x + pos_x_shift * 2, start_pos_y - 200)
 
     mix_shader_n = output_shader_g.nodes.new("ShaderNodeMixShader")
     mix_shader_n.name = mix_shader_n.label = _MIX_SHADER
-    mix_shader_n.location = (start_pos_x + pos_x_shift * 2, start_pos_y)
+    mix_shader_n.location = (start_pos_x + pos_x_shift * 3, start_pos_y)
 
     # links
     # pass 1
-    output_shader_g.links.new(emission_shader_n.inputs['Color'], input_n.outputs['Color'])
+    output_shader_g.links.new(alpha_type_switch_n.inputs['Value'], input_n.outputs['Alpha Type'])
     output_shader_g.links.new(alpha_clamp_n.inputs['Value'], input_n.outputs['Alpha'])
 
     # pass 2
-    output_shader_g.links.new(mix_shader_n.inputs[0], alpha_clamp_n.outputs[0])
+    output_shader_g.links.new(alpha_threshold_n.inputs['Value'], alpha_clamp_n.outputs['Result'])
+
+    # pass 3
+    output_shader_g.links.new(emission_shader_n.inputs['Color'], input_n.outputs['Color'])
+    output_shader_g.links.new(alpha_type_mix_switch_n.inputs['Factor'], alpha_type_switch_n.outputs['Value'])
+    output_shader_g.links.new(alpha_type_mix_switch_n.inputs['A'], alpha_threshold_n.outputs['Value'])
+    output_shader_g.links.new(alpha_type_mix_switch_n.inputs['B'], alpha_clamp_n.outputs['Result'])
+
+    # pass 4
+    output_shader_g.links.new(mix_shader_n.inputs[0], alpha_type_mix_switch_n.outputs[0])
     output_shader_g.links.new(mix_shader_n.inputs[1], transparent_shader_n.outputs[0])
     output_shader_g.links.new(mix_shader_n.inputs[2], emission_shader_n.outputs[0])
 

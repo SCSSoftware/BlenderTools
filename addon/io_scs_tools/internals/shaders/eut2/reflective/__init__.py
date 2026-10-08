@@ -137,7 +137,8 @@ class Reflective(BaseShader):
         """
 
         material.use_backface_culling = True
-        material.blend_method = "BLEND"
+        material.surface_render_method = "BLENDED"
+        node_tree.nodes[Reflective.COMPOSE_LIGHTING_NODE].inputs["Alpha Type"].default_value = 1.0
 
     @staticmethod
     def set_base_texture(node_tree, image):

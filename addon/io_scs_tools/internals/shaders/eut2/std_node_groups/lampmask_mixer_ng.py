@@ -27,7 +27,7 @@ VEHICLE_LAMP_TYPES = _LT_consts.VehicleLampTypes
 AUX_LAMP_TYPES = _LT_consts.AuxiliaryLampTypes
 TRAFFIC_LIGHT_TYPES = _LT_consts.TrafficLightTypes
 
-UV_X_TILES = ["UV_X_0_", "UV_X_1_", "UV_X_2_", "UV_X_3_", "UV_X_4_"]
+UV_X_TILES = ["UV_X_0_", "UV_X_1_", "UV_X_2_", "UV_X_3_", "UV_X_4_", "UV_X_5_"]
 UV_Y_TILES = ["UV_Y_0_", "UV_Y_1_", "UV_Y_2_", "UV_Y_3_"]
 
 LAMPMASK_MIX_G = _MAT_consts.node_group_prefix + "LampmaskMixerGroup"
@@ -66,50 +66,53 @@ def __create_node_group__():
     lampmask_g = bpy.data.node_groups.new(type="ShaderNodeTree", name=LAMPMASK_MIX_G)
 
     # inputs defining
-    lampmask_g.inputs.new("NodeSocketFloat", "Lampmask Tex Alpha")
-    lampmask_g.inputs.new("NodeSocketColor", "Lampmask Tex Color")
-    lampmask_g.inputs.new("NodeSocketVector", "UV Vector")
+    lampmask_g.interface.new_socket(in_out = "INPUT", socket_type = "NodeSocketFloat",  name = "Lampmask Tex Alpha")
+    lampmask_g.interface.new_socket(in_out = "INPUT", socket_type = "NodeSocketColor",  name = "Lampmask Tex Color")
+    lampmask_g.interface.new_socket(in_out = "INPUT", socket_type = "NodeSocketVector", name = "UV Vector")
+
+    # outputs defining
+    lampmask_g.interface.new_socket(in_out = "OUTPUT", socket_type = "NodeSocketColor", name = "Lampmask Addition Color")
+
+
+    # nodes creation
     input_n = lampmask_g.nodes.new("NodeGroupInput")
     input_n.location = (0, 0)
 
-    # outputs defining
-    lampmask_g.outputs.new("NodeSocketColor", "Lampmask Addition Color")
     output_n = lampmask_g.nodes.new("NodeGroupOutput")
     output_n.location = (pos_x_shift * 9, 0)
 
-    # nodes creation
     alpha_decode_n = lampmask_g.nodes.new("ShaderNodeMath")
     alpha_decode_n.name = alpha_decode_n.label = _TEX_COL_SEP_NODE
     alpha_decode_n.location = (pos_x_shift, 50)
     alpha_decode_n.operation = "POWER"
     alpha_decode_n.inputs[1].default_value = 2.2
 
-    tex_col_sep_n = lampmask_g.nodes.new("ShaderNodeSeparateRGB")
+    tex_col_sep_n = lampmask_g.nodes.new("ShaderNodeSeparateColor")
     tex_col_sep_n.name = tex_col_sep_n.label = _TEX_COL_SEP_NODE
     tex_col_sep_n.location = (pos_x_shift, 400)
 
     uv_x_dot_n = lampmask_g.nodes.new("ShaderNodeVectorMath")
     uv_x_dot_n.name = uv_x_dot_n.label = _UV_DOT_X_NODE
-    uv_x_dot_n.location = (pos_x_shift, -200)
+    uv_x_dot_n.location = (pos_x_shift, -400)
     uv_x_dot_n.operation = "DOT_PRODUCT"
     uv_x_dot_n.inputs[1].default_value = (1.0, 0, 0)
 
     uv_y_dot_n = lampmask_g.nodes.new("ShaderNodeVectorMath")
     uv_y_dot_n.name = uv_y_dot_n.label = _UV_DOT_Y_NODE
-    uv_y_dot_n.location = (pos_x_shift, -450)
+    uv_y_dot_n.location = (pos_x_shift, -750)
     uv_y_dot_n.operation = "DOT_PRODUCT"
     uv_y_dot_n.inputs[1].default_value = (0, 1.0, 0)
 
     # links creation
     lampmask_g.links.new(alpha_decode_n.inputs[0], input_n.outputs['Lampmask Tex Alpha'])
-    lampmask_g.links.new(tex_col_sep_n.inputs['Image'], input_n.outputs['Lampmask Tex Color'])
+    lampmask_g.links.new(tex_col_sep_n.inputs['Color'], input_n.outputs['Lampmask Tex Color'])
     lampmask_g.links.new(uv_x_dot_n.inputs[0], input_n.outputs['UV Vector'])
     lampmask_g.links.new(uv_y_dot_n.inputs[0], input_n.outputs['UV Vector'])
 
     nodes_for_addition = []
 
     # init uv tilling mechanism
-    pos_y = -100
+    pos_y = -300
     max_x_uv = 1
     for uv_x_tile in UV_X_TILES:
 
@@ -119,7 +122,7 @@ def __create_node_group__():
         max_x_uv += 1
 
     max_y_uv = 1
-    pos_y = -400
+    pos_y = -700
     for uv_y_tile in UV_Y_TILES:
 
         __init_uv_tile_bounding_nodes__(lampmask_g, uv_y_dot_n, uv_y_tile, pos_x_shift * 2, pos_y, max_y_uv)
@@ -128,21 +131,21 @@ def __create_node_group__():
         max_y_uv += 1
 
     # init vehicle sides uv bounding mechanism
-    pos_y = -50
+    pos_y = -250
     for vehicle_side in VEHICLE_SIDES:
         __init_vehicle_uv_bounding_nodes__(lampmask_g, vehicle_side, pos_x_shift * 2, pos_y)
 
         pos_y -= 50
 
     # init traffic light uv bounding mechanism
-    pos_y = -350
+    pos_y = -600
     for traffic_light_type in TRAFFIC_LIGHT_TYPES:
         __init_traffic_light_uv_bounding_nodes__(lampmask_g, traffic_light_type, pos_x_shift * 2, pos_y)
 
         pos_y -= 100
 
     # init vehicle sides switches mechanism
-    pos_y = 1000
+    pos_y = 1200
     for vehicle_lamp_type in VEHICLE_LAMP_TYPES:
 
         if vehicle_lamp_type == VEHICLE_LAMP_TYPES.Positional:  # make extra space for positional
@@ -150,13 +153,13 @@ def __create_node_group__():
 
         __init_vehicle_switch_nodes__(lampmask_g,
                                       alpha_decode_n.outputs[0],
-                                      tex_col_sep_n.outputs["R"],
-                                      tex_col_sep_n.outputs["G"],
-                                      tex_col_sep_n.outputs["B"],
+                                      tex_col_sep_n.outputs["Red"],
+                                      tex_col_sep_n.outputs["Green"],
+                                      tex_col_sep_n.outputs["Blue"],
                                       vehicle_lamp_type,
                                       pos_x_shift * 5, pos_y,
                                       nodes_for_addition)
-        pos_y -= 75
+        pos_y -= 125
 
     # init auxiliary lamp switches mechanism
     pos_y -= 60
@@ -164,8 +167,8 @@ def __create_node_group__():
 
         __init_aux_switch_nodes__(lampmask_g,
                                   alpha_decode_n.outputs[0],
-                                  tex_col_sep_n.outputs["R"],
-                                  tex_col_sep_n.outputs["G"],
+                                  tex_col_sep_n.outputs["Red"],
+                                  tex_col_sep_n.outputs["Green"],
                                   aux_lamp_type,
                                   pos_x_shift * 5, pos_y,
                                   nodes_for_addition)
@@ -194,7 +197,7 @@ def __create_node_group__():
         add_n = lampmask_g.nodes.new("ShaderNodeMath")
         add_n.name = _ADD_NODE_PREFIX + str(i)
         add_n.label = _ADD_NODE_PREFIX + str(i)
-        add_n.location = (curr_node.location.x + 120, curr_node.location.y)
+        add_n.location = (curr_node.location.x + 180, curr_node.location.y)
         add_n.hide = True
         add_n.operation = "ADD"
 
@@ -275,15 +278,17 @@ def __init_vehicle_uv_bounding_nodes__(node_tree, vehicle_side, pos_x, pos_y):
     elif vehicle_side == VEHICLE_SIDES.RearRight:
         min_uv_n = node_tree.nodes[UV_X_TILES[2] + _MAX_UV_SUFFIX]
         max_uv_n = node_tree.nodes[UV_X_TILES[3] + _MAX_UV_SUFFIX]
-    else:  # fallback to middle
+    elif vehicle_side == VEHICLE_SIDES.MiddleLeft:
         min_uv_n = node_tree.nodes[UV_X_TILES[3] + _MAX_UV_SUFFIX]
         max_uv_n = node_tree.nodes[UV_X_TILES[4] + _MAX_UV_SUFFIX]
+    else:  # fallback to MiddleRight
+        min_uv_n = node_tree.nodes[UV_X_TILES[4] + _MAX_UV_SUFFIX]
+        max_uv_n = node_tree.nodes[UV_X_TILES[5] + _MAX_UV_SUFFIX]
 
     uv_in_bounds_n = node_tree.nodes.new("ShaderNodeMath")
     uv_in_bounds_n.name = vehicle_side.name + _IN_BOUNDS_SUFFIX
     uv_in_bounds_n.label = vehicle_side.name + _IN_BOUNDS_SUFFIX
     uv_in_bounds_n.location = (pos_x + 185, pos_y - 50)
-    uv_in_bounds_n.width_hidden = 100
     uv_in_bounds_n.hide = True
     uv_in_bounds_n.operation = "LESS_THAN"
 
@@ -321,7 +326,6 @@ def __init_traffic_light_uv_bounding_nodes__(node_tree, traffic_light_type, pos_
     uv_x_in_bounds_n.name = traffic_light_type.name + "X" + _IN_BOUNDS_SUFFIX
     uv_x_in_bounds_n.label = traffic_light_type.name + "X" + _IN_BOUNDS_SUFFIX
     uv_x_in_bounds_n.location = (pos_x + 185, pos_y)
-    uv_x_in_bounds_n.width_hidden = 100
     uv_x_in_bounds_n.hide = True
     uv_x_in_bounds_n.operation = "LESS_THAN"
 
@@ -329,7 +333,6 @@ def __init_traffic_light_uv_bounding_nodes__(node_tree, traffic_light_type, pos_
     uv_y_in_bounds_n.name = traffic_light_type.name + "Y" + _IN_BOUNDS_SUFFIX
     uv_y_in_bounds_n.label = traffic_light_type.name + "Y" + _IN_BOUNDS_SUFFIX
     uv_y_in_bounds_n.location = (pos_x + 185, pos_y - 50)
-    uv_y_in_bounds_n.width_hidden = 100
     uv_y_in_bounds_n.hide = True
     uv_y_in_bounds_n.operation = "LESS_THAN"
 
@@ -337,7 +340,6 @@ def __init_traffic_light_uv_bounding_nodes__(node_tree, traffic_light_type, pos_
     uv_in_bounds_n.name = traffic_light_type.name + _IN_BOUNDS_SUFFIX
     uv_in_bounds_n.label = traffic_light_type.name + _IN_BOUNDS_SUFFIX
     uv_in_bounds_n.location = (pos_x + 185 * 2, pos_y)
-    uv_in_bounds_n.width_hidden = 100
     uv_in_bounds_n.hide = True
     uv_in_bounds_n.operation = "MULTIPLY"
 
@@ -386,7 +388,6 @@ def __init_vehicle_switch_nodes__(node_tree, a_output, r_output, g_output, b_out
     switch_n.name = lamp_type.name
     switch_n.label = lamp_type.name
     switch_n.location = (pos_x, pos_y)
-    switch_n.width_hidden = 100
     switch_n.hide = True
     switch_n.operation = "MULTIPLY"
     switch_n.inputs[0].default_value = 0.0
@@ -410,25 +411,33 @@ def __init_vehicle_switch_nodes__(node_tree, a_output, r_output, g_output, b_out
     elif lamp_type == VEHICLE_LAMP_TYPES.DRL:
         node_tree.links.new(switch_n.inputs[1], b_output)
 
-        node_name = lamp_type.name + VEHICLE_SIDES.Middle.name
-        position = (pos_x + 185 * 2, pos_y)
-        in_bounds_n = node_tree.nodes[VEHICLE_SIDES.Middle.name + _IN_BOUNDS_SUFFIX]
+        in_bounds_n = node_tree.nodes[VEHICLE_SIDES.MiddleLeft.name + _IN_BOUNDS_SUFFIX]
+        node_name = lamp_type.name + VEHICLE_SIDES.MiddleLeft.name
+        position = (pos_x + 185 * 2, pos_y + 18)
+        mult_n = __create_merging_node__(node_tree, node_name, position, in_bounds_n.outputs[0], switch_n.outputs[0])
+        nodes_for_addition.append(mult_n)
+
+        in_bounds_n = node_tree.nodes[VEHICLE_SIDES.MiddleRight.name + _IN_BOUNDS_SUFFIX]
+        node_name = lamp_type.name + VEHICLE_SIDES.MiddleRight.name
+        position = (pos_x + 185 * 2, pos_y - 18)
         mult_n = __create_merging_node__(node_tree, node_name, position, in_bounds_n.outputs[0], switch_n.outputs[0])
         nodes_for_addition.append(mult_n)
 
     else:
-        color_output = veh_side_name1 = veh_side_name2 = None
+        color_output = veh_side_name1 = veh_side_name2 = veh_side_name3 = None
         if lamp_type == VEHICLE_LAMP_TYPES.LeftTurn:
 
             color_output = r_output
             veh_side_name1 = VEHICLE_SIDES.FrontLeft.name
             veh_side_name2 = VEHICLE_SIDES.RearLeft.name
+            veh_side_name3 = VEHICLE_SIDES.MiddleLeft.name
 
         elif lamp_type == VEHICLE_LAMP_TYPES.RightTurn:
 
             color_output = r_output
             veh_side_name1 = VEHICLE_SIDES.FrontRight.name
             veh_side_name2 = VEHICLE_SIDES.RearRight.name
+            veh_side_name3 = VEHICLE_SIDES.MiddleRight.name
 
         elif lamp_type == VEHICLE_LAMP_TYPES.Brake:
 
@@ -469,6 +478,13 @@ def __init_vehicle_switch_nodes__(node_tree, a_output, r_output, g_output, b_out
             mult_n = __create_merging_node__(node_tree, node_name, node_pos, switch_n.outputs[0], in_bounds_n.outputs[0])
             nodes_for_addition.append(mult_n)
 
+            if veh_side_name3:
+                in_bounds_n = node_tree.nodes[veh_side_name3 + _IN_BOUNDS_SUFFIX]
+                node_name = lamp_type.name + veh_side_name3
+                node_pos = (pos_x + 185 * 2, pos_y - 54)
+                mult_n = __create_merging_node__(node_tree, node_name, node_pos, switch_n.outputs[0], in_bounds_n.outputs[0])
+                nodes_for_addition.append(mult_n)
+
 
 def __init_aux_switch_nodes__(node_tree, a_output, r_output, g_output, lamp_type, pos_x, pos_y, nodes_for_addition):
     """Creation and linking of switching nodes, covering all combinations for vehicle auxiliary lamp mask.
@@ -498,7 +514,6 @@ def __init_aux_switch_nodes__(node_tree, a_output, r_output, g_output, lamp_type
     switch_n.name = lamp_type.name
     switch_n.label = lamp_type.name
     switch_n.location = (pos_x, pos_y)
-    switch_n.width_hidden = 100
     switch_n.hide = True
     switch_n.operation = "MULTIPLY"
     switch_n.inputs[0].default_value = 0.0
@@ -553,7 +568,6 @@ def __init_traffic_light_switch_nodes__(node_tree, a_output, lamp_type, pos_x, p
     switch_n.name = lamp_type.name
     switch_n.label = lamp_type.name
     switch_n.location = (pos_x, pos_y)
-    switch_n.width_hidden = 100
     switch_n.hide = True
     switch_n.operation = "MULTIPLY"
     switch_n.inputs[0].default_value = 0.0

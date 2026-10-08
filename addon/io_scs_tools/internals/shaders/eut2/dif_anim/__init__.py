@@ -18,12 +18,13 @@
 
 # Copyright (C) 2015-2021: SCS Software
 
-from io_scs_tools.consts import Mesh as _MESH_consts
-from io_scs_tools.internals.shaders.eut2.dif import Dif
-from io_scs_tools.internals.shaders.eut2.dif_anim import anim_blend_factor_ng
-from io_scs_tools.internals.shaders.flavors import fadesheet
-from io_scs_tools.internals.shaders.flavors import flipsheet
-from io_scs_tools.utils import material as _material_utils
+from . import over_nmap
+from . import anim_blend_factor_ng
+from ..dif import Dif
+from ...flavors import fadesheet
+from ...flavors import flipsheet
+from .....utils import material as _material_utils
+from .....consts import Mesh as _MESH_consts
 
 
 class DifAnim(Dif):
@@ -84,14 +85,16 @@ class DifAnim(Dif):
         over_tex_n.location = (start_pos_x + pos_x_shift, start_pos_y + 1000)
         over_tex_n.width = 140
 
-        base_over_mix_n = node_tree.nodes.new("ShaderNodeMixRGB")
+        base_over_mix_n = node_tree.nodes.new("ShaderNodeMix")
         base_over_mix_n.name = base_over_mix_n.label = DifAnim.BASE_OVER_MIX_NODE
         base_over_mix_n.location = (start_pos_x + pos_x_shift * 3, start_pos_y + 1300)
+        base_over_mix_n.data_type = "RGBA"
         base_over_mix_n.blend_type = "MIX"
 
-        base_over_a_mix_n = node_tree.nodes.new("ShaderNodeMixRGB")
+        base_over_a_mix_n = node_tree.nodes.new("ShaderNodeMix")
         base_over_a_mix_n.name = base_over_a_mix_n.label = DifAnim.BASE_OVER_AMIX_NODE
-        base_over_a_mix_n.location = (start_pos_x + pos_x_shift * 3, start_pos_y + 1100)
+        base_over_a_mix_n.location = (start_pos_x + pos_x_shift * 3, start_pos_y + 1050)
+        base_over_a_mix_n.data_type = "RGBA"
         base_over_a_mix_n.blend_type = "MIX"
 
         # links creation
@@ -99,18 +102,18 @@ class DifAnim(Dif):
         node_tree.links.new(over_tex_n.inputs['Vector'], sec_uvmap_n.outputs['UV'])
 
         # pass 1
-        node_tree.links.new(base_over_mix_n.inputs['Fac'], blend_fac_gn.outputs['Factor'])
-        node_tree.links.new(base_over_mix_n.inputs['Color1'], base_tex_n.outputs['Color'])
-        node_tree.links.new(base_over_mix_n.inputs['Color2'], over_tex_n.outputs['Color'])
+        node_tree.links.new(base_over_mix_n.inputs['Factor'], blend_fac_gn.outputs['Factor'])
+        node_tree.links.new(base_over_mix_n.inputs['A'], base_tex_n.outputs['Color'])
+        node_tree.links.new(base_over_mix_n.inputs['B'], over_tex_n.outputs['Color'])
 
-        node_tree.links.new(base_over_a_mix_n.inputs['Fac'], blend_fac_gn.outputs['Factor'])
-        node_tree.links.new(base_over_a_mix_n.inputs['Color1'], base_tex_n.outputs['Alpha'])
-        node_tree.links.new(base_over_a_mix_n.inputs['Color2'], over_tex_n.outputs['Alpha'])
+        node_tree.links.new(base_over_a_mix_n.inputs['Factor'], blend_fac_gn.outputs['Factor'])
+        node_tree.links.new(base_over_a_mix_n.inputs['A'], base_tex_n.outputs['Alpha'])
+        node_tree.links.new(base_over_a_mix_n.inputs['B'], over_tex_n.outputs['Alpha'])
 
         # pass 2
-        node_tree.links.new(vcol_mult_n.inputs[1], base_over_mix_n.outputs['Color'])
+        node_tree.links.new(vcol_mult_n.inputs[1], base_over_mix_n.outputs['Result'])
 
-        node_tree.links.new(opacity_n.inputs[0], base_over_a_mix_n.outputs['Color'])
+        node_tree.links.new(opacity_n.inputs[0], base_over_a_mix_n.outputs['Result'])
 
     @staticmethod
     def finalize(node_tree, material):
@@ -138,6 +141,69 @@ class DifAnim(Dif):
 
             node_tree.links.new(node_tree.nodes[DifAnim.VCOLOR_MULT_NODE].inputs[1], node_tree.nodes[DifAnim.BASE_TEX_NODE].outputs['Color'])
             node_tree.links.new(node_tree.nodes[DifAnim.OPACITY_NODE].inputs[0], node_tree.nodes[DifAnim.BASE_TEX_NODE].outputs['Alpha'])
+
+
+    @staticmethod
+    def set_nmap_flavor(node_tree, switch_on):
+        """Set normal map flavor to this shader.
+
+        :param node_tree: node tree of current shader
+        :type node_tree: bpy.types.NodeTree
+        :param switch_on: flag indication if normal map should be switched on or off
+        :type switch_on: bool
+        """
+
+        if switch_on:
+
+            # find minimal y position for input nodes and position flavor beneath it
+            min_y = None
+            for node in node_tree.nodes:
+                if node.location.x <= 185 and (min_y is None or min_y > node.location.y):
+                    min_y = node.location.y
+
+            lighting_eval_n = node_tree.nodes[DifAnim.LIGHTING_EVAL_NODE]
+            geom_n = node_tree.nodes[DifAnim.GEOM_NODE]
+            vcol_group_n = node_tree.nodes[DifAnim.VCOL_GROUP_NODE]
+            location = (lighting_eval_n.location.x - 185, min_y - 400)
+
+            over_nmap.init(node_tree, location, lighting_eval_n.inputs['Normal Vector'], geom_n.outputs['Normal'], vcol_group_n.outputs["Vertex Color Alpha"])
+        else:
+            over_nmap.delete(node_tree)
+
+    @staticmethod
+    def set_nmap_over_uv(node_tree, uv_layer):
+        """Set UV layer to over normal map texture in shader.
+
+        :param node_tree: node tree of current shader
+        :type node_tree: bpy.types.NodeTree
+        :param uv_layer: uv layer string used for over nmap texture
+        :type uv_layer: str
+        """
+
+        over_nmap.set_over_uv(node_tree, uv_layer)
+            
+    @staticmethod
+    def set_nmap_over_texture(node_tree, texture):
+        """Set over normal map texture to shader.
+
+        :param node_tree: node tree of current shader
+        :type node_tree: bpy.types.NodeTree
+        :param texture: texture which should be assigned to over nmap texture node
+        :type texture: bpy.types.Texture
+        """
+
+        over_nmap.set_over_texture(node_tree, texture)
+
+    @staticmethod
+    def set_nmap_over_texture_settings(node_tree, settings):
+        """Set over normal map texture settings to shader.
+
+        :param node_tree: node tree of current shader
+        :type node_tree: bpy.types.NodeTree
+        :param settings: binary string of TOBJ settings gotten from tobj import
+        :type settings: str
+        """
+        over_nmap.set_over_texture_settings(node_tree, settings)
 
     @staticmethod
     def set_base_texture(node_tree, image):
@@ -300,8 +366,8 @@ class DifAnim(Dif):
                            uvmap_n.outputs['UV'],
                            base_tex_n.inputs[0],
                            over_tex_n.inputs[0],
-                           base_over_mix_n.inputs['Fac'],
-                           base_over_amix_n.inputs['Fac'])
+                           base_over_mix_n.inputs['Factor'],
+                           base_over_amix_n.inputs['Factor'])
 
         else:
             fadesheet.delete(node_tree)

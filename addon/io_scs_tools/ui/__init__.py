@@ -18,14 +18,14 @@
 
 # Copyright (C) 2013-2019: SCS Software
 
-from io_scs_tools.ui import shared
-from io_scs_tools.ui import tool_shelf
-from io_scs_tools.ui import workspace
-from io_scs_tools.ui import object
-from io_scs_tools.ui import material
-from io_scs_tools.ui import mesh
-from io_scs_tools.ui import world
-from io_scs_tools.ui import output
+from . import mesh
+from . import world
+from . import object
+from . import output
+from . import shared
+from . import material
+from . import workspace
+from . import tool_shelf
 
 
 def register():

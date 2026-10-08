@@ -40,10 +40,10 @@ class TruckpaintAirbrush(Truckpaint):
         Truckpaint.init_colormask_or_airbrush(node_tree)
 
         blend_mix_n = node_tree.nodes[Truckpaint.BLEND_MIX_NODE]
-        blend_mix_n.inputs['Fac'].default_value = 0.0
+        blend_mix_n.inputs['Factor'].default_value = 0.0
 
         paint_diff_mult_n = node_tree.nodes[Truckpaint.PAINT_DIFFUSE_MULT_NODE]
-        paint_diff_mult_n.inputs['Fac'].default_value = 1.0
+        paint_diff_mult_n.inputs['Factor'].default_value = 1.0
 
         paint_spec_mult_n = node_tree.nodes[Truckpaint.PAINT_SPECULAR_MULT_NODE]
-        paint_spec_mult_n.inputs['Fac'].default_value = 0.0
+        paint_spec_mult_n.inputs['Factor'].default_value = 0.0

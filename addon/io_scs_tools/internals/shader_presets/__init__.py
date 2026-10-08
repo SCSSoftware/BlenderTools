@@ -19,8 +19,8 @@
 # Copyright (C) 2017: SCS Software
 
 
-from io_scs_tools.internals.shader_presets.cache import ShaderPresetsCache
-from io_scs_tools.internals.shader_presets.ui_shader_preset_item import UIShaderPresetItem
+from .cache import ShaderPresetsCache
+from .ui_shader_preset_item import UIShaderPresetItem
 
 __cache = ShaderPresetsCache()
 __ui_inventory = {}  # shader presets inventory saving preset items for usage in UI and flavor parsing
@@ -107,6 +107,22 @@ def get_section(preset_name, flavors_str=""):
     :rtype: io_scs_tools.internals.structure.SectionData
     """
     return __cache.get_section(__names_to_indices_map[preset_name], flavors_str=flavors_str)
+    
+    
+def update_section(preset_name, flavors_str, new_section, is_dirty=False):
+    """Update section from shader presets library for given base effect and flavor string
+
+    :param base_effect: base effect name for which presets should be returned
+    :type base_effect: str
+    :param flavors_str: flavors part of effect name
+    :type flavors_str: str
+    :param section: New shader section that should be stored
+    :type section: io_scs_tools.internals.structure.SectionData
+    :param is_dirty: mark this section as dirty, set to true when inserting section only for time beeing of cache creation
+    :type is_dirty: bool
+    """
+
+    __cache.add_section(__names_to_indices_map[preset_name], flavors_str, new_section, is_dirty=is_dirty)
 
 
 def find_sections(base_effect, flavors_str):

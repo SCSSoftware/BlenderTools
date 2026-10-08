@@ -19,7 +19,7 @@
 # Copyright (C) 2015: SCS Software
 
 import bpy
-from io_scs_tools.consts import Material as _MAT_consts
+from .....consts import Material as _MAT_consts
 
 TSNMAP_SCALE_G = _MAT_consts.node_group_prefix + "TSNMapScaleGroup"
 
@@ -72,19 +72,22 @@ def __create_nmap_scale_group__():
     nmap_scale_g = bpy.data.node_groups.new(type="ShaderNodeTree", name=TSNMAP_SCALE_G)
 
     # inputs defining
-    nmap_scale_g.inputs.new("NodeSocketColor", "NMap Tex Color")
-    nmap_scale_g.inputs.new("NodeSocketVector", "Original Normal")
-    nmap_scale_g.inputs.new("NodeSocketVector", "Modified Normal")
+    nmap_scale_g.interface.new_socket(in_out = "INPUT", socket_type = "NodeSocketColor",  name = "NMap Tex Color")
+    nmap_scale_g.interface.new_socket(in_out = "INPUT", socket_type = "NodeSocketVector", name = "Original Normal")
+    nmap_scale_g.interface.new_socket(in_out = "INPUT", socket_type = "NodeSocketVector", name = "Modified Normal")
+
+    # outputs defining
+    nmap_scale_g.interface.new_socket(in_out = "OUTPUT", socket_type = "NodeSocketVector", name = "Normal")
+    
+
+    # group nodes
     input_n = nmap_scale_g.nodes.new("NodeGroupInput")
     input_n.location = (0, 0)
 
-    # outputs defining
-    nmap_scale_g.outputs.new("NodeSocketVector", "Normal")
     output_n = nmap_scale_g.nodes.new("NodeGroupOutput")
     output_n.location = (185 * 7, 0)
 
-    # group nodes
-    separate_rgb_n = nmap_scale_g.nodes.new("ShaderNodeSeparateRGB")
+    separate_rgb_n = nmap_scale_g.nodes.new("ShaderNodeSeparateColor")
     separate_rgb_n.name = separate_rgb_n.label = _NMAP_TEX_SEP_NODE
     separate_rgb_n.location = (185 * 1, 400)
 
@@ -124,21 +127,23 @@ def __create_nmap_scale_group__():
     green_math_abs_n.operation = "ABSOLUTE"
     green_math_abs_n.use_clamp = True
 
-    red_mix_n = nmap_scale_g.nodes.new("ShaderNodeMixRGB")
+    red_mix_n = nmap_scale_g.nodes.new("ShaderNodeMix")
     red_mix_n.name = red_mix_n.label = _COMBINE_RED_NODE
     red_mix_n.location = (185 * 5, 100)
+    red_mix_n.data_type = "RGBA"
     red_mix_n.blend_type = "MIX"
 
-    green_mix_n = nmap_scale_g.nodes.new("ShaderNodeMixRGB")
+    green_mix_n = nmap_scale_g.nodes.new("ShaderNodeMix")
     green_mix_n.name = green_mix_n.label = _COMBINE_GREEN_NODE
-    green_mix_n.location = (185 * 6, -100)
+    green_mix_n.location = (185 * 6, 0)
+    green_mix_n.data_type = "RGBA"
     green_mix_n.blend_type = "MIX"
 
     # group links
-    nmap_scale_g.links.new(separate_rgb_n.inputs['Image'], input_n.outputs['NMap Tex Color'])
+    nmap_scale_g.links.new(separate_rgb_n.inputs['Color'], input_n.outputs['NMap Tex Color'])
 
-    nmap_scale_g.links.new(red_math_sub_n.inputs[0], separate_rgb_n.outputs['R'])
-    nmap_scale_g.links.new(green_math_sub_n.inputs[0], separate_rgb_n.outputs['G'])
+    nmap_scale_g.links.new(red_math_sub_n.inputs[0], separate_rgb_n.outputs['Red'])
+    nmap_scale_g.links.new(green_math_sub_n.inputs[0], separate_rgb_n.outputs['Green'])
 
     nmap_scale_g.links.new(red_math_mult_n.inputs[0], red_math_sub_n.outputs[0])
     nmap_scale_g.links.new(green_math_mult_n.inputs[0], green_math_sub_n.outputs[0])
@@ -146,12 +151,12 @@ def __create_nmap_scale_group__():
     nmap_scale_g.links.new(red_math_abs_n.inputs[0], red_math_mult_n.outputs[0])
     nmap_scale_g.links.new(green_math_abs_n.inputs[0], green_math_mult_n.outputs[0])
 
-    nmap_scale_g.links.new(red_mix_n.inputs['Fac'], red_math_abs_n.outputs[0])
-    nmap_scale_g.links.new(red_mix_n.inputs['Color1'], input_n.outputs['Original Normal'])
-    nmap_scale_g.links.new(red_mix_n.inputs['Color2'], input_n.outputs['Modified Normal'])
+    nmap_scale_g.links.new(red_mix_n.inputs['Factor'], red_math_abs_n.outputs[0])
+    nmap_scale_g.links.new(red_mix_n.inputs['A'], input_n.outputs['Original Normal'])
+    nmap_scale_g.links.new(red_mix_n.inputs['B'], input_n.outputs['Modified Normal'])
 
-    nmap_scale_g.links.new(green_mix_n.inputs['Fac'], green_math_abs_n.outputs[0])
-    nmap_scale_g.links.new(green_mix_n.inputs['Color1'], red_mix_n.outputs['Color'])
-    nmap_scale_g.links.new(green_mix_n.inputs['Color2'], input_n.outputs['Modified Normal'])
+    nmap_scale_g.links.new(green_mix_n.inputs['Factor'], green_math_abs_n.outputs[0])
+    nmap_scale_g.links.new(green_mix_n.inputs['A'], red_mix_n.outputs['Result'])
+    nmap_scale_g.links.new(green_mix_n.inputs['B'], input_n.outputs['Modified Normal'])
 
-    nmap_scale_g.links.new(output_n.inputs['Normal'], green_mix_n.outputs['Color'])
+    nmap_scale_g.links.new(output_n.inputs['Normal'], green_mix_n.outputs['Result'])

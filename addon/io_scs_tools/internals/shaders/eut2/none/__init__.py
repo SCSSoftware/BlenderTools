@@ -74,4 +74,5 @@ class NNone(BaseShader):
         """
 
         # make sure that alpha clip is enabled on that material
-        material.blend_method = "CLIP"
+        material.surface_render_method = "DITHERED"
+        node_tree.nodes[NNone.SHADER_NODE].inputs["Alpha Type"].default_value = 0.0

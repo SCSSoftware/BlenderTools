@@ -84,10 +84,12 @@ class LightTex(Dif):
         :param material: material used for this shader
         :type material: bpy.types.Material
         """
-        Dif.finalize(node_tree, material)
+        # Cause problems with proper links creation ("rgb_to_bw_n" to "compose_lighting_n")
+        # Dif.finalize(node_tree, material)
 
         # in game it gets added to framebuffer, however we don't have access to frame buffer thus make approximation with alpha blending
-        material.blend_method = "BLEND"
+        material.surface_render_method = "BLENDED"
+        node_tree.nodes[Dif.COMPOSE_LIGHTING_NODE].inputs["Alpha Type"].default_value = 1.0
 
     @staticmethod
     def set_shininess(node_tree, factor):
@@ -150,6 +152,18 @@ class LightTex(Dif):
         pass  # NOTE: no support for this flavor; overriding with empty function
 
     @staticmethod
+    def set_env_factor(node_tree, color):
+        """Set environment factor color to shader.
+
+        :param node_tree: node tree of current shader
+        :type node_tree: bpy.types.NodeTree
+        :param color: environment color
+        :type color: Color or tuple
+        """
+        
+        pass # NOTE: as this variant doesn't use env_factor we just ignore it
+
+    @staticmethod
     def set_aux0(node_tree, aux_property):
         """Set depth bias.
 
@@ -160,3 +174,14 @@ class LightTex(Dif):
         """
 
         pass  # NOTE: no support for this parameter as there is no way to simulate eye-space z-bias
+
+    @staticmethod
+    def set_aux5(node_tree, aux_property):
+        """Set luminance boost factor for the shader.
+
+        :param node_tree: node tree of current shader
+        :type node_tree: bpy.types.NodeTree
+        :param aux_property: luminosity factor represented with property group
+        :type aux_property: bpy.types.IDPropertyGroup
+        """
+        pass  # NOTE: as this variant doesn't use luminance effect we just ignore this factor

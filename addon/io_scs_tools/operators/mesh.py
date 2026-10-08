@@ -26,6 +26,7 @@ from time import time
 from bpy.props import StringProperty, FloatProperty
 from io_scs_tools.consts import Mesh as _MESH_consts
 from io_scs_tools.consts import LampTools as _LT_consts
+from io_scs_tools.consts import InteriorWindowTools as _IWT_consts
 from io_scs_tools.consts import VertexColorTools as _VCT_consts
 from io_scs_tools.utils import mesh as _mesh_utils
 from io_scs_tools.utils import view3d as _view3d_utils
@@ -78,8 +79,10 @@ class LampTool:
                 offset_x = 2
             elif _LT_consts.VehicleSides.RearRight.name == self.vehicle_side:
                 offset_x = 3
-            elif _LT_consts.VehicleSides.Middle.name == self.vehicle_side:
+            elif _LT_consts.VehicleSides.MiddleLeft.name == self.vehicle_side:
                 offset_x = 4
+            elif _LT_consts.VehicleSides.MiddleRight.name == self.vehicle_side:
+                offset_x = 5
             elif _LT_consts.AuxiliaryLampColors.White.name == self.aux_color:  # auxiliary lights checking
                 offset_x = 0
             elif _LT_consts.AuxiliaryLampColors.Orange.name == self.aux_color:
@@ -136,6 +139,117 @@ class LampTool:
             self.report({"INFO"}, "Lamp mask UV tool set %i faces to '%s'" % (polys_changed, changed_type))
             return {'FINISHED'}
 
+class InteriorWindowTool:
+    """
+    Wrapper class for better navigation in file
+    """
+
+    class SCS_TOOLS_OT_SetGlassReflectionUV(bpy.types.Operator):
+        bl_label = "Set UV to glass"
+        bl_idname = "mesh.scs_tools_set_glassreflection_uv"
+        bl_description = "Sets offset for base interior UV according to given glass reflection state."
+
+        glass_state: StringProperty(
+            description="",
+            default="",
+            options={'HIDDEN'},
+        )
+
+        @classmethod
+        def poll(cls, context):
+            return context.object is not None and context.object.mode == "EDIT"
+
+        def execute(self, context):
+            mesh = context.object.data
+            bm = bmesh.from_edit_mesh(mesh)  # use bmesh module because we are working in edit mode
+
+            # decide which offset to use depending on glass reflection state
+            offset_x = 0
+            offset_y = 0
+            if _IWT_consts.GlassReflection.Enable.name == self.glass_state:  # glass reflection state checking
+                offset_y = 0
+            elif _IWT_consts.GlassReflection.Disable.name == self.glass_state:
+                offset_y = 1
+            else:
+                self.report({"ERROR"}, "Unsupported window glass state!")
+                return {"FINISHED"}
+
+            polys_changed = 0
+            for face in bm.faces:
+
+                if face.select and len(context.object.material_slots) > 0:
+                    material = context.object.material_slots[face.material_index].material
+                    if material and len(material.scs_props.shader_texture_mask_uv) > 0:
+
+                        # use first mapping from mask texture
+                        uv_lay_name = material.scs_props.shader_texture_mask_uv[0].value
+
+                        # if mask uv layer specified by current material doesn't exists
+                        # move to next face
+                        if uv_lay_name not in mesh.uv_layers:
+                            self.report({"ERROR"}, "UV layer: '%s' not found in this object!" % uv_lay_name)
+                            break
+
+                        uv_lay = bm.loops.layers.uv[uv_lay_name]
+                        for loop in face.loops:
+
+                            uv = loop[uv_lay].uv
+                            uv = (offset_x + (uv[0] - int(uv[0])), offset_y + (uv[1] - int(uv[1])))
+                            loop[uv_lay].uv = uv
+
+                        polys_changed += 1
+
+            # write data back if modified
+            if polys_changed > 0:
+                bmesh.update_edit_mesh(mesh)
+
+            if self.glass_state != "":
+                changed_type = self.glass_state
+            else:
+                changed_type = "INVALID"
+
+            self.report({"INFO"}, "Interior Window Tool set %i faces to '%s'" % (polys_changed, changed_type))
+            return {'FINISHED'}
+
+
+    class SCS_TOOLS_OT_FixVertexNormals(bpy.types.Operator):
+        bl_label = "Fix Vertex Normals"
+        bl_idname = "mesh.scs_tools_fix_vertex_normals"
+        bl_description = "Fix Vertex Normals for proper interior paralax effect."
+        bl_options = {'REGISTER', 'UNDO'}
+
+        @classmethod
+        def poll(cls, context):
+            if context.object is None or context.object.mode != "OBJECT" or not context.object.select_get():
+                return False
+
+            material = context.object.active_material
+            if material and material.scs_props.mat_effect_name:
+                effect = material.scs_props.mat_effect_name
+                if "eut2.interior" in effect:
+                    return True
+
+            return False
+
+        def execute(self, context):
+            mesh = context.object.data
+            
+            normals_changed = 0
+            new_normals = []
+
+            # Change normals vector to direct upwards (0, 0, 1)
+            for loop in mesh.loops:
+                new_normals.append((0.0, 0.0, 1.0))
+                normals_changed += 1
+
+            # Set the new split normals
+            mesh.normals_split_custom_set(new_normals)
+            mesh.update()
+            
+
+            self.report({"INFO"}, "Changed %i split normals!" % normals_changed)
+            return {'FINISHED'}
+
 
 class VertexColorTools:
     """
@@ -174,7 +288,8 @@ class VertexColorTools:
         def poll(cls, context):
             return context.object is not None and context.object.mode == "VERTEX_PAINT" and len(context.object.data.color_attributes) > 0
 
-        def __init__(self):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
             self.original_col = {}
 
         def __del__(self):
@@ -280,7 +395,11 @@ class VertexColorTools:
 
             layer_name = _MESH_consts.default_vcol
             layer_a_name = _MESH_consts.default_vcol + _MESH_consts.vcol_a_suffix
+            layer_factor_name = _MESH_consts.default_vfactor
             old_active_col_i = context.object.data.color_attributes.active_index
+
+            mat = context.active_object.active_material
+            vfactor_shader = ("piko.alldir") in mat.scs_props.mat_effect_name
 
             for curr_lay_name in (layer_name, layer_a_name):
 
@@ -292,6 +411,15 @@ class VertexColorTools:
                     # setting neutral value (0.5) to all colors
                     for vertex_col_data in context.object.data.color_attributes[curr_lay_name].data:
                         vertex_col_data.color = default_color
+
+            # factor vertex color layer
+            if vfactor_shader and layer_factor_name not in context.object.data.color_attributes:
+                vfcolor = context.object.data.color_attributes.new(name=layer_factor_name, type='BYTE_COLOR', domain='CORNER')
+                vfcolor.name = layer_factor_name  # repeat naming step to make sure it's properly named
+
+                # setting neutral value (0.5) to all factors
+                for vertex_fac_col_data in context.object.data.color_attributes[layer_factor_name].data:
+                    vertex_fac_col_data.color = default_color
 
             # restore active or set to default vcol if there was none
             if old_active_col_i is None:
@@ -316,6 +444,7 @@ class VertexColorTools:
 
             layer_name = _MESH_consts.default_vcol
             layer_a_name = _MESH_consts.default_vcol + _MESH_consts.vcol_a_suffix
+            layer_factor_name = _MESH_consts.default_vfactor
 
             objs_using_active_material = []
 
@@ -335,6 +464,9 @@ class VertexColorTools:
             for obj in objs_using_active_material:
                 old_active_col_i = obj.data.color_attributes.active_index
 
+                mat = context.active_object.active_material
+                vfactor_shader = ("piko.alldir") in mat.scs_props.mat_effect_name
+
                 for curr_lay_name in (layer_name, layer_a_name):
 
                     if curr_lay_name not in obj.data.color_attributes:
@@ -345,6 +477,15 @@ class VertexColorTools:
                         # setting neutral value (0.5) to all colors
                         for vertex_col_data in obj.data.color_attributes[curr_lay_name].data:
                             vertex_col_data.color = default_color
+                
+                # factor vertex color layer
+                if vfactor_shader and layer_factor_name not in obj.data.color_attributes:
+                    vfcolor = obj.data.color_attributes.new(name=layer_factor_name, type='BYTE_COLOR', domain='CORNER')
+                    vfcolor.name = layer_factor_name  # repeat naming step to make sure it's properly named
+
+                    # setting neutral value (0.0) to all factors
+                    for vertex_fac_col_data in obj.data.color_attributes[layer_factor_name].data:
+                        vertex_fac_col_data.color = default_color
 
                 # restore active or set to default vcol if there was none
                 if old_active_col_i is None:
@@ -657,6 +798,9 @@ class VertexColorTools:
 
 classes = (
     LampTool.SCS_TOOLS_OT_SetLampmaskUV,
+
+    InteriorWindowTool.SCS_TOOLS_OT_SetGlassReflectionUV,
+    InteriorWindowTool.SCS_TOOLS_OT_FixVertexNormals,
 
     VertexColorTools.SCS_TOOLS_OT_AddVertexColorsToActive,
     VertexColorTools.SCS_TOOLS_OT_AddVertexColorsToAll,

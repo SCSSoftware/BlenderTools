@@ -72,7 +72,7 @@ class DifSpecMultDifSpecIamodDifSpec(DifSpecMultDifSpec):
         third_uvmap_n = node_tree.nodes.new("ShaderNodeUVMap")
         third_uvmap_n.name = DifSpecMultDifSpecIamodDifSpec.THIRD_UVMAP_NODE
         third_uvmap_n.label = DifSpecMultDifSpecIamodDifSpec.THIRD_UVMAP_NODE
-        third_uvmap_n.location = (start_pos_x - pos_x_shift, start_pos_y + 900)
+        third_uvmap_n.location = (start_pos_x - pos_x_shift, start_pos_y + 750)
         third_uvmap_n.uv_map = _MESH_consts.none_uv
 
         iamod_tex_n = node_tree.nodes.new("ShaderNodeTexImage")
@@ -81,19 +81,21 @@ class DifSpecMultDifSpecIamodDifSpec(DifSpecMultDifSpec):
         iamod_tex_n.location = (start_pos_x + pos_x_shift, start_pos_y + 900)
         iamod_tex_n.width = 140
 
-        iamod_scale_col_n = node_tree.nodes.new("ShaderNodeMixRGB")
+        iamod_scale_col_n = node_tree.nodes.new("ShaderNodeMix")
         iamod_scale_col_n.name = DifSpecMultDifSpecIamodDifSpec.IAMOD_SCALE_NODE
         iamod_scale_col_n.label = DifSpecMultDifSpecIamodDifSpec.IAMOD_SCALE_NODE
         iamod_scale_col_n.location = (start_pos_x + pos_x_shift * 3, start_pos_y + 1000)
+        iamod_scale_col_n.data_type = "RGBA"
         iamod_scale_col_n.blend_type = "MIX"
-        iamod_scale_col_n.inputs['Color2'].default_value = (1,) * 4
+        iamod_scale_col_n.inputs['B'].default_value = (1,) * 4
 
-        iamod_scale_a_n = node_tree.nodes.new("ShaderNodeMixRGB")
+        iamod_scale_a_n = node_tree.nodes.new("ShaderNodeMix")
         iamod_scale_a_n.name = DifSpecMultDifSpecIamodDifSpec.IAMOD_SCALE_A_NODE
         iamod_scale_a_n.label = DifSpecMultDifSpecIamodDifSpec.IAMOD_SCALE_A_NODE
         iamod_scale_a_n.location = (start_pos_x + pos_x_shift * 3, start_pos_y + 1500)
+        iamod_scale_a_n.data_type = "RGBA"
         iamod_scale_a_n.blend_type = "MIX"
-        iamod_scale_a_n.inputs['Color2'].default_value = (1,) * 4
+        iamod_scale_a_n.inputs['B'].default_value = (1,) * 4
 
         iamod_multbase_col_mix_n = node_tree.nodes.new("ShaderNodeVectorMath")
         iamod_multbase_col_mix_n.name = DifSpecMultDifSpecIamodDifSpec.IAMOD_MULTBASE_COL_MIX_NODE
@@ -110,17 +112,17 @@ class DifSpecMultDifSpecIamodDifSpec(DifSpecMultDifSpec):
         # links creation
         node_tree.links.new(iamod_tex_n.inputs['Vector'], third_uvmap_n.outputs['UV'])
 
-        node_tree.links.new(iamod_scale_col_n.inputs['Fac'], vcol_group_n.outputs['Vertex Color Alpha'])
-        node_tree.links.new(iamod_scale_col_n.inputs['Color1'], iamod_tex_n.outputs['Color'])
+        node_tree.links.new(iamod_scale_col_n.inputs['Factor'], vcol_group_n.outputs['Vertex Color Alpha'])
+        node_tree.links.new(iamod_scale_col_n.inputs['A'], iamod_tex_n.outputs['Color'])
 
-        node_tree.links.new(iamod_scale_a_n.inputs['Fac'], vcol_group_n.outputs['Vertex Color Alpha'])
-        node_tree.links.new(iamod_scale_a_n.inputs['Color1'], iamod_tex_n.outputs['Alpha'])
+        node_tree.links.new(iamod_scale_a_n.inputs['Factor'], vcol_group_n.outputs['Vertex Color Alpha'])
+        node_tree.links.new(iamod_scale_a_n.inputs['A'], iamod_tex_n.outputs['Alpha'])
 
         node_tree.links.new(iamod_multbase_col_mix_n.inputs[0], mult_base_col_mix_n.outputs[0])
-        node_tree.links.new(iamod_multbase_col_mix_n.inputs[1], iamod_scale_col_n.outputs['Color'])
+        node_tree.links.new(iamod_multbase_col_mix_n.inputs[1], iamod_scale_col_n.outputs['Result'])
 
         node_tree.links.new(iamod_multbase_a_mix_n.inputs[0], mult_base_a_mix_n.outputs['Value'])
-        node_tree.links.new(iamod_multbase_a_mix_n.inputs[1], iamod_scale_a_n.outputs['Color'])
+        node_tree.links.new(iamod_multbase_a_mix_n.inputs[1], iamod_scale_a_n.outputs['Result'])
 
         node_tree.links.new(vcol_mult_n.inputs[1], iamod_multbase_col_mix_n.outputs[0])
         node_tree.links.new(spec_mult_n.inputs[1], iamod_multbase_a_mix_n.outputs['Value'])

@@ -90,16 +90,17 @@ class ObjectPartInventoryItem(bpy.types.PropertyGroup):
         scs_root_obj = _object_utils.get_scs_root(context.active_object)
 
         # if there is more of parts with same name, make postfixed name (this will cause another name update)
-        if len(_inventory.get_indices(scs_root_obj.scs_object_part_inventory, self.name)) == 2:  # duplicate
+        if scs_root_obj != None:
+            if len(_inventory.get_indices(scs_root_obj.scs_object_part_inventory, self.name)) == 2:  # duplicate
 
-            i = 1
-            new_name = _name_utils.tokenize_name(self.name + "_" + str(i).zfill(2))
-            while _inventory.get_index(scs_root_obj.scs_object_part_inventory, new_name) != -1:
+                i = 1
                 new_name = _name_utils.tokenize_name(self.name + "_" + str(i).zfill(2))
-                i += 1
+                while _inventory.get_index(scs_root_obj.scs_object_part_inventory, new_name) != -1:
+                    new_name = _name_utils.tokenize_name(self.name + "_" + str(i).zfill(2))
+                    i += 1
 
-            if new_name != self.name:
-                self.name = new_name
+                if new_name != self.name:
+                    self.name = new_name
 
         if "scs_part_old_name" in self:
 
@@ -294,9 +295,15 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
             obj.empty_display_type = "ARROWS"
             obj.show_name = True
 
-            # ensure default part
+            # ensure default part when it's needed
             part_inventory = obj.scs_object_part_inventory
-            _inventory.add_item(part_inventory, _PART_consts.default_name, conditional=True)
+            skip_default_part = obj.get("skip_default_part", False)
+            if not skip_default_part:
+                _inventory.add_item(part_inventory, _PART_consts.default_name, conditional=True)
+
+            # remove flag after use
+            if "skip_default_part" in obj:
+                del obj["skip_default_part"]
         else:
             obj.empty_display_size = 1.0
             obj.empty_display_type = "PLAIN_AXES"
@@ -368,6 +375,9 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
         # NOTE: case where this happens is if user imports SCS model,
         # duplicates prefab locator without part and then changes locator
         # type to model locator.
+        if "active_scs_part_old_active" not in self:
+            self["active_scs_part_old_active"] = ""
+
         if "active_scs_part_value" not in self:
             self["active_scs_part_value"] = 0
 
@@ -379,26 +389,13 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
 
         """
 
-        if "active_scs_part_old_active" not in self:
-            self["active_scs_part_old_active"] = ""
-
-        if "active_scs_part_value" not in self:
-            self["active_scs_part_value"] = 0
-
-        scs_root_object = _object_utils.get_scs_root(bpy.context.active_object)
-        if scs_root_object and bpy.context.active_object != scs_root_object:
-
-            # if old active object is different than current
-            # set the value for active part index from it
-            if self["active_scs_part_old_active"] != bpy.context.active_object.name:
-                self["active_scs_part_value"] = _inventory.get_index(scs_root_object.scs_object_part_inventory,
-                                                                     bpy.context.active_object.scs_props.scs_part)
-
-        self["active_scs_part_old_active"] = bpy.context.active_object.name
-        return self["active_scs_part_value"]
+        return self.active_scs_part_value
 
     def active_scs_part_set(self, value):
-        self["active_scs_part_value"] = value
+        """Store the index selected by the user.
+        """
+
+        self.active_scs_part_value = value
 
     active_scs_part: IntProperty(
         name="Active SCS Part",
@@ -410,6 +407,22 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
         subtype='NONE',
         get=active_scs_part_get,
         set=active_scs_part_set
+    )
+
+    active_scs_part_old_active: bpy.props.StringProperty(
+        name="Old Active Part",
+        description="Stores previously active SCS part",
+        default=""
+    )
+
+    active_scs_part_value: IntProperty(
+        name="Active SCS Part Value",
+        description="Active SCS Part for current SCS Root Object Value",
+        default=0,
+        min=0, 
+        step=1,
+        options={'HIDDEN'},
+        subtype='NONE'
     )
 
     def get_active_scs_look(self):
@@ -590,7 +603,7 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
 
         for child in obj.children:
 
-            if "scs_props" in child.data and child.data.scs_props.locator_preview_model_path != "":
+            if hasattr(child.data, "scs_props") and child.data.scs_props.locator_preview_model_path != "":
 
                 child.display_type = obj.scs_props.locator_preview_model_type
 
@@ -850,7 +863,7 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
         (_PL_consts.PSP.CAMERA_POINT, (str(_PL_consts.PSP.CAMERA_POINT), "Camera Point", "")),
         (_PL_consts.PSP.COMPANY_POS, (str(_PL_consts.PSP.COMPANY_POS), "Company Point", "")),
         (_PL_consts.PSP.COMPANY_UNLOAD_POS, (str(_PL_consts.PSP.COMPANY_UNLOAD_POS), "Company Unload Point", "")),
-        # (_PL_consts.PSP.CUSTOM, (str(_PL_consts.PSP.CUSTOM), "Custom", "")),
+        (_PL_consts.PSP.CUSTOM, (str(_PL_consts.PSP.CUSTOM), "Custom", "")),
         (_PL_consts.PSP.GARAGE_POS, (str(_PL_consts.PSP.GARAGE_POS), "Garage Point", "")),
         (_PL_consts.PSP.GAS_POS, (str(_PL_consts.PSP.GAS_POS), "Gas Station", "")),
         # (_PL_consts.PSP.HOTEL, (str(_PL_consts.PSP.HOTEL), "Hotel", "")),
@@ -867,7 +880,7 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
         (_PL_consts.PSP.UNLOAD_EASY_POS, (str(_PL_consts.PSP.UNLOAD_EASY_POS), "Unload (Easy)", "")),
         (_PL_consts.PSP.UNLOAD_MEDIUM_POS, (str(_PL_consts.PSP.UNLOAD_MEDIUM_POS), "Unload (Medium)", "")),
         (_PL_consts.PSP.UNLOAD_HARD_POS, (str(_PL_consts.PSP.UNLOAD_HARD_POS), "Unload (Hard)", "")),
-        (_PL_consts.PSP.UNLOAD_RIGID_POS, (str(_PL_consts.PSP.UNLOAD_RIGID_POS), "Unload (Rigid)", "")),
+        (_PL_consts.PSP.UNLOAD_RIGID_POS, (str(_PL_consts.PSP.UNLOAD_RIGID_POS), "Unload (Rigid) (Deprecated)", "")),
         (_PL_consts.PSP.WEIGHT_POS, (str(_PL_consts.PSP.WEIGHT_POS), "Weight Station", "")),
         (_PL_consts.PSP.WEIGHT_CAT_POS, (str(_PL_consts.PSP.WEIGHT_CAT_POS), "Weight Station CAT", "")),
     ])
@@ -877,6 +890,70 @@ class ObjectSCSTools(bpy.types.PropertyGroup):
         description="Spawn type",
         items=enum_spawn_type_items.values(),
         default=str(_PL_consts.PSP.NONE),
+    )
+    # LOCATORS - PREFAB - SPAWN POINTS (CUSTOM)
+    enum_custom_depot_type_items = OrderedDict([
+        (_PL_consts.PSPCF.DEPOT_TYPE_UNLOAD, (str(_PL_consts.PSPCF.DEPOT_TYPE_UNLOAD), "Unload", "")),
+        (_PL_consts.PSPCF.DEPOT_TYPE_LOAD, (str(_PL_consts.PSPCF.DEPOT_TYPE_LOAD), "Load", "")),
+    ])
+    locator_prefab_custom_depot_type: EnumProperty(
+        name="Depot Type",
+        description="Depot Type",
+        items=enum_custom_depot_type_items.values(),
+        default=str(_PL_consts.PSPCF.DEPOT_TYPE_UNLOAD),
+    )
+    enum_custom_parking_difficulty_items = OrderedDict([
+        (_PL_consts.PSPCF.DIFFICULTY_NONE, (str(_PL_consts.PSPCF.DIFFICULTY_NONE), "None", "")),
+        (_PL_consts.PSPCF.DIFFICULTY_EASY, (str(_PL_consts.PSPCF.DIFFICULTY_EASY), "Easy", "")),
+        (_PL_consts.PSPCF.DIFFICULTY_MEDIUM, (str(_PL_consts.PSPCF.DIFFICULTY_MEDIUM), "Medium", "")),
+        (_PL_consts.PSPCF.DIFFICULTY_HARD, (str(_PL_consts.PSPCF.DIFFICULTY_HARD), "Hard", "")),
+    ])
+    locator_prefab_custom_parking_difficulty: EnumProperty(
+        name="Parking Difficulty",
+        description="Current parking difficulty",
+        items=enum_custom_parking_difficulty_items.values(),
+        default=str(_PL_consts.PSPCF.DIFFICULTY_EASY),
+    )
+    enum_custom_lenght_items = OrderedDict([
+        (_PL_consts.PSPCF.LENGHT_14, (str(_PL_consts.PSPCF.LENGHT_14), "14 m", "")),
+        (_PL_consts.PSPCF.LENGHT_15, (str(_PL_consts.PSPCF.LENGHT_15), "15 m", "")),
+        (_PL_consts.PSPCF.LENGHT_16, (str(_PL_consts.PSPCF.LENGHT_16), "16 m", "")),
+        (_PL_consts.PSPCF.LENGHT_17, (str(_PL_consts.PSPCF.LENGHT_17), "17 m", "")),
+        (_PL_consts.PSPCF.LENGHT_18, (str(_PL_consts.PSPCF.LENGHT_18), "18 m", "")),
+        (_PL_consts.PSPCF.LENGHT_19, (str(_PL_consts.PSPCF.LENGHT_19), "19 m", "")),
+        (_PL_consts.PSPCF.LENGHT_20, (str(_PL_consts.PSPCF.LENGHT_20), "20 m", "")),
+        (_PL_consts.PSPCF.LENGHT_21, (str(_PL_consts.PSPCF.LENGHT_21), "21 m", "")),
+        (_PL_consts.PSPCF.LENGHT_22, (str(_PL_consts.PSPCF.LENGHT_22), "22 m", "")),
+        (_PL_consts.PSPCF.LENGHT_23, (str(_PL_consts.PSPCF.LENGHT_23), "23 m", "")),
+        (_PL_consts.PSPCF.LENGHT_24, (str(_PL_consts.PSPCF.LENGHT_24), "24 m", "")),
+        (_PL_consts.PSPCF.LENGHT_25, (str(_PL_consts.PSPCF.LENGHT_25), "25 m", "")),
+        (_PL_consts.PSPCF.LENGHT_26, (str(_PL_consts.PSPCF.LENGHT_26), "26 m", "")),
+        (_PL_consts.PSPCF.LENGHT_27, (str(_PL_consts.PSPCF.LENGHT_27), "27 m", "")),
+        (_PL_consts.PSPCF.LENGHT_28, (str(_PL_consts.PSPCF.LENGHT_28), "28 m", "")),
+        (_PL_consts.PSPCF.UNLIMITED, (str(_PL_consts.PSPCF.UNLIMITED), "Unlimited", "")),
+    ])
+    locator_prefab_custom_lenght: EnumProperty(
+        name="Trailer Lenght",
+        description="Max trailer lenght",
+        options={'HIDDEN'},
+        items=enum_custom_lenght_items.values(),
+        default=str(_PL_consts.PSPCF.LENGHT_14),
+    )
+    enum_custom_rule_items = OrderedDict([
+        (_PL_consts.PSPCF.TRAILER_ANY, (str(_PL_consts.PSPCF.TRAILER_ANY), "Any Trailer", "")),
+        (_PL_consts.PSPCF.TRAILER_BOX, (str(_PL_consts.PSPCF.TRAILER_BOX), "Box Trailer", "")),
+        (_PL_consts.PSPCF.TRAILER_TANK, (str(_PL_consts.PSPCF.TRAILER_TANK), "Tank Trailer", "")),
+        (_PL_consts.PSPCF.TRAILER_DUMP_BULK, (str(_PL_consts.PSPCF.TRAILER_DUMP_BULK), "Dump & Bulk", "")),
+        (_PL_consts.PSPCF.TRAILER_PLATFORM_LOG_CONT, (str(_PL_consts.PSPCF.TRAILER_PLATFORM_LOG_CONT), "Platform, Log & Container", "")),
+        (_PL_consts.PSPCF.TRAILER_LIVESTOCK, (str(_PL_consts.PSPCF.TRAILER_LIVESTOCK), "Livestock", "")),
+        (_PL_consts.PSPCF.TRAILER_LOG, (str(_PL_consts.PSPCF.TRAILER_LOG), "Log Trailer", "")),
+    ])
+    locator_prefab_custom_rule: EnumProperty(
+        name="Trailer Type",
+        description="Trailer type",
+        options={'HIDDEN'},
+        items=enum_custom_rule_items.values(),
+        default=str(_PL_consts.PSPCF.TRAILER_ANY),
     )
     # LOCATORS - PREFAB - TRAFFIC LIGHTS (SEMAPHORES)
     enum_tsem_id_items = OrderedDict([(-1, ('-1', "None", ""))])

@@ -124,21 +124,22 @@ def __create_node_group__():
         add_env_g.nodes.clear()
 
     # inputs defining
-    add_env_g.inputs.new("NodeSocketFloat", "Fresnel Type")
-    add_env_g.inputs.new("NodeSocketFloat", "Fresnel Scale")
-    add_env_g.inputs.new("NodeSocketFloat", "Fresnel Bias")
-    add_env_g.inputs.new("NodeSocketVector", "Normal Vector")
-    add_env_g.inputs.new("NodeSocketVector", "Reflection Normal Vector")
-    add_env_g.inputs.new("NodeSocketFloat", "Apply Fresnel")
-    add_env_g.inputs.new("NodeSocketColor", "Reflection Texture Color")
-    add_env_g.inputs.new("NodeSocketFloat", "Base Texture Alpha")
-    add_env_g.inputs.new("NodeSocketColor", "Env Factor Color")
-    add_env_g.inputs.new("NodeSocketColor", "Specular Color")
-    add_env_g.inputs.new("NodeSocketColor", "Weighted Color")
-    add_env_g.inputs.new("NodeSocketFloat", "Strength Multiplier")
+    add_env_g.interface.new_socket(in_out = "INPUT", socket_type = "NodeSocketFloat",  name = "Fresnel Type")
+    add_env_g.interface.new_socket(in_out = "INPUT", socket_type = "NodeSocketFloat",  name = "Fresnel Scale")
+    add_env_g.interface.new_socket(in_out = "INPUT", socket_type = "NodeSocketFloat",  name = "Fresnel Bias")
+    add_env_g.interface.new_socket(in_out = "INPUT", socket_type = "NodeSocketVector", name = "Normal Vector")
+    add_env_g.interface.new_socket(in_out = "INPUT", socket_type = "NodeSocketVector", name = "Reflection Normal Vector")
+    add_env_g.interface.new_socket(in_out = "INPUT", socket_type = "NodeSocketFloat",  name = "Apply Fresnel")
+    add_env_g.interface.new_socket(in_out = "INPUT", socket_type = "NodeSocketColor",  name = "Reflection Texture Color")
+    add_env_g.interface.new_socket(in_out = "INPUT", socket_type = "NodeSocketFloat",  name = "Base Texture Alpha")
+    add_env_g.interface.new_socket(in_out = "INPUT", socket_type = "NodeSocketColor",  name = "Env Factor Color")
+    add_env_g.interface.new_socket(in_out = "INPUT", socket_type = "NodeSocketColor",  name = "Specular Color")
+    add_env_g.interface.new_socket(in_out = "INPUT", socket_type = "NodeSocketColor",  name = "Weighted Color")
+    add_env_g.interface.new_socket(in_out = "INPUT", socket_type = "NodeSocketFloat",  name = "Strength Multiplier")
 
     # outputs defining
-    add_env_g.outputs.new("NodeSocketColor", "Environment Addition Color")
+    add_env_g.interface.new_socket(in_out = "OUTPUT", socket_type = "NodeSocketColor", name = "Environment Addition Color")
+
 
     # node creation
     input_n = add_env_g.nodes.new("NodeGroupInput")
@@ -175,9 +176,10 @@ def __create_node_group__():
     refl_tex_mult_n.location = (start_pos_x + pos_x_shift * 2, start_pos_y - 150)
     refl_tex_mult_n.operation = "MULTIPLY"
 
-    fresnel_type_mix_n = add_env_g.nodes.new("ShaderNodeMixRGB")
+    fresnel_type_mix_n = add_env_g.nodes.new("ShaderNodeMix")
     fresnel_type_mix_n.name = fresnel_type_mix_n.label = _FRESNEL_TYPE_MIX_NODE
     fresnel_type_mix_n.location = (start_pos_x + pos_x_shift * 3, start_pos_y + 200)
+    fresnel_type_mix_n.data_type = "RGBA"
     fresnel_type_mix_n.blend_type = "MIX"
 
     refl_tex_col_mult_n = add_env_g.nodes.new("ShaderNodeVectorMath")
@@ -185,14 +187,15 @@ def __create_node_group__():
     refl_tex_col_mult_n.location = (start_pos_x + pos_x_shift * 3, start_pos_y - 200)
     refl_tex_col_mult_n.operation = "MULTIPLY"
 
-    tex_fresnel_mult_n = add_env_g.nodes.new("ShaderNodeMixRGB")
+    tex_fresnel_mult_n = add_env_g.nodes.new("ShaderNodeMix")
     tex_fresnel_mult_n.name = tex_fresnel_mult_n.label = _TEX_FRESNEL_MULT_NODE
     tex_fresnel_mult_n.location = (start_pos_x + pos_x_shift * 4, start_pos_y)
+    tex_fresnel_mult_n.data_type = "RGBA"
     tex_fresnel_mult_n.blend_type = "MULTIPLY"
 
     global_env_factor_n = add_env_g.nodes.new("ShaderNodeValue")
     global_env_factor_n.name = global_env_factor_n.label = _GLOBAL_ENV_FACTOR_NODE
-    global_env_factor_n.location = (start_pos_x + pos_x_shift * 4, start_pos_y - 200)
+    global_env_factor_n.location = (start_pos_x + pos_x_shift * 4, start_pos_y - 250)
 
     global_env_mult_n = add_env_g.nodes.new("ShaderNodeVectorMath")
     global_env_mult_n.name = global_env_mult_n.label = _GLOBAL_ENV_MULT_NODE
@@ -226,20 +229,20 @@ def __create_node_group__():
     add_env_g.links.new(fresnel_schlick_n.inputs['Bias'], input_n.outputs['Fresnel Bias'])
 
     # pass 3
-    add_env_g.links.new(fresnel_type_mix_n.inputs['Fac'], input_n.outputs['Fresnel Type'])
-    add_env_g.links.new(fresnel_type_mix_n.inputs['Color1'], fresnel_legacy_n.outputs['Fresnel Factor'])
-    add_env_g.links.new(fresnel_type_mix_n.inputs['Color2'], fresnel_schlick_n.outputs['Fresnel Factor'])
+    add_env_g.links.new(fresnel_type_mix_n.inputs['Factor'], input_n.outputs['Fresnel Type'])
+    add_env_g.links.new(fresnel_type_mix_n.inputs['A'], fresnel_legacy_n.outputs['Fresnel Factor'])
+    add_env_g.links.new(fresnel_type_mix_n.inputs['B'], fresnel_schlick_n.outputs['Fresnel Factor'])
 
     add_env_g.links.new(refl_tex_col_mult_n.inputs[0], refl_tex_mult_n.outputs[0])
     add_env_g.links.new(refl_tex_col_mult_n.inputs[1], env_spec_mult_n.outputs[0])
 
     # pass 4
-    add_env_g.links.new(tex_fresnel_mult_n.inputs['Fac'], input_n.outputs['Apply Fresnel'])
-    add_env_g.links.new(tex_fresnel_mult_n.inputs['Color1'], refl_tex_col_mult_n.outputs[0])
-    add_env_g.links.new(tex_fresnel_mult_n.inputs['Color2'], fresnel_type_mix_n.outputs['Color'])
+    add_env_g.links.new(tex_fresnel_mult_n.inputs['Factor'], input_n.outputs['Apply Fresnel'])
+    add_env_g.links.new(tex_fresnel_mult_n.inputs['A'], refl_tex_col_mult_n.outputs[0])
+    add_env_g.links.new(tex_fresnel_mult_n.inputs['B'], fresnel_type_mix_n.outputs['Result'])
 
     # pass 5
-    add_env_g.links.new(global_env_mult_n.inputs[0], tex_fresnel_mult_n.outputs['Color'])
+    add_env_g.links.new(global_env_mult_n.inputs[0], tex_fresnel_mult_n.outputs['Result'])
     add_env_g.links.new(global_env_mult_n.inputs[1], global_env_factor_n.outputs['Value'])
 
     # pass 6

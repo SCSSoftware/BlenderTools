@@ -20,11 +20,11 @@
 
 import bpy
 from bpy.types import Panel, UIList
-from io_scs_tools.utils import path as _path_utils
-from io_scs_tools.utils import view3d as _view_3d_utils
-from io_scs_tools.utils import get_scs_globals as _get_scs_globals
-from io_scs_tools.utils import get_scs_inventories as _get_scs_inventories
-from io_scs_tools.ui import shared as _shared
+from . import shared as _shared
+from ..utils import path as _path_utils
+from ..utils import view3d as _view_3d_utils
+from ..utils import get_scs_globals as _get_scs_globals
+from ..utils import get_scs_inventories as _get_scs_inventories
 
 
 class _WorldPanelBlDefs:
@@ -134,8 +134,7 @@ class SCS_TOOLS_PT_Lighting(_shared.HeaderIconPanel, _WorldPanelBlDefs, Panel):
             active_propname="sun_profiles_active",
             rows=3,
             maxrows=5,
-            type='DEFAULT',
-            columns=9
+            type='DEFAULT'
         )
 
 
@@ -181,7 +180,7 @@ def register():
     for cls in classes:
         bpy.utils.register_class(cls)
 
-    from io_scs_tools import SCS_TOOLS_MT_MainMenu
+    from .. import SCS_TOOLS_MT_MainMenu
     SCS_TOOLS_MT_MainMenu.append_props_entry("World Properties", SCS_TOOLS_PT_Lighting.__name__)
 
 

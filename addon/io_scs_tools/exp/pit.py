@@ -54,11 +54,13 @@ def fill_header_section(format_version, file_name, sign_export):
     section.props.append(("Source", get_combined_ver_str()))
     section.props.append(("Type", "Trait"))
     section.props.append(("Name", file_name))
+    """ "SourceFilename" and "Author" no longer supported by conversion tools, system.author removed from Blender.
     if sign_export:
         section.props.append(("SourceFilename", str(bpy.data.filepath)))
         author = bpy.context.user_preferences.system.author
         if author:
             section.props.append(("Author", str(author)))
+    """
     return section
 
 
@@ -235,9 +237,14 @@ def get_texture_path_from_material(material, texture_type, export_path):
                 return ""
 
     else:
-        lprint("E Texture file %r from material %r doesn't exists inside current Project Base Path.\n\t   " +
+        if texture_raw_path:
+            lprint("E Texture file %r from material %r doesn't exists inside current Project Base Path.\n\t   " +
                "TOBJ won't be exported and reference will remain empty, expect problems!",
                (texture_raw_path, material.name))
+        else:
+            lprint("E Texture type %r on material %r is missing texture.\n\t   " +
+               "TOBJ won't be exported and reference will remain empty, expect problems!",
+               (texture_type[8:], material.name))
         return ""
 
     # CREATE TOBJ FILE

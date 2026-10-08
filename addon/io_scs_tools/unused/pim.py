@@ -52,7 +52,7 @@ def _fill_header_section(file_name, output_type):
         if source_filename == "":
             source_filename = "Unsaved"
         header_section.props.append(("SourceFilename", source_filename))
-        author = bpy.context.user_preferences.system.author
+        author = bpy.context.preferences.system.author
         if author:
             header_section.props.append(("Author", str(author)))
     return header_section

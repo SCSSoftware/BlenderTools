@@ -116,6 +116,29 @@ class Face:
             """:type: Stream"""
             stream.add_entry(rgba)
 
+    def add_factors(self, factors, factors_names):
+        """Adds next vertex factor colors to the end of the stream.
+
+        NOTE: There is no check between length of stream and number of indicies present in face
+
+        :param factors: next vertex vertex factor colors
+        :type factors: tuple[tuple[float]] | tuple[mathutils.Vector]
+        :param factors_names: tuple or list of uv vertex factor color layer names used on vertex
+        :type factors_names: list[str] | tuple[str]
+        """
+
+        for i, factor in enumerate(factors):
+
+            stream_type = Stream.Types.FACTOR
+            vfcol_type = Stream.Types.FACTOR + str(i)
+
+            if vfcol_type not in self.__streams:
+                self.__streams[vfcol_type] = Stream(stream_type, i, factors_names[i])
+
+            stream = self.__streams[vfcol_type]
+            """:type: Stream"""
+            stream.add_entry(factor)
+
     def get_stream_count(self):
         """Gets count of all streams used in this face.
 

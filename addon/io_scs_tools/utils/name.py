@@ -70,7 +70,7 @@ def tokenize_name(name, default_name="default"):
     name = name.lower()  # lower case
 
     # strip of Blender naming convention of double objects .XXX
-    if re.match(".+(\.\d{3})$", name):
+    if re.match(r".+(\.\d{3})$", name):
         name = name[:-4]
 
     new_name = ""
@@ -96,7 +96,7 @@ def is_valid_scs_root_object_name(name):
     :rtype: bool
     """
     for letter in name:
-        if not re.match("[A-Za-z0-9\.\-_]", letter):
+        if not re.match(r"[A-Za-z0-9\.\-_]", letter):
             return False
 
     return True

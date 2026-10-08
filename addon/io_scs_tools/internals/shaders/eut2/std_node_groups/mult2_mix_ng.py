@@ -58,21 +58,24 @@ def __create_node_group__():
     mult2_mix_g = bpy.data.node_groups.new(type="ShaderNodeTree", name=MULT2_MIX_G)
 
     # inputs defining
-    mult2_mix_g.inputs.new("NodeSocketFloat", "Base Alpha")
-    mult2_mix_g.inputs.new("NodeSocketColor", "Base Color")
-    mult2_mix_g.inputs.new("NodeSocketFloat", "Mult Alpha")
-    mult2_mix_g.inputs.new("NodeSocketColor", "Mult Color")
+    mult2_mix_g.interface.new_socket(in_out = "INPUT", socket_type = "NodeSocketFloat", name = "Base Alpha")
+    mult2_mix_g.interface.new_socket(in_out = "INPUT", socket_type = "NodeSocketColor", name = "Base Color")
+    mult2_mix_g.interface.new_socket(in_out = "INPUT", socket_type = "NodeSocketFloat", name = "Mult Alpha")
+    mult2_mix_g.interface.new_socket(in_out = "INPUT", socket_type = "NodeSocketColor", name = "Mult Color")
+
+    # outputs defining
+    mult2_mix_g.interface.new_socket(in_out = "OUTPUT", socket_type = "NodeSocketFloat", name = "Mix Alpha")
+    mult2_mix_g.interface.new_socket(in_out = "OUTPUT", socket_type = "NodeSocketColor", name = "Mix Color")
+
+
+    # nodes creation
     input_n = mult2_mix_g.nodes.new("NodeGroupInput")
     input_n.location = (start_pos_x - pos_x_shift, start_pos_y)
 
-    # outputs defining
-    mult2_mix_g.outputs.new("NodeSocketFloat", "Mix Alpha")
-    mult2_mix_g.outputs.new("NodeSocketColor", "Mix Color")
     output_n = mult2_mix_g.nodes.new("NodeGroupOutput")
     output_n.location = (start_pos_x + pos_x_shift * 6, start_pos_y)
 
-    # nodes creation
-    separate_mult_n = mult2_mix_g.nodes.new("ShaderNodeSeparateRGB")
+    separate_mult_n = mult2_mix_g.nodes.new("ShaderNodeSeparateColor")
     separate_mult_n.name = _SEPARATE_MULT_NODE
     separate_mult_n.label = _SEPARATE_MULT_NODE
     separate_mult_n.location = (start_pos_x + pos_x_shift, start_pos_y)
@@ -84,12 +87,13 @@ def __create_node_group__():
     mult_green_scale_n.operation = "MULTIPLY"
     mult_green_scale_n.inputs[1].default_value = 2.0
 
-    mult_green_mix_n = mult2_mix_g.nodes.new("ShaderNodeMixRGB")
+    mult_green_mix_n = mult2_mix_g.nodes.new("ShaderNodeMix")
     mult_green_mix_n.name = _MULT_GREEN_MIX_NODE
     mult_green_mix_n.label = _MULT_GREEN_MIX_NODE
     mult_green_mix_n.location = (start_pos_x + pos_x_shift * 3, start_pos_y + 200)
+    mult_green_mix_n.data_type = "RGBA"
     mult_green_mix_n.blend_type = "MIX"
-    mult_green_mix_n.inputs["Color2"].default_value = (1.0,) * 4
+    mult_green_mix_n.inputs["B"].default_value = (1.0,) * 4
 
     mult_base_mult_n = mult2_mix_g.nodes.new("ShaderNodeVectorMath")
     mult_base_mult_n.name = _MULT_BASE_MULT_NODE
@@ -97,25 +101,27 @@ def __create_node_group__():
     mult_base_mult_n.location = (start_pos_x + pos_x_shift * 4, start_pos_y + 400)
     mult_base_mult_n.operation = "MULTIPLY"
 
-    alpha_mix_n = mult2_mix_g.nodes.new("ShaderNodeMixRGB")
+    alpha_mix_n = mult2_mix_g.nodes.new("ShaderNodeMix")
     alpha_mix_n.name = _ALPHA_MIX_NODE
     alpha_mix_n.label = _ALPHA_MIX_NODE
     alpha_mix_n.location = (start_pos_x + pos_x_shift, start_pos_y - 200)
+    alpha_mix_n.data_type = "RGBA"
+    alpha_mix_n.blend_type = "MIX"
 
     # links creation
-    mult2_mix_g.links.new(separate_mult_n.inputs["Image"], input_n.outputs["Mult Color"])
+    mult2_mix_g.links.new(separate_mult_n.inputs["Color"], input_n.outputs["Mult Color"])
 
-    mult2_mix_g.links.new(mult_green_scale_n.inputs[0], separate_mult_n.outputs["G"])
+    mult2_mix_g.links.new(mult_green_scale_n.inputs[0], separate_mult_n.outputs["Green"])
 
-    mult2_mix_g.links.new(mult_green_mix_n.inputs["Fac"], input_n.outputs["Base Alpha"])
-    mult2_mix_g.links.new(mult_green_mix_n.inputs["Color1"], mult_green_scale_n.outputs["Value"])
+    mult2_mix_g.links.new(mult_green_mix_n.inputs["Factor"], input_n.outputs["Base Alpha"])
+    mult2_mix_g.links.new(mult_green_mix_n.inputs["A"], mult_green_scale_n.outputs["Value"])
 
     mult2_mix_g.links.new(mult_base_mult_n.inputs[0], input_n.outputs["Base Color"])
-    mult2_mix_g.links.new(mult_base_mult_n.inputs[1], mult_green_mix_n.outputs["Color"])
+    mult2_mix_g.links.new(mult_base_mult_n.inputs[1], mult_green_mix_n.outputs["Result"])
 
-    mult2_mix_g.links.new(alpha_mix_n.inputs["Fac"], input_n.outputs["Base Alpha"])
-    mult2_mix_g.links.new(alpha_mix_n.inputs["Color1"], input_n.outputs["Mult Alpha"])
-    mult2_mix_g.links.new(alpha_mix_n.inputs["Color2"], input_n.outputs["Base Alpha"])
+    mult2_mix_g.links.new(alpha_mix_n.inputs["Factor"], input_n.outputs["Base Alpha"])
+    mult2_mix_g.links.new(alpha_mix_n.inputs["A"], input_n.outputs["Mult Alpha"])
+    mult2_mix_g.links.new(alpha_mix_n.inputs["B"], input_n.outputs["Base Alpha"])
 
     mult2_mix_g.links.new(output_n.inputs["Mix Color"], mult_base_mult_n.outputs[0])
-    mult2_mix_g.links.new(output_n.inputs["Mix Alpha"], alpha_mix_n.outputs["Color"])
+    mult2_mix_g.links.new(output_n.inputs["Mix Alpha"], alpha_mix_n.outputs["Result"])

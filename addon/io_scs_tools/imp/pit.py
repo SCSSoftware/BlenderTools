@@ -18,9 +18,9 @@
 
 # Copyright (C) 2013-2014: SCS Software
 
-from io_scs_tools.internals.containers import pix as _pix_container
-from io_scs_tools.utils import name as _name_utils
-from io_scs_tools.utils.printout import lprint
+from ..utils import name as _name_utils
+from ..utils.printout import lprint
+from ..internals.containers import pix as _pix_container
 
 
 def _get_header(pit_container):
@@ -153,7 +153,10 @@ def _get_look(section):
                 # now strip flipflake flavor string, remove flipflake related texture & report it
                 if has_flipflake:
 
-                    mat_effect = mat_effect.replace(".flipflake", "")
+                    if mat_effect.find(".flipflakeuv") != -1:
+                        mat_effect = mat_effect.replace(".flipflakeuv", "")
+                    else:
+                        mat_effect = mat_effect.replace(".flipflake", "")
                     if textures.pop("texture_flakenoise", None):
                         sec.remove_section("Texture", "Tag", r"^[\w\[\]]+:texture_flakenoise$")
 
@@ -181,6 +184,14 @@ def _get_look(section):
                         lprint("W Needless truckpaint texture: 'texture_paintjob' in current material configuration inside material %r, ignoring it!",
                                (mat_alias,))
 
+            # Extra treatment for outdated env_factor in eut2.glass & eut2.truckpaint shaders
+            # This attribute is outdated and is not used anymore, but it is still present in many materials.
+            if mat_effect.startswith("eut2.glass") or mat_effect.startswith("eut2.truckpaint"):
+                # remove env_factor attribute
+                if attributes.pop("env_factor", None) is not None:
+                        lprint("W Needless attribute: 'env_factor' in current material configuration inside material %r, ignoring it!",
+                               (mat_alias,))
+
             # Extra treatment for building shaders
             #
             # If night version of it is detected, switch it to day one.
@@ -188,6 +199,63 @@ def _get_look(section):
 
                 mat_effect = mat_effect.replace(".night", ".day")
                 lprint("W Night version of building shader detected in material %r, switching it to day!", (mat_alias,))
+
+            # Extra treatment for deprecated/removed/unsupported shaders/flavors/attributes
+            #
+            # If day/night version of "window" shader is detected, switch it to "lit".
+            if mat_effect.startswith("eut2.window") and mat_effect.endswith((".day", ".night")):
+
+                mat_effect = mat_effect.replace(".day", ".lit").replace(".night", ".lit")
+                lprint("W Outdated Day/Night version of window shader detected in material %r, switching it to lit!", (mat_alias,))
+
+            # If tsnmap16/tsnmapuv16 flavor is detected, switch it to "tsnmap/tsnmapuv
+            if any(x in mat_effect for x in (".tsnmap16", ".tsnmapuv16")):
+                
+                mat_effect = mat_effect.replace(".tsnmap16", ".tsnmap").replace(".tsnmapuv16", ".tsnmapuv")
+                lprint('W Outdated tsnmap16/tsnmapuv16 flavor detected in material %r, switching it to tsnmap/tsnmapuv!', (mat_alias,))
+
+            # If day/night version of "eut2.billboard" shader is detected, remove "day/night" and in "night" case, switch to "eut2.billboard.lit"
+            if mat_effect.startswith("eut2.billboard") and mat_effect.endswith((".day", ".night")):
+                
+                if mat_effect.endswith(".night"):
+                    mat_effect = mat_effect.replace("billboard", "billboard.lit")
+                    lprint("W Night version of billboard shader detected in material %r, switching it to lit!", (mat_alias,))
+                else:
+                    mat_effect = mat_effect.replace(".day", "")
+                    lprint("W Day version of billboard shader detected in material %r, removing it from effect!", (mat_alias,))
+
+
+            # Extra treatment for removed attributes not supported anymore
+            #
+            # If "diffuse" attribute in "eut2.decalshadow" shader is detected, remove it
+            if mat_effect.startswith("eut2.decalshadow"):
+                if attributes.pop("diffuse", None) is not None:
+                    lprint("I Deprecated attribute: 'diffuse' in current material configuration inside material %r, ignoring it!",
+                           (mat_alias,))
+
+            # If "shininess" attribute in "eut2.light.tex" or "eut2.lightmap" shaders is detected, remove it
+            if mat_effect.startswith("eut2.light.tex") or mat_effect.startswith("eut2.lightmap"):
+                if attributes.pop("shininess", None) is not None:
+                    lprint("I Deprecated attribute: 'shininess' in current material configuration inside material %r, ignoring it!",
+                           (mat_alias,))
+
+
+            # Extra temporary treatment for new attributes not supported in older material format used by BT
+            #
+            # If "diffuse_secondary" attribute is detected, remove it
+            if attributes.pop("diffuse_secondary", None) is not None:
+                lprint("I Unsupported attribute: 'diffuse_secondary' in current material configuration inside material %r, ignoring it!",
+                       (mat_alias,))
+
+            # If "is_dynamic_road" attribute is detected, remove it
+            if attributes.pop("is_dynamic_road", None) is not None:
+                lprint("W Unsupported attribute: 'is_dynamic_road' inside material %r, ignoring it! Material will not work as intended after export!",
+                       (mat_alias,))
+
+            # If "is_terrain_material" attribute is detected, remove it
+            if attributes.pop("is_terrain_material", None) is not None:
+                lprint("W Unsupported attribute: 'is_terrain_material' inside material %r, ignoring it! Material will not work as intended after export!",
+                       (mat_alias,))
 
             look_mat_settings[mat_alias] = (mat_effect, mat_flags, attributes, textures, sec)
 

@@ -101,6 +101,26 @@ class Material:
 
                             self.__used_textures_without_uv_count += 1
 
+        if blend_mat and "scs_shader_attributes" in blend_mat and "mappings" in blend_mat["scs_shader_attributes"]:
+            for tex_entry in blend_mat["scs_shader_attributes"]["mappings"].values():
+                self.__used_textures_count += 1
+                if "Tag" in tex_entry:
+                    tex_type = tex_entry["Tag"]
+                    mappings = getattr(blend_mat.scs_props, "shader_mapping_" + tex_type, [])
+
+                    for uv_map_i, uv_map in enumerate(mappings):
+                        if uv_map.value != "":  # filter out none specified mappings
+
+                            tex_coord_map[uv_map.tex_coord] = uv_map.value
+
+                        elif uv_map.tex_coord != -1:  # if tex coord is -1 texture doesn't use uvs
+                            lprint("W Mapping type '%s' on material '%s' is missing UV mapping value, expect problems in game!",
+                                    (tex_type, blend_mat.name))
+
+                    else:   # if texture doesn't have mappings it means uv is not required for it
+
+                        self.__used_textures_without_uv_count += 1
+
         # create uv layer map with used tex_coord on it (this tex_coords now represents aliases for given uv layers)
         # It also uses ordered dictionary because order of keys now defines actually physical order for uvs in PIM file
         self.__uvs_map_by_name = OrderedDict()

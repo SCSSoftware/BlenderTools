@@ -19,7 +19,6 @@
 # Copyright (C) 2013-2019: SCS Software
 
 import bpy
-import console_python
 from io_scs_tools.internals.open_gl import core as _gl_core
 from io_scs_tools.utils import view3d as _view3d_utils
 
@@ -47,7 +46,7 @@ def enable(mode="Normal"):
 
     _callback_handle[:] = handle_post_pixel, handle_post_view
 
-    console_python.execute.hooks.append((_view3d_utils.tag_redraw_all_view3d, ()))
+    _view3d_utils.tag_redraw_all_view3d()
 
 
 def disable():
@@ -58,7 +57,7 @@ def disable():
     if not _callback_handle:
         return
 
-    console_python.execute.hooks.remove((_view3d_utils.tag_redraw_all_view3d, ()))
+    _view3d_utils.tag_redraw_all_view3d()
 
     handle_post_pixel, handle_post_view = _callback_handle
 

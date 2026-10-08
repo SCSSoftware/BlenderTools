@@ -26,18 +26,18 @@ from bpy.props import (StringProperty,
                        CollectionProperty,
                        EnumProperty,
                        FloatVectorProperty)
-from io_scs_tools.consts import ConvHlpr as _CONV_HLPR_consts
-from io_scs_tools.consts import SCSLigthing as _LIGHTING_consts
-from io_scs_tools.internals import icons as _icons
-from io_scs_tools.internals import preview_models as _preview_models
-from io_scs_tools.internals import shader_presets as _shader_presets
-from io_scs_tools.internals.callbacks import lighting_east_lock as _lighting_east_lock_callback
-from io_scs_tools.internals.containers import config as _config_container
-from io_scs_tools.properties.dynamic import DynamicProps as _DynamicProps
-from io_scs_tools.utils import material as _material_utils
-from io_scs_tools.utils import path as _path_utils
-from io_scs_tools.utils import view3d as _view3d_utils
-from io_scs_tools.utils import get_scs_inventories as _get_scs_inventories
+from .dynamic import DynamicProps as _DynamicProps
+from ..utils import path as _path_utils
+from ..utils import view3d as _view3d_utils
+from ..utils import material as _material_utils
+from ..utils import get_scs_inventories as _get_scs_inventories
+from ..consts import ConvHlpr as _CONV_HLPR_consts
+from ..consts import SCSLigthing as _LIGHTING_consts
+from ..internals import icons as _icons
+from ..internals import preview_models as _preview_models
+from ..internals import shader_presets as _shader_presets
+from ..internals.callbacks import lighting_east_lock as _lighting_east_lock_callback
+from ..internals.containers import config as _config_container
 
 
 class SCSInventories(bpy.types.PropertyGroup):
@@ -140,14 +140,26 @@ class SCSInventories(bpy.types.PropertyGroup):
                 icon_str = 'MATERIAL'
             elif "glass" in preset_name:
                 icon_str = 'MOD_LATTICE'
+            elif "grass" in preset_name:
+                icon_str = 'STRANDS'
+            elif "interior" in preset_name:
+                icon_str = 'OUTLINER_OB_LATTICE'
             elif "lamp" in preset_name:
                 icon_str = 'LIGHT_SPOT'
+            elif "mlaa" in preset_name:
+                icon_str = 'GROUP_UVS'
+            elif "none" in preset_name and preset_name != "<none>":
+                icon_str = 'MESH_CIRCLE'
+            elif "particle" in preset_name:
+                icon_str = 'PARTICLE_TIP'
             elif "shadowonly" in preset_name:
                 icon_str = 'MAT_SPHERE_SKY'
             elif "truckpaint" in preset_name:
                 icon_str = 'AUTO'
-            elif "mlaa" in preset_name:
-                icon_str = 'GROUP_UVS'
+            elif "water" in preset_name:
+                icon_str = 'MOD_OCEAN'
+            elif "window" in preset_name:
+                icon_str = 'OUTLINER_OB_LATTICE'
             elif preset_name == "<none>":
                 icon_str = 'X'
             else:
@@ -547,6 +559,42 @@ class SCSGlobals(bpy.types.PropertyGroup):
         self.on_display_setting_update(context)
         _config_container.update_item_in_file('GlobalColors.ColliderLocatorsFace', tuple(self.locator_coll_face_color))
 
+    def show_trailer_type_update(self, context):
+        self.on_display_setting_update(context)
+        _config_container.update_item_in_file('GlobalDisplay.ShowTrailerType', int(self.show_trailer_type))
+
+    def trailer_load_easy_color_update(self, context):
+        self.on_display_setting_update(context)
+        _config_container.update_item_in_file('GlobalColors.TrailerLoadEasy', tuple(self.trailer_load_easy_color))
+    
+    def trailer_load_medium_color_update(self, context):
+        self.on_display_setting_update(context)
+        _config_container.update_item_in_file('GlobalColors.TrailerLoadMedium', tuple(self.trailer_load_medium_color))
+
+    def trailer_load_hard_color_update(self, context):
+        self.on_display_setting_update(context)
+        _config_container.update_item_in_file('GlobalColors.TrailerLoadHard', tuple(self.trailer_load_hard_color))
+
+    def trailer_unload_easy_color_update(self, context):
+        self.on_display_setting_update(context)
+        _config_container.update_item_in_file('GlobalColors.TrailerUnloadEasy', tuple(self.trailer_unload_easy_color))
+    
+    def trailer_unload_medium_color_update(self, context):
+        self.on_display_setting_update(context)
+        _config_container.update_item_in_file('GlobalColors.TrailerUnloadMedium', tuple(self.trailer_unload_medium_color))
+
+    def trailer_unload_hard_color_update(self, context):
+        self.on_display_setting_update(context)
+        _config_container.update_item_in_file('GlobalColors.TrailerUnloadHard', tuple(self.trailer_unload_hard_color))
+
+    def owned_trailer_color_update(self, context):
+        self.on_display_setting_update(context)
+        _config_container.update_item_in_file('GlobalColors.OwnedTrailer', tuple(self.owned_trailer_color))
+
+    def service_station_color_update(self, context):
+        self.on_display_setting_update(context)
+        _config_container.update_item_in_file('GlobalColors.ServiceStation', tuple(self.service_station_color))
+
     def display_connections_update(self, context):
         self.on_display_setting_update(context)
         _config_container.update_item_in_file('GlobalDisplay.DisplayConnections', int(self.display_connections))
@@ -580,7 +628,7 @@ class SCSGlobals(bpy.types.PropertyGroup):
         return None
 
     def drawing_mode_update(self, context):
-        from io_scs_tools.internals.callbacks import open_gl as _open_gl_callback
+        from ..internals.callbacks import open_gl as _open_gl_callback
 
         _open_gl_callback.enable(self.drawing_mode)
 
@@ -591,7 +639,7 @@ class SCSGlobals(bpy.types.PropertyGroup):
             _preview_models.update()
 
     def base_paint_color_update(self, context):
-        from io_scs_tools.internals.shaders import set_base_paint_color
+        from ..internals.shaders import set_base_paint_color
 
         for mat in bpy.data.materials:
 
@@ -720,6 +768,92 @@ class SCSGlobals(bpy.types.PropertyGroup):
         default=(0.15, 0.05, 0.05),
         # default=(0.065, 0.18, 0.3),
         update=locator_coll_face_color_update,
+    )
+    show_trailer_type: BoolProperty(
+        name="Show Trailer Type",
+        description="Show trailer type shape for custom spawn point locators",
+        default=True,
+        update=show_trailer_type_update
+    )
+    trailer_load_easy_color: FloatVectorProperty(
+        name="(Easy) Trailer Load",
+        description="Color of trailer loading zone in 3D views - easy difficulty",
+        options={'HIDDEN'},
+        subtype='COLOR',
+        size = 4,
+        min=0, max=1,
+        default=(0.0, 1.0, 1.0, 1.0),
+        update=trailer_load_easy_color_update,
+    )
+    trailer_load_medium_color: FloatVectorProperty(
+        name="(Medium) Trailer Load",
+        description="Color of trailer loading zone in 3D views - medium difficulty",
+        options={'HIDDEN'},
+        subtype='COLOR',
+        size = 4,
+        min=0, max=1,
+        default=(0.0, 0.471, 1.0, 1.0),
+        update=trailer_load_medium_color_update,
+    )
+    trailer_load_hard_color: FloatVectorProperty(
+        name="(Hard) Trailer Load",
+        description="Color of trailer loading zone in 3D views - hard difficulty",
+        options={'HIDDEN'},
+        subtype='COLOR',
+        size = 4,
+        min=0, max=1,
+        default=(0.0, 0.0, 0.784, 1.0),
+        update=trailer_load_hard_color_update,
+    )
+    trailer_unload_easy_color: FloatVectorProperty(
+        name="(Easy) Trailer Unload",
+        description="Color of trailer unloading zone in 3D views - easy difficulty",
+        options={'HIDDEN'},
+        subtype='COLOR',
+        size = 4,
+        min=0, max=1,
+        default=(1.0, 1.0, 0.0, 1.0),
+        update=trailer_unload_easy_color_update,
+    )
+    trailer_unload_medium_color: FloatVectorProperty(
+        name="(Medium) Trailer Unload",
+        description="Color of trailer unloading zone in 3D views - medium difficulty",
+        options={'HIDDEN'},
+        subtype='COLOR',
+        size = 4,
+        min=0, max=1,
+        default=(0.706, 0.471, 0.0, 1.0),
+        update=trailer_unload_medium_color_update,
+    )
+    trailer_unload_hard_color: FloatVectorProperty(
+        name="(Hard) Trailer Unload",
+        description="Color of trailer unloading zone in 3D views - hard difficulty",
+        options={'HIDDEN'},
+        subtype='COLOR',
+        size = 4,
+        min=0, max=1,
+        default=(1.0, 0.0, 0.0, 1.0),
+        update=trailer_unload_hard_color_update,
+    )
+    owned_trailer_color: FloatVectorProperty(
+        name="Owned Trailer Color",
+        description="Color for Owned Trailer zone in 3D views",
+        options={'HIDDEN'},
+        subtype='COLOR',
+        size = 4,
+        min=0, max=1,
+        default=(1.0, 0.0, 1.0, 1.0),
+        update=owned_trailer_color_update,
+    )
+    service_station_color: FloatVectorProperty(
+        name="Service Station Color",
+        description="Color for Service Station zone in 3D views",
+        options={'HIDDEN'},
+        subtype='COLOR',
+        size = 4,
+        min=0, max=1,
+        default=(0.0, 0.706, 0.0, 1.0),
+        update=service_station_color_update,
     )
     display_connections: BoolProperty(
         name="Display Connections",
@@ -1148,7 +1282,8 @@ class SCSGlobals(bpy.types.PropertyGroup):
     export_output_type: EnumProperty(
         name="Output Format",
         items=(
-            ('5', "Game Data Format, ver. 5", "Export PIM (version 5) file formats for SCS Game Engine"),
+            ('5_AM', "Game Data Format, ver. 5 (AutoMat)", "Export PIM (version 5) file formats for SCS Game Engine, with \"AutoMat\" look type"),
+            ('5', "Game Data Format, ver. 5 (Material)", "Export PIM (version 5) file formats for SCS Game Engine, with legacy \"Material\" look type"),
             ('EF', "Exchange Format, ver. 1",
              "Export 'Exchange Formats' (version 1) file formats designed for data exchange between different modeling tools"),
         ),
@@ -1206,6 +1341,14 @@ class SCSGlobals(bpy.types.PropertyGroup):
 
         return None
 
+    def activate_new_parts_update(self, context):
+        self.on_display_setting_update(context)
+        _config_container.update_item_in_file('GlobalOther.ActivateNewParts', int(self.activate_new_parts))
+
+    def activate_new_variant_parts_update(self, context):
+        self.on_display_setting_update(context)
+        _config_container.update_item_in_file('GlobalOther.ActivateNewVariantParts', int(self.activate_new_variant_parts))
+
     dump_level: EnumProperty(
         name="Printouts",
         items=(
@@ -1228,6 +1371,20 @@ class SCSGlobals(bpy.types.PropertyGroup):
         ),
         default='ConfigFile',
         update=config_storage_place_update,
+    )
+
+    activate_new_parts: BoolProperty(
+        name="Activate New Parts",
+        description="Automatically activate new parts when added to SCS Game Object.",
+        default=True,
+        update=activate_new_parts_update
+    )
+
+    activate_new_variant_parts: BoolProperty(
+        name="Activate New Variant Parts",
+        description="Automatically activate parts when new variant is created for SCS Game Object.",
+        default=True,
+        update=activate_new_variant_parts_update
     )
 
     # COMMON SETTINGS - NOT SAVED IN CONFIG
@@ -1272,7 +1429,7 @@ class SCSGlobals(bpy.types.PropertyGroup):
 
             # if relative path detected convert it to absolute
             if self.path.startswith("//") or self.path.startswith("\\"):
-                from io_scs_tools.utils.path import repair_path
+                from ..utils.path import repair_path
                 self.path = repair_path(self.path)
 
         path: StringProperty(subtype='DIR_PATH')

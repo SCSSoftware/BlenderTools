@@ -80,6 +80,7 @@ def _get_piece_streams(section):
     mesh_uv_aliases = {}
     mesh_rgb = {}
     mesh_rgba = {}
+    mesh_factor = {}
     mesh_scalars = {}
     for sec in section.sections:
         if sec.type == "Stream":
@@ -178,6 +179,12 @@ def _get_piece_streams(section):
                             # print('      face_data_block:\n%s' % str(face_data_block))
                             mesh_rgb[face_stream_name].append(face_data_block)
 
+                        elif face_stream_tag.startswith("_FACTOR") and face_stream_type == "FLOAT4":
+                            if face_stream_name not in mesh_factor:
+                                mesh_factor[face_stream_name] = []
+                            # print('      face_data_block:\n%s' % str(face_data_block))
+                            mesh_factor[face_stream_name].append(face_data_block)
+
                         elif face_stream_tag.startswith("_UV") and face_stream_type == "FLOAT2":
                             if face_stream_name not in mesh_uv:
                                 mesh_uv[face_stream_name] = []
@@ -204,6 +211,7 @@ def _get_piece_streams(section):
         mesh_tangents,
         mesh_rgb,
         mesh_rgba,
+        mesh_factor,
         mesh_scalars,
         mesh_uv,
         mesh_uv_aliases,
@@ -223,6 +231,7 @@ def _create_piece(
         mesh_tangents,
         mesh_rgb,
         mesh_rgba,
+        mesh_factor,
         mesh_scalars,
         object_skinning,
         mesh_uv,
@@ -287,6 +296,11 @@ def _create_piece(
     if mesh_rgb:
         mesh_rgb_final.update(mesh_rgb)
 
+    # VERTEX FACTORS
+    mesh_factor_final = []
+    if mesh_factor:
+        mesh_factor_final = mesh_factor
+
     vcolor_corrupt = False
     for vc_layer_name in mesh_rgb_final:
 
@@ -304,6 +318,9 @@ def _create_piece(
     if vcolor_corrupt:
         lprint("W Piece %r has vertices with vertex color greater the 1.0, clamping it!", (name,))
 
+    for vfc_layer_name in mesh_factor_final:
+        _mesh_utils.bm_make_vfc_layer(7, bm, vfc_layer_name, mesh_factor_final[vfc_layer_name])
+
     bm.to_mesh(mesh)
     mesh.update()
     bm.free()
@@ -316,15 +333,14 @@ def _create_piece(
     # NORMALS - has to be applied after bmesh creation as they are set directly to mesh
     if _get_scs_globals().import_use_normals:
 
-        mesh.create_normals_split()
-
         # first set normals directly to loops
+        clnors = []
         for poly_i, poly in enumerate(mesh.polygons):
 
             for poly_loop_i, loop_i in enumerate(poly.loop_indices):
 
                 curr_n = _convert_utils.scs_to_blend_matrix() @ Vector(mesh_normals[poly_i][poly_loop_i])
-                mesh.loops[loop_i].normal[:] = curr_n
+                clnors.extend(curr_n)
 
         # then we have to go trough very important step they say,
         # as without validation we get wrong result for some normals
@@ -334,13 +350,8 @@ def _create_piece(
         mesh.polygons.foreach_set("use_smooth", [True] * len(mesh.polygons))
 
         # finally fill clnors from loops normals and apply them (taken from official Blenders scripts)
-        clnors = array.array('f', [0.0] * (len(mesh.loops) * 3))
-        mesh.loops.foreach_get("normal", clnors)
         mesh.normals_split_custom_set(tuple(zip(*(iter(clnors),) * 3)))
-        mesh.use_auto_smooth = True
-        mesh.auto_smooth_angle = 3.14
 
-        mesh.free_normals_split()
     else:
         # set polygons to use smooth representation only
         mesh.polygons.foreach_set("use_smooth", [True] * len(mesh.polygons))
@@ -538,6 +549,7 @@ def load_pim_file(context, filepath, terrain_points_trans=None, preview_model=Fa
                  mesh_tangents,
                  mesh_rgb,
                  mesh_rgba,
+                 mesh_factor,
                  mesh_scalars,
                  mesh_uv,
                  mesh_uv_aliases,
@@ -554,6 +566,7 @@ def load_pim_file(context, filepath, terrain_points_trans=None, preview_model=Fa
                     mesh_tangents,
                     mesh_rgb,
                     mesh_rgba,
+                    mesh_factor,
                     mesh_scalars,
                     mesh_uv,
                     mesh_uv_aliases,
@@ -567,6 +580,7 @@ def load_pim_file(context, filepath, terrain_points_trans=None, preview_model=Fa
                 # print('ob_material: %s' % ob_material)
                 # print('mesh_vertices: %s' % mesh_vertices)
                 # print('mesh_rgba 1: %s' % str(mesh_rgba))
+                # print('mesh_factor: %s' % str(mesh_factor))
                 # print('mesh_uv count: %s' % len(mesh_uv))
                 # print('mesh_triangles: %s' % mesh_triangles)
                 # print('mesh_faces: %s' % mesh_faces)
@@ -689,14 +703,15 @@ def load_pim_file(context, filepath, terrain_points_trans=None, preview_model=Fa
             objects_data[obj_i][4],  # mesh_tangents
             objects_data[obj_i][5],  # mesh_rgb
             objects_data[obj_i][6],  # mesh_rgba
-            objects_data[obj_i][7],  # mesh_scalars
+            objects_data[obj_i][7],  # mesh_factor
+            objects_data[obj_i][8],  # mesh_scalars
             object_skinning,
-            objects_data[obj_i][8],  # mesh_uv
-            objects_data[obj_i][9],  # mesh_uv_aliases
-            objects_data[obj_i][10],  # mesh_tuv
-            objects_data[obj_i][11],  # mesh_faces
-            objects_data[obj_i][12],  # mesh_face_materials
-            objects_data[obj_i][13],  # mesh_edges
+            objects_data[obj_i][9],  # mesh_uv
+            objects_data[obj_i][10],  # mesh_uv_aliases
+            objects_data[obj_i][11],  # mesh_tuv
+            objects_data[obj_i][12],  # mesh_faces
+            objects_data[obj_i][13],  # mesh_face_materials
+            objects_data[obj_i][14],  # mesh_edges
             terrain_points_trans,
             materials_data,
         )

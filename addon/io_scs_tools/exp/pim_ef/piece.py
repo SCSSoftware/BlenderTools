@@ -62,7 +62,7 @@ class Piece:
 
     @staticmethod
     def __calc_vertex_hash(index, position):
-        """Calculates vertex hash from original vertex index, uvs components and vertex color.
+        """Calculates vertex hash from original vertex index, uvs components, vertex color and vertex factor color.
         :param index: original index from Blender mesh
         :type index: int
         :param position: vector of 3 floats presenting vertex position in SCS values
@@ -104,7 +104,7 @@ class Piece:
 
         Piece.__global_piece_count += 1
 
-    def add_face(self, material, vert_indicies, vert_normals, vert_uvs, uvs_names, uvs_aliases, vert_rgbas, rgbas_names):
+    def add_face(self, material, vert_indicies, vert_normals, vert_uvs, uvs_names, uvs_aliases, vert_rgbas, rgbas_names, vert_factors, factors_names):
         """Adds new face to piece.
 
         :param material: material that should be used on for this piece
@@ -123,6 +123,10 @@ class Piece:
         :type vert_rgbas: list[tuple | mathutils.Color] | tuple[tuple | mathutils.Color]
         :param rgbas_names: tuple or list of vertex color layer names used on vertex
         :type rgbas_names: list[str] | tuple[str]
+        :param vert_factors: list of factors vertex colors in SCS values
+        :type vert_factors: list[tuple | mathutils.Color] | tuple[tuple | mathutils.Color]
+        :param factors_names: tuple or list of vertex factor color layer names used on vertex
+        :type factors_names: list[str] | tuple[str]
         :return: True if added; False otherwise
         :rtype: bool
         """
@@ -136,8 +140,12 @@ class Piece:
                 return False
 
         # check integrity between all parameters
-        if not len(vert_indicies) == len(vert_normals) == len(vert_uvs) == len(vert_rgbas):
-            return False
+        if vert_factors:
+            if not len(vert_indicies) == len(vert_normals) == len(vert_uvs) == len(vert_rgbas) == len(vert_factors):
+                return False
+        else:
+            if not len(vert_indicies) == len(vert_normals) == len(vert_uvs) == len(vert_rgbas):
+                return False
 
         face = Face(len(self.__faces), material, vert_indicies)
 
@@ -151,6 +159,10 @@ class Piece:
 
             # add rgbas per vertex
             face.add_rgbas(vert_rgbas[i], rgbas_names)
+
+            # add factors per vertex if available
+            if vert_factors:
+                face.add_factors(vert_factors[i], factors_names)
 
         self.__faces.append(face)
         Piece.__global_face_count += 1

@@ -125,7 +125,7 @@ def _get_prop(line):
                                 else:
 
                                     # UNHANDLED DATA
-                                    print('WARNING - "internals/parsers/pix.py" - Unhandled case! (prop_value = %s)' % str(prop_value))
+                                    print('WARNING - "internals/containers/parsers/pix.py" - Unhandled case! (prop_value = %s)' % str(prop_value))
             except:
 
                 # NONE

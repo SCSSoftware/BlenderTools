@@ -19,7 +19,7 @@
 # Copyright (C) 2017: SCS Software
 
 import bpy
-from io_scs_tools.consts import Material as _MAT_consts
+from .....consts import Material as _MAT_consts
 
 TSNMAP_DDS16_G = _MAT_consts.node_group_prefix + "TSNMapDDS16Group"
 
@@ -59,18 +59,21 @@ def __create_node_group__():
     nmap_dds16_g = bpy.data.node_groups.new(type="ShaderNodeTree", name=TSNMAP_DDS16_G)
 
     # inputs defining
-    nmap_dds16_g.inputs.new("NodeSocketColor", "Color")
+    nmap_dds16_g.interface.new_socket(in_out = "INPUT", socket_type = "NodeSocketColor", name = "Color")
+
+    # outputs defining
+    nmap_dds16_g.interface.new_socket(in_out = "OUTPUT", socket_type = "NodeSocketFloat", name = "Strength")
+    nmap_dds16_g.interface.new_socket(in_out = "OUTPUT", socket_type = "NodeSocketColor", name = "Color")
+
+
+    # group nodes
     input_n = nmap_dds16_g.nodes.new("NodeGroupInput")
     input_n.location = (0, 0)
 
-    # outputs defining
-    nmap_dds16_g.outputs.new("NodeSocketFloat", "Strength")
-    nmap_dds16_g.outputs.new("NodeSocketColor", "Color")
     output_n = nmap_dds16_g.nodes.new("NodeGroupOutput")
     output_n.location = (185 * 7, 0)
 
-    # group nodes
-    separate_rgb_n = nmap_dds16_g.nodes.new("ShaderNodeSeparateRGB")
+    separate_rgb_n = nmap_dds16_g.nodes.new("ShaderNodeSeparateColor")
     separate_rgb_n.name = separate_rgb_n.label = _NMAP_TEX_SEP_NODE
     separate_rgb_n.location = (185 * 1, 100)
 
@@ -108,16 +111,16 @@ def __create_node_group__():
     square_pow_n.inputs[1].default_value = 0.5
 
     # 5. pass
-    combine_rgb_n = nmap_dds16_g.nodes.new("ShaderNodeCombineRGB")
+    combine_rgb_n = nmap_dds16_g.nodes.new("ShaderNodeCombineColor")
     combine_rgb_n.name = combine_rgb_n.label = _NMAP_TEX_COMBINE_NODE
     combine_rgb_n.location = (185 * 6, 100)
-    combine_rgb_n.inputs['B'].default_value = 1
+    combine_rgb_n.inputs['Blue'].default_value = 1
 
     # group links
-    nmap_dds16_g.links.new(separate_rgb_n.inputs['Image'], input_n.outputs['Color'])
+    nmap_dds16_g.links.new(separate_rgb_n.inputs['Color'], input_n.outputs['Color'])
 
-    nmap_dds16_g.links.new(red_pow_n.inputs[0], separate_rgb_n.outputs['R'])
-    nmap_dds16_g.links.new(green_pow_n.inputs[0], separate_rgb_n.outputs['G'])
+    nmap_dds16_g.links.new(red_pow_n.inputs[0], separate_rgb_n.outputs['Red'])
+    nmap_dds16_g.links.new(green_pow_n.inputs[0], separate_rgb_n.outputs['Green'])
 
     nmap_dds16_g.links.new(red_sub_n.inputs[1], red_pow_n.outputs[0])
 
@@ -126,8 +129,8 @@ def __create_node_group__():
 
     nmap_dds16_g.links.new(square_pow_n.inputs[0], green_sub_n.outputs[0])
 
-    nmap_dds16_g.links.new(combine_rgb_n.inputs['R'], separate_rgb_n.outputs['R'])
-    nmap_dds16_g.links.new(combine_rgb_n.inputs['G'], separate_rgb_n.outputs['G'])
+    nmap_dds16_g.links.new(combine_rgb_n.inputs['Red'], separate_rgb_n.outputs['Red'])
+    nmap_dds16_g.links.new(combine_rgb_n.inputs['Green'], separate_rgb_n.outputs['Green'])
 
-    nmap_dds16_g.links.new(output_n.inputs['Color'], combine_rgb_n.outputs['Image'])
+    nmap_dds16_g.links.new(output_n.inputs['Color'], combine_rgb_n.outputs['Color'])
     nmap_dds16_g.links.new(output_n.inputs['Strength'], square_pow_n.outputs[0])

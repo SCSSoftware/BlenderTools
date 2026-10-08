@@ -55,19 +55,22 @@ def __create_group__():
     detail_setup_g = bpy.data.node_groups.new(type="ShaderNodeTree", name=MIX_FACTOR_G)
 
     # inputs defining
-    detail_setup_g.inputs.new("NodeSocketFloat", "Near Distance")
-    detail_setup_g.inputs.new("NodeSocketFloat", "Far Distance")
-    detail_setup_g.inputs.new("NodeSocketFloat", "Scramble Distance")
+    detail_setup_g.interface.new_socket(in_out = "INPUT", socket_type = "NodeSocketFloat", name = "Near Distance")
+    detail_setup_g.interface.new_socket(in_out = "INPUT", socket_type = "NodeSocketFloat", name = "Far Distance")
+    detail_setup_g.interface.new_socket(in_out = "INPUT", socket_type = "NodeSocketFloat", name = "Scramble Distance")
+
+    # outputs defining
+    detail_setup_g.interface.new_socket(in_out = "OUTPUT", socket_type = "NodeSocketFloat", name = "Mix Factor")
+    detail_setup_g.interface.new_socket(in_out = "OUTPUT", socket_type = "NodeSocketFloat", name = "Scramble Mix Factor")
+
+
+    # group nodes
     input_n = detail_setup_g.nodes.new("NodeGroupInput")
     input_n.location = (start_pos_x, start_pos_y)
 
-    # outputs defining
-    detail_setup_g.outputs.new("NodeSocketFloat", "Mix Factor")
-    detail_setup_g.outputs.new("NodeSocketFloat", "Scramble Mix Factor")
     output_n = detail_setup_g.nodes.new("NodeGroupOutput")
     output_n.location = (start_pos_x + pos_x_shift * 7, start_pos_y)
 
-    # group nodes
     camera_data_n = detail_setup_g.nodes.new("ShaderNodeCameraData")
     camera_data_n.location = (start_pos_x, start_pos_y + 100)
 

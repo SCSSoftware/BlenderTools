@@ -25,8 +25,8 @@ from io_scs_tools.internals.containers.parsers import mat as _mat
 
 
 class MatContainer:
-    def __init__(self, data_dict, effect):
-        """Create MAT file container with mapped data dictionary on attributes and textures.
+    def __init__(self, data_dict, effect, mat_format):
+        """Create MAT file container with mapped data dictionary on attributes, textures and tobjs data.
         It also stores material effect name.
 
         :param data_dict: all attributes from material represented with dictionary,
@@ -34,33 +34,81 @@ class MatContainer:
         :type data_dict: dict[str, object]
         :param effect: shader effect full name
         :type effect: str
+        :param mat_format: material format (material|effect)
+        :type mat_format: str
         """
 
         self.__effect = ""
+        self.__mat_format = ""
         self.__attributes = {}
         self.__textures = {}
+        self.__tobjs = {}
 
         if effect is not None:
             self.__effect = effect
 
+        if format is not None:
+            self.__mat_format = mat_format
+
         for key in data_dict.keys():
 
-            if key.startswith("texture"):
+            if mat_format == "material":
 
-                tex_type = "texture_name"
-                tex_val = "texture"
+                if key.startswith("texture"):
 
-                # take care of texture saved as arrays eg: texture[0]
-                if key.find("[") != -1:
+                    tex_type = "texture_name"
+                    tex_val = "texture"
 
-                    tex_type = "texture_name" + key[key.find("["):]
-                    tex_val = "texture" + key[key.find("["):]
+                    # take care of texture saved as arrays eg: texture[0]
+                    if key.find("[") != -1:
 
-                self.__textures[data_dict[tex_type]] = data_dict[tex_val]
+                        tex_type = "texture_name" + key[key.find("["):]
+                        tex_val = "texture" + key[key.find("["):]
+
+                    self.__textures[data_dict[tex_type]] = data_dict[tex_val]
+
+                else:
+
+                    self.__attributes[key.replace("[", "").replace("]", "")] = data_dict[key]
+                
+            elif mat_format == "effect":
+
+                # parse textures & tobjs
+                if key == "texture":
+
+                    for tex_type in data_dict[key].keys():
+                        tex_val = data_dict[key][tex_type]
+                        self.__textures[tex_type] = tex_val["source"]
+                        
+                        # w_address for 3d cube reflections? not used in blender
+                        attr_keys = ["u_address", "v_address"]
+
+                        # initialize empty tobj data
+                        tobjs = [None] * len(attr_keys)
+
+                        # technically, i can return true/false if "repeat", but for eventual future use,
+                        # it's better to return the actual value for now.
+                        for i, attr in enumerate(attr_keys):
+                            if "sampler" in tex_val:
+                                tobjs[i] = "repeat"
+
+                            elif attr in tex_val:
+                                if tex_val[attr].startswith("repeat"):
+                                    tobjs[i] = "repeat"
+                                elif tex_val[attr].startswith("clamp"):
+                                    tobjs[i] = "extend"
+                                elif tex_val[attr].startswith("mirror"):
+                                    tobjs[i] = "mirror"
+
+                        self.__tobjs[tex_type] = tuple(tobjs)
+                
+                # parse attributes
+                else:
+
+                    self.__attributes[key.replace("[", "").replace("]", "")] = data_dict[key]
 
             else:
-
-                self.__attributes[key.replace("[", "").replace("]", "")] = data_dict[key]
+                lprint("E Unsupported MAT format %r!", (mat_format,))
 
     def get_textures(self):
         """Returns shader textures defined in MAT container.
@@ -68,6 +116,13 @@ class MatContainer:
         :rtype: dict[str, tuple]
         """
         return self.__textures
+
+    def get_tobjs(self):
+        """Returns textures tobj data defined in MAT container.
+
+        :rtype: dict[str, tuple]
+        """
+        return self.__tobjs
 
     def get_attributes(self):
         """Returns shader attributes defined in MAT container.
@@ -83,6 +138,13 @@ class MatContainer:
         """
         return self.__effect
 
+    def get_format(self):
+        """Returns material format defined in MAT container.
+
+        :rtype: str
+        """
+        return self.__mat_format
+
 
 def get_data_from_file(filepath):
     """Returns entire data in data container from specified raw material file.
@@ -94,14 +156,14 @@ def get_data_from_file(filepath):
     if filepath:
         if os.path.isfile(filepath) and filepath.lower().endswith(".mat"):
 
-            data_dict, effect = _mat.read_data(filepath)
+            data_dict, effect, mat_format = _mat.read_data(filepath)
 
             if data_dict:
                 if len(data_dict) < 1:
                     lprint('\nI MAT file "%s" is empty!', (_path_utils.readable_norm(filepath),))
                     return None
 
-                container = MatContainer(data_dict, effect)
+                container = MatContainer(data_dict, effect, mat_format)
             else:
                 lprint('\nI MAT file "%s" is empty!', (_path_utils.readable_norm(filepath),))
                 return None

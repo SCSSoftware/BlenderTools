@@ -18,8 +18,8 @@
 
 # Copyright (C) 2015-2019: SCS Software
 
-from io_scs_tools.internals.shaders.eut2.dif_spec import DifSpec
-from io_scs_tools.internals.shaders.eut2.std_passes.add_env import StdAddEnv
+from ..dif_spec import DifSpec
+from ..std_passes.add_env import StdAddEnv
 
 
 class DifSpecAddEnv(DifSpec, StdAddEnv):

@@ -49,17 +49,20 @@ def __create_node_group__():
     scs_uvs_combine_g = bpy.data.node_groups.new(type="ShaderNodeTree", name=SCS_UVS_COMBINE_G)
 
     # inputs defining
-    scs_uvs_combine_g.inputs.new("NodeSocketFloat", "U")
-    scs_uvs_combine_g.inputs.new("NodeSocketFloat", "V")
+    scs_uvs_combine_g.interface.new_socket(in_out = "INPUT", socket_type = "NodeSocketFloat", name = "U")
+    scs_uvs_combine_g.interface.new_socket(in_out = "INPUT", socket_type = "NodeSocketFloat", name = "V")
+
+    # outputs defining
+    scs_uvs_combine_g.interface.new_socket(in_out = "OUTPUT", socket_type = "NodeSocketVector", name = "Vector")
+
+
+    # group nodes
     input_n = scs_uvs_combine_g.nodes.new("NodeGroupInput")
     input_n.location = (0, 0)
 
-    # outputs defining
-    scs_uvs_combine_g.outputs.new("NodeSocketVector", "Vector")
     output_n = scs_uvs_combine_g.nodes.new("NodeGroupOutput")
     output_n.location = (pos_x_shift * 4, 0)
 
-    # group nodes
     v_to_scs_inv_n = scs_uvs_combine_g.nodes.new("ShaderNodeMath")
     v_to_scs_inv_n.location = (pos_x_shift * 1, -100)
     v_to_scs_inv_n.operation = "MULTIPLY"

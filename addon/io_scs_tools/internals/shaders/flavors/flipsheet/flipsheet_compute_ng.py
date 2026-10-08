@@ -83,14 +83,14 @@ def __create_node_group__():
         fadesheet_compute_g.nodes.clear()
 
     # inputs defining
-    fadesheet_compute_g.inputs.new("NodeSocketFloat", "FPS")
-    fadesheet_compute_g.inputs.new("NodeSocketFloat", "FramesRow")
-    fadesheet_compute_g.inputs.new("NodeSocketFloat", "FramesTotal")
-    fadesheet_compute_g.inputs.new("NodeSocketVector", "FrameSize")
-    fadesheet_compute_g.inputs.new("NodeSocketVector", "UV")
+    fadesheet_compute_g.interface.new_socket(in_out = "INPUT", socket_type = "NodeSocketFloat",  name = "FPS")
+    fadesheet_compute_g.interface.new_socket(in_out = "INPUT", socket_type = "NodeSocketFloat",  name = "FramesRow")
+    fadesheet_compute_g.interface.new_socket(in_out = "INPUT", socket_type = "NodeSocketFloat",  name = "FramesTotal")
+    fadesheet_compute_g.interface.new_socket(in_out = "INPUT", socket_type = "NodeSocketVector", name = "FrameSize")
+    fadesheet_compute_g.interface.new_socket(in_out = "INPUT", socket_type = "NodeSocketVector", name = "UV")
 
     # outputs defining
-    fadesheet_compute_g.outputs.new("NodeSocketVector", "UV")
+    fadesheet_compute_g.interface.new_socket(in_out = "OUTPUT", socket_type = "NodeSocketVector", name = "UV")
 
     # node creation
     input_n = fadesheet_compute_g.nodes.new("NodeGroupInput")

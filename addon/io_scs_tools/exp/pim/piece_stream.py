@@ -31,6 +31,7 @@ class Stream:
         TANGENT = "_TANGENT"
         RGB = "_RGB"
         RGBA = "_RGBA"
+        FACTOR = "_FACTOR" # NOTE: used only in piko.alldir flavor
         UV = "_UV"  # NOTE: there can be up to 9 uv streams
         TUV = "_TUV"  # NOTE: there can be up to 9 tuv streams
 
@@ -66,6 +67,8 @@ class Stream:
             self.__format = "FLOAT3"
         elif stream_type == Stream.Types.RGBA:
             self.__format = "FLOAT4"
+        elif stream_type == Stream.Types.FACTOR:
+            self.__format = "FLOAT4"
         elif stream_type == Stream.Types.UV:
             self.__tag_index = index
             self.__format = "FLOAT2"
@@ -92,6 +95,8 @@ class Stream:
         # if self.__tag == Stream.Types.RGB and len(value) != 3:
         #     return False
         # if self.__tag == Stream.Types.RGBA and len(value) != 4:
+        #     return False
+        # if self.__tag == Stream.Types.FACTOR and len(value) != 4:
         #     return False
         # if self.__tag == Stream.Types.UV and len(value) != 2:
         #     return False

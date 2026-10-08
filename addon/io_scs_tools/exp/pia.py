@@ -21,6 +21,7 @@
 import os
 
 import bpy
+from bpy_extras import anim_utils
 from collections import OrderedDict
 from mathutils import Vector, Matrix, Euler, Quaternion
 from io_scs_tools.utils import convert as _convert_utils
@@ -31,7 +32,7 @@ from io_scs_tools.internals.structure import SectionData as _SectionData
 from io_scs_tools.internals.containers import pix as _pix_container
 
 
-def _get_custom_channels(scs_animation, action):
+def _get_custom_channels(armature, scs_animation, action):
     custom_channels = []
     frame_start = scs_animation.anim_start
     frame_end = scs_animation.anim_end
@@ -40,8 +41,11 @@ def _get_custom_channels(scs_animation, action):
 
     loc_curves = {}  # dictionary for storing "location" curves of action
 
+    action_slot = armature.animation_data.action_slot
+    channelbag = anim_utils.action_get_channelbag_for_slot(action, action_slot)
+
     # get curves which are related to moving of armature object
-    for fcurve in action.fcurves:
+    for fcurve in channelbag.fcurves:
         if fcurve.data_path == 'location':
             loc_curves[fcurve.array_index] = fcurve
 
@@ -103,7 +107,10 @@ def _get_bone_channels(scs_root_obj, armature, scs_animation, action, export_sca
     curves_per_bone = OrderedDict()  # store all the curves we are interested in per bone names
 
     for bone in armature.data.bones:
-        for fcurve in action.fcurves:
+        action_slot = armature.animation_data.action_slot
+        channelbag = anim_utils.action_get_channelbag_for_slot(action, action_slot)
+
+        for fcurve in channelbag.fcurves:
 
             # check if curve belongs to bone
             if '["' + bone.name + '"]' in fcurve.data_path:
@@ -263,11 +270,13 @@ def _fill_header_section(anim_name, sign_export):
     section.props.append(("Source", get_combined_ver_str()))
     section.props.append(("Type", "Animation"))
     section.props.append(("Name", anim_name))
+    """ "SourceFilename" and "Author" no longer supported by conversion tools, system.author removed from Blender.
     if sign_export:
         section.props.append(("SourceFilename", str(bpy.data.filepath)))
         author = bpy.context.user_preferences.system.author
         if author:
             section.props.append(("Author", str(author)))
+    """
     return section
 
 
@@ -331,7 +340,7 @@ def export(scs_root_obj, armature, scs_animation, dirpath, name_suffix, skeleton
     total_time = scs_animation.length
     action = bpy.data.actions[scs_animation.action]
     bone_channels = _get_bone_channels(scs_root_obj, armature, scs_animation, action, scs_globals.export_scale)
-    custom_channels = _get_custom_channels(scs_animation, action)
+    custom_channels = _get_custom_channels(armature, scs_animation, action)
 
     # DATA CREATION
     header_section = _fill_header_section(scs_animation.name, scs_globals.export_write_signature)

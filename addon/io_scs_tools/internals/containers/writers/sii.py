@@ -169,3 +169,46 @@ def write_data(filepath, container, ind="\t", is_sui=False, create_dirs=False, p
         lprint("I Writting %s file to: %r", (file_type, filepath))
 
     return True
+
+
+def write_data_to_string(container, ind="\t", is_sui=False):
+    """Write SII/SUI container into a string.
+
+    :param container: iterable of unit data objects to be written
+    :type container: tuple[io_scs_tools.internals.structure.UnitData]|list[io_scs_tools.internals.structure.UnitData]
+    :param ind: indentation used for properties of units
+    :type ind: str
+    :param is_sui: True if unit should be written as SUI, meaning without SiiNunit header
+    :type is_sui: bool
+    :return: Content of SII/SUI file
+    :rtype: bool
+    """
+
+    import io
+
+    buf = io.StringIO()
+
+    if not is_sui:
+        buf.write("SiiNunit\n")
+        buf.write("{\n")
+
+    count = len(container)
+    for i, unit in enumerate(container):
+
+        # Check if it's 1-element tuple (FLOAT). If yes, return only first value.
+        for key, value in unit.props.items():
+            if isinstance(value, tuple) and len(value) == 1 and not isinstance(value[0], str):
+                unit.props[key] = value[0]
+
+        _write_unit(buf, unit, ind)
+
+        if i < count - 1:
+            buf.write("\n")
+
+    if not is_sui:
+        buf.write("}\n")
+
+    content = buf.getvalue()
+    buf.close()
+
+    return content

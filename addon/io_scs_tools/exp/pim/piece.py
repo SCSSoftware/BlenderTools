@@ -59,8 +59,8 @@ class Piece:
         return Piece.__global_triangle_count
 
     @staticmethod
-    def __calc_vertex_hash(index, normal, uvs, rgba, tangent):
-        """Calculates vertex hash from original vertex index, uvs components and vertex color.
+    def __calc_vertex_hash(index, normal, uvs, rgba, factor, tangent):
+        """Calculates vertex hash from original vertex index, uvs components, vertex color and vertex factor color.
         :param index: original index from Blender mesh
         :type index: str
         :param normal: normalized vector representation of the normal
@@ -69,6 +69,8 @@ class Piece:
         :type uvs: list of (tuple | mathutils.Vector)
         :param rgba: rgba representation of vertex color in SCS values
         :type rgba: tuple | mathutils.Color
+        :param factor: rgba representation of vertex factor color in SCS values
+        :type factor: tuple | mathutils.Color
         :param tangent: vertex tangent in SCS coordinates or none, if piece doesn't have tangents
         :type tangent: tuple | None
         :return: calculated vertex hash
@@ -98,6 +100,12 @@ class Piece:
                            int(rgba[1] * fprec),
                            int(rgba[2] * fprec),
                            int(rgba[3] * fprec))
+
+        if factor:
+            vertex_hash += (int(factor[0] * fprec),
+                            int(factor[1] * fprec),
+                            int(factor[2] * fprec),
+                            int(factor[3] * fprec))
 
         for uv in uvs:
             vertex_hash += (int(uv[0] * fprec),
@@ -155,7 +163,7 @@ class Piece:
 
         return True
 
-    def add_vertex(self, vert_index, position, normal, uvs, uvs_aliases, rgba, tangent):
+    def add_vertex(self, vert_index, position, normal, uvs, uvs_aliases, rgba, factor, tangent):
         """Adds new vertex to position and normal streams
         :param vert_index: original vertex index from Blender mesh
         :type vert_index: str
@@ -169,13 +177,15 @@ class Piece:
         :type uvs_aliases: list[list[str]]
         :param rgba: rgba representation of vertex color in SCS values
         :type rgba: tuple | mathutils.Color
+        :param factor: rgba representation of vertex factor color in SCS values
+        :type factor: tuple | mathutils.Color
         :param tangent: tuple representation of vertex tangent in SCS values or None if piece doesn't have tangents
         :type tangent: tuple | None
         :return: vertex index inside piece streams ( use it for adding triangles )
         :rtype: int
         """
 
-        vertex_hash = self.__calc_vertex_hash(vert_index, normal, uvs, rgba, tangent)
+        vertex_hash = self.__calc_vertex_hash(vert_index, normal, uvs, rgba, factor, tangent)
 
         # save vertex if the vertex with the same properties doesn't exists yet in streams
         if vertex_hash not in self.__vertices_hash:
@@ -212,6 +222,14 @@ class Piece:
 
             stream = self.__streams[Stream.Types.RGBA]
             stream.add_entry(rgba)
+
+            if factor:
+                # create factor stream on demand
+                if Stream.Types.FACTOR not in self.__streams:
+                    self.__streams[Stream.Types.FACTOR] = Stream(Stream.Types.FACTOR, -1)
+
+                stream = self.__streams[Stream.Types.FACTOR]
+                stream.add_entry(factor)
 
             vert_index_internal = stream.get_size() - 1  # streams has to be alligned so I can take last one for the index
             self.__vertices_hash[vertex_hash] = vert_index_internal

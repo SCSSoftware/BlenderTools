@@ -168,7 +168,7 @@ def load(locator, deep_reload=False):
             new_mesh = obj.data
 
             # set preview model path to mesh, so it can be reused next time user requests same preview model
-            new_mesh.scs_props.locator_preview_model_path = locator.scs_props.locator_preview_model_path
+            new_mesh.scs_props.locator_preview_model_path = _path_utils.readable_norm(abs_filepath)
 
             # now remove imported object, as we need only mesh
             bpy.data.objects.remove(obj, do_unlink=True)

@@ -144,6 +144,7 @@ def _get_piece_streams(section):
     mesh_tangents = []
     mesh_rgb = {}
     mesh_rgba = {}
+    mesh_factor = {}
     mesh_uv = {}
     mesh_scalars = []
     mesh_tuv = []
@@ -197,6 +198,9 @@ def _get_piece_streams(section):
             elif stream_tag.startswith("_RGBA") and stream_format == 'FLOAT4':
                 mesh_rgba[str(_MESH_consts.default_vcol)] = data_block
                 # print('data_block.props: %s' % str(data_block))
+            elif stream_tag.startswith("_FACTOR") and stream_format == 'FLOAT4':
+                mesh_factor[str(_MESH_consts.default_vfactor)] = data_block
+                # print('data_block.props: %s' % str(data_block))
             elif stream_tag.startswith("_UV") and stream_format == 'FLOAT2':
                 mesh_uv[str(_MESH_consts.default_uv + num_suffix)] = {
                     "data": data_block,
@@ -210,7 +214,7 @@ def _get_piece_streams(section):
             for data_line in sec.data:
                 data_line.reverse()  # flip triangle normals
                 mesh_triangles.append(data_line)
-    return mesh_vertices, mesh_normals, mesh_tangents, mesh_rgb, mesh_rgba, mesh_scalars, mesh_uv, mesh_tuv, mesh_triangles
+    return mesh_vertices, mesh_normals, mesh_tangents, mesh_rgb, mesh_rgba, mesh_factor, mesh_scalars, mesh_uv, mesh_tuv, mesh_triangles
 
 
 def get_part_properties(section):
@@ -391,6 +395,7 @@ def _create_piece(
         mesh_tangents,
         mesh_rgb,
         mesh_rgba,
+        mesh_factor,
         mesh_scalars,
         object_skinning,
         mesh_uv,
@@ -445,6 +450,11 @@ def _create_piece(
     else:
         mesh_rgb_final = []
 
+    # VERTEX FACTORS
+    mesh_factor_final = []
+    if mesh_factor:
+        mesh_factor_final = mesh_factor
+
     vcolor_corrupt = False
     for vc_layer_name in mesh_rgb_final:
 
@@ -461,6 +471,9 @@ def _create_piece(
     if vcolor_corrupt:
         lprint("W Piece %r has vertices with vertex color greater the 1.0, clamping it!", (name,))
 
+    for vfc_layer_name in mesh_factor_final:
+        _mesh_utils.bm_make_vfc_layer(5, bm, vfc_layer_name, mesh_factor_final[vfc_layer_name])
+
     context.window_manager.progress_update(0.5)
 
     bm.to_mesh(mesh)
@@ -475,12 +488,11 @@ def _create_piece(
     # NORMALS - has to be applied after bmesh creation as they are set directly to mesh
     if _get_scs_globals().import_use_normals:
 
-        mesh.create_normals_split()
-
         # first set normals directly to loops
+        clnors = []
         for loop in mesh.loops:
             curr_n = _convert_utils.scs_to_blend_matrix() @ Vector(mesh_normals[loop.vertex_index])
-            loop.normal[:] = curr_n
+            clnors.extend(curr_n)
 
         # then we have to go trough very important step they say,
         # as without validation we get wrong result for some normals
@@ -490,13 +502,8 @@ def _create_piece(
         mesh.polygons.foreach_set("use_smooth", [True] * len(mesh.polygons))
 
         # finally fill clnors from loops normals and apply them (taken from official Blenders scripts)
-        clnors = array.array('f', [0.0] * (len(mesh.loops) * 3))
-        mesh.loops.foreach_get("normal", clnors)
         mesh.normals_split_custom_set(tuple(zip(*(iter(clnors),) * 3)))
-        mesh.use_auto_smooth = True
-        mesh.auto_smooth_angle = 3.14
 
-        mesh.free_normals_split()
     else:
         # set polygons to use smooth representation only
         mesh.polygons.foreach_set("use_smooth", [True] * len(mesh.polygons))
@@ -607,6 +614,7 @@ def _create_piece(
                                  mesh_tangents,
                                  mesh_rgb,
                                  mesh_rgba,
+                                 mesh_factor,
                                  mesh_scalars,
                                  object_skinning,
                                  mesh_uv,
@@ -645,10 +653,10 @@ def visualise_normals(name, transformed_mesh_vertices, mesh_normals, import_scal
     :return:
     """
     if mesh_normals:
-        transformed_mesh_normals = [io_utils.change_to_scs_xyz_coordinates(vec, import_scale) for vec in mesh_normals]
+        transformed_mesh_normals = [_convert_utils.change_to_scs_xyz_coordinates(vec, import_scale) for vec in mesh_normals]
         mesh_norm_vizu = bpy.data.meshes.new(str(name + "_norm_vizu"))
         object_norm_vizu = bpy.data.objects.new(str(name + "_norm_vizu"), mesh_norm_vizu)
-        bpy.context.scene.objects.link(object_norm_vizu)
+        bpy.context.collection.objects.link(object_norm_vizu)
         mesh_norm_vizu.vertices.add(len(transformed_mesh_vertices) * 2)
         mesh_norm_vizu.edges.add(len(transformed_mesh_vertices))
         vert_i = edge_i = 0
@@ -670,7 +678,7 @@ def visualise_normals(name, transformed_mesh_vertices, mesh_normals, import_scal
         # mesh_norm_vizu.validate()
         mesh_norm_vizu.update()
         # object_norm_vizu.select = True
-        # bpy.context.scene.objects.active = object_norm_vizu
+        # bpy.context.collection.objects.active = object_norm_vizu
     else:
         print("WARNING! 'visualise_normals' - NO MESH NORMALS PROVIDED!")
 '''
@@ -760,6 +768,7 @@ def load_pim_file(context, filepath, terrain_points_trans=None, preview_model=Fa
                  mesh_tangents,
                  mesh_rgb,
                  mesh_rgba,
+                 mesh_factor,
                  mesh_scalars,
                  mesh_uv,
                  mesh_tuv,
@@ -772,6 +781,7 @@ def load_pim_file(context, filepath, terrain_points_trans=None, preview_model=Fa
                                                                                    mesh_normals,
                                                                                    mesh_rgb,
                                                                                    mesh_rgba,
+                                                                                   mesh_factor,
                                                                                    scs_globals.import_welding_precision)
 
                 objects_data[ob_index] = (
@@ -783,6 +793,7 @@ def load_pim_file(context, filepath, terrain_points_trans=None, preview_model=Fa
                     mesh_tangents,
                     mesh_rgb,
                     mesh_rgba,
+                    mesh_factor,
                     mesh_scalars,
                     mesh_uv,
                     mesh_tuv,
@@ -794,12 +805,14 @@ def load_pim_file(context, filepath, terrain_points_trans=None, preview_model=Fa
                 # print('ob_material: %s' % ob_material)
                 # print('mesh_vertices: %s' % mesh_vertices)
                 # print('mesh_rgba 1: %s' % str(mesh_rgba))
+                # print('mesh_factor: %s' % str(mesh_factor))
                 # print('mesh_uv count: %s' % len(mesh_uv))
                 # print('mesh_triangles: %s' % mesh_triangles)
                 # print('mesh_faces: %s' % mesh_faces)
                 # print('mesh_face_materials: %s' % mesh_face_materials)
                 # print('mesh_edges: %s' % mesh_edges)
                 # print('piece_count: %s' % str(piece_count))
+                # print('---------------------')
                 piece_count -= 1
         elif section.type == 'Part':
             if scs_globals.import_pim_file:
@@ -941,13 +954,14 @@ def load_pim_file(context, filepath, terrain_points_trans=None, preview_model=Fa
             objects_data[obj_i][5],  # mesh_tangents
             objects_data[obj_i][6],  # mesh_rgb
             objects_data[obj_i][7],  # mesh_rgba
-            objects_data[obj_i][8],  # mesh_scalars
+            objects_data[obj_i][8],  # mesh_factor
+            objects_data[obj_i][9],  # mesh_scalars
             object_skinning,
-            objects_data[obj_i][9],  # mesh_uv
-            objects_data[obj_i][10],  # mesh_tuv
-            objects_data[obj_i][11],  # mesh_triangles
+            objects_data[obj_i][10],  # mesh_uv
+            objects_data[obj_i][11],  # mesh_tuv
+            objects_data[obj_i][12],  # mesh_triangles
             materials_data,
-            objects_data[obj_i][12],  # points_to_weld_list
+            objects_data[obj_i][13],  # points_to_weld_list
             terrain_points_trans,
         )
 

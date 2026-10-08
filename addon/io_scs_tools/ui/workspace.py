@@ -22,9 +22,9 @@ import os
 import bpy
 from bpy.types import Panel
 from bl_ui.utils import PresetPanel
-from io_scs_tools.utils import path as _path_utils
-from io_scs_tools.utils import get_scs_globals as _get_scs_globals
-from io_scs_tools.ui import shared as _shared
+from . import shared as _shared
+from ..utils import path as _path_utils
+from ..utils import get_scs_globals as _get_scs_globals
 
 
 class _WorkspacePanelBlDefs:
@@ -222,6 +222,36 @@ class SCS_TOOLS_PT_LocatorsDisplay(_WorkspacePanelBlDefs, Panel):
         layout.prop(scs_globals, 'locator_coll_face_color')
 
 
+class SCS_TOOLS_PT_SpawnPointDisplay(_WorkspacePanelBlDefs, Panel):
+    """Draw spawn point display panel."""
+
+    bl_parent_id = SCS_TOOLS_PT_LocatorsDisplay.__name__
+    bl_label = "Spawn Points"
+    bl_options = {'DEFAULT_CLOSED'}
+
+    def draw(self, context):
+        layout = self.get_layout()
+        scs_globals = _get_scs_globals()
+
+        # scs tools main panel if config is being updated
+        layout.enabled = not scs_globals.config_update_lock
+
+        layout.use_property_split = True
+        layout.use_property_decorate = False
+        layout.enabled = scs_globals.display_locators and not scs_globals.config_update_lock
+
+        layout.prop(scs_globals, 'show_trailer_type')
+        layout.prop(scs_globals, 'trailer_load_easy_color')
+        layout.prop(scs_globals, 'trailer_load_medium_color')
+        layout.prop(scs_globals, 'trailer_load_hard_color')
+        layout.prop(scs_globals, 'trailer_unload_easy_color')
+        layout.prop(scs_globals, 'trailer_unload_medium_color')
+        layout.prop(scs_globals, 'trailer_unload_hard_color')
+
+        layout.prop(scs_globals, 'owned_trailer_color')
+        layout.prop(scs_globals, 'service_station_color')
+
+
 class SCS_TOOLS_PT_ConnectionsDisplay(_WorkspacePanelBlDefs, Panel):
     """Draw connections display panel."""
 
@@ -277,6 +307,7 @@ classes = (
     SCS_TOOLS_PT_PathSettings,
     SCS_TOOLS_PT_DisplaySettings,
     SCS_TOOLS_PT_LocatorsDisplay,
+    SCS_TOOLS_PT_SpawnPointDisplay,
     SCS_TOOLS_PT_ConnectionsDisplay,
     SCS_TOOLS_PT_OtherSetttings,
 )
@@ -286,7 +317,7 @@ def register():
     for cls in classes:
         bpy.utils.register_class(cls)
 
-    from io_scs_tools import SCS_TOOLS_MT_MainMenu
+    from .. import SCS_TOOLS_MT_MainMenu
     SCS_TOOLS_MT_MainMenu.append_props_entry("Workspace Properties", SCS_TOOLS_PT_GlobalSettings.__name__)
 
 

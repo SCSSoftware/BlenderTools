@@ -32,10 +32,11 @@ def __create_node__(node_tree):
     :return: alpha to white mixing node
     :rtype: bpy.types.Node
     """
-    awhite_mix_n = node_tree.nodes.new("ShaderNodeMixRGB")
+    awhite_mix_n = node_tree.nodes.new("ShaderNodeMix")
     awhite_mix_n.name = awhite_mix_n.label = _AWHITE_MIX_NODE
+    awhite_mix_n.data_type = "RGBA"
     awhite_mix_n.blend_type = "MIX"
-    awhite_mix_n.inputs['Color1'].default_value = (1,) * 4
+    awhite_mix_n.inputs['A'].default_value = (1,) * 4
 
     return awhite_mix_n
 
@@ -62,10 +63,10 @@ def init(node_tree, location, mix_factor_from, color_from, color_to):
     awhite_mix_n.location = location
 
     # links creation
-    node_tree.links.new(awhite_mix_n.inputs['Fac'], mix_factor_from)
-    node_tree.links.new(awhite_mix_n.inputs['Color2'], color_from)
+    node_tree.links.new(awhite_mix_n.inputs['Factor'], mix_factor_from)
+    node_tree.links.new(awhite_mix_n.inputs['B'], color_from)
 
-    node_tree.links.new(color_to, awhite_mix_n.outputs['Color'])
+    node_tree.links.new(color_to, awhite_mix_n.outputs['Result'])
 
     # FIXME: move to old system after: https://developer.blender.org/T68406 is resolved
     flavor_frame = node_tree.nodes.new(type="NodeFrame")
@@ -106,6 +107,6 @@ def get_out_socket(node_tree):
     :rtype: bpy.types.NodeSocket | None
     """
     if is_set(node_tree):
-        return node_tree.nodes[_AWHITE_MIX_NODE].outputs['Color']
+        return node_tree.nodes[_AWHITE_MIX_NODE].outputs['Result']
 
     return None

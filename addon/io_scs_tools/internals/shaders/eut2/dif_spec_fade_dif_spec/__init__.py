@@ -18,10 +18,10 @@
 
 # Copyright (C) 2015-2019: SCS Software
 
-from io_scs_tools.internals.shaders.eut2.dif_spec import DifSpec
-from io_scs_tools.internals.shaders.eut2.dif_spec_fade_dif_spec import detail_nmap
-from io_scs_tools.internals.shaders.eut2.dif_spec_fade_dif_spec import detail_setup_ng
-from io_scs_tools.utils import material as _material_utils
+from . import detail_nmap
+from . import detail_setup_ng
+from ..dif_spec import DifSpec
+from .....utils import material as _material_utils
 
 
 class DifSpecFadeDifSpec(DifSpec):
@@ -66,7 +66,7 @@ class DifSpecFadeDifSpec(DifSpec):
         # node creation
         uv_scale_n = node_tree.nodes.new("ShaderNodeValue")
         uv_scale_n.name = uv_scale_n.label = DifSpecFadeDifSpec.UV_SCALE_NODE
-        uv_scale_n.location = (start_pos_x - pos_x_shift, start_pos_y + 1200)
+        uv_scale_n.location = (start_pos_x - pos_x_shift, start_pos_y + 1100)
 
         detail_uv_scaling_n = node_tree.nodes.new("ShaderNodeVectorMath")
         detail_uv_scaling_n.name = detail_uv_scaling_n.label = DifSpecFadeDifSpec.DETAIL_UV_SCALING_NODE
@@ -83,14 +83,16 @@ class DifSpecFadeDifSpec(DifSpec):
         detail_setup_group_n.location = (start_pos_x + pos_x_shift, start_pos_y + 900)
         detail_setup_group_n.node_tree = detail_setup_ng.get_node_group()
 
-        base_detail_mix_a_n = node_tree.nodes.new("ShaderNodeMixRGB")
+        base_detail_mix_a_n = node_tree.nodes.new("ShaderNodeMix")
         base_detail_mix_a_n.name = base_detail_mix_a_n.label = DifSpecFadeDifSpec.BASE_DETAIL_MIX_A_NODE
         base_detail_mix_a_n.location = (start_pos_x + pos_x_shift * 3, start_pos_y + 1700)
+        base_detail_mix_a_n.data_type = "RGBA"
         base_detail_mix_a_n.blend_type = "MIX"
 
-        base_detail_mix_n = node_tree.nodes.new("ShaderNodeMixRGB")
+        base_detail_mix_n = node_tree.nodes.new("ShaderNodeMix")
         base_detail_mix_n.name = base_detail_mix_n.label = DifSpecFadeDifSpec.BASE_DETAIL_MIX_NODE
         base_detail_mix_n.location = (start_pos_x + pos_x_shift * 3, start_pos_y + 1400)
+        base_detail_mix_n.data_type = "RGBA"
         base_detail_mix_n.blend_type = "MIX"
 
         # links creation
@@ -101,19 +103,19 @@ class DifSpecFadeDifSpec(DifSpec):
         node_tree.links.new(detail_tex_n.inputs['Vector'], detail_uv_scaling_n.outputs[0])
 
         # pass 1
-        node_tree.links.new(base_detail_mix_a_n.inputs['Fac'], detail_setup_group_n.outputs['Blend Factor'])
-        node_tree.links.new(base_detail_mix_a_n.inputs['Color1'], base_tex_n.outputs['Alpha'])
-        node_tree.links.new(base_detail_mix_a_n.inputs['Color2'], detail_tex_n.outputs['Alpha'])
+        node_tree.links.new(base_detail_mix_a_n.inputs['Factor'], detail_setup_group_n.outputs['Blend Factor'])
+        node_tree.links.new(base_detail_mix_a_n.inputs['A'], base_tex_n.outputs['Alpha'])
+        node_tree.links.new(base_detail_mix_a_n.inputs['B'], detail_tex_n.outputs['Alpha'])
 
-        node_tree.links.new(base_detail_mix_n.inputs['Fac'], detail_setup_group_n.outputs['Blend Factor'])
-        node_tree.links.new(base_detail_mix_n.inputs['Color1'], base_tex_n.outputs['Color'])
-        node_tree.links.new(base_detail_mix_n.inputs['Color2'], detail_tex_n.outputs['Color'])
+        node_tree.links.new(base_detail_mix_n.inputs['Factor'], detail_setup_group_n.outputs['Blend Factor'])
+        node_tree.links.new(base_detail_mix_n.inputs['A'], base_tex_n.outputs['Color'])
+        node_tree.links.new(base_detail_mix_n.inputs['B'], detail_tex_n.outputs['Color'])
 
         # pass 2
-        node_tree.links.new(spec_mult_n.inputs[1], base_detail_mix_a_n.outputs['Color'])
+        node_tree.links.new(spec_mult_n.inputs[1], base_detail_mix_a_n.outputs['Result'])
 
         # pass 3
-        node_tree.links.new(vcol_mult_n.inputs[1], base_detail_mix_n.outputs['Color'])
+        node_tree.links.new(vcol_mult_n.inputs[1], base_detail_mix_n.outputs['Result'])
 
     @staticmethod
     def set_detail_texture(node_tree, image):

@@ -20,13 +20,14 @@
 
 import bpy
 from bpy.types import Panel
-from io_scs_tools.consts import Icons as _ICONS_consts
-from io_scs_tools.consts import LampTools as _LT_consts
-from io_scs_tools.consts import Operators as _OP_consts
-from io_scs_tools.consts import VertexColorTools as _VCT_consts
-from io_scs_tools.internals.icons import get_icon
-from io_scs_tools.ui import shared as _shared
-from io_scs_tools.utils import object as _object_utils
+from . import shared as _shared
+from ..utils import object as _object_utils
+from ..consts import Icons as _ICONS_consts
+from ..consts import LampTools as _LT_consts
+from ..consts import Operators as _OP_consts
+from ..consts import VertexColorTools as _VCT_consts
+from ..consts import InteriorWindowTools as _IWT_consts
+from ..internals.icons import get_icon
 
 _ICON_TYPES = _ICONS_consts.Types
 
@@ -360,7 +361,7 @@ class SCS_TOOLS_PT_LampSwitcher(_ToolShelfBlDefs, Panel):
         :rtype: str
         """
 
-        from io_scs_tools.internals.shaders.eut2.std_node_groups.lampmask_mixer_ng import LAMPMASK_MIX_G
+        from ..internals.shaders.eut2.std_node_groups.lampmask_mixer_ng import LAMPMASK_MIX_G
 
         lamp_type_enabled = False
 
@@ -464,15 +465,18 @@ class SCS_TOOLS_PT_LampTool(_ToolShelfBlDefs, Panel):
         props.vehicle_side = _LT_consts.VehicleSides.FrontRight.name
         props.aux_color = props.traffic_light_color = ""
         body_row = body_col.row(align=True)
+        props = body_row.operator("mesh.scs_tools_set_lampmask_uv", text="Middle Left")
+        props.vehicle_side = _LT_consts.VehicleSides.MiddleLeft.name
+        props.aux_color = props.traffic_light_color = ""
+        props = body_row.operator("mesh.scs_tools_set_lampmask_uv", text="Middle Right")
+        props.vehicle_side = _LT_consts.VehicleSides.MiddleRight.name
+        props.aux_color = props.traffic_light_color = ""
+        body_row = body_col.row(align=True)
         props = body_row.operator("mesh.scs_tools_set_lampmask_uv", text="Rear Left")
         props.vehicle_side = _LT_consts.VehicleSides.RearLeft.name
         props.aux_color = props.traffic_light_color = ""
         props = body_row.operator("mesh.scs_tools_set_lampmask_uv", text="Rear Right")
         props.vehicle_side = _LT_consts.VehicleSides.RearRight.name
-        props.aux_color = props.traffic_light_color = ""
-        body_row = body_col.row(align=True)
-        props = body_row.operator("mesh.scs_tools_set_lampmask_uv", text="Middle")
-        props.vehicle_side = _LT_consts.VehicleSides.Middle.name
         props.aux_color = props.traffic_light_color = ""
 
         body_col = layout.column(align=True)
@@ -502,6 +506,35 @@ class SCS_TOOLS_PT_LampTool(_ToolShelfBlDefs, Panel):
         props.traffic_light_color = _LT_consts.TrafficLightTypes.Green.name
         props.vehicle_side = props.aux_color = ""
 
+class SCS_TOOLS_PT_InteriorWindowTool(_ToolShelfBlDefs, Panel):
+    """
+    Creates Interior Window Tool panel for SCS Tools tab.
+    """
+    bl_label = "Interior Window Tool"
+
+    @classmethod
+    def poll(cls, context):
+        return context.mode in {'EDIT_MESH', 'OBJECT'}
+
+    def draw(self, context):
+        if not self.poll(context):
+            self.layout.label(text="Not in 'Edit/Object Mode'!", icon="INFO")
+            return
+
+        layout = self.layout
+
+        body_col = layout.column(align=True)
+        body_row = body_col.row(align=True)
+        body_row.label(text="Glass Reflection", icon='MOD_LATTICE')
+
+        body_row = body_col.row(align=True)
+        props = body_row.operator("mesh.scs_tools_set_glassreflection_uv", text="Enable")
+        props.glass_state = _IWT_consts.GlassReflection.Enable.name
+        props = body_row.operator("mesh.scs_tools_set_glassreflection_uv", text="Disable")
+        props.glass_state = _IWT_consts.GlassReflection.Disable.name
+
+        body_col = layout.column(align=True)
+        body_col.operator("mesh.scs_tools_fix_vertex_normals", text="Fix Vertex Normals", icon='NORMALS_VERTEX_FACE')
 
 class SCS_TOOLS_PT_VColoring(_ToolShelfBlDefs, Panel):
     bl_label = "VColoring"
@@ -590,6 +623,7 @@ classes = (
     SCS_TOOLS_PT_DisplayMethods,
     SCS_TOOLS_PT_LampSwitcher,
     SCS_TOOLS_PT_LampTool,
+    SCS_TOOLS_PT_InteriorWindowTool,
     SCS_TOOLS_PT_VColoring,
     SCS_TOOLS_PT_VertexColorStatsTool,
     SCS_TOOLS_PT_VertexColorWrapTool,
@@ -600,13 +634,14 @@ def register():
     for cls in classes:
         bpy.utils.register_class(cls)
 
-    from io_scs_tools import SCS_TOOLS_MT_MainMenu
+    from .. import SCS_TOOLS_MT_MainMenu
     SCS_TOOLS_MT_MainMenu.append_sidebar_entry("Sidebar - Tool Shelf", SCS_TOOLS_PT_ToolShelf.__name__)
     SCS_TOOLS_MT_MainMenu.append_sidebar_entry("Sidebar - Convex", SCS_TOOLS_PT_ConvexBlDefs.__name__)
     SCS_TOOLS_MT_MainMenu.append_sidebar_entry("Sidebar - Visibility Tools", SCS_TOOLS_PT_Visibility.__name__)
     SCS_TOOLS_MT_MainMenu.append_sidebar_entry("Sidebar - Display Methods", SCS_TOOLS_PT_DisplayMethods.__name__)
     SCS_TOOLS_MT_MainMenu.append_sidebar_entry("Sidebar - Lamp Switcher", SCS_TOOLS_PT_LampSwitcher.__name__)
     SCS_TOOLS_MT_MainMenu.append_sidebar_entry("Sidebar - Lamp Tool", SCS_TOOLS_PT_LampTool.__name__)
+    SCS_TOOLS_MT_MainMenu.append_sidebar_entry("Sidebar - Interior Window Tool", SCS_TOOLS_PT_InteriorWindowTool.__name__)
     SCS_TOOLS_MT_MainMenu.append_sidebar_entry("Sidebar - VColoring", SCS_TOOLS_PT_VColoring.__name__)
     SCS_TOOLS_MT_MainMenu.append_sidebar_entry("Sidebar - VColor Stats", SCS_TOOLS_PT_VertexColorStatsTool.__name__)
     SCS_TOOLS_MT_MainMenu.append_sidebar_entry("Sidebar - VColor Wrap", SCS_TOOLS_PT_VertexColorWrapTool.__name__)

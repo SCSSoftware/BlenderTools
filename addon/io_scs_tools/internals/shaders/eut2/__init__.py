@@ -17,6 +17,7 @@
 # ##### END GPL LICENSE BLOCK #####
 
 # Copyright (C) 2015-2021: SCS Software
+# Copyright (C) 2024-2026: Michaleczeq
 
 
 def get_shader(effect):
@@ -29,203 +30,207 @@ def get_shader(effect):
     """
 
     if effect == "none":
+        from .none import NNone as Shader
 
-        from io_scs_tools.internals.shaders.eut2.none import NNone as Shader
-
-    elif effect == "water":
-
-        from io_scs_tools.internals.shaders.eut2.water import Water as Shader
+    elif effect.startswith("water"):
+        from .water import Water as Shader
 
     elif effect == "window.lit":
+        from .window.lit import WindowLit as Shader
 
-        from io_scs_tools.internals.shaders.eut2.window.lit import WindowLit as Shader
+    elif effect == "interior.lit" or effect == "interior.spatial.lit":
+        from .interior import InteriorLit as Shader
+
+    elif effect == "interior.curtain.lit":
+        from .interior.curtain import InteriorCurtain as Shader
 
     elif effect == "reflective":
-
-        from io_scs_tools.internals.shaders.eut2.reflective import Reflective as Shader
+        from .reflective import Reflective as Shader
 
     elif effect == "sign":
-
-        from io_scs_tools.internals.shaders.eut2.sign import Sign as Shader
+        from .sign import Sign as Shader
 
     elif effect == "grass":
+        from .grass import Grass as Shader
 
-        from io_scs_tools.internals.shaders.eut2.grass import Grass as Shader
+    elif effect.startswith("leaves"):
+        from .leaves import Leaves as Shader
 
-    elif effect == "glass":
-
-        from io_scs_tools.internals.shaders.eut2.glass import Glass as Shader
+    elif effect.startswith("glass"):
+        from .glass import Glass as Shader
 
     elif effect == "mlaaweight":
-
-        from io_scs_tools.internals.shaders.eut2.mlaaweight import MlaaWeight as Shader
+        from .mlaaweight import MlaaWeight as Shader
 
     elif effect.startswith("fakeshadow"):
-
-        from io_scs_tools.internals.shaders.eut2.fakeshadow import Fakeshadow as Shader
+        from .fakeshadow import Fakeshadow as Shader
 
     elif effect.startswith("shadowonly"):
+        from .shadowonly import Shadowonly as Shader
 
-        from io_scs_tools.internals.shaders.eut2.shadowonly import Shadowonly as Shader
+    elif effect.startswith("particle"):
+        from .particle import Particle as Shader
 
     elif effect.startswith("lightmap.night"):
-
-        from io_scs_tools.internals.shaders.eut2.lightmap.night import LightMapNight as Shader
+        from .lightmap.night import LightMapNight as Shader
 
     elif effect.startswith("light.tex"):
+        from .light_tex import LightTex as Shader
 
-        from io_scs_tools.internals.shaders.eut2.light_tex import LightTex as Shader
+    elif effect.startswith("light"):
+        from .light import Light as Shader
 
     elif effect.startswith("retroreflective"):
-
-        from io_scs_tools.internals.shaders.eut2.retroreflective import Retroreflective as Shader
+        from .retroreflective import Retroreflective as Shader
 
     elif effect.startswith("unlit.tex"):
-
-        from io_scs_tools.internals.shaders.eut2.unlit_tex import UnlitTex as Shader
+        from .unlit_tex import UnlitTex as Shader
 
     elif effect.startswith("unlit.vcol.tex"):
-
-        from io_scs_tools.internals.shaders.eut2.unlit_vcol_tex import UnlitVcolTex as Shader
+        from .unlit_vcol_tex import UnlitVcolTex as Shader
 
     elif effect.startswith("truckpaint"):
-
         if ".airbrush" in effect:
-
-            from io_scs_tools.internals.shaders.eut2.truckpaint.airbrush import TruckpaintAirbrush as Shader
+            from .truckpaint.airbrush import TruckpaintAirbrush as Shader
 
         elif ".colormask" in effect:
-
-            from io_scs_tools.internals.shaders.eut2.truckpaint.colormask import TruckpaintColormask as Shader
+            from .truckpaint.colormask import TruckpaintColormask as Shader
 
         else:
-
-            from io_scs_tools.internals.shaders.eut2.truckpaint import Truckpaint as Shader
+            from .truckpaint import Truckpaint as Shader
 
     elif effect.startswith("lamp"):
-
         if ".add.env" in effect:
-
-            from io_scs_tools.internals.shaders.eut2.lamp.add_env import LampAddEnv as Shader
+            from .lamp.add_env import LampAddEnv as Shader
 
         else:
+            from .lamp import Lamp as Shader
 
-            from io_scs_tools.internals.shaders.eut2.lamp import Lamp as Shader
+    elif effect.startswith("sky.bottom"):
+        from .sky.bottom import SkyBottom as Shader
 
     elif effect.startswith("sky"):
-
-        from io_scs_tools.internals.shaders.eut2.sky import Sky as Shader
+        from .sky import Sky as Shader
 
     elif effect.startswith("shadowmap"):
-
-        from io_scs_tools.internals.shaders.eut2.shadowmap import Shadowmap as Shader
+        from .shadowmap import Shadowmap as Shader
 
     elif effect.startswith("flare"):
-
-        from io_scs_tools.internals.shaders.eut2.flare import Flare as Shader
+        from .flare import Flare as Shader
 
     elif effect.startswith("decalshadow"):
-
-        from io_scs_tools.internals.shaders.eut2.decalshadow import Decalshadow as Shader
+        from .decalshadow import Decalshadow as Shader
+    
+    elif effect.startswith("dif.spec.over.dif.opac.add.env"):
+        from .dif_spec_over_dif_opac_add_env import DifSpecOverDifOpacAddEnv as Shader
 
     elif effect.startswith("dif.spec.over.dif.opac"):
-
-        from io_scs_tools.internals.shaders.eut2.dif_spec_over_dif_opac import DifSpecOverDifOpac as Shader
+        from .dif_spec_over_dif_opac import DifSpecOverDifOpac as Shader
+        
+    elif effect.startswith("dif.spec.amod.dif.spec.add.env"):
+        from .dif_spec_amod_dif_spec_add_env import DifSpecAmodDifSpecAddEnv as Shader
+        
+    elif effect.startswith("dif.spec.amod.dif.spec"):
+        from .dif_spec_amod_dif_spec import DifSpecAmodDifSpec as Shader
 
     elif effect.startswith("dif.spec.mult.dif.spec.iamod.dif.spec"):
+        from .dif_spec_mult_dif_spec_iamod_dif_spec import DifSpecMultDifSpecIamodDifSpec as Shader
 
-        from io_scs_tools.internals.shaders.eut2.dif_spec_mult_dif_spec_iamod_dif_spec import DifSpecMultDifSpecIamodDifSpec as Shader
+    elif effect.startswith("dif.spec.mult.dif.iamod.dif.add.env"):
+        from .dif_spec_mult_dif_iamod_dif_add_env import DifSpecMultDifIamodDifAddEnv as Shader
 
     elif effect.startswith("dif.spec.mult.dif.spec.add.env"):
-
-        from io_scs_tools.internals.shaders.eut2.dif_spec_mult_dif_spec.add_env import DifSpecMultDifSpecAddEnv as Shader
+        from .dif_spec_mult_dif_spec.add_env import DifSpecMultDifSpecAddEnv as Shader
 
     elif effect.startswith("dif.spec.mult.dif.spec"):
+        from .dif_spec_mult_dif_spec import DifSpecMultDifSpec as Shader
 
-        from io_scs_tools.internals.shaders.eut2.dif_spec_mult_dif_spec import DifSpecMultDifSpec as Shader
+    elif effect.startswith("dif.spec.add.env.over.dif.opac"):
+        from .dif_spec_add_env_over_dif_opac import DifSpecAddEnvOverDifOpac as Shader
 
     elif effect.startswith("dif.spec.add.env.nofresnel"):
+        from .dif_spec_add_env.nofresnel import DifSpecAddEnvNoFresnel as Shader
 
-        from io_scs_tools.internals.shaders.eut2.dif_spec_add_env.nofresnel import DifSpecAddEnvNoFresnel as Shader
+    elif effect.startswith("building.add.env"):
+        from .building.add_env_day import BuildingAddEnvDay as Shader
 
-    elif effect.startswith("building.add.env.day"):
-
-        from io_scs_tools.internals.shaders.eut2.building.add_env_day import BuildingAddEnvDay as Shader
-
-    elif effect.startswith("building.lvcol.day"):
-
-        from io_scs_tools.internals.shaders.eut2.building.lvcol_day import BuildingLvcolDay as Shader
-
-    elif effect.startswith("building.day"):
-
-        from io_scs_tools.internals.shaders.eut2.building.day import BuildingDay as Shader
+    elif effect.startswith("building"):
+        from .building.day import BuildingDay as Shader
 
     elif effect.startswith("dif.weight.dif"):
-
-        from io_scs_tools.internals.shaders.eut2.dif_weight_dif import DifWeightDif as Shader
+        from .dif_weight_dif import DifWeightDif as Shader
 
     elif effect.startswith("dif.spec.add.env"):
-
-        from io_scs_tools.internals.shaders.eut2.dif_spec_add_env import DifSpecAddEnv as Shader
+        from .dif_spec_add_env import DifSpecAddEnv as Shader
 
     elif effect.startswith("dif.spec.fade.dif.spec"):
+        from .dif_spec_fade_dif_spec import DifSpecFadeDifSpec as Shader
 
-        from io_scs_tools.internals.shaders.eut2.dif_spec_fade_dif_spec import DifSpecFadeDifSpec as Shader
+    elif effect.startswith("dif.spec.fade.mult.dif.spec"):
+        from .dif_spec_fade_mult_dif_spec import DifSpecFadeMultDifSpec as Shader
 
     elif effect.startswith("dif.spec.oclu.add.env"):
-
-        from io_scs_tools.internals.shaders.eut2.dif_spec_oclu_add_env import DifSpecOcluAddEnv as Shader
+        from .dif_spec_oclu_add_env import DifSpecOcluAddEnv as Shader
 
     elif effect.startswith("dif.spec.oclu.weight.add.env"):
+        from .dif_spec_oclu_weight_add_env import DifSpecOcluWeightAddEnv as Shader
 
-        from io_scs_tools.internals.shaders.eut2.dif_spec_oclu_weight_add_env import DifSpecOcluWeightAddEnv as Shader
+    elif effect.startswith("dif.spec.weight.add.env.nofresnel"):
+        from .dif_spec_weight_add_env.nofresnel import DifSpecWeightAddEnvNoFresnel as Shader
 
     elif effect.startswith("dif.spec.weight.add.env"):
-
-        from io_scs_tools.internals.shaders.eut2.dif_spec_weight_add_env import DifSpecWeightAddEnv as Shader
+        from .dif_spec_weight_add_env import DifSpecWeightAddEnv as Shader
 
     elif effect.startswith("dif.spec.weight.weight.dif.spec.weight"):
+        from .dif_spec_weight_weight_dif_spec_weight import DifSpecWeightWeightDifSpecWeight as Shader
 
-        from io_scs_tools.internals.shaders.eut2.dif_spec_weight_weight_dif_spec_weight import DifSpecWeightWeightDifSpecWeight as Shader
+    elif effect.startswith("dif.spec.weight.mask.dif.spec.weight"):
+        from .dif_spec_weight_mask_dif_spec_weight import DifSpecWeightMaskDifSpecWeight as Shader
 
     elif effect.startswith("dif.spec.weight.mult2.weight2"):
+        from .dif_spec_weight_mult2_weight2 import DifSpecWeightMult2Weight2 as Shader
 
-        from io_scs_tools.internals.shaders.eut2.dif_spec_weight_mult2_weight2 import DifSpecWeightMult2Weight2 as Shader
+    elif effect.startswith("dif.spec.weight.mult2.mask2"):
+        from .dif_spec_weight_mult2_mask2 import DifSpecWeightMult2Mask2 as Shader
 
     elif effect.startswith("dif.spec.weight.mult2"):
-
-        from io_scs_tools.internals.shaders.eut2.dif_spec_weight_mult2 import DifSpecWeightMult2 as Shader
+        from .dif_spec_weight_mult2 import DifSpecWeightMult2 as Shader
 
     elif effect.startswith("dif.spec.weight"):
-
-        from io_scs_tools.internals.shaders.eut2.dif_spec_weight import DifSpecWeight as Shader
+        from .dif_spec_weight import DifSpecWeight as Shader
 
     elif effect.startswith("dif.spec.oclu"):
-
-        from io_scs_tools.internals.shaders.eut2.dif_spec_oclu import DifSpecOclu as Shader
+        from .dif_spec_oclu import DifSpecOclu as Shader
 
     elif effect.startswith("dif.spec"):
-
-        from io_scs_tools.internals.shaders.eut2.dif_spec import DifSpec as Shader
+        from .dif_spec import DifSpec as Shader
 
     elif effect.startswith("dif.lum.spec"):
-
-        from io_scs_tools.internals.shaders.eut2.dif_lum_spec import DifLumSpec as Shader
+        from .dif_lum_spec import DifLumSpec as Shader
 
     elif effect.startswith("dif.lum"):
-
-        from io_scs_tools.internals.shaders.eut2.dif_lum import DifLum as Shader
+        from .dif_lum import DifLum as Shader
 
     elif effect.startswith("dif.anim"):
-
-        from io_scs_tools.internals.shaders.eut2.dif_anim import DifAnim as Shader
+        from .dif_anim import DifAnim as Shader
 
     elif effect.startswith("dif"):
+        from .dif import Dif as Shader
 
-        from io_scs_tools.internals.shaders.eut2.dif import Dif as Shader
+    elif effect.startswith("billboard"):
+        from .billboard import Billboard as Shader
+
+    elif effect.startswith("baked"):
+        if ".add.env" in effect:
+            from .baked.add_env import BakedSpecAddEnv as Shader
+
+        elif ".spec" in effect:
+            from .baked.spec import BakedSpec as Shader
+
+        else:
+            from .baked import Baked as Shader
 
     else:
-
         return None
 
     return Shader

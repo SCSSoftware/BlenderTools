@@ -327,6 +327,8 @@ def execute(dirpath, filename, name_suffix, prefab_locator_list, offset_matrix, 
 
         spawn_point.set_type(int(locator_scs_props.locator_prefab_spawn_type))
 
+        spawn_point.set_flags(locator_scs_props)
+
         pip_spawn_points.append(spawn_point)
 
     # semaphores creation

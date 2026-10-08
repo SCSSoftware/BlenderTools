@@ -430,7 +430,7 @@ class Part:
 
                     variant_part = _inventory.add_item(variant.parts, part.name)
                     if variant_part:
-                        variant_part.include = True
+                        variant_part.include = True if _get_scs_globals().activate_new_parts else False
                     else:
                         lprint("W Part %r already in variant %r.", (part.name, variant.name))
 
@@ -604,6 +604,12 @@ class Part:
         bl_idname = "object.scs_tools_assign_part"
         bl_description = "Assign active SCS Part to selected objects"
 
+        part_index: IntProperty(
+            name="Part Index",
+            description="Index of the part to assign. If negative, uses active_scs_part.",
+            default=-1
+        )
+
         @classmethod
         def poll(cls, context):
             if _object_utils.get_scs_root(context.active_object):
@@ -616,7 +622,13 @@ class Part:
             active_object = context.active_object
             scs_root_object = _object_utils.get_scs_root(active_object)
             part_inventory = scs_root_object.scs_object_part_inventory
-            active_part_index = scs_root_object.scs_props.active_scs_part
+
+            # Use part_index if provided, else use active_part_index
+            if self.part_index >= 0:
+                active_part_index = self.part_index
+                self.part_index = -1  # Reset to default after use
+            else:
+                active_part_index = scs_root_object.scs_props.active_scs_part
 
             scs_roots_count = len(_object_utils.gather_scs_roots(bpy.context.selected_objects))
             if scs_roots_count == 1:
@@ -778,7 +790,8 @@ class Variant:
                 for part in part_inventory:
 
                     variant_part = _inventory.add_item(variant.parts, part.name)
-                    variant_part.include = True
+
+                    variant_part.include = True if _get_scs_globals().activate_new_variant_parts else False
 
                 scs_root_object.scs_props.active_scs_variant = len(variant_inventory) - 1
 
@@ -1247,7 +1260,7 @@ class Collision:
         """Switch visibility of static collision objects."""
         bl_label = "View Static Collision Objects"
         bl_idname = "object.scs_tools_switch_static_collision_objects"
-        bl_description = "View only objects which SCS Part is prefixed with 'coll', marking it as static collision object" + \
+        bl_description = "View only objects which SCS Part is prefixed with 'coll', '_col' or suffixed with '_c', marking it as static collision object" + \
                          _BaseViewOperator.bl_base_description
 
         def execute(self, context):

@@ -191,7 +191,7 @@ class DifSpecWeightMult2(DifSpec):
 
     @staticmethod
     def set_aux0(node_tree, aux_property):
-        """Set zero texture generation scale.
+        """Set zero texture generation scale and rotation.
 
         :param node_tree: node tree of current shader
         :type node_tree: bpy.types.NodeTree
@@ -200,5 +200,8 @@ class DifSpecWeightMult2(DifSpec):
         """
 
         if tg0.is_set(node_tree):
-
-            tg0.set_scale(node_tree, aux_property[0]['value'], aux_property[1]['value'])
+            # Fix for old float2 aux[0]
+            if (len(aux_property)) == 2:
+                tg0.set_scale(node_tree, aux_property[0]['value'], aux_property[1]['value'], 0)
+            else:
+                tg0.set_scale(node_tree, aux_property[0]['value'], aux_property[1]['value'], aux_property[2]['value'])

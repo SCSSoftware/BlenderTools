@@ -83,13 +83,13 @@ class _Tokenizer():
 
             # Skip all leading whitespace.
             # print('line_remainder: %s' % str(line_remainder))
-            match = re.match('[ \t\n\r]+', line_remainder)
+            match = re.match(r'[ \t\n\r]+', line_remainder)
             if match:
                 self.current_pos += match.end(0)
                 continue
 
             # Handle includes.
-            match = re.match('@include\s+"([^"]+)"', line_remainder)
+            match = re.match(r'@include\s+"([^"]+)"', line_remainder)
             if match:
 
                 included_lines = []
@@ -120,25 +120,25 @@ class _Tokenizer():
                 continue
 
             # Skip comments up to end of the line.
-            if re.match('(#|//).*$', line_remainder):
+            if re.match(r'(#|//).*$', line_remainder):
                 self.current_line += 1
                 self.current_pos = 0
                 continue
 
             # Skip block comments.
-            if re.match('/\*.*$', line_remainder):
+            if re.match(r'/\*.*$', line_remainder):
                 self.current_pos += 2
                 self.skip_to_end_of_block_comment()
                 continue
 
             # Is this a identifier?
-            match = re.match('\w+', line_remainder)
+            match = re.match(r'\w+', line_remainder)
             if match:
                 self.current_pos += match.end(0)
                 return _Token('id', line_remainder[0:match.end(0)])
 
             # Is this a string? Currently does not support escape sequences.
-            match = re.match('"([^"]*)"', line_remainder)
+            match = re.match(r'"([^"]*)"', line_remainder)
             if match:
                 self.current_pos += match.end(0)
                 return _Token('string', line_remainder[1:match.end(0) - 1])
@@ -161,7 +161,7 @@ class _Tokenizer():
         line_remainder = self.input[self.current_line][self.current_pos:]
 
         # inline block comment
-        match = re.match('.*\*/', line_remainder)
+        match = re.match(r'.*\*/', line_remainder)
         if match:
             self.current_pos += match.end(0)
             return
@@ -348,16 +348,30 @@ def _parse_unit(tokenizer):
             return None
 
 
-def _parse_bare_file(filepath, print_info=False):
+def _parse_bare_data(content=None, filepath=None, print_info=False):
+    """
+    Parse bare SUI-like data from either content string or file.
+    - If at least content is provided, we treat data as string. If filepath is also provided, we use it for Tokenizer
+    - If only filepath is provided, we treat data as file.
+    """
     if print_info:
         print("** SII Parser ...")
+
+    if content is None and filepath is None:
+        print("Either 'content' or 'filepath' must be provided to parse bare data.")
+        return None
+
+    # Detemine if we are parsing data from string or file
+    if content is not None:
+        lines = content.splitlines(keepends=True)
+        source_label = filepath if filepath is not None else "<string>"
+    else:
+        with open(filepath, mode="r", encoding="utf8") as f:
+            lines = f.readlines()
+        source_label = filepath
+
     unit = _UnitData("", "", is_headless=True)
-
-    file = open(filepath, mode="r", encoding="utf8")
-    lines = file.readlines()
-    file.close()
-
-    tokenizer = _Tokenizer(lines, filepath, [])
+    tokenizer = _Tokenizer(lines, source_label, [])
 
     while 1:
         if tokenizer.consume_token_if_match('eof', '') is not None:
@@ -376,15 +390,14 @@ def parse_file(filepath, is_sui=False, print_info=False):
     """
 
     if is_sui:
-        return _parse_bare_file(filepath, print_info)
+        return _parse_bare_data(None, filepath, print_info)
 
     if print_info:
         print("** SII Parser ...")
     sii_container = []
 
-    file = open(filepath, mode="r", encoding="utf8")
-    lines = file.readlines()
-    file.close()
+    with open(filepath, mode="r", encoding="utf8") as f:
+        lines = f.readlines()
 
     # create proper paths for parsing any possible included sii files:
     # 1. is directory of given filepath
@@ -399,7 +412,54 @@ def parse_file(filepath, is_sui=False, print_info=False):
         print("Expected opening bracket")
         return None
 
-    while 1:
+    while True:
+        if tokenizer.consume_token_if_match('char', '}') is not None:
+            if print_info:
+                print("** SII Parser END")
+            return sii_container
+
+        unit = _parse_unit(tokenizer)
+        if unit is None:
+            print("Unit parsing failed")
+            return None
+        sii_container.append(unit)
+
+
+def parse_string(content, filepath=None, is_sui=False, print_info=False):
+    """
+    Parse SCS SII/SUI content provided as a string and return its full content in a form of hierarchical structure.
+    """
+    # Prepare base dir (used for @include) when filepath is provided.
+    base_dir = None
+    if filepath:
+        base_dir = filepath if filepath.endswith(os.sep) else filepath + os.sep
+
+    if is_sui:
+        return _parse_bare_data(content, filepath, print_info)
+
+    if print_info:
+        print("** SII Parser (from string) ...")
+    sii_container = []
+
+    lines = content.splitlines(keepends=True)
+
+    # create proper paths for parsing any possible included sii files:
+    # 1. is directory of given filepath (if provided)
+    # 2. is directory of current scs project path
+    include_paths = []
+    if filepath:
+        include_paths.append(os.path.split(filepath)[0] + os.sep)
+    include_paths.append(_get_scs_globals().scs_project_path)
+
+    tokenizer = _Tokenizer(lines, "<string>", include_paths)
+    if tokenizer.consume_token_if_match('id', 'SiiNunit') is None:
+        print("Expected SiiNunit")
+        return None
+    if tokenizer.consume_token_if_match('char', '{') is None:
+        print("Expected opening bracket")
+        return None
+
+    while True:
         if tokenizer.consume_token_if_match('char', '}') is not None:
             if print_info:
                 print("** SII Parser END")

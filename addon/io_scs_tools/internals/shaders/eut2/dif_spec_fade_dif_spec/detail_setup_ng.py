@@ -19,7 +19,7 @@
 # Copyright (C) 2015-2019: SCS Software
 
 import bpy
-from io_scs_tools.consts import Material as _MAT_consts
+from .....consts import Material as _MAT_consts
 
 DETAIL_SETUP_G = _MAT_consts.node_group_prefix + "DetailStrengthGroup"
 
@@ -55,19 +55,22 @@ def __create_group__():
     detail_setup_g = bpy.data.node_groups.new(type="ShaderNodeTree", name=DETAIL_SETUP_G)
 
     # inputs defining
-    detail_setup_g.inputs.new("NodeSocketFloat", "Fade From")
-    detail_setup_g.inputs.new("NodeSocketFloat", "Fade Range")
-    detail_setup_g.inputs.new("NodeSocketFloat", "Blend Bias")
+    detail_setup_g.interface.new_socket(in_out = "INPUT", socket_type = "NodeSocketFloat", name = "Fade From")
+    detail_setup_g.interface.new_socket(in_out = "INPUT", socket_type = "NodeSocketFloat", name = "Fade Range")
+    detail_setup_g.interface.new_socket(in_out = "INPUT", socket_type = "NodeSocketFloat", name = "Blend Bias")
+
+    # outputs defining
+    detail_setup_g.interface.new_socket(in_out = "OUTPUT", socket_type = "NodeSocketFloat", name = "Detail Strength")
+    detail_setup_g.interface.new_socket(in_out = "OUTPUT", socket_type = "NodeSocketFloat", name = "Blend Factor")
+
+
+    # group nodes
     input_n = detail_setup_g.nodes.new("NodeGroupInput")
     input_n.location = (start_pos_x, start_pos_y)
 
-    # outputs defining
-    detail_setup_g.outputs.new("NodeSocketFloat", "Detail Strength")
-    detail_setup_g.outputs.new("NodeSocketFloat", "Blend Factor")
     output_n = detail_setup_g.nodes.new("NodeGroupOutput")
     output_n.location = (start_pos_x + pos_x_shift * 6, start_pos_y)
 
-    # group nodes
     camera_data_n = detail_setup_g.nodes.new("ShaderNodeCameraData")
     camera_data_n.location = (start_pos_x, start_pos_y + 100)
 
@@ -109,14 +112,15 @@ def __create_group__():
 
             detail_setup_g.links.new(output_n.inputs['Detail Strength'], equation_nodes[i].outputs[0])
 
-    blend_factor_mix_n = detail_setup_g.nodes.new("ShaderNodeMixRGB")
+    blend_factor_mix_n = detail_setup_g.nodes.new("ShaderNodeMix")
     blend_factor_mix_n.name = blend_factor_mix_n.label = "BlendFactor"
     blend_factor_mix_n.location = (start_pos_x + pos_x_shift * 5, start_pos_y - 50)
+    blend_factor_mix_n.data_type = "RGBA"
     blend_factor_mix_n.blend_type = "MIX"
-    blend_factor_mix_n.inputs['Color2'].default_value = (0.0,) * 4
+    blend_factor_mix_n.inputs['B'].default_value = (0.0,) * 4
 
     # group links
-    detail_setup_g.links.new(blend_factor_mix_n.inputs['Fac'], input_n.outputs['Blend Bias'])
-    detail_setup_g.links.new(blend_factor_mix_n.inputs['Color1'], equation_nodes[-1].outputs[0])
+    detail_setup_g.links.new(blend_factor_mix_n.inputs['Factor'], input_n.outputs['Blend Bias'])
+    detail_setup_g.links.new(blend_factor_mix_n.inputs['A'], equation_nodes[-1].outputs[0])
 
-    detail_setup_g.links.new(output_n.inputs['Blend Factor'], blend_factor_mix_n.outputs['Color'])
+    detail_setup_g.links.new(output_n.inputs['Blend Factor'], blend_factor_mix_n.outputs['Result'])

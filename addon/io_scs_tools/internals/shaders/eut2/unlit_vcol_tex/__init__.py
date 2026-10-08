@@ -160,19 +160,18 @@ class UnlitVcolTex(BaseShader):
         """
 
         material.use_backface_culling = True
-        material.blend_method = "OPAQUE"
+        material.surface_render_method = "DITHERED"
+
+        out_shader_n = node_tree.nodes[UnlitVcolTex.OUT_SHADER_NODE]
 
         # set proper blend method
         if alpha_test.is_set(node_tree):
-            material.blend_method = "CLIP"
-            material.alpha_threshold = 0.05
+            out_shader_n.inputs["Alpha Type"].default_value = 0.0
 
             # add alpha test pass if:
             # 1. awhite is enabled, as alpha test pass is called before awhite is aplied
             # 2. multiply blend enabled, where alphed pixels shouldn't be multiplied as they are discarded
             if awhite.is_set(node_tree) or blend_mult.is_set(node_tree):
-                out_shader_n = node_tree.nodes[UnlitVcolTex.OUT_SHADER_NODE]
-
                 # alpha test pass has to get fully opaque input, thus remove transparency linkage
                 if out_shader_n.inputs['Alpha'].links:
                     node_tree.links.remove(out_shader_n.inputs['Alpha'].links[0])
@@ -184,13 +183,16 @@ class UnlitVcolTex(BaseShader):
                 alpha_test.add_pass(node_tree, shader_from, alpha_from, shader_to)
 
         if blend_add.is_set(node_tree):
-            material.blend_method = "BLEND"
+            out_shader_n.inputs["Alpha Type"].default_value = 1.0
+            material.surface_render_method = "BLENDED"
         if blend_mult.is_set(node_tree):
-            material.blend_method = "BLEND"
+            out_shader_n.inputs["Alpha Type"].default_value = 1.0
+            material.surface_render_method = "BLENDED"
         if blend_over.is_set(node_tree):
-            material.blend_method = "BLEND"
+            out_shader_n.inputs["Alpha Type"].default_value = 1.0
+            material.surface_render_method = "BLENDED"
 
-        if material.blend_method == "OPAQUE" and node_tree.nodes[UnlitVcolTex.OUT_SHADER_NODE].inputs['Alpha'].links:
+        if out_shader_n.inputs["Alpha Type"].default_value < 0.0 and node_tree.nodes[UnlitVcolTex.OUT_SHADER_NODE].inputs['Alpha'].links:
             node_tree.links.remove(node_tree.nodes[UnlitVcolTex.OUT_SHADER_NODE].inputs['Alpha'].links[0])
 
     @staticmethod
@@ -463,24 +465,28 @@ class UnlitVcolTex(BaseShader):
             base1_tex_n.location = (base_tex_n.location.x, base_tex_n.location.y - 300)
             base1_tex_n.width = 140
 
-            base_base1_mix_n = node_tree.nodes.new("ShaderNodeMixRGB")
+            base_base1_mix_n = node_tree.nodes.new("ShaderNodeMix")
             base_base1_mix_n.name = base_base1_mix_n.label = UnlitVcolTex.BASE_BASE1_MIX_NODE
-            base_base1_mix_n.location = (base_tex_n.location.x + 185 * 2, base_tex_n.location.y - 300)
+            base_base1_mix_n.location = (base_tex_n.location.x + 185 * 2, base_tex_n.location.y - 250)
+            base_base1_mix_n.data_type = "RGBA"
+            base_base1_mix_n.blend_type = "MIX"
 
-            base_base1_amix_n = node_tree.nodes.new("ShaderNodeMixRGB")
+            base_base1_amix_n = node_tree.nodes.new("ShaderNodeMix")
             base_base1_amix_n.name = base_base1_amix_n.label = UnlitVcolTex.BASE_BASE1_AMIX_NODE
             base_base1_amix_n.location = (base_tex_n.location.x + 185 * 2, base_tex_n.location.y - 500)
+            base_base1_amix_n.data_type = "RGBA"
+            base_base1_amix_n.blend_type = "MIX"
 
             # links
-            node_tree.links.new(base_base1_mix_n.inputs['Color1'], base_tex_n.outputs['Color'])
-            node_tree.links.new(base_base1_mix_n.inputs['Color2'], base1_tex_n.outputs['Color'])
+            node_tree.links.new(base_base1_mix_n.inputs['A'], base_tex_n.outputs['Color'])
+            node_tree.links.new(base_base1_mix_n.inputs['B'], base1_tex_n.outputs['Color'])
 
-            node_tree.links.new(base_base1_amix_n.inputs['Color1'], base_tex_n.outputs['Alpha'])
-            node_tree.links.new(base_base1_amix_n.inputs['Color2'], base1_tex_n.outputs['Alpha'])
+            node_tree.links.new(base_base1_amix_n.inputs['A'], base_tex_n.outputs['Alpha'])
+            node_tree.links.new(base_base1_amix_n.inputs['B'], base1_tex_n.outputs['Alpha'])
 
-            node_tree.links.new(tex_mult_n.inputs[1], base_base1_mix_n.outputs['Color'])
+            node_tree.links.new(tex_mult_n.inputs[1], base_base1_mix_n.outputs['Result'])
 
-            node_tree.links.new(opacity_n.inputs[0], base_base1_amix_n.outputs['Color'])
+            node_tree.links.new(opacity_n.inputs[0], base_base1_amix_n.outputs['Result'])
 
             # flavor creation
             uvmap_n.location.x -= 185
@@ -490,8 +496,8 @@ class UnlitVcolTex(BaseShader):
                            uvmap_n.outputs['UV'],
                            base_tex_n.inputs[0],
                            base1_tex_n.inputs[0],
-                           base_base1_mix_n.inputs['Fac'],
-                           base_base1_amix_n.inputs['Fac'])
+                           base_base1_mix_n.inputs['Factor'],
+                           base_base1_amix_n.inputs['Factor'])
 
         else:
             fadesheet.delete(node_tree)

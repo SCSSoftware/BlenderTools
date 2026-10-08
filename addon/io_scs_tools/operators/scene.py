@@ -109,8 +109,9 @@ class Export:
         bl_description = "Export SCS models depending on selected export scope."
         bl_options = set()
 
-        def __init__(self):
-            super().__init__()
+        def __init__(self, *args, **kwargs):
+            bpy.types.Operator.__init__(self, *args, **kwargs)
+            _SCSExportHelper.__init__(self, *args, **kwargs)
 
             self.can_mouse_rotate = False
             """:type bool: Flag indiciating whether mouse move even will rotate view or no. Initiated by left mouse button press."""
@@ -1071,7 +1072,8 @@ class ConversionHelper:
         bl_idname = "scene.scs_tools_convert_all_paths"
         bl_description = "Converts all paths given in Custom Paths list + current SCS Project Base"
 
-        def __init__(self):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
             self.include_current_project = True
 
         @classmethod

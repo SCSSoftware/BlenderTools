@@ -18,7 +18,7 @@
 
 # Copyright (C) 2015-2021: SCS Software
 
-from io_scs_tools.internals.shaders.eut2.shadowmap import Shadowmap
+from ..shadowmap import Shadowmap
 
 
 class Decalshadow(Shadowmap):

@@ -84,12 +84,13 @@ def __create_node_group__():
         animsheet_frame_idx_to_col_row_g.nodes.clear()
 
     # inputs defining
-    animsheet_frame_idx_to_col_row_g.inputs.new("NodeSocketFloat", "FrameIndex")
-    animsheet_frame_idx_to_col_row_g.inputs.new("NodeSocketFloat", "FramesRow")
+    animsheet_frame_idx_to_col_row_g.interface.new_socket(in_out = "INPUT", socket_type = "NodeSocketFloat", name = "FrameIndex")
+    animsheet_frame_idx_to_col_row_g.interface.new_socket(in_out = "INPUT", socket_type = "NodeSocketFloat", name = "FramesRow")
 
     # outputs defining
-    animsheet_frame_idx_to_col_row_g.outputs.new("NodeSocketFloat", "ColIndex")
-    animsheet_frame_idx_to_col_row_g.outputs.new("NodeSocketFloat", "RowIndex")
+    animsheet_frame_idx_to_col_row_g.interface.new_socket(in_out = "OUTPUT", socket_type = "NodeSocketFloat", name = "ColIndex")
+    animsheet_frame_idx_to_col_row_g.interface.new_socket(in_out = "OUTPUT", socket_type = "NodeSocketFloat", name = "RowIndex")
+
 
     # node creation
     input_n = animsheet_frame_idx_to_col_row_g.nodes.new("NodeGroupInput")

@@ -118,17 +118,16 @@ class UnlitTex(BaseShader):
         """
 
         material.use_backface_culling = True
-        material.blend_method = "OPAQUE"
+        material.surface_render_method = "DITHERED"
+
+        out_shader_n = node_tree.nodes[UnlitTex.OUT_SHADER_NODE]
 
         # set proper blend method
         if alpha_test.is_set(node_tree):
-            material.blend_method = "CLIP"
-            material.alpha_threshold = 0.05
+            out_shader_n.inputs["Alpha Type"].default_value = 0.0
 
             # add alpha test pass if multiply blend enabled, where alphed pixels shouldn't be multiplied as they are discarded
             if blend_mult.is_set(node_tree):
-                out_shader_n = node_tree.nodes[UnlitTex.OUT_SHADER_NODE]
-
                 # alpha test pass has to get fully opaque input, thus remove transparency linkage
                 if out_shader_n.inputs['Alpha'].links:
                     node_tree.links.remove(out_shader_n.inputs['Alpha'].links[0])
@@ -140,13 +139,16 @@ class UnlitTex(BaseShader):
                 alpha_test.add_pass(node_tree, shader_from, alpha_from, shader_to)
 
         if blend_add.is_set(node_tree):
-            material.blend_method = "BLEND"
+            out_shader_n.inputs["Alpha Type"].default_value = 1.0
+            material.surface_render_method = "BLENDED"
         if blend_mult.is_set(node_tree):
-            material.blend_method = "BLEND"
+            out_shader_n.inputs["Alpha Type"].default_value = 1.0
+            material.surface_render_method = "BLENDED"
         if blend_over.is_set(node_tree):
-            material.blend_method = "BLEND"
+            out_shader_n.inputs["Alpha Type"].default_value = 1.0
+            material.surface_render_method = "BLENDED"
 
-        if material.blend_method == "OPAQUE" and node_tree.nodes[UnlitTex.OUT_SHADER_NODE].inputs['Alpha'].links:
+        if out_shader_n.inputs["Alpha Type"].default_value < 0.0 and node_tree.nodes[UnlitTex.OUT_SHADER_NODE].inputs['Alpha'].links:
             node_tree.links.remove(node_tree.nodes[UnlitTex.OUT_SHADER_NODE].inputs['Alpha'].links[0])
 
     @staticmethod

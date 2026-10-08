@@ -19,6 +19,7 @@
 # Copyright (C) 2013-2022: SCS Software
 
 
+import gpu
 import bpy
 import os
 from bpy.props import StringProperty, BoolProperty, IntProperty
@@ -136,13 +137,13 @@ class SCS_TOOLS_OT_Show3DViewReport(bpy.types.Operator):
 
     @staticmethod
     def get_scs_banner_img_data(window):
-        """Loads image to blender data block, loads it to gl memory and gets bindcode address that can be used in
-        bgl module for image drawing.
+        """Loads image to blender data block, loads it to GPU memory and returns it's texture that can be used
+        for image drawing.
 
         :param window: window for which we should get banner image
         :type window: bpy.type.Window
-        :return: (bindcode of scs banner image, width of scs banner image, height of scs banner image
-        :rtype: (int, int, int)
+        :return: (texture, width of scs banner image, height of scs banner image
+        :rtype: (gpu.types.GPUTexture, int, int)
         """
 
         if SCS_TOOLS_OT_Show3DViewReport.has_controls(window):
@@ -151,22 +152,24 @@ class SCS_TOOLS_OT_Show3DViewReport(bpy.types.Operator):
             img_name = _OP_consts.View3DReport.BT_BANNER_IMG_NAME
 
         if img_name not in bpy.data.images:
-
             img_path = os.path.join(_path_utils.get_addon_installation_paths()[0], "ui", "banners", img_name)
             img = bpy.data.images.load(img_path, check_existing=True)
             img.colorspace_settings.name = 'sRGB'
             img.alpha_mode = 'CHANNEL_PACKED'
 
         else:
-
             img = bpy.data.images[img_name]
 
-        # ensure that image is loaded in GPU memory aka has proper bindcode,
-        # we have to that each time because if operator is shown for long time blender might free it on it's own
-        if img.bindcode == 0:
-            img.gl_load()
+        if not img.has_data:
+            img.reload()
 
-        return img.bindcode, img.size[0], img.size[1]
+        try:
+            texture = gpu.texture.from_image(img)
+        except RuntimeError:
+            img.reload()
+            texture = gpu.texture.from_image(img)
+
+        return texture, img.size[0], img.size[1]
 
     @staticmethod
     def get_lines():

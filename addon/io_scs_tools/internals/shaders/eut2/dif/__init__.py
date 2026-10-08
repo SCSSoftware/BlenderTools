@@ -18,20 +18,21 @@
 
 # Copyright (C) 2015-2022: SCS Software
 
-from io_scs_tools.consts import Mesh as _MESH_consts
-from io_scs_tools.internals.shaders.base import BaseShader
-from io_scs_tools.internals.shaders.eut2.std_node_groups import compose_lighting_ng
-from io_scs_tools.internals.shaders.eut2.std_node_groups import lighting_evaluator_ng
-from io_scs_tools.internals.shaders.eut2.std_node_groups import vcolor_input_ng
-from io_scs_tools.internals.shaders.flavors import alpha_test
-from io_scs_tools.internals.shaders.flavors import blend_over
-from io_scs_tools.internals.shaders.flavors import blend_add
-from io_scs_tools.internals.shaders.flavors import blend_mult
-from io_scs_tools.internals.shaders.flavors import nmap
-from io_scs_tools.internals.shaders.flavors import paint
-from io_scs_tools.internals.shaders.flavors import tg0
-from io_scs_tools.utils import convert as _convert_utils
-from io_scs_tools.utils import material as _material_utils
+from ..std_node_groups import vcolor_input_ng
+from ..std_node_groups import compose_lighting_ng
+from ..std_node_groups import lighting_evaluator_ng
+from ...base import BaseShader
+from ...flavors import tg0
+from ...flavors import oinv
+from ...flavors import nmap
+from ...flavors import paint
+from ...flavors import blend_add
+from ...flavors import alpha_test
+from ...flavors import blend_over
+from ...flavors import blend_mult
+from .....utils import convert as _convert_utils
+from .....utils import material as _material_utils
+from .....consts import Mesh as _MESH_consts
 
 
 class Dif(BaseShader):
@@ -139,6 +140,7 @@ class Dif(BaseShader):
         compose_lighting_n.location = (start_pos_x + pos_x_shift * 8, start_pos_y + 2000)
         compose_lighting_n.node_tree = compose_lighting_ng.get_node_group()
         compose_lighting_n.inputs["Alpha"].default_value = 1.0
+        compose_lighting_n.inputs["Alpha Type"].default_value = -1.0
 
         output_n = node_tree.nodes.new("ShaderNodeOutputMaterial")
         output_n.name = Dif.OUTPUT_NODE
@@ -179,16 +181,16 @@ class Dif(BaseShader):
         """
 
         material.use_backface_culling = True
-        material.blend_method = "OPAQUE"
+        material.surface_render_method = "DITHERED"
+
+        compose_lighting_n = node_tree.nodes[Dif.COMPOSE_LIGHTING_NODE]
 
         # set proper blend method and possible alpha test pass
         if alpha_test.is_set(node_tree):
-            material.blend_method = "CLIP"
-            material.alpha_threshold = 0.05
+            compose_lighting_n.inputs["Alpha Type"].default_value = 0.0
 
             # add alpha test pass if multiply blend enabled, where alphed pixels shouldn't be multiplied as they are discarded
             if blend_mult.is_set(node_tree):
-                compose_lighting_n = node_tree.nodes[Dif.COMPOSE_LIGHTING_NODE]
 
                 # alpha test pass has to get fully opaque input, thus remove transparency linkage
                 if compose_lighting_n.inputs['Alpha'].links:
@@ -201,13 +203,16 @@ class Dif(BaseShader):
                 alpha_test.add_pass(node_tree, shader_from, alpha_from, shader_to)
 
         if blend_add.is_set(node_tree):
-            material.blend_method = "BLEND"
+            compose_lighting_n.inputs["Alpha Type"].default_value = 1.0
+            material.surface_render_method = "BLENDED"
         if blend_mult.is_set(node_tree):
-            material.blend_method = "BLEND"
+            compose_lighting_n.inputs["Alpha Type"].default_value = 1.0
+            material.surface_render_method = "BLENDED"
         if blend_over.is_set(node_tree):
-            material.blend_method = "BLEND"
+            compose_lighting_n.inputs["Alpha Type"].default_value = 1.0
+            material.surface_render_method = "BLENDED"
 
-        if material.blend_method == "OPAQUE" and node_tree.nodes[Dif.COMPOSE_LIGHTING_NODE].inputs['Alpha'].links:
+        if compose_lighting_n.inputs["Alpha Type"].default_value < 0.0 and node_tree.nodes[Dif.COMPOSE_LIGHTING_NODE].inputs['Alpha'].links:
             node_tree.links.remove(node_tree.nodes[Dif.COMPOSE_LIGHTING_NODE].inputs['Alpha'].links[0])
 
     @staticmethod
@@ -501,7 +506,7 @@ class Dif(BaseShader):
 
     @staticmethod
     def set_aux0(node_tree, aux_property):
-        """Set zero texture generation scale.
+        """Set zero texture generation scale and rotation.
 
         :param node_tree: node tree of current shader
         :type node_tree: bpy.types.NodeTree
@@ -510,8 +515,11 @@ class Dif(BaseShader):
         """
 
         if tg0.is_set(node_tree):
-
-            tg0.set_scale(node_tree, aux_property[0]['value'], aux_property[1]['value'])
+            # Fix for old float2 aux[0]
+            if (len(aux_property)) == 2:
+                tg0.set_scale(node_tree, aux_property[0]['value'], aux_property[1]['value'], 0)
+            else:
+                tg0.set_scale(node_tree, aux_property[0]['value'], aux_property[1]['value'], aux_property[2]['value'])
 
     @staticmethod
     def set_flat_flavor(node_tree, switch_on):
@@ -550,3 +558,24 @@ class Dif(BaseShader):
 
         else:
             paint.delete(node_tree)
+
+    @staticmethod
+    def set_oinv_flavor(node_tree, switch_on):
+        """Set oinv flavor to this shader.
+
+        :param node_tree: node tree of current shader
+        :type node_tree: bpy.types.NodeTree
+        :param switch_on: flag indication if flavor should be switched on or off
+        :type switch_on: bool
+        """
+
+        opacity_n = node_tree.nodes[Dif.OPACITY_NODE]
+        compose_lighting_n = node_tree.nodes[Dif.COMPOSE_LIGHTING_NODE]
+
+        if switch_on:
+
+            location = (opacity_n.location.x + 185, opacity_n.location.y + 40)
+            oinv.init(node_tree, location, opacity_n.outputs["Value"], compose_lighting_n.inputs["Alpha"])
+
+        else:
+            oinv.delete(node_tree)

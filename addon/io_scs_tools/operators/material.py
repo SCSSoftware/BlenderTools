@@ -850,7 +850,8 @@ class Aliasing:
 
             is_aliased_directory = ("/material/road" in tex_raw_path or
                                     "/material/terrain" in tex_raw_path or
-                                    "/material/custom" in tex_raw_path)
+                                    "/material/custom" in tex_raw_path or
+                                    "/umatlib" in tex_raw_path)
 
             # abort if empty texture or not aliased directory
             if not (tex_raw_path != "" and is_aliased_directory):
@@ -872,11 +873,23 @@ class Aliasing:
 
             mat_cont = mat_container.get_data_from_file(mat_abs_path)
 
+            # abort if data couldn't be recived
+            if not mat_cont:
+                self.report({'ERROR'}, "Couldn't read aliased material, aliasing aborted!")
+                return {'CANCELLED'}
+
+            from io_scs_tools.internals.containers.parsers.mat_convert import AttributeConverter
+            converter = AttributeConverter()
+
             # set attributes
             for attr_tuple in mat_cont.get_attributes().items():
 
-                attr_key = attr_tuple[0]
-                attr_val = attr_tuple[1]
+                # convert attributes from effect to material format
+                if mat_cont.get_format() == "effect":
+                    attr_key, attr_val = converter.effect_to_material(attr_tuple[0], attr_tuple[1])
+                else:
+                    attr_key = attr_tuple[0]
+                    attr_val = attr_tuple[1]
 
                 if attr_key == "substance":
 
@@ -906,10 +919,40 @@ class Aliasing:
             # set textures
             for tex_tuple in mat_cont.get_textures().items():
 
-                if "shader_texture_" + tex_tuple[0] not in material.scs_props.keys():
-                    continue
+                # temp fix to not replace base texture cause it can have other name than .mat file
+                # "if" should be remove when aliasing detecting system will change from dds to mat
+                if not tex_tuple[0] == "texture_base":
 
-                setattr(material.scs_props, "shader_texture_" + tex_tuple[0], tex_tuple[1])
+                    # convert local paths to raw paths
+                    if not tex_tuple[1].startswith("/"):
+                        file_name = _path_utils.get_filename(tex_raw_path)
+                        raw_path = tex_raw_path.replace(file_name, "")
+
+                        # replace local path with raw path
+                        tex_tuple = (tex_tuple[0], raw_path + tex_tuple[1])
+
+                    if "shader_texture_" + tex_tuple[0][8:] not in material.scs_props.keys():
+                        continue
+
+                    setattr(material.scs_props, "shader_texture_" + tex_tuple[0][8:], tex_tuple[1])
+
+            # set tobjs
+            for tobj_tuple in mat_cont.get_tobjs().items():
+                tex_attrs = tobj_tuple[1]
+                tobj_prop = getattr(material.scs_props, "shader_texture_" + tobj_tuple[0][8:] + "_settings", None)
+
+                # ('u_repeat', 'v_repeat', 'tsnormal', 'color_space_linear')
+                tobj_prop.add("u_repeat") if "repeat" in tex_attrs[0] else tobj_prop.discard("u_repeat")
+                tobj_prop.add("v_repeat") if "repeat" in tex_attrs[1] else tobj_prop.discard("v_repeat")
+                # tobj_prop.add("w_repeat") if tex_attrs[12] and "repeat" in tex_attrs[2] else tobj_prop.discard("w_repeat")
+
+                # check if tobj is nmap and set tsnormal
+                tobj_prop.add("tsnormal") if tobj_tuple[0][8:] == "nmap" else tobj_prop.discard("tsnormal")
+
+                # check if tobj is in linear color space and set color_space_linear
+                # tobj_prop.add("color_space_linear") if (--TODO--) else tobj_prop.discard("color_space_linear")
+
+                setattr(material.scs_props, "shader_texture_" + tobj_tuple[0][8:] + "_settings", tobj_prop)
 
             # report success of aliasing
             if mat_cont.get_effect() == material.scs_props.mat_effect_name:

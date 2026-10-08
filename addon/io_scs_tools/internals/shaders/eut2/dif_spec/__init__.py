@@ -18,9 +18,9 @@
 
 # Copyright (C) 2015-2019: SCS Software
 
-from io_scs_tools.internals.shaders.eut2.dif import Dif
-from io_scs_tools.internals.shaders.eut2.std_node_groups import alpha_remap_ng
-from io_scs_tools.internals.shaders.flavors import asafew
+from ..dif import Dif
+from ..std_node_groups import alpha_remap_ng
+from ...flavors import asafew
 
 
 class DifSpec(Dif):

@@ -81,24 +81,25 @@ class DifWeightDif(Dif):
         spec_mult_n.location = (start_pos_x + pos_x_shift * 4, start_pos_y + 1900)
         spec_mult_n.operation = "MULTIPLY"
 
-        base_over_mix_n = node_tree.nodes.new("ShaderNodeMixRGB")
+        base_over_mix_n = node_tree.nodes.new("ShaderNodeMix")
         base_over_mix_n.name = base_over_mix_n.label = DifWeightDif.BASE_OVER_MIX_NODE
         base_over_mix_n.location = (start_pos_x + pos_x_shift * 3, start_pos_y + 1300)
+        base_over_mix_n.data_type = "RGBA"
         base_over_mix_n.blend_type = "MIX"
 
         # links creation
         node_tree.links.new(over_tex_n.inputs['Vector'], sec_uv_n.outputs['UV'])
 
         # pass 1
-        node_tree.links.new(base_over_mix_n.inputs['Fac'], vcol_group_n.outputs['Vertex Color Alpha'])
-        node_tree.links.new(base_over_mix_n.inputs['Color1'], base_tex_n.outputs['Color'])
-        node_tree.links.new(base_over_mix_n.inputs['Color2'], over_tex_n.outputs['Color'])
+        node_tree.links.new(base_over_mix_n.inputs['Factor'], vcol_group_n.outputs['Vertex Color Alpha'])
+        node_tree.links.new(base_over_mix_n.inputs['A'], base_tex_n.outputs['Color'])
+        node_tree.links.new(base_over_mix_n.inputs['B'], over_tex_n.outputs['Color'])
 
         # pass 2
         node_tree.links.new(spec_mult_n.inputs[0], spec_col_n.outputs[0])
         node_tree.links.new(spec_mult_n.inputs[1], vcol_scale_n.outputs[0])
 
-        node_tree.links.new(vcol_mult_n.inputs[1], base_over_mix_n.outputs['Color'])
+        node_tree.links.new(vcol_mult_n.inputs[1], base_over_mix_n.outputs['Result'])
 
         # pass to material
         node_tree.links.new(compose_lighting_n.inputs['Specular Color'], spec_mult_n.outputs[0])
@@ -115,12 +116,13 @@ class DifWeightDif(Dif):
         """
 
         material.use_backface_culling = True
-        material.blend_method = "OPAQUE"
+        material.surface_render_method = "DITHERED"
+
+        compose_lighting_n = node_tree.nodes[Dif.COMPOSE_LIGHTING_NODE]
 
         # set proper blend method
         if alpha_test.is_set(node_tree):
-            material.blend_method = "CLIP"
-            material.alpha_threshold = 0.05
+            compose_lighting_n.inputs["Alpha Type"].default_value = 0.0
 
             # add alpha test pass if multiply blend enabled, where alphed pixels shouldn't be multiplied as they are discarded
             if blend_mult.is_set(node_tree):
@@ -137,13 +139,16 @@ class DifWeightDif(Dif):
                 alpha_test.add_pass(node_tree, shader_from, alpha_from, shader_to)
 
         if blend_add.is_set(node_tree):
-            material.blend_method = "BLEND"
+            compose_lighting_n.inputs["Alpha Type"].default_value = 1.0
+            material.surface_render_method = "BLENDED"
         if blend_mult.is_set(node_tree):
-            material.blend_method = "BLEND"
+            compose_lighting_n.inputs["Alpha Type"].default_value = 1.0
+            material.surface_render_method = "BLENDED"
         if blend_over.is_set(node_tree):
-            material.blend_method = "BLEND"
+            compose_lighting_n.inputs["Alpha Type"].default_value = 1.0
+            material.surface_render_method = "BLENDED"
 
-        if material.blend_method == "OPAQUE" and node_tree.nodes[Dif.COMPOSE_LIGHTING_NODE].inputs['Alpha'].links:
+        if compose_lighting_n.inputs["Alpha Type"].default_value < 0.0 and node_tree.nodes[Dif.COMPOSE_LIGHTING_NODE].inputs['Alpha'].links:
             node_tree.links.remove(node_tree.nodes[Dif.COMPOSE_LIGHTING_NODE].inputs['Alpha'].links[0])
 
     @staticmethod
@@ -222,7 +227,7 @@ class DifWeightDif(Dif):
 
     @staticmethod
     def set_aux1(node_tree, aux_property):
-        """Set second texture generation scale.
+        """Set second texture generation scale and rotation.
 
         :param node_tree: node tree of current shader
         :type node_tree: bpy.types.NodeTree
@@ -231,5 +236,8 @@ class DifWeightDif(Dif):
         """
 
         if tg1.is_set(node_tree):
-
-            tg1.set_scale(node_tree, aux_property[0]['value'], aux_property[1]['value'])
+            # Fix for old float2 aux[1]
+            if (len(aux_property)) == 2:
+                tg1.set_scale(node_tree, aux_property[0]['value'], aux_property[1]['value'], 0)
+            else:
+                tg1.set_scale(node_tree, aux_property[0]['value'], aux_property[1]['value'], aux_property[2]['value'])

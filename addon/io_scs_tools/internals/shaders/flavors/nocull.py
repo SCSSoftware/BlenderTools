@@ -16,14 +16,14 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-# Copyright (C) 2021: SCS Software
+# Copyright (C) 2025: SCS Software
 
 
-FLAVOR_ID = "sky_back"
+FLAVOR_ID = "nocull"
 
 
 def init(node_tree):
-    """Initialize sky background flavor.
+    """Initialize sky bottom flavor.
 
     :param node_tree: node tree on which it will be used
     :type node_tree: bpy.types.NodeTree

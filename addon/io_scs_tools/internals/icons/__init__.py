@@ -19,10 +19,11 @@
 # Copyright (C) 2013-2019: SCS Software
 
 import os
+import bpy
 from bpy.utils import previews
-from io_scs_tools.consts import Icons as _ICON_consts
-from io_scs_tools.utils import path as _path
-from io_scs_tools.utils.printout import lprint
+from ...consts import Icons as _ICON_consts
+from ...utils import path as _path
+from ...utils.printout import lprint
 
 PCOLLS = "custom_icons"
 PCOLLS_IDX_MAP = PCOLLS + "_index_map"
@@ -90,6 +91,25 @@ def register():
         set_theme(get_theme_name(0))
         print("WARNING\t- Default icon theme doesn't exist, fallback to first available!")
 
+    # Forces icons to reload (Because of issues with Vulkan on faster systems)
+    bpy.app.timers.register(reload_icons, first_interval=0.75)
+
+def reload_icons():
+    """Forces icons to reload after a short delay (workaround for Vulkan issues)."""
+
+    current_theme = _cache[CURRENT_THEME]
+    pcoll = _cache[PCOLLS].get(current_theme)
+    if not pcoll:
+        return
+
+    icon_themes_dir = os.path.join(_path.get_addon_installation_paths()[0], 'ui', 'icons')
+    for icon_type in _ICON_consts.Types.as_list():
+        icon_path = os.path.join(icon_themes_dir, current_theme, icon_type)
+        if os.path.isfile(icon_path):
+            if icon_type in pcoll:
+                del pcoll[icon_type]
+            pcoll.load(icon_type, icon_path, 'IMAGE', force_reload=True)
+    return None
 
 def unregister():
     """Clearing preview collections for custom icons. Should be called on addon unregister.

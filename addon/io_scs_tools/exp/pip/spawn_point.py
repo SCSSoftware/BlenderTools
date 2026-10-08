@@ -44,6 +44,7 @@ class SpawnPoint:
         self.__position = (0.,) * 3
         self.__rotation = (1.,) + (0.,) * 3
         self.__type = 0  # NONE
+        self.__flags = 0  # NONE
 
         SpawnPoint.__global_spawn_point_counter += 1
 
@@ -74,6 +75,28 @@ class SpawnPoint:
         """
         self.__type = sp_type
 
+    def set_flags(self, sp_flags):
+        """Set flags of spawn point.
+
+        NOTE: there is no safety check if value is valid,
+        make sure that prefab locator properties are synced with PSPCF_* consts.
+
+        :param sp_flags: integer flags of spawn point
+        :type sp_flags: int
+        """
+
+        # depot type
+        self.__flags |= int(sp_flags.locator_prefab_custom_depot_type)
+
+        # parking difficulty
+        self.__flags |= int(sp_flags.locator_prefab_custom_parking_difficulty)
+
+        # lenght
+        self.__flags |= int(sp_flags.locator_prefab_custom_lenght)
+
+        # rule
+        self.__flags |= int(sp_flags.locator_prefab_custom_rule)
+
     def get_as_section(self):
         """Get spawn point information represented with SectionData structure class.
 
@@ -86,5 +109,6 @@ class SpawnPoint:
         section.props.append(("Position", ["&&", tuple(self.__position)]))
         section.props.append(("Rotation", ["&&", tuple(self.__rotation)]))
         section.props.append(("Type", self.__type))
+        section.props.append(("Flags", self.__flags))
 
         return section

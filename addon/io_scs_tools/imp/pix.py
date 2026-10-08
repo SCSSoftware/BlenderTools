@@ -174,6 +174,7 @@ def _create_scs_root_object(name, loaded_variants, loaded_looks, mats_info, obje
     bpy.context.view_layer.active_layer_collection.collection.objects.link(scs_root_object)
     bpy.context.view_layer.objects.active = scs_root_object
     scs_root_object.scs_props.scs_root_object_export_enabled = True
+    scs_root_object["skip_default_part"] = True
     scs_root_object.scs_props.empty_object_type = 'SCS_Root'
 
     # print('LOD.pos: %s' % str(scs_root_object.location))
@@ -233,7 +234,9 @@ def _create_scs_root_object(name, loaded_variants, loaded_looks, mats_info, obje
                 part.include = True
 
                 # cleanup generated terrain points vertex layers by variant
-                for obj in parts_dict[part.name]:
+                # Because "collect_parts_on_root" return ONLY dictionary of USED parts, parts_dict must include empty list for cases,
+                # where part.name is not existing in parts_dict (especially for "defaultpart" which is always included, and can be used also as empty part))
+                for obj in parts_dict.get(part.name, []):
 
                     if obj.type != "MESH":
                         continue

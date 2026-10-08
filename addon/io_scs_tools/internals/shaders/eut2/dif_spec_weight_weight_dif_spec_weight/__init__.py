@@ -20,6 +20,7 @@
 
 from io_scs_tools.consts import Mesh as _MESH_consts
 from io_scs_tools.internals.shaders.eut2.dif_spec import DifSpec
+from io_scs_tools.internals.shaders.eut2.dif_spec_weight_weight_dif_spec_weight import over_nmap
 from io_scs_tools.internals.shaders.flavors import tg1
 from io_scs_tools.utils import material as _material_utils
 
@@ -90,24 +91,29 @@ class DifSpecWeightWeightDifSpecWeight(DifSpec):
         over_tex_n.location = (start_pos_x + pos_x_shift, start_pos_y + 1200)
         over_tex_n.width = 140
 
-        sec_spec_mix_n = node_tree.nodes.new("ShaderNodeMixRGB")
+        sec_spec_mix_n = node_tree.nodes.new("ShaderNodeMix")
         sec_spec_mix_n.name = sec_spec_mix_n.label = DifSpecWeightWeightDifSpecWeight.SEC_SPEC_MIX_NODE
         sec_spec_mix_n.location = (start_pos_x + pos_x_shift * 3, start_pos_y + 2100)
+        sec_spec_mix_n.data_type = "RGBA"
         sec_spec_mix_n.blend_type = "MIX"
 
-        sec_shininess_mix_n = node_tree.nodes.new("ShaderNodeMixRGB")
+        sec_shininess_mix_n = node_tree.nodes.new("ShaderNodeMix")
         sec_shininess_mix_n.name = sec_shininess_mix_n.label = DifSpecWeightWeightDifSpecWeight.SEC_SHININESS_MIX_NODE
-        sec_shininess_mix_n.location = (start_pos_x + pos_x_shift * 3, start_pos_y + 2300)
+        sec_shininess_mix_n.location = (start_pos_x + pos_x_shift * 3, start_pos_y + 2350)
+        sec_shininess_mix_n.data_type = "RGBA"
         sec_shininess_mix_n.blend_type = "MIX"
 
-        base_over_a_mix_n = node_tree.nodes.new("ShaderNodeMixRGB")
+        base_over_a_mix_n = node_tree.nodes.new("ShaderNodeMix")
         base_over_a_mix_n.name = base_over_a_mix_n.label = DifSpecWeightWeightDifSpecWeight.BASE_OVER_A_MIX_NODE
-        base_over_a_mix_n.location = (start_pos_x + pos_x_shift * 3, start_pos_y + 1900)
+        base_over_a_mix_n.location = (start_pos_x + pos_x_shift * 3, start_pos_y + 1850)
+        base_over_a_mix_n.data_type = "RGBA"
         base_over_a_mix_n.blend_type = "MIX"
 
-        base_over_mix_n = node_tree.nodes.new("ShaderNodeMixRGB")
+        base_over_mix_n = node_tree.nodes.new("ShaderNodeMix")
         base_over_mix_n.name = base_over_mix_n.label = DifSpecWeightWeightDifSpecWeight.BASE_OVER_MIX_NODE
         base_over_mix_n.location = (start_pos_x + pos_x_shift * 3, start_pos_y + 1350)
+        base_over_mix_n.data_type = "RGBA"
+        base_over_mix_n.blend_type = "MIX"
 
         vcol_spec_mul_n = node_tree.nodes.new("ShaderNodeVectorMath")
         vcol_spec_mul_n.name = vcol_spec_mul_n.label = DifSpecWeightWeightDifSpecWeight.VCOL_SPEC_MULT_NODE
@@ -118,36 +124,99 @@ class DifSpecWeightWeightDifSpecWeight(DifSpec):
         node_tree.links.new(over_tex_n.inputs["Vector"], sec_geom_n.outputs["UV"])
 
         # pass 1
-        node_tree.links.new(sec_shininess_mix_n.inputs["Fac"], vcol_group_n.outputs["Vertex Color Alpha"])
+        node_tree.links.new(sec_shininess_mix_n.inputs["Factor"], vcol_group_n.outputs["Vertex Color Alpha"])
 
-        node_tree.links.new(sec_spec_mix_n.inputs["Fac"], vcol_group_n.outputs["Vertex Color Alpha"])
-        node_tree.links.new(sec_spec_mix_n.inputs["Color1"], spec_col_n.outputs["Color"])
-        node_tree.links.new(sec_spec_mix_n.inputs["Color2"], sec_spec_col_n.outputs["Color"])
+        node_tree.links.new(sec_spec_mix_n.inputs["Factor"], vcol_group_n.outputs["Vertex Color Alpha"])
+        node_tree.links.new(sec_spec_mix_n.inputs["A"], spec_col_n.outputs["Color"])
+        node_tree.links.new(sec_spec_mix_n.inputs["B"], sec_spec_col_n.outputs["Color"])
 
-        node_tree.links.new(base_over_a_mix_n.inputs["Fac"], vcol_group_n.outputs["Vertex Color Alpha"])
-        node_tree.links.new(base_over_a_mix_n.inputs["Color1"], base_tex_n.outputs["Alpha"])
-        node_tree.links.new(base_over_a_mix_n.inputs["Color2"], over_tex_n.outputs["Alpha"])
+        node_tree.links.new(base_over_a_mix_n.inputs["Factor"], vcol_group_n.outputs["Vertex Color Alpha"])
+        node_tree.links.new(base_over_a_mix_n.inputs["A"], base_tex_n.outputs["Alpha"])
+        node_tree.links.new(base_over_a_mix_n.inputs["B"], over_tex_n.outputs["Alpha"])
 
-        node_tree.links.new(base_over_mix_n.inputs["Fac"], vcol_group_n.outputs["Vertex Color Alpha"])
-        node_tree.links.new(base_over_mix_n.inputs["Color1"], base_tex_n.outputs["Color"])
-        node_tree.links.new(base_over_mix_n.inputs["Color2"], over_tex_n.outputs["Color"])
+        node_tree.links.new(base_over_mix_n.inputs["Factor"], vcol_group_n.outputs["Vertex Color Alpha"])
+        node_tree.links.new(base_over_mix_n.inputs["A"], base_tex_n.outputs["Color"])
+        node_tree.links.new(base_over_mix_n.inputs["B"], over_tex_n.outputs["Color"])
 
         # pass 2
-        node_tree.links.new(spec_multi_n.inputs[0], sec_spec_mix_n.outputs["Color"])
-        node_tree.links.new(spec_multi_n.inputs[1], base_over_a_mix_n.outputs["Color"])
+        node_tree.links.new(spec_multi_n.inputs[0], sec_spec_mix_n.outputs["Result"])
+        node_tree.links.new(spec_multi_n.inputs[1], base_over_a_mix_n.outputs["Result"])
 
-        node_tree.links.new(vcol_multi_n.inputs[1], base_over_mix_n.outputs["Color"])
+        node_tree.links.new(vcol_multi_n.inputs[1], base_over_mix_n.outputs["Result"])
 
         # pass 3
         node_tree.links.new(vcol_spec_mul_n.inputs[0], spec_multi_n.outputs[0])
         node_tree.links.new(vcol_spec_mul_n.inputs[1], vcol_scale_n.outputs[0])
 
         # pass 4
-        node_tree.links.new(lighting_eval_n.inputs["Shininess"], sec_shininess_mix_n.outputs["Color"])
+        node_tree.links.new(lighting_eval_n.inputs["Shininess"], sec_shininess_mix_n.outputs["Result"])
 
         # pass 5
         node_tree.links.new(compose_lighting_n.inputs["Specular Color"], vcol_spec_mul_n.outputs[0])
         node_tree.links.new(compose_lighting_n.inputs['Alpha'], base_tex_n.outputs['Alpha'])
+
+
+    @staticmethod
+    def set_nmap_flavor(node_tree, switch_on):
+        """Set normal map flavor to this shader.
+
+        :param node_tree: node tree of current shader
+        :type node_tree: bpy.types.NodeTree
+        :param switch_on: flag indication if normal map should be switched on or off
+        :type switch_on: bool
+        """
+
+        if switch_on:
+
+            # find minimal y position for input nodes and position flavor beneath it
+            min_y = None
+            for node in node_tree.nodes:
+                if node.location.x <= 185 and (min_y is None or min_y > node.location.y):
+                    min_y = node.location.y
+
+            lighting_eval_n = node_tree.nodes[DifSpecWeightWeightDifSpecWeight.LIGHTING_EVAL_NODE]
+            geom_n = node_tree.nodes[DifSpecWeightWeightDifSpecWeight.GEOM_NODE]
+            vcol_group_n = node_tree.nodes[DifSpecWeightWeightDifSpecWeight.VCOL_GROUP_NODE]
+            location = (lighting_eval_n.location.x - 185, min_y - 400)
+
+            over_nmap.init(node_tree, location, lighting_eval_n.inputs['Normal Vector'], geom_n.outputs['Normal'], vcol_group_n.outputs["Vertex Color Alpha"])
+        else:
+            over_nmap.delete(node_tree)
+
+    @staticmethod
+    def set_nmap_over_uv(node_tree, uv_layer):
+        """Set UV layer to over normal map texture in shader.
+
+        :param node_tree: node tree of current shader
+        :type node_tree: bpy.types.NodeTree
+        :param uv_layer: uv layer string used for over nmap texture
+        :type uv_layer: str
+        """
+
+        over_nmap.set_over_uv(node_tree, uv_layer)
+            
+    @staticmethod
+    def set_nmap_over_texture(node_tree, texture):
+        """Set over normal map texture to shader.
+
+        :param node_tree: node tree of current shader
+        :type node_tree: bpy.types.NodeTree
+        :param texture: texture which should be assigned to over nmap texture node
+        :type texture: bpy.types.Texture
+        """
+
+        over_nmap.set_over_texture(node_tree, texture)
+
+    @staticmethod
+    def set_nmap_over_texture_settings(node_tree, settings):
+        """Set over normal map texture settings to shader.
+
+        :param node_tree: node tree of current shader
+        :type node_tree: bpy.types.NodeTree
+        :param settings: binary string of TOBJ settings gotten from tobj import
+        :type settings: str
+        """
+        over_nmap.set_over_texture_settings(node_tree, settings)
 
     @staticmethod
     def set_shininess(node_tree, factor):
@@ -159,7 +228,7 @@ class DifSpecWeightWeightDifSpecWeight(DifSpec):
         :type factor: float
         """
 
-        node_tree.nodes[DifSpecWeightWeightDifSpecWeight.SEC_SHININESS_MIX_NODE].inputs["Color1"].default_value = (factor,) * 4
+        node_tree.nodes[DifSpecWeightWeightDifSpecWeight.SEC_SHININESS_MIX_NODE].inputs["A"].default_value = (factor,) * 4
 
     @staticmethod
     def set_over_texture(node_tree, image):
@@ -198,11 +267,11 @@ class DifSpecWeightWeightDifSpecWeight(DifSpec):
 
     @staticmethod
     def set_aux3(node_tree, aux_property):
-        """Set secondary specular color to shader.
+        """Set second specular and second shininess for the shader.
 
         :param node_tree: node tree of current shader
         :type node_tree: bpy.types.NodeTree
-        :param aux_property: secondary specular color represented with property group
+        :param aux_property: second specular and shininess factor represented with property group
         :type aux_property: bpy.types.IDPropertyGroup
         """
 
@@ -210,7 +279,7 @@ class DifSpecWeightWeightDifSpecWeight(DifSpec):
         node_tree.nodes[DifSpecWeightWeightDifSpecWeight.SEC_SPEC_COL_NODE].outputs["Color"].default_value = color
 
         factor = aux_property[3]["value"]
-        node_tree.nodes[DifSpecWeightWeightDifSpecWeight.SEC_SHININESS_MIX_NODE].inputs["Color2"].default_value = (factor,) * 4
+        node_tree.nodes[DifSpecWeightWeightDifSpecWeight.SEC_SHININESS_MIX_NODE].inputs["B"].default_value = (factor,) * 4
 
     @staticmethod
     def set_reflection2(node_tree, value):
@@ -250,7 +319,7 @@ class DifSpecWeightWeightDifSpecWeight(DifSpec):
 
     @staticmethod
     def set_aux1(node_tree, aux_property):
-        """Set second texture generation scale.
+        """Set second texture generation scale and rotation.
 
         :param node_tree: node tree of current shader
         :type node_tree: bpy.types.NodeTree
@@ -259,5 +328,8 @@ class DifSpecWeightWeightDifSpecWeight(DifSpec):
         """
 
         if tg1.is_set(node_tree):
-
-            tg1.set_scale(node_tree, aux_property[0]['value'], aux_property[1]['value'])
+            # Fix for old float2 aux[1]
+            if (len(aux_property)) == 2:
+                tg1.set_scale(node_tree, aux_property[0]['value'], aux_property[1]['value'], 0)
+            else:
+                tg1.set_scale(node_tree, aux_property[0]['value'], aux_property[1]['value'], aux_property[2]['value'])

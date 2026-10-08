@@ -204,6 +204,7 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
         missing_uv_layers = {}  # stores missing uvs specified by materials of this object
         missing_vcolor = False  # indicates if object is missing vertex color layer
         missing_vcolor_a = False  # indicates if object is missing vertex color alpha layer
+        missing_vfcolor = False   # indicates if object is missing vertex color factor layer
         missing_skinned_verts = set()  # indicates if object is having only partial skin, which is not allowed in our models
         has_unnormalized_skin = False  # indicates if object has vertices which bones weight sum is smaller then one
         last_tangents_uv_layer = None  # stores uv layer for which tangents were calculated, so tangents won't be calculated all over again
@@ -425,23 +426,46 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
 
                     vcol += (alpha * 2,)
 
-                # 5. tangent -> loop.tangent; loop.bitangent_sign -> calc_tangents() has to be called before
+                # 5. vfcol -> vfcol_lay = mesh.color_attributes[2].data; vfcol_lay[loop_i].color
+                vfcol = None
+                vfactor_shader = "piko.alldir" in getattr(getattr(material, "scs_props", None), "mat_effect_name", "")
+                if vfactor_shader:
+                    if _MESH_consts.default_vfactor not in mesh.color_attributes:  # get FACTOR component
+                        vfcol = (1.0,) * 4
+                        missing_vfcolor = True
+                    else:
+                        vfcolors = mesh.color_attributes[_MESH_consts.default_vfactor]
+                        
+                        if vfcolors.domain == 'POINT':
+                            color = Color(vfcolors.data[vert_i].color[:3])
+                            alpha = vfcolors.data[vert_i].color[3]
+                        elif vfcolors.domain == 'CORNER':
+                            color = Color(vfcolors.data[loop_i].color[:3])
+                            alpha = vfcolors.data[loop_i].color[3]
+                        else:
+                            raise TypeError("Invalid vertex color domain type!")
+
+                        color = color.from_scene_linear_to_srgb()
+
+                        vfcol = tuple(round(value * 255) / 1.0 for value in (*color, alpha))
+
+                # 6. tangent -> loop.tangent; loop.bitangent_sign -> calc_tangents() has to be called before
                 if pim_materials[pim_mat_name].get_nmap_uv_name():  # calculate tangents only if needed
                     tangent = (tangent_transf_mat @ loop.tangent).normalized()
                     tangent = (tangent[0], tangent[1], tangent[2], loop.bitangent_sign)
                 else:
                     tangent = None
 
-                # 6. There we go, vertex data collected! Now create internal vertex index, for triangle and skin stream construction
+                # 7. There we go, vertex data collected! Now create internal vertex index, for triangle and skin stream construction
                 # Construct unique vertex index - donated by mesh and vertex index, as we may export more mesh objects into same piece,
                 # thus only vertex index wouldn't be unique representation.
                 unique_vert_i = "%i|%i" % (mesh_i, vert_i)
-                piece_vert_index = mesh_piece.add_vertex(unique_vert_i, position, normal, uvs, uvs_aliases, vcol, tangent)
+                piece_vert_index = mesh_piece.add_vertex(unique_vert_i, position, normal, uvs, uvs_aliases, vcol, vfcol, tangent)
 
-                # 7. Add vertex to triangle creation list
+                # 8. Add vertex to triangle creation list
                 triangle_pvert_indices.append(piece_vert_index)
 
-                # 8. Get skinning data for vertex and save it to skin stream
+                # 9. Get skinning data for vertex and save it to skin stream
                 if is_skin_used:
                     bone_weights = {}
                     bone_weights_sum = 0
@@ -463,7 +487,7 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
                         if bone_weights_sum < 1:
                             has_unnormalized_skin = True
 
-                # 9. Terrain Points: save vertex to terrain points storage, if present in correct vertex group
+                # 10. Terrain Points: save vertex to terrain points storage, if present in correct vertex group
                 if has_terrain_points:
                     for group in mesh.vertices[vert_i].groups:
 
@@ -526,6 +550,9 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
         if missing_vcolor_a:
             lprint("W Object %r is missing vertex color alpha layer with name %r! Default alpha will be exported (0.5)",
                    (mesh_obj.name, _MESH_consts.default_vcol + _MESH_consts.vcol_a_suffix))
+        if missing_vfcolor:
+            lprint("W Object %r is missing vertex factor color layer with name %r! Default factor will be exported (0.0)",
+                   (mesh_obj.name, _MESH_consts.default_vfactor))
         if len(missing_skinned_verts) > 0:
             lprint("E Object %r from SCS Root %r has %s vertices which are not skinned to any bone, expect errors during conversion!",
                    (mesh_obj.name, root_object.name, len(missing_skinned_verts)))

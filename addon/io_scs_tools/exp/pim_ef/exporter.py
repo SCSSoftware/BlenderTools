@@ -177,6 +177,7 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
         missing_uv_layers = {}  # stores missing uvs specified by materials of this object
         missing_vcolor = False  # indicates if object is missing vertex color layer
         missing_vcolor_a = False  # indicates if object is missing vertex color alpha layer
+        missing_vfcolor = False  # indicates if object is missing vertex factor color layer
         missing_skinned_verts = set()  # indicates if object is having only partial skin, which is not allowed in our models
         has_unnormalized_skin = False  # indicates if object has vertices which bones weight sum is smaller then one
 
@@ -220,6 +221,8 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
             uvs_names = collections.OrderedDict()
             vert_rgbas = []
             rgbas_names = collections.OrderedDict()
+            vert_factors = []
+            factors_names = collections.OrderedDict()
             tex_coord_alias_map = pim_materials[pim_mat_name].get_tex_coord_map()
             for loop_i in poly.loop_indices:
 
@@ -312,11 +315,40 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
                 rgbas.append(vcol)
                 rgbas_names[_MESH_consts.default_vcol] = True
 
+                # 5. vfcol -> vfcol_lay = mesh.color_attributes[2].data; vfcol_lay[loop_i].color
+                factors = []
+                vfactor_shader = "piko.alldir" in getattr(getattr(material, "scs_props", None), "mat_effect_name", "")
+                if vfactor_shader:
+                    if _MESH_consts.default_vfactor not in mesh.color_attributes:  # get FACTOR component
+                        vfcol = (1.0,) * 4
+                        missing_vfcolor = True
+                    else:
+                        vfcolors = mesh.color_attributes[_MESH_consts.default_vfactor]
+
+                        if vfcolors.domain == 'POINT':
+                            color = Color(vfcolors.data[vert_i].color[:3])
+                            alpha = vfcolors.data[vert_i].color[3]
+                        elif vfcolors.domain == 'CORNER':
+                            color = Color(vfcolors.data[loop_i].color[:3])
+                            alpha = vfcolors.data[loop_i].color[3]
+                        else:
+                            raise TypeError("Invalid vertex color domain type!")
+
+                        color = color.from_scene_linear_to_srgb()
+
+                        # round and convert from 0.0-1.0 to 0-255 range, then make it float again
+                        vfcol = tuple(round(value * 255) / 1.0 for value in (*color, alpha))
+
+                    factors.append(vfcol)
+                    factors_names[_MESH_consts.default_vfactor] = True
+
+                vert_factors.append(factors)
+
                 # export rest of the vertex colors too (also multiply with 2 and with vcol multiplicator)
                 for vcol_layer in mesh.color_attributes:
 
                     # we already computed thoose so ignore them
-                    if vcol_layer.name in [_MESH_consts.default_vcol, _MESH_consts.default_vcol + _MESH_consts.vcol_a_suffix]:
+                    if vcol_layer.name in [_MESH_consts.default_vcol, _MESH_consts.default_vcol + _MESH_consts.vcol_a_suffix, _MESH_consts.default_vfactor]:
                         continue
 
                     color = vcol_layer.data[loop_i].color
@@ -402,7 +434,9 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
                                        list(uvs_names.keys()),
                                        uvs_aliases,
                                        tuple(vert_rgbas[::winding_order]),
-                                       list(rgbas_names.keys())
+                                       list(rgbas_names.keys()),
+                                       tuple(vert_factors[::winding_order]),
+                                       list(factors_names.keys())
                                        )
 
         # as we captured all hard edges collect them now and put it into Piece
@@ -437,6 +471,9 @@ def execute(dirpath, name_suffix, root_object, armature_object, skeleton_filepat
         if missing_vcolor_a:
             lprint("W Object %r is missing vertex color alpha layer with name %r! Default alpha will be exported (0.5)",
                    (mesh_obj.name, _MESH_consts.default_vcol + _MESH_consts.vcol_a_suffix))
+        if missing_vfcolor:
+            lprint("W Object %r is missing vertex factor color layer with name %r! Default RGBA color will be exported (0.0, 0.0, 0.0, 0.0)!",
+                   (mesh_obj.name, _MESH_consts.default_vfactor))
         if len(missing_skinned_verts) > 0:
             lprint("E Object %r from SCS Root %r has %s vertices which are not skinned to any bone, expect errors during conversion!",
                    (mesh_obj.name, root_object.name, len(missing_skinned_verts)))

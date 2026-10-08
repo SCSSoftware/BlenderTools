@@ -19,7 +19,7 @@
 # Copyright (C) 2015-2021: SCS Software
 
 import bpy
-from io_scs_tools.utils.printout import lprint
+from ...utils.printout import lprint
 
 
 def setup_nodes(material, effect, attr_dict, tex_dict, tex_settings_dict, recreate):
@@ -59,16 +59,16 @@ def setup_nodes(material, effect, attr_dict, tex_dict, tex_settings_dict, recrea
     if (effect.endswith(".add") or ".add." in effect) and effect.rfind(".add.env") != effect.rfind(".add"):
         flavors["blend_add"] = True
 
-    if effect.endswith(".tsnmapuv") or ".tsnmapuv." in effect:
-        flavors["nmap"] = True
+    if effect.endswith(".tsnmapuv2") or ".tsnmapuv2." in effect:
+        flavors["nmap2"] = True
 
-    if effect.endswith(".tsnmapuv16") or ".tsnmapuv16." in effect:
+    if effect.endswith(".tsnmapuv") or ".tsnmapuv." in effect:
         flavors["nmap"] = True
 
     if effect.endswith(".tsnmap") or ".tsnmap." in effect:
         flavors["nmap"] = True
 
-    if effect.endswith(".tsnmap16") or ".tsnmap16." in effect:
+    if effect.endswith(".tsnmapcalc") or ".tsnmapcalc." in effect:
         flavors["nmap"] = True
 
     if effect.endswith(".indenv") or ".indenv." in effect:
@@ -76,6 +76,12 @@ def setup_nodes(material, effect, attr_dict, tex_dict, tex_settings_dict, recrea
 
     if effect.endswith(".linv") or ".linv." in effect:
         flavors["linv"] = True
+
+    if effect.endswith(".oinv") or ".oinv." in effect:
+        flavors["oinv"] = True
+
+    if effect.endswith(".opasrc01") or ".opasrc01." in effect:
+        flavors["opasrc1"] = True
 
     if effect.endswith(".lvcol") or ".lvcol." in effect:
         flavors["lvcol"] = True
@@ -92,14 +98,14 @@ def setup_nodes(material, effect, attr_dict, tex_dict, tex_settings_dict, recrea
     if effect.endswith(".paint") or ".paint." in effect:
         flavors["paint"] = True
 
+    if effect.endswith(".lit") or ".lit." in effect:
+        flavors["lit"] = True
+
     if effect.endswith(".decal.over") and ".retroreflective" in effect:
         flavors["retroreflective_decal"] = True
 
     if effect.endswith(".stars") and "sky" in effect:
         flavors["sky_stars"] = True
-
-    if effect.endswith(".back") and "sky" in effect:
-        flavors["sky_back"] = True
 
     if effect.endswith(".fadesheet") or ".fadesheet." in effect:
         flavors["fadesheet"] = True
@@ -107,7 +113,10 @@ def setup_nodes(material, effect, attr_dict, tex_dict, tex_settings_dict, recrea
     if effect.endswith(".flipsheet") or ".flipsheet." in effect:
         flavors["flipsheet"] = True
 
-    __setup_nodes__(material, effect, attr_dict, tex_dict, tex_settings_dict, {}, flavors, recreate)
+    if effect.endswith(".nocull") or ".nocull." in effect:
+        flavors["nocull"] = True
+
+    __setup_nodes__(material, effect, attr_dict, tex_dict, tex_settings_dict, {}, {}, flavors, recreate)
 
 
 def set_attribute(material, attr_type, attr_value):
@@ -120,7 +129,7 @@ def set_attribute(material, attr_type, attr_value):
     :param attr_value: value which should be set to attribute in shader
     :type attr_value: object
     """
-    __setup_nodes__(material, material.scs_props.mat_effect_name, {attr_type: attr_value}, {}, {}, {}, {}, False)
+    __setup_nodes__(material, material.scs_props.mat_effect_name, {attr_type: attr_value}, {}, {}, {}, {}, {}, False)
 
 
 def set_texture(material, tex_type, image):
@@ -133,7 +142,7 @@ def set_texture(material, tex_type, image):
     :param image: blender texture image object
     :type image: bpy.types.Image
     """
-    __setup_nodes__(material, material.scs_props.mat_effect_name, {}, {tex_type: image}, {}, {}, {}, False)
+    __setup_nodes__(material, material.scs_props.mat_effect_name, {}, {tex_type: image}, {}, {}, {}, {}, False)
 
 
 def set_texture_settings(material, tex_type, settings):
@@ -146,7 +155,7 @@ def set_texture_settings(material, tex_type, settings):
     :param settings: binary string of TOBJ settings gotten from tobj import
     :type settings: str
     """
-    __setup_nodes__(material, material.scs_props.mat_effect_name, {}, {}, {tex_type: settings}, {}, {}, False)
+    __setup_nodes__(material, material.scs_props.mat_effect_name, {}, {}, {tex_type: settings}, {}, {}, {}, False)
 
 
 def set_uv(material, tex_type, uv_layer, tex_coord):
@@ -185,10 +194,24 @@ def set_uv(material, tex_type, uv_layer, tex_coord):
                 is_valid_input = False
 
     if is_valid_input:
-        __setup_nodes__(material, material.scs_props.mat_effect_name, {}, {}, {}, {tex_type: uv_layer}, {}, False)
+        __setup_nodes__(material, material.scs_props.mat_effect_name, {}, {}, {}, {tex_type: uv_layer}, {}, {}, False)
 
+def set_mapping(material, mapping_type, uv_layer, tex_coord):
+    """Set UV layer to given texture type in material.
 
-def __setup_nodes__(material, effect, attr_dict, tex_dict, tex_settings_dict, uvs_dict, flavors_dict, recreate):
+    :param material: blender material
+    :type material: bpy.types.Material
+    :param mapping_type: type of SCS mapping to set
+    :type mapping_type: str
+    :param uv_layer: uv layer name which should be assigned to this texture
+    :type uv_layer: str
+    :param tex_coord: index of tex_coord this mapping uses
+    :type tex_coord: int
+    """
+
+    __setup_nodes__(material, material.scs_props.mat_effect_name, {}, {}, {}, {}, {mapping_type: uv_layer}, {}, False)
+
+def __setup_nodes__(material, effect, attr_dict, tex_dict, tex_settings_dict, uvs_dict, mapping_dict, flavors_dict, recreate):
     """Wrapping setup of nodes for given material in central function.
      It properly setup nodes for 3D view visualization in real time.
 
@@ -204,6 +227,8 @@ def __setup_nodes__(material, effect, attr_dict, tex_dict, tex_settings_dict, uv
     :type tex_settings_dict: dict
     :param uvs_dict: shader uv layers which should be set on given material; entry: (texture_type: string of uv layer)
     :type uvs_dict: dict
+    :param mapping_dict: shader uv layers which should be set on given material; entry: (texture_type: string of uv layer)
+    :type mapping_dict: dict
     :param flavors_dict: shader flavors which should be set on given material; entry: (flavor_type: flavor_data)
     :type flavors_dict: dict
     :param recreate: flag indicating if shader nodes should be recreated. Should be triggered if effect name changes.
@@ -262,6 +287,14 @@ def __setup_nodes__(material, effect, attr_dict, tex_dict, tex_settings_dict, uv
         else:
             lprint("D Unsupported set_uv with type %r called on shader %r", (tex_type, shader_module.get_name()))
 
+    # set mappings
+    for mapping_type in mapping_dict:
+        shader_set_mapping = getattr(shader_module, "set_" + mapping_type + "_mapping", None)
+        if shader_set_mapping:
+            shader_set_mapping(node_tree, mapping_dict[mapping_type])
+        else:
+            lprint("D Unsupported set_mapping with type %r called on shader %r", (mapping_type, shader_module.get_name()))
+
     # finalize shader on recreate (set material blending method, backface culling etc.)
     if recreate:
         shader_module.finalize(node_tree, material)
@@ -297,8 +330,7 @@ def __get_shader__(effect, report_not_found, mat_name):
 
     shaderclass = None
     if effect.startswith("eut2."):
-
-        from io_scs_tools.internals.shaders import eut2
+        from . import eut2
 
         shaderclass = eut2.get_shader(effect[5:])
 
@@ -310,7 +342,7 @@ def __get_shader__(effect, report_not_found, mat_name):
                    "3D viewport shading will fallback to 'dif.spec'",
                    (effect, mat_name))
 
-        from io_scs_tools.internals.shaders.eut2.dif_spec import DifSpec
+        from .eut2.dif_spec import DifSpec
 
         return DifSpec
 

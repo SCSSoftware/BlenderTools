@@ -129,22 +129,25 @@ class Water(Dif, StdAddEnv):
         normal_normalize_n.location = (start_pos_x + pos_x_shift * 7, start_pos_y + 700)
         normal_normalize_n.operation = "NORMALIZE"
 
-        near_horizon_env_mix_n = node_tree.nodes.new("ShaderNodeMixRGB")
+        near_horizon_env_mix_n = node_tree.nodes.new("ShaderNodeMix")
         near_horizon_env_mix_n.name = near_horizon_env_mix_n.label = Water.NEAR_HORIZON_ENV_MIX_NODE
         near_horizon_env_mix_n.location = (start_pos_x + pos_x_shift * 7, start_pos_y + 2100)
+        near_horizon_env_mix_n.data_type = "RGBA"
         near_horizon_env_mix_n.blend_type = "MIX"
-        near_horizon_env_mix_n.inputs['Color2'].default_value = (0.0,) * 4  # far horizon is without env, thus lerp to zero
+        near_horizon_env_mix_n.inputs['B'].default_value = (0.0,) * 4  # far horizon is without env, thus lerp to zero
 
-        near_horizon_mix_n = node_tree.nodes.new("ShaderNodeMixRGB")
+        near_horizon_mix_n = node_tree.nodes.new("ShaderNodeMix")
         near_horizon_mix_n.name = near_horizon_mix_n.label = Water.NEAR_HORIZON_MIX_NODE
         near_horizon_mix_n.location = (start_pos_x + pos_x_shift * 7, start_pos_y + 1700)
+        near_horizon_mix_n.data_type = "RGBA"
         near_horizon_mix_n.blend_type = "MIX"
 
-        normal_scramble_n = node_tree.nodes.new("ShaderNodeMixRGB")
+        normal_scramble_n = node_tree.nodes.new("ShaderNodeMix")
         normal_scramble_n.name = normal_scramble_n.label = Water.LAY0_LAY1_NORMAL_SCRAMBLE_NODE
         normal_scramble_n.location = (start_pos_x + pos_x_shift * 8, start_pos_y + 1200)
+        normal_scramble_n.data_type = "RGBA"
         normal_scramble_n.blend_type = "MIX"
-        normal_scramble_n.inputs['Color1'].default_value = (0.0, 0.0, 1.0, 0.0)  # WATER_V_NORMAL
+        normal_scramble_n.inputs['A'].default_value = (0.0, 0.0, 1.0, 0.0)  # WATER_V_NORMAL
 
         # links creation
         # pass 2
@@ -158,23 +161,23 @@ class Water(Dif, StdAddEnv):
         node_tree.links.new(horizon_mix_n.inputs[0], vcol_mult_n.outputs[0])
         node_tree.links.new(horizon_mix_n.inputs[1], horizon_col_n.outputs['Color'])
 
-        node_tree.links.new(normal_scramble_n.inputs['Fac'], mix_factor_n.outputs['Scramble Mix Factor'])
-        node_tree.links.new(normal_scramble_n.inputs['Color2'], normal_normalize_n.outputs['Vector'])
+        node_tree.links.new(normal_scramble_n.inputs['Factor'], mix_factor_n.outputs['Scramble Mix Factor'])
+        node_tree.links.new(normal_scramble_n.inputs['B'], normal_normalize_n.outputs['Vector'])
 
         # pass 5
-        node_tree.links.new(near_horizon_env_mix_n.inputs['Fac'], mix_factor_n.outputs['Mix Factor'])
-        node_tree.links.new(near_horizon_env_mix_n.inputs['Color1'], near_mix_n.outputs[0])
+        node_tree.links.new(near_horizon_env_mix_n.inputs['Factor'], mix_factor_n.outputs['Mix Factor'])
+        node_tree.links.new(near_horizon_env_mix_n.inputs['A'], near_mix_n.outputs[0])
 
-        node_tree.links.new(near_horizon_mix_n.inputs['Fac'], mix_factor_n.outputs['Mix Factor'])
-        node_tree.links.new(near_horizon_mix_n.inputs['Color1'], near_mix_n.outputs[0])
-        node_tree.links.new(near_horizon_mix_n.inputs['Color2'], horizon_mix_n.outputs[0])
+        node_tree.links.new(near_horizon_mix_n.inputs['Factor'], mix_factor_n.outputs['Mix Factor'])
+        node_tree.links.new(near_horizon_mix_n.inputs['A'], near_mix_n.outputs[0])
+        node_tree.links.new(near_horizon_mix_n.inputs['B'], horizon_mix_n.outputs[0])
 
         # pass 6
-        node_tree.links.new(lighting_eval_n.inputs['Normal Vector'], normal_scramble_n.outputs['Color'])
+        node_tree.links.new(lighting_eval_n.inputs['Normal Vector'], normal_scramble_n.outputs['Result'])
 
         # pass 7
-        node_tree.links.new(compose_lighting_n.inputs['Env Color'], near_horizon_env_mix_n.outputs['Color'])
-        node_tree.links.new(compose_lighting_n.inputs['Diffuse Color'], near_horizon_mix_n.outputs['Color'])
+        node_tree.links.new(compose_lighting_n.inputs['Env Color'], near_horizon_env_mix_n.outputs['Result'])
+        node_tree.links.new(compose_lighting_n.inputs['Diffuse Color'], near_horizon_mix_n.outputs['Result'])
 
         # add environment pass and normal maps
         StdAddEnv.add(node_tree,
@@ -182,7 +185,7 @@ class Water(Dif, StdAddEnv):
                       node_tree.nodes[Dif.SPEC_COL_NODE].outputs['Color'],
                       None,
                       node_tree.nodes[Water.LIGHTING_EVAL_NODE].outputs['Normal'],
-                      node_tree.nodes[Water.NEAR_HORIZON_ENV_MIX_NODE].inputs['Color1'])
+                      node_tree.nodes[Water.NEAR_HORIZON_ENV_MIX_NODE].inputs['A'])
 
         node_tree.nodes[StdAddEnv.ADD_ENV_GROUP_NODE].inputs['Base Texture Alpha'].default_value = 1  # set full reflection strength
 
@@ -325,8 +328,8 @@ class Water(Dif, StdAddEnv):
         _LAYER0_NMAP_MAPPING_NODE = Water.LAYER0_NMAP_UID + Water.POSTFIX_MAPPING_NODE
 
         layer0_mapping_n = node_tree.nodes[_LAYER0_NMAP_MAPPING_NODE]
-        layer0_mapping_n.inputs['Scale'].default_value[0] = 1 / aux_property[2]['value']
-        layer0_mapping_n.inputs['Scale'].default_value[1] = 1 / aux_property[3]['value']
+        layer0_mapping_n.inputs['Scale'].default_value[0] = 1 / aux_property[2]['value'] if aux_property[2]['value'] != 0 else 0.1
+        layer0_mapping_n.inputs['Scale'].default_value[1] = 1 / aux_property[3]['value'] if aux_property[3]['value'] != 0 else 0.1
 
         yaw = math.radians(aux_property[0]['value'])
         water_stream_n = node_tree.nodes[Water.WATER_STREAM_NODE]
@@ -346,8 +349,8 @@ class Water(Dif, StdAddEnv):
         _LAYER1_NMAP_MAPPING_NODE = Water.LAYER1_NMAP_UID + Water.POSTFIX_MAPPING_NODE
 
         layer1_mapping_n = node_tree.nodes[_LAYER1_NMAP_MAPPING_NODE]
-        layer1_mapping_n.inputs['Scale'].default_value[0] = 1 / aux_property[2]['value']
-        layer1_mapping_n.inputs['Scale'].default_value[1] = 1 / aux_property[3]['value']
+        layer1_mapping_n.inputs['Scale'].default_value[0] = 1 / aux_property[2]['value'] if aux_property[2]['value'] != 0 else 0.1
+        layer1_mapping_n.inputs['Scale'].default_value[1] = 1 / aux_property[3]['value'] if aux_property[3]['value'] != 0 else 0.1
 
         yaw = math.radians(aux_property[0]['value'])
         water_stream_n = node_tree.nodes[Water.WATER_STREAM_NODE]

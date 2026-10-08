@@ -21,15 +21,15 @@
 import bpy
 import os
 from bpy.types import Panel
-from io_scs_tools.consts import Mesh as _MESH_consts
-from io_scs_tools.internals import shader_presets as _shader_presets
-from io_scs_tools.internals import looks as _looks
-from io_scs_tools.utils import material as _material_utils
-from io_scs_tools.utils import object as _object_utils
-from io_scs_tools.utils import path as _path_utils
-from io_scs_tools.utils import get_scs_globals as _get_scs_globals
-from io_scs_tools.utils import get_scs_inventories as _get_scs_inventories
-from io_scs_tools.ui import shared as _shared
+from . import shared as _shared
+from ..utils import path as _path_utils
+from ..utils import object as _object_utils
+from ..utils import material as _material_utils
+from ..utils import get_scs_globals as _get_scs_globals
+from ..utils import get_scs_inventories as _get_scs_inventories
+from ..consts import Mesh as _MESH_consts
+from ..internals import looks as _looks
+from ..internals import shader_presets as _shader_presets
 
 _UI_SPLIT_PERC = 0.5
 
@@ -175,59 +175,42 @@ class SCS_TOOLS_PT_Material(_shared.HeaderIconPanel, _MaterialPanelBlDefs, Panel
             column = layout.column(align=True)
             column.alignment = "LEFT"
 
-            # draw switching operator for each flavor (if there is more variants draw operator for each variant)
-            enabled_flavors = {}  # store enabled flavors, for later analyzing which rows should be disabled
-            """:type: dict[int, io_scs_tools.internals.shader_presets.ui_shader_preset_item.FlavorVariant]"""
-            flavor_rows = []  # store row UI layout of flavor operators, for later analyzing which rows should be disabled
+            # 1. Collect currently active flavor variants
+            active_flavors = {}
             for i, flavor in enumerate(preset.flavors):
+                for variant in flavor.variants:
+                    if ("." + variant.suffix + ".") in effect_flavor_part or effect_flavor_part.endswith("." + variant.suffix):
+                        active_flavors[i] = variant.suffix
 
+            # 2. Draw switching operator for each flavor (if there is more variants draw operator for each variant)
+            for i, flavor in enumerate(preset.flavors):
+                
                 row = column.row(align=True)
-                flavor_rows.append(row)
 
                 for flavor_variant in flavor.variants:
 
-                    is_in_middle = "." + flavor_variant.suffix + "." in effect_flavor_part
-                    is_on_end = effect_flavor_part.endswith("." + flavor_variant.suffix)
-                    flavor_enabled = is_in_middle or is_on_end
+                    # is that flavor active?
+                    is_active = ("." + flavor_variant.suffix + ".") in effect_flavor_part or effect_flavor_part.endswith("." + flavor_variant.suffix)
 
-                    icon = _shared.get_on_off_icon(flavor_enabled)
-                    props = row.operator("material.scs_tools_switch_flavor", text=flavor_variant.suffix, icon=icon, depress=flavor_enabled)
+                    # simulate turning on the flavor
+                    simulated = []
+                    for j, f in enumerate(preset.flavors):
+                        if i == j:
+                            simulated.append(flavor_variant.suffix)
+                        else:
+                            suffix = active_flavors.get(j)
+                            if suffix:
+                                simulated.append(suffix)
+                    new_flavor_str = "." + ".".join(simulated) if simulated else ""
+
+                    is_compatible = _shader_presets.has_section(preset.name, new_flavor_str)
+
+                    sub = row.row(align=True)
+                    sub.enabled = is_compatible or is_active
+                    icon = _shared.get_on_off_icon(is_active)
+                    props = sub.operator("material.scs_tools_switch_flavor", text=flavor_variant.suffix, icon=icon, depress=is_active)
                     props.flavor_name = flavor_variant.suffix
-                    props.flavor_enabled = flavor_enabled
-
-                    if flavor_enabled:
-                        enabled_flavors[i] = flavor_variant
-
-            # now as we drawn the flavors and we know which ones are enabled,
-            # search the ones that are not compatible with currently enabled flavors and disable them in UI!
-            for i, flavor in enumerate(preset.flavors):
-
-                # enabled flavors have to stay enabled so skip them
-                if i in enabled_flavors:
-                    continue
-
-                for flavor_variant in flavor.variants:
-
-                    # 1. construct proposed new flavor string:
-                    # combine strings of enabled flavors and current flavor variant
-                    new_flavor_str = ""
-                    curr_flavor_added = False
-                    for enabled_i in enabled_flavors.keys():
-
-                        if i < enabled_i and not curr_flavor_added:
-                            new_flavor_str += "." + flavor_variant.suffix
-                            curr_flavor_added = True
-
-                        new_flavor_str += "." + enabled_flavors[enabled_i].suffix
-
-                    if not curr_flavor_added:
-                        new_flavor_str += "." + flavor_variant.suffix
-
-                    # 2. check if proposed new flavor combination exists in cache:
-                    # if not then row on current flavor index has to be disabled
-                    if not _shader_presets.has_section(preset.name, new_flavor_str):
-                        flavor_rows[i].enabled = False
-                        break
+                    props.flavor_enabled = is_active
 
     @staticmethod
     def draw_parameters(layout, mat, scs_inventories, split_perc, is_imported_shader=False):
@@ -244,7 +227,9 @@ class SCS_TOOLS_PT_Material(_shared.HeaderIconPanel, _MaterialPanelBlDefs, Panel
             active_vcolors = bpy.context.active_object.data.color_attributes
             is_valid_vcolor = _MESH_consts.default_vcol in active_vcolors
             is_valid_vcolor_a = _MESH_consts.default_vcol + _MESH_consts.vcol_a_suffix in active_vcolors
-            if not is_valid_vcolor or not is_valid_vcolor_a:
+            is_valid_vfactor = _MESH_consts.default_vfactor in active_vcolors
+            is_valid_vfactor_shader = ("piko.alldir") in mat.scs_props.mat_effect_name
+            if not is_valid_vcolor or not is_valid_vcolor_a or (not is_valid_vfactor and is_valid_vfactor_shader):
 
                 vcol_missing_box = layout.box()
 
@@ -259,6 +244,9 @@ class SCS_TOOLS_PT_Material(_shared.HeaderIconPanel, _MaterialPanelBlDefs, Panel
 
                 if not is_valid_vcolor_a:
                     info_msg += "-> '" + _MESH_consts.default_vcol + _MESH_consts.vcol_a_suffix + "'\n"
+
+                if not is_valid_vfactor and is_valid_vfactor_shader:
+                    info_msg += "-> '" + _MESH_consts.default_vfactor + "'\n"
 
                 info_msg += "You can use 'Add Vertex Colors To (Active/All)' button to add needed layers or add layers manually."
                 _shared.draw_warning_operator(col, "Vertex Colors Missing", info_msg, text="More Info", icon='INFO')
@@ -297,6 +285,7 @@ class SCS_TOOLS_PT_Material(_shared.HeaderIconPanel, _MaterialPanelBlDefs, Panel
             is_aliasable = ('textures' in shader_data and
                             (
                                     len(shader_data["textures"]) == 1 or
+                                    (len(shader_data["textures"]) == 2 and "tsnmap" in mat.scs_props.mat_effect_name) or
                                     (len(shader_data["textures"]) == 2 and "dif.spec.weight.mult2" in mat.scs_props.mat_effect_name)
                             ))
 
@@ -309,7 +298,7 @@ class SCS_TOOLS_PT_Material(_shared.HeaderIconPanel, _MaterialPanelBlDefs, Panel
                                             "-> '/material/road'\n"
                                             "-> '/material/terrain'\n"
                                             "-> '/material/custom'\n"
-                                            "Additional requirement for aliasing is also single texture material or\n"
+                                            "Additional requirement for aliasing is also single texture material (excluding nmap) or\n"
                                             "exceptionally multi texture material of 'dif.spec.weight.mult2' family.\n\n"
                                             "Currently aliasing can not be done because:")
 
@@ -498,7 +487,7 @@ class SCS_TOOLS_PT_MaterialAttributes(_MaterialPanelBlDefs, Panel):
         elif tag == 'env_factor':
             value_layout.prop(mat.scs_props, 'shader_attribute_env_factor', text="")
         elif tag == 'fresnel':
-            value_layout.column().prop(mat.scs_props, 'shader_attribute_fresnel', text="")
+            value_layout.prop(mat.scs_props, 'shader_attribute_fresnel', text="")
         elif tag == 'tint':
             value_layout.prop(mat.scs_props, 'shader_attribute_tint', text="")
         elif tag == 'tint_opacity':
@@ -587,6 +576,8 @@ class SCS_TOOLS_PT_MaterialTextures(_MaterialPanelBlDefs, Panel):
         tag_id_string = tag_id[1]
         texture_type = tag_id_string[8:]
         shader_texture_id = str('shader_' + tag_id_string)
+        frendly_tag = texture.get('FriendlyTag', None)
+        texture_label = frendly_tag if frendly_tag else str(texture_type.title())
 
         if hide_state == 'True':
             return
@@ -594,7 +585,7 @@ class SCS_TOOLS_PT_MaterialTextures(_MaterialPanelBlDefs, Panel):
         texture_box = layout.box().column()  # create column for compact display with alignment
 
         header_split = texture_box.row(align=True)
-        header_split.label(text=texture_type.title(), icon='TEXTURE')
+        header_split.label(text=texture_label, icon='TEXTURE')
 
         if hasattr(mat.scs_props, shader_texture_id):
 
@@ -759,8 +750,7 @@ class SCS_TOOLS_PT_MaterialTextures(_MaterialPanelBlDefs, Panel):
                 active_propname="active_custom_tex_coord",
                 rows=3,
                 maxrows=5,
-                type='DEFAULT',
-                columns=9
+                type='DEFAULT'
             )
 
             col = row.column(align=True)
@@ -770,6 +760,104 @@ class SCS_TOOLS_PT_MaterialTextures(_MaterialPanelBlDefs, Panel):
         col = self.layout.column(align=True)
         for texture_key in sorted(self.textures_data.keys()):
             self.draw_texture_item(col, mat, _UI_SPLIT_PERC, self.textures_data[texture_key], self.is_imported_shader)
+
+
+class SCS_TOOLS_PT_MaterialMappings(_MaterialPanelBlDefs, Panel):
+    """Draws additional mappings of current material in sub-panel."""
+    bl_parent_id = SCS_TOOLS_PT_Material.__name__
+    bl_label = "Material Mappings"
+
+    @classmethod
+    def poll(cls, context):
+        if not _MaterialPanelBlDefs.poll(context):
+            return False
+
+        mat = context.active_object.active_material
+        shader_data = mat.get("scs_shader_attributes", {})
+
+        if len(shader_data) == 0:
+            return False
+
+        if 'mappings' not in shader_data:
+            return False
+
+        if len(shader_data["mappings"]) == 0:
+            return False
+
+        if context.active_object.type != 'MESH':
+            return False
+
+        cls.mappings_data = shader_data['mappings']
+
+        return True
+
+    @staticmethod
+    def draw_mapping_item(layout, mat, split_perc, mapping):
+        """Draws mapping box with it's properties.
+
+        :param layout: layout to draw attribute to
+        :type layout: bpy.types.UILayout
+        :param mat: material from which data should be displayed
+        :type mat: bpy.types.Material
+        :param split_perc: split percentage for attribute name/value
+        :type split_perc: float
+        :param mapping: mapping data
+        :type mapping: dict
+        """
+
+        tag = mapping.get('Tag', None)
+        shader_mapping_id = str('shader_mapping_' + tag)
+        frendly_tag = mapping.get('FriendlyTag', None)
+        mapping_label = frendly_tag if frendly_tag else str(tag)
+
+        #lprint("D ----- Shader: %s", (shader_mapping_id,))
+
+        mapping_box = layout.box().column()  # create column for compact display with alignment
+        mapping_row = mapping_box.row(align=True)
+        item_space = mapping_row.split(factor=split_perc, align=True)
+        tag_layout = item_space.row()
+        tag_layout.label(text=mapping_label, icon='UV')
+
+        if hasattr(mat.scs_props, shader_mapping_id):
+            # UV LAYERS FOR MAPPING
+            uv_mappings = getattr(mat.scs_props, shader_mapping_id, [])
+
+            if len(uv_mappings) > 0:
+
+                layout_box_col = item_space.column(align=True)
+
+                for mapping in uv_mappings:
+
+                    item_space_row = layout_box_col.row(align=True)
+
+                    if mapping.value and mapping.value != "" and mapping.value in bpy.context.active_object.data.uv_layers:
+                        icon = 'GROUP_UVS'
+                    else:
+                        icon = 'ERROR'
+
+                    item_space_row.prop_search(
+                        data=mapping,
+                        property="value",
+                        search_data=bpy.context.active_object.data,
+                        search_property='uv_layers',
+                        text="",
+                        icon=icon,
+                    )
+
+        else:
+            layout_box_col = item_space.column(align=True)
+            mapping_row.label(text="Unsupported Shader Mapping Type!", icon='ERROR')
+
+    def draw(self, context):
+        mat = context.active_object.active_material
+
+        # DESYNCED LOOK!
+        if self.draw_desynced_look(self.layout, context):
+            return
+
+        col = self.layout.column(align=True)
+        for mapping_key in sorted(self.mappings_data.keys()):
+            self.draw_mapping_item(col, mat, _UI_SPLIT_PERC, self.mappings_data[mapping_key])
 
 
 class SCS_TOOLS_PT_LooksOnMaterial(_shared.HeaderIconPanel, _MaterialPanelBlDefs, Panel):
@@ -795,6 +883,7 @@ class SCS_TOOLS_PT_LooksOnMaterial(_shared.HeaderIconPanel, _MaterialPanelBlDefs
 classes = (
     SCS_TOOLS_PT_Material,
     SCS_TOOLS_PT_MaterialAttributes,
+    SCS_TOOLS_PT_MaterialMappings,
     SCS_TOOLS_PT_MaterialTextures,
     SCS_TOOLS_PT_LooksOnMaterial,
     SCS_TOOLS_UL_MaterialCustomMappingSlot,
@@ -805,7 +894,7 @@ def register():
     for cls in classes:
         bpy.utils.register_class(cls)
 
-    from io_scs_tools import SCS_TOOLS_MT_MainMenu
+    from .. import SCS_TOOLS_MT_MainMenu
     SCS_TOOLS_MT_MainMenu.append_props_entry("Material Properties", SCS_TOOLS_PT_Material.__name__)
 
 

@@ -24,12 +24,12 @@ import re
 import math
 from bpy_extras import object_utils as bpy_object_utils
 from mathutils import Vector, Quaternion
-from io_scs_tools.utils.printout import lprint
-from io_scs_tools.utils import math as _math
-from io_scs_tools.utils import name as _name
-from io_scs_tools.utils import mesh as _mesh
-from io_scs_tools.utils import convert as _convert
-from io_scs_tools.utils import get_scs_globals as _get_scs_globals
+from . import math as _math
+from . import name as _name
+from . import mesh as _mesh
+from . import convert as _convert
+from . import get_scs_globals as _get_scs_globals
+from .printout import lprint
 
 
 def get_scs_root(obj):
@@ -903,13 +903,15 @@ def is_lamp_hookup(hookup_id):
     unit_tokens = re.split(r'\.', hookup_id)
 
     # lamp type payload:
-    # 1. unit tokens count: 7
+    # 1. unit tokens count: 7 or 8 (if "always" at the end)
     # 2. first three tokens: template, light, lamp
-    # 3. last token in format: deg<int>
+    # 3. last (if 7 tokens) or penultimate (if 8 tokens) token in format: deg<int>
     # 4. payload dictionary has to have this pairs: ("height", "<float>"), ("target", "<float>")
 
-    if len(unit_tokens) == 7 and unit_tokens[0] == "template" and unit_tokens[1] == "light" and unit_tokens[2] == "lamp":
+    if len(unit_tokens) in (7, 8) and unit_tokens[0] == "template" and unit_tokens[1] == "light" and unit_tokens[2] == "lamp":
         lamp_angle = unit_tokens[-1]
+        if len(unit_tokens) == 8:
+            lamp_angle = unit_tokens[-2]
         if lamp_angle[0:3] == "deg" and lamp_angle[3:].isdigit():
             return True
 

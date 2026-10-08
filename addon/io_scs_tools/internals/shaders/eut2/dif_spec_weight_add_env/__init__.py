@@ -17,9 +17,11 @@
 # ##### END GPL LICENSE BLOCK #####
 
 # Copyright (C) 2015-2019: SCS Software
+# Copyright (C) 2025-2026: Michaleczeq
 
-from io_scs_tools.internals.shaders.eut2.dif_spec_weight import DifSpecWeight
-from io_scs_tools.internals.shaders.eut2.std_passes.add_env import StdAddEnv
+from . import detail_nmap
+from ..dif_spec_weight import DifSpecWeight
+from ..std_passes.add_env import StdAddEnv
 
 
 class DifSpecWeightAddEnv(DifSpecWeight, StdAddEnv):
@@ -50,3 +52,64 @@ class DifSpecWeightAddEnv(DifSpecWeight, StdAddEnv):
 
         # links creation
         node_tree.links.new(add_env_gn.inputs['Weighted Color'], vcol_scale_n.outputs[0])
+
+    @staticmethod
+    def set_nmap2_flavor(node_tree, switch_on):
+        """Set secondary normal map flavor to this shader.
+
+        :param node_tree: node tree of current shader
+        :type node_tree: bpy.types.NodeTree
+        :param switch_on: flag indication if normal map should be switched on or off
+        :type switch_on: bool
+        """
+
+        if switch_on:
+
+            # find minimal y position for input nodes and position flavor beneath it
+            min_y = None
+            for node in node_tree.nodes:
+                if node.location.x <= 185 and (min_y is None or min_y > node.location.y):
+                    min_y = node.location.y
+
+            lighting_eval_n = node_tree.nodes[DifSpecWeightAddEnv.LIGHTING_EVAL_NODE]
+            geom_n = node_tree.nodes[DifSpecWeightAddEnv.GEOM_NODE]
+            location = (lighting_eval_n.location.x - 185, min_y - 400)
+
+            detail_nmap.init(node_tree, location, lighting_eval_n.inputs['Normal Vector'], geom_n.outputs['Normal'])
+        else:
+            detail_nmap.delete(node_tree)
+
+    @staticmethod
+    def set_nmap_detail_uv(node_tree, uv_layer):
+        """Set UV layer to detail normal map texture in shader.
+
+        :param node_tree: node tree of current shader
+        :type node_tree: bpy.types.NodeTree
+        :param uv_layer: uv layer string used for detail nmap texture
+        :type uv_layer: str
+        """
+
+        detail_nmap.set_detail_uv(node_tree, uv_layer)
+            
+    @staticmethod
+    def set_nmap_detail_texture(node_tree, texture):
+        """Set detail normal map texture to shader.
+
+        :param node_tree: node tree of current shader
+        :type node_tree: bpy.types.NodeTree
+        :param texture: texture which should be assigned to detail nmap texture node
+        :type texture: bpy.types.Texture
+        """
+
+        detail_nmap.set_detail_texture(node_tree, texture)
+
+    @staticmethod
+    def set_nmap_detail_texture_settings(node_tree, settings):
+        """Set detail normal map texture settings to shader.
+
+        :param node_tree: node tree of current shader
+        :type node_tree: bpy.types.NodeTree
+        :param settings: binary string of TOBJ settings gotten from tobj import
+        :type settings: str
+        """
+        detail_nmap.set_detail_texture_settings(node_tree, settings)

@@ -18,7 +18,7 @@
 
 # Copyright (C) 2015: SCS Software
 
-from io_scs_tools.internals.shaders.eut2.dif_spec_add_env import DifSpecAddEnv
+from ..dif_spec_add_env import DifSpecAddEnv
 
 
 class BuildingAddEnvDay(DifSpecAddEnv):

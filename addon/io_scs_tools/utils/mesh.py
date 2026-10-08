@@ -27,7 +27,7 @@ from io_scs_tools.utils.printout import lprint
 from io_scs_tools.utils import convert as _convert
 
 
-def make_points_to_weld_list(mesh_vertices, mesh_normals, mesh_rgb, mesh_rgba, equal_decimals_count):
+def make_points_to_weld_list(mesh_vertices, mesh_normals, mesh_rgb, mesh_rgba, mesh_factor, equal_decimals_count):
     """Makes a map of duplicated vertices indices into it's original counter part."""
 
     # take first present vertex color data
@@ -37,6 +37,11 @@ def make_points_to_weld_list(mesh_vertices, mesh_normals, mesh_rgb, mesh_rgba, e
         mesh_final_rgba = mesh_rgba
     else:
         mesh_final_rgba = {}
+
+    if mesh_factor:
+        mesh_final_factor = mesh_factor
+    else: 
+        mesh_final_factor = {}
 
     posnorm_dict_tmp = {}
     perc = 10 ** equal_decimals_count  # represent precision for duplicates
@@ -48,6 +53,11 @@ def make_points_to_weld_list(mesh_vertices, mesh_normals, mesh_rgb, mesh_rgba, e
         # also include vertex colors in key if present
         for vc_layer_name in mesh_final_rgba:
             for col_channel in mesh_final_rgba[vc_layer_name][val_i]:
+                key += str(int(col_channel * perc))
+
+        # also include factor vertex colors in key if present
+        for vfc_layer_name in mesh_final_factor:
+            for col_channel in mesh_final_factor[vfc_layer_name][val_i]:
                 key += str(int(col_channel * perc))
 
         if key not in posnorm_dict_tmp:
@@ -233,6 +243,34 @@ def bm_make_vc_layer(pim_version, bm, vc_layer_name, vc_layer_data):
                 vcol_a = (alpha / 2,) * 3 + (1.0,)
                 loop[color_a_lay] = vcol_a
 
+def bm_make_vfc_layer(pim_version, bm, vfc_layer_name, vfc_layer_data):
+    """Add Vertex Color Layer for Factor to the BMesh object.
+
+    :param pim_version: PIM version of the File from which data have been read
+    :type pim_version: int
+    :param bm: BMesh data to add Vertex Color Layer to
+    :type bm: bmesh.types.BMesh
+    :param vfc_layer_name: Name for the layer
+    :type vfc_layer_name: str
+    :param vfc_layer_data: Vertex Color Layer data
+    :type vfc_layer_data: list
+    """
+    # only 5 and 7 versions are supported currently
+    assert (pim_version == 5 or pim_version == 7)
+
+    color_lay = bm.loops.layers.color.new(vfc_layer_name)
+
+    for face_i, face in enumerate(bm.faces):
+        f_v = [x.index for x in face.verts]
+        for loop_i, loop in enumerate(face.loops):
+            if pim_version == 5:
+                vfcol = vfc_layer_data[f_v[loop_i]]
+            else:
+                vfcol = vfc_layer_data[face_i][loop_i]
+
+            # Technically, vfcol[3] is repeated vfcol[2] value, and probably is not even used in the game, but just in case use vfcol[3]
+            vfcol = (vfcol[0] / 255, vfcol[1] / 255, vfcol[2] / 255, vfcol[3] / 255 )
+            loop[color_lay] = vfcol
 
 def bm_delete_loose(mesh):
     """Deletes loose vertices in the mesh.
@@ -311,23 +349,21 @@ def get_mesh_for_normals(mesh):
     new_mesh = mesh.copy()
 
     # if user is not using auto smooth, then apply it now just for the porpuse of proper normals split calculation.
-    if not new_mesh.use_auto_smooth:
-        new_mesh.use_auto_smooth = True
-        new_mesh.auto_smooth_angle = 3.14
-
-    new_mesh.calc_normals_split()
+    # NOTE: auto_smooth property has been replaced by a modifier node group asset in Blender 4.1, so now users should use modifier yourself?
+    # if not new_mesh.use_auto_smooth:
+    #     new_mesh.use_auto_smooth = True
+    #     new_mesh.auto_smooth_angle = 3.14
 
     return new_mesh
 
 
 def cleanup_mesh(mesh):
-    """Frees normals split and removes mesh if possible.
+    """Removes mesh if possible.
 
     :param mesh: mesh to be cleaned
     :type mesh: bpy.types.Mesh
     """
 
-    mesh.free_normals_split()
     if mesh.users == 0:
         bpy.data.meshes.remove(mesh, do_unlink=True)
 

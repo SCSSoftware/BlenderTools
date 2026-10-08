@@ -81,11 +81,12 @@ def __create_node_group__():
         alpha_test_g.nodes.clear()
 
     # inputs defining
-    alpha_test_g.inputs.new("NodeSocketShader", "Shader")
-    alpha_test_g.inputs.new("NodeSocketFloat", "Alpha")
+    alpha_test_g.interface.new_socket(in_out = "INPUT", socket_type = "NodeSocketShader", name = "Shader")
+    alpha_test_g.interface.new_socket(in_out = "INPUT", socket_type = "NodeSocketFloat",  name = "Alpha")
 
     # outputs defining
-    alpha_test_g.outputs.new("NodeSocketShader", "Shader")
+    alpha_test_g.interface.new_socket(in_out = "OUTPUT", socket_type = "NodeSocketShader", name = "Shader")
+
 
     # node creation
     input_n = alpha_test_g.nodes.new("NodeGroupInput")

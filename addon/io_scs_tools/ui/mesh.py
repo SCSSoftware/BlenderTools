@@ -20,7 +20,7 @@
 
 import bpy
 from bpy.types import Panel
-from io_scs_tools.ui import shared as _shared
+from . import shared as _shared
 
 
 class _MeshPanelBlDefs(_shared.HeaderIconPanel):
@@ -76,7 +76,7 @@ def register():
     # for cls in classes:
     #     bpy.utils.register_class(cls)
     #
-    # from io_scs_tools import SCS_TOOLS_MT_MainMenu
+    # from .. import SCS_TOOLS_MT_MainMenu
     # SCS_TOOLS_MT_MainMenu.append_props_entry("Mesh Properties", SCS_TOOLS_PT_Mesh.__name__)
 
     # No mesh settings available currently, thus commented out and just passing

@@ -19,10 +19,10 @@
 # Copyright (C) 2015-2019: SCS Software
 
 import bpy
-from io_scs_tools.consts import Mesh as _MESH_consts
-from io_scs_tools.internals.shaders.flavors.nmap import scale_ng
-from io_scs_tools.internals.shaders.flavors.nmap import dds16_ng
-from io_scs_tools.utils import material as _material_utils
+from . import scale_ng
+from . import dds16_ng
+from .....utils import material as _material_utils
+from .....consts import Mesh as _MESH_consts
 
 NMAP_FLAVOR_FRAME_NODE = "TSNMap Flavor"
 NMAP_UVMAP_NODE = "NormalMapUVs"
@@ -68,6 +68,11 @@ def __create_nodes__(node_tree, location=None, normal_to=None, normal_from=None)
     nmap_tex_n.name = nmap_tex_n.label = NMAP_TEX_NODE
     nmap_tex_n.width = 140
 
+    nmap_dds16_n = node_tree.nodes.new("ShaderNodeGroup")
+    nmap_dds16_n.parent = frame
+    nmap_dds16_n.name = nmap_dds16_n.label = NMAP_DDS16_GNODE
+    nmap_dds16_n.node_tree = dds16_ng.get_node_group()
+
     nmap_n = node_tree.nodes.new("ShaderNodeNormalMap")
     nmap_n.parent = frame
     nmap_n.name = nmap_n.label = NMAP_NODE
@@ -81,8 +86,9 @@ def __create_nodes__(node_tree, location=None, normal_to=None, normal_from=None)
 
     # position nodes
     if location:
-        nmap_uvs_n.location = (location[0] - 185 * 3, location[1])
-        nmap_tex_n.location = (location[0] - 185 * 2, location[1])
+        nmap_uvs_n.location = (location[0] - 185 * 4, location[1])
+        nmap_tex_n.location = (location[0] - 185 * 3, location[1])
+        nmap_dds16_n.location = (location[0] - 185 * 2, location[1] - 220)
         nmap_n.location = (location[0] - 185, location[1] - 200)
         nmap_scale_n.location = (location[0], location[1])
 
@@ -91,58 +97,21 @@ def __create_nodes__(node_tree, location=None, normal_to=None, normal_from=None)
 
     node_tree.links.new(nodes[NMAP_UVMAP_NODE].outputs["UV"], nodes[NMAP_TEX_NODE].inputs["Vector"])
 
-    node_tree.links.new(nodes[NMAP_NODE].inputs["Color"], nodes[NMAP_TEX_NODE].outputs["Color"])
+    node_tree.links.new(nodes[NMAP_TEX_NODE].outputs["Color"], nodes[NMAP_DDS16_GNODE].inputs["Color"])
 
-    node_tree.links.new(nodes[NMAP_SCALE_GNODE].inputs["NMap Tex Color"], nodes[NMAP_TEX_NODE].outputs["Color"])
+    node_tree.links.new(nodes[NMAP_DDS16_GNODE].outputs["Color"], nodes[NMAP_NODE].inputs["Color"])
+    # Commented because default 1.0 strength gives better visualization. There must be something wrong with calculating strenght? (R channel?)
+    # Probably SCS changed formula a little bit when they abandoned 3-channel normal maps to 2-channel ones.
+    # node_tree.links.new(nodes[NMAP_DDS16_GNODE].outputs["Strength"], nodes[NMAP_NODE].inputs["Strength"])
+
+    node_tree.links.new(nodes[NMAP_NODE].outputs["Normal"], nodes[NMAP_SCALE_GNODE].inputs["Modified Normal"])
+
     if normal_from:
-        node_tree.links.new(nodes[NMAP_SCALE_GNODE].inputs["Original Normal"], normal_from)
-    node_tree.links.new(nodes[NMAP_SCALE_GNODE].inputs["Modified Normal"], nodes[NMAP_NODE].outputs["Normal"])
+        node_tree.links.new(normal_from, nodes[NMAP_SCALE_GNODE].inputs["Original Normal"])
 
     # set normal only if we know where to
     if normal_to:
-        node_tree.links.new(normal_to, nodes[NMAP_SCALE_GNODE].outputs["Normal"])
-
-
-def __check_and_create_dds16_node__(node_tree, image):
-    """Checks if given texture is composed '16-bit DDS' texture and properly create extra node for it's representation.
-    On the contrary if texture is not 16-bit DDS and node exists clean that node and restore old connections.
-
-    :param node_tree: node tree on which normal map will be used
-    :type node_tree: bpy.types.NodeTree
-    :param image: texture image which should be assigned to nmap texture node
-    :type image: bpy.types.Image
-    """
-
-    # in case of DDS simulating 16-bit normal maps create it's group and properly connect it,
-    # on the other hand if group exists but shouldn't delete group and restore old connections
-
-    is_dds16 = image and image.filepath.endswith(".dds") and image.pixels[2] == 0.0
-    if is_dds16 and NMAP_DDS16_GNODE not in node_tree.nodes:
-
-        nmap_dds16_n = node_tree.nodes.new("ShaderNodeGroup")
-        nmap_dds16_n.parent = node_tree.nodes[NMAP_FLAVOR_FRAME_NODE]
-        nmap_dds16_n.name = nmap_dds16_n.label = NMAP_DDS16_GNODE
-        nmap_dds16_n.node_tree = dds16_ng.get_node_group()
-
-        location = node_tree.nodes[NMAP_NODE].location
-
-        node_tree.nodes[NMAP_TEX_NODE].location[0] -= 185
-        node_tree.nodes[NMAP_UVMAP_NODE].location[0] -= 185
-        nmap_dds16_n.location = (location[0] - 185, location[1])
-
-        node_tree.links.new(node_tree.nodes[NMAP_DDS16_GNODE].inputs["Color"], node_tree.nodes[NMAP_TEX_NODE].outputs["Color"])
-
-        node_tree.links.new(node_tree.nodes[NMAP_NODE].inputs["Strength"], node_tree.nodes[NMAP_DDS16_GNODE].outputs["Strength"])
-        node_tree.links.new(node_tree.nodes[NMAP_NODE].inputs["Color"], node_tree.nodes[NMAP_DDS16_GNODE].outputs["Color"])
-
-    elif not is_dds16 and NMAP_DDS16_GNODE in node_tree.nodes:
-
-        node_tree.nodes.remove(node_tree.nodes[NMAP_DDS16_GNODE])
-
-        node_tree.nodes[NMAP_TEX_NODE].location[0] += 185
-        node_tree.nodes[NMAP_UVMAP_NODE].location[0] += 185
-
-        node_tree.links.new(node_tree.nodes[NMAP_NODE].inputs["Color"], node_tree.nodes[NMAP_TEX_NODE].outputs["Color"])
+        node_tree.links.new(nodes[NMAP_SCALE_GNODE].outputs["Normal"], normal_to)
 
 
 def init(node_tree, location, normal_to, normal_from):
@@ -183,9 +152,6 @@ def set_texture(node_tree, image):
     # create material node if not yet created
     if NMAP_FLAVOR_FRAME_NODE not in node_tree.nodes:
         __create_nodes__(node_tree)
-
-    # in case of DDS simulating 16-bit normal maps create it's group and properly connect it
-    __check_and_create_dds16_node__(node_tree, image)
 
     # assign texture to texture node first
     node_tree.nodes[NMAP_TEX_NODE].image = image
@@ -237,7 +203,6 @@ def delete(node_tree, preserve_node=False):
     if NMAP_NODE in node_tree.nodes and not preserve_node:
         node_tree.nodes.remove(node_tree.nodes[NMAP_TEX_NODE])
         node_tree.nodes.remove(node_tree.nodes[NMAP_NODE])
-        if NMAP_DDS16_GNODE in node_tree.nodes:
-            node_tree.nodes.remove(node_tree.nodes[NMAP_DDS16_GNODE])
+        node_tree.nodes.remove(node_tree.nodes[NMAP_DDS16_GNODE])
         node_tree.nodes.remove(node_tree.nodes[NMAP_SCALE_GNODE])
         node_tree.nodes.remove(node_tree.nodes[NMAP_FLAVOR_FRAME_NODE])

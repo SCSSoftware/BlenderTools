@@ -71,4 +71,4 @@ class DifSpecOcluWeightAddEnv(DifSpecOclu, StdAddEnv):
 
         # links creation
         node_tree.links.new(add_env_gn.inputs['Weighted Color'], vcol_scale_n.outputs[0])
-        node_tree.links.new(add_env_gn.inputs['Strength Multiplier'], oclu_sep_n.outputs['R'])
+        node_tree.links.new(add_env_gn.inputs['Strength Multiplier'], oclu_sep_n.outputs['Red'])

@@ -18,7 +18,6 @@
 
 # Copyright (C) 2019: SCS Software
 
-import os
 import gpu
 
 
@@ -29,22 +28,6 @@ class ShaderTypes:
 
 __cache = {}
 """Simple dictonary holding shader instances by shader type. To prevent loading shader each time one requests it."""
-
-
-def __get_shader_data__(shader_filename):
-    """Loads and gets shader data from given filename.
-
-    :param shader_filename: filename of shader file inside io_scs_tools/internals/open_gl/shaders
-    :type shader_filename: str
-    :return: shader data string from given glsl shader
-    :rtype: str
-    """
-    shader_filepath = os.path.join(os.path.dirname(os.path.realpath(__file__)), shader_filename)
-
-    with open(shader_filepath, "r") as file:
-        shader_data_str = file.read()
-
-    return shader_data_str
 
 
 def get_shader(shader_type):
@@ -58,19 +41,129 @@ def get_shader(shader_type):
     if shader_type == ShaderTypes.SMOOTH_COLOR_CLIPPED_3D:
 
         if shader_type not in __cache:
-            __cache[shader_type] = gpu.types.GPUShader(
-                __get_shader_data__("smooth_color_clipped_3d_vert.glsl"),
-                __get_shader_data__("smooth_color_clipped_3d_frag.glsl")
+            vert_out = gpu.types.GPUStageInterfaceInfo("my_interface")
+            vert_out.smooth("VEC4", "finalColor")
+            vert_out.smooth("VEC4", "vertexPos")
+
+            shader_info = gpu.types.GPUShaderCreateInfo()
+            shader_info.push_constant("MAT4", "ModelViewProjectionMatrix")
+            shader_info.push_constant("MAT4", "ModelMatrix")
+
+            shader_info.typedef_source(
+                """
+                struct ClipData {
+                    vec4 clip_planes[6];
+                    int num_clip_planes;
+                    int _pad1;
+                    int _pad2;
+                    int _pad3;
+                };
+                """
             )
+            shader_info.uniform_buf(0, "ClipData", "clip_data")
+
+            shader_info.vertex_in(0, "VEC3", "pos")
+            shader_info.vertex_in(1, "VEC4", "color")
+
+            shader_info.vertex_out(vert_out)
+            shader_info.fragment_out(0, "VEC4", "fragColor")
+
+            shader_info.vertex_source(
+                """
+                void main()
+                {
+                    vertexPos = vec4(pos, 1.0);
+                    gl_Position = ModelViewProjectionMatrix * vertexPos;
+                    gl_PointSize = 12.0;
+                    finalColor = color;
+
+                #ifdef USE_WORLD_CLIP_PLANES
+                    world_clip_planes_calc_clip_distance((ModelMatrix * vec4(pos, 1.0)).xyz);
+                #endif
+                }
+                """
+            )
+            shader_info.fragment_source(
+                """
+                void main()
+                {
+                    for (int i=0; i<clip_data.num_clip_planes; ++i) {
+                        float d = dot(clip_data.clip_planes[i], vertexPos);
+                        if (d < 0.0) discard;
+                    }
+                    fragColor = finalColor;
+                }
+                """
+            )
+
+            __cache[shader_type] = gpu.shader.create_from_info(shader_info)
+
+            del vert_out
+            del shader_info
 
     elif shader_type == ShaderTypes.SMOOTH_COLOR_STIPPLE_CLIPPED_3D:
 
         if shader_type not in __cache:
-            __cache[shader_type] = gpu.types.GPUShader(
-                __get_shader_data__("smooth_color_stipple_clipped_3d_vert.glsl"),
-                __get_shader_data__("smooth_color_stipple_clipped_3d_frag.glsl"),
+            vert_out = gpu.types.GPUStageInterfaceInfo("my_interface")
+            vert_out.smooth("VEC4", "vertexColor")
+            vert_out.flat("VEC4", "startVertexPos")    # use uninterpolated provoking vertex, to be able to calculate position on line
+            vert_out.smooth("VEC4", "vertexPos")
+
+            shader_info = gpu.types.GPUShaderCreateInfo()
+
+            shader_info.push_constant("MAT4", "ModelViewProjectionMatrix")
+
+            shader_info.typedef_source(
+                """
+                struct ClipData {
+                    vec4 clip_planes[6];
+                    int num_clip_planes;
+                    int _pad1;
+                    int _pad2;
+                    int _pad3;
+                };
+                """
+            )
+            shader_info.uniform_buf(0, "ClipData", "clip_data")
+
+            shader_info.vertex_in(0, "VEC3", "pos")
+            shader_info.vertex_in(1, "VEC4", "color")
+            shader_info.vertex_out(vert_out)
+            shader_info.fragment_out(0, "VEC4", "fragColor")
+
+            shader_info.vertex_source(
+                """
+                void main()
+                {
+                    startVertexPos = vec4(pos, 1.0);
+                    vertexPos = startVertexPos;
+                    vertexColor = color;
+
+                    gl_Position = ModelViewProjectionMatrix * vertexPos;
+                    gl_PointSize = 12.0;
+                }
+                """
+            )
+            shader_info.fragment_source(
+                """
+                void main()
+                {
+                    for (int i=0; i<clip_data.num_clip_planes; ++i) {
+                        float d = dot(clip_data.clip_planes[i], vertexPos);
+                        if (d < 0.0) discard;
+                    }
+
+                    if (step(sin(length(vertexPos - startVertexPos) * 100), 0.4) == 1) discard;
+
+                    fragColor = vertexColor;
+                }
+                """
             )
 
+            __cache[shader_type] = gpu.shader.create_from_info(shader_info)
+
+            del vert_out
+            del shader_info
     else:
 
         raise TypeError("Failed generating shader, unexepected shader type: %r!" % shader_type)

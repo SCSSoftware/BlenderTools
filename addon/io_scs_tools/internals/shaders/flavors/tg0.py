@@ -101,8 +101,8 @@ def is_set(node_tree):
     return FLAVOR_ID in node_tree.nodes
 
 
-def set_scale(node_tree, scale_x, scale_y):
-    """Set scale of tex generation.
+def set_scale(node_tree, scale_x, scale_y, rotation):
+    """Set scale and rotation of tex generation.
 
     :param node_tree: node tree which should be checked for existance of this flavor
     :type node_tree: bpy.types.NodeTree
@@ -110,10 +110,13 @@ def set_scale(node_tree, scale_x, scale_y):
     :type scale_x: float
     :param scale_y: y coordinate scaling
     :type scale_y: float
+    :param rotation: base texture rotation
+    :type rotation: float
     """
     vector_mapping_n = get_node(node_tree)
 
     if vector_mapping_n:
 
+        vector_mapping_n.inputs['Rotation'].default_value[2] = rotation / 57.3
         vector_mapping_n.inputs['Scale'].default_value[0] = 1 / scale_x
         vector_mapping_n.inputs['Scale'].default_value[1] = 1 / scale_y

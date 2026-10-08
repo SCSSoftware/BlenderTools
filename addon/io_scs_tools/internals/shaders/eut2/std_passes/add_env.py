@@ -42,8 +42,8 @@ class StdAddEnv:
         :type node_tree: bpy.types.NodeTree
         :param geom_n_name: name of geometry node from which normal and view vectors will be taken
         :type geom_n_name: str
-        :param spec_col_socket: specular color node socket from which specular color will be taken
-        :type spec_col_socket: bpy.type.NodeSocket
+        :param spec_col_socket: specular color node socket from which specular color will be taken (if None it won't be used)
+        :type spec_col_socket: bpy.type.NodeSocket | None
         :param alpha_socket: socket from which alpha will be taken (if None it won't be used)
         :type alpha_socket: bpy.type.NodeSocket | None
         :param final_normal_socket: socket of final normal, if not provided geometry normal is used
@@ -105,7 +105,10 @@ class StdAddEnv:
         node_tree.links.new(add_env_n.inputs['Env Factor Color'], env_col_n.outputs['Color'])
         node_tree.links.new(add_env_n.inputs['Reflection Texture Color'], refl_tex_n.outputs['Color'])
 
-        node_tree.links.new(add_env_n.inputs['Specular Color'], spec_col_socket)
+        # fix for 'baked' shader that don't use specular
+        if spec_col_socket is not None:
+            node_tree.links.new(add_env_n.inputs['Specular Color'], spec_col_socket)
+
         if add_env_n and alpha_socket:
             node_tree.links.new(add_env_n.inputs['Base Texture Alpha'], alpha_socket)
 

@@ -47,19 +47,22 @@ def __create_fresnel_group__():
     fresnel_g = bpy.data.node_groups.new(type="ShaderNodeTree", name=FRESNEL_LEGACY_G)
 
     # inputs defining
-    fresnel_g.inputs.new("NodeSocketFloat", "Scale")
-    fresnel_g.inputs.new("NodeSocketFloat", "Bias")
-    fresnel_g.inputs.new("NodeSocketVector", "Normal Vector")
-    fresnel_g.inputs.new("NodeSocketVector", "Reflection Normal Vector")
+    fresnel_g.interface.new_socket(in_out = "INPUT", socket_type = "NodeSocketFloat",  name = "Scale")
+    fresnel_g.interface.new_socket(in_out = "INPUT", socket_type = "NodeSocketFloat",  name = "Bias")
+    fresnel_g.interface.new_socket(in_out = "INPUT", socket_type = "NodeSocketVector", name = "Normal Vector")
+    fresnel_g.interface.new_socket(in_out = "INPUT", socket_type = "NodeSocketVector", name = "Reflection Normal Vector")
+
+    # outputs defining
+    fresnel_g.interface.new_socket(in_out = "OUTPUT", socket_type = "NodeSocketFloat", name = "Fresnel Factor")
+
+
+    # group nodes
     input_n = fresnel_g.nodes.new("NodeGroupInput")
     input_n.location = (0, 0)
 
-    # outputs defining
-    fresnel_g.outputs.new("NodeSocketFloat", "Fresnel Factor")
     output_n = fresnel_g.nodes.new("NodeGroupOutput")
     output_n.location = (185 * 5, 0)
 
-    # group nodes
     dot_n = fresnel_g.nodes.new("ShaderNodeVectorMath")
     dot_n.location = (185, 100)
     dot_n.operation = "DOT_PRODUCT"

@@ -21,9 +21,9 @@
 bl_info = {
     "name": "SCS Tools",
     "description": "Setup models, Import-Export SCS data format",
-    "author": "Simon Lusenc (50keda), Milos Zajic (4museman)",
-    "version": (2, 4, "aeadde03"),
-    "blender": (3, 2, 0),
+    "author": "Simon Lusenc (50keda), Milos Zajic (4museman), Michal (Michaleczeq)",
+    "version": (2, 4, "aeadde03", 9),
+    "blender": (5, 0, 0),
     "location": "File > Import-Export",
     "doc_url": "http://modding.scssoft.com/wiki/Documentation/Tools/SCS_Blender_Tools",
     "tracker_url": "http://forum.scssoft.com/viewforum.php?f=163",
@@ -36,15 +36,15 @@ import traceback
 from time import time
 from bpy.props import CollectionProperty, StringProperty, PointerProperty, BoolProperty
 from bpy_extras.io_utils import ImportHelper, ExportHelper
-from io_scs_tools.consts import Icons as _ICONS_consts
-from io_scs_tools.imp import pix as _pix_import
-from io_scs_tools.internals.callbacks import open_gl as _open_gl_callback
-from io_scs_tools.internals.callbacks import persistent as _persistent_callback
-from io_scs_tools.internals import icons as _icons
-from io_scs_tools.operators.bases.export import SCSExportHelper as _SCSExportHelper
-from io_scs_tools.utils import get_scs_globals as _get_scs_globals
-from io_scs_tools.utils.view3d import has_view3d_space as _has_view3d_space
-from io_scs_tools.utils.printout import lprint
+from .consts import Icons as _ICONS_consts
+from .imp import pix as _pix_import
+from .internals.callbacks import open_gl as _open_gl_callback
+from .internals.callbacks import persistent as _persistent_callback
+from .internals import icons as _icons
+from .operators.bases.export import SCSExportHelper as _SCSExportHelper
+from .utils import get_scs_globals as _get_scs_globals
+from .utils.view3d import has_view3d_space as _has_view3d_space
+from .utils.printout import lprint
 
 
 class SCS_TOOLS_OT_Import(bpy.types.Operator, ImportHelper):
@@ -79,7 +79,7 @@ class SCS_TOOLS_OT_Import(bpy.types.Operator, ImportHelper):
 
     def execute(self, context):
 
-        from io_scs_tools.internals.containers.config import AsyncPathsInit
+        from .internals.containers.config import AsyncPathsInit
 
         # if paths are still initializing report that to user and don't execute import
         if AsyncPathsInit.is_running():
@@ -150,9 +150,9 @@ class SCS_TOOLS_OT_Import(bpy.types.Operator, ImportHelper):
         :return:
         """
 
-        from io_scs_tools.ui.shared import get_on_off_icon
-        from io_scs_tools.ui.shared import draw_common_settings
-        from io_scs_tools.internals.containers.config import AsyncPathsInit
+        from .ui.shared import get_on_off_icon
+        from .ui.shared import draw_common_settings
+        from .internals.containers.config import AsyncPathsInit
 
         scs_globals = _get_scs_globals()
 
@@ -222,6 +222,11 @@ class SCS_TOOLS_OT_Export(bpy.types.Operator, _SCSExportHelper, ExportHelper):
     filename_ext = ".pim"
     filter_glob: StringProperty(default=str("*" + filename_ext), options={'HIDDEN'})
 
+    def __init__(self, *args, **kwargs):
+        bpy.types.Operator.__init__(self, *args, **kwargs)
+        _SCSExportHelper.__init__(self, *args, **kwargs)
+        ExportHelper.__init__(self)
+
     def execute(self, context):
         # convert filepath to None if empty, so export will ignore given menu file path and try to export to other none menu set paths
         if self.filepath == "":
@@ -232,7 +237,7 @@ class SCS_TOOLS_OT_Export(bpy.types.Operator, _SCSExportHelper, ExportHelper):
         return self.execute_export(context, True, menu_filepath=filepath)
 
     def draw(self, context):
-        from io_scs_tools.ui.shared import draw_export_panel
+        from .ui.shared import draw_export_panel
 
         box0 = self.layout.box()
         box0.use_property_split = True
@@ -351,7 +356,7 @@ def register():
     _icons.register()
 
     # REGISTRATION OF OUR PROPERTIES
-    from io_scs_tools.properties import register as props_register
+    from .properties import register as props_register
     props_register()
 
     # PROPERTIES REGISTRATION INTO EXISTING CLASSES
@@ -408,11 +413,11 @@ def register():
     )
 
     # REGISTER UI
-    from io_scs_tools.ui import register as ui_register
+    from .ui import register as ui_register
     ui_register()
 
     # REGISTER OPERATORS
-    from io_scs_tools.operators import register as ops_register
+    from .operators import register as ops_register
     ops_register()
 
     # MAIN MODULE REGISTRATION
@@ -450,11 +455,11 @@ def unregister():
         bpy.utils.unregister_class(cls)
 
     # UNREGISTER OPERATORS
-    from io_scs_tools.operators import unregister as ops_unregister
+    from .operators import unregister as ops_unregister
     ops_unregister()
 
     # UNREGISTER UI
-    from io_scs_tools.ui import unregister as ui_unregister
+    from .ui import unregister as ui_unregister
     ui_unregister()
 
     # REMOVE PROPERTIES FROM DATA
@@ -471,7 +476,7 @@ def unregister():
     del bpy.types.Object.scs_object_animation_inventory
 
     # UNREGISTER PROPS
-    from io_scs_tools.properties import unregister as props_unregister
+    from .properties import unregister as props_unregister
     props_unregister()
 
 

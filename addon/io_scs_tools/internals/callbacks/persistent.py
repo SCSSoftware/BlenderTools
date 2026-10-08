@@ -25,6 +25,7 @@ from io_scs_tools.internals.persistent import file_save as _persistent_file_save
 from io_scs_tools.internals.persistent import file_load as _persistent_file_load
 from io_scs_tools.internals.persistent import open_gl as _persistent_open_gl
 from io_scs_tools.internals.persistent import shaders_update as _persistent_shaders_update
+from io_scs_tools.internals.persistent import active_part as _persistent_active_part
 
 
 def enable():
@@ -51,6 +52,7 @@ def enable():
         bpy.app.handlers.frame_change_post.append(_persistent_shaders_update.post_frame_change)
         bpy.app.handlers.undo_post.append(_persistent_open_gl.post_undo)
         bpy.app.handlers.redo_post.append(_persistent_open_gl.post_redo)
+        bpy.app.handlers.depsgraph_update_post.append(_persistent_active_part.sync_part)
 
     bpy.app.handlers.load_post.append(_persistent_file_load.post_load)
 
@@ -79,3 +81,5 @@ def disable():
         bpy.app.handlers.load_post.remove(_persistent_file_load.post_load)
     if _persistent_file_save.pre_save in bpy.app.handlers.save_pre:
         bpy.app.handlers.save_pre.remove(_persistent_file_save.pre_save)
+    if _persistent_active_part.sync_part in bpy.app.handlers.depsgraph_update_post:
+        bpy.app.handlers.depsgraph_update_post.remove(_persistent_active_part.sync_part)

@@ -19,10 +19,10 @@
 # Copyright (C) 2019-2021: SCS Software
 
 import bpy
-from io_scs_tools import exp as _export
-from io_scs_tools.utils import object as _object_utils
-from io_scs_tools.utils import get_scs_globals as _get_scs_globals
-from io_scs_tools.utils.printout import lprint
+from ... import exp as _export
+from ...utils import object as _object_utils
+from ...utils import get_scs_globals as _get_scs_globals
+from ...utils.printout import lprint
 
 
 class SCSExportHelper:
@@ -33,7 +33,7 @@ class SCSExportHelper:
     export_scene_name = None
     """Stores name of the export scene (used to skip custom drawing elements update on export scene)."""
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         self.cached_objects = None
         """:type list[bpy.types.Object]: Used in selection mode to cache selected objects, to avoid multiple collecting."""
         self.objects_states = dict()
@@ -112,6 +112,9 @@ class SCSExportHelper:
         self.active_scene = bpy.context.window.scene
         self.active_view_layer = bpy.context.window.view_layer
         bpy.context.window.scene = self.scene
+
+        # copy default_export_filepath from active scene
+        self.scene.scs_props.default_export_filepath = self.active_scene.scs_props.default_export_filepath
 
         # store name of current export scene
         SCSExportHelper.export_scene_name = self.scene.name

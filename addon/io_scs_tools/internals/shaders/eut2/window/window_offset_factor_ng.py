@@ -50,17 +50,20 @@ def __create_node_group__():
     offset_factor_g = bpy.data.node_groups.new(type="ShaderNodeTree", name=WINDOW_OFFSET_FACTOR_G)
 
     # inputs defining
-    offset_factor_g.inputs.new("NodeSocketFloat", "WndToEye Up")
-    offset_factor_g.inputs.new("NodeSocketFloat", "WndToEye Direction")
+    offset_factor_g.interface.new_socket(in_out = "INPUT", socket_type = "NodeSocketFloat", name = "WndToEye Up")
+    offset_factor_g.interface.new_socket(in_out = "INPUT", socket_type = "NodeSocketFloat", name = "WndToEye Direction")
+
+    # outputs defining
+    offset_factor_g.interface.new_socket(in_out = "OUTPUT", socket_type = "NodeSocketFloat", name = "Offset Factor")
+
+
+    # group nodes
     input_n = offset_factor_g.nodes.new("NodeGroupInput")
     input_n.location = (0, 0)
 
-    # outputs defining
-    offset_factor_g.outputs.new("NodeSocketFloat", "Offset Factor")
     output_n = offset_factor_g.nodes.new("NodeGroupOutput")
     output_n.location = (pos_x_shift * 6, 0)
 
-    # group nodes
     # ANGLE_TO_ROTATION = saturate(acos(WndToEyeUp))
     arcos_n = offset_factor_g.nodes.new("ShaderNodeMath")
     arcos_n.location = (pos_x_shift * 1, 200)

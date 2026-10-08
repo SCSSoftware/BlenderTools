@@ -41,7 +41,7 @@ _DIFF_AMB_ADD_NODE = "D=AmbientLight+Diff"  # goes to Diffuse Lighting output
 
 _DIFF_FLAT_MULT_NODE = "DFlat=DiffuseLightColor*0.4"
 
-_DIFF_FLAT_NODE = "FlatFilter"
+_DIFF_FLAT_NODE = "DiffFlatFilter"
 
 _N_SUM_NODE = "NSum=IncomingVector+NLight"
 _N_HALF_NODE = "NHalf=normalize(NSum)"
@@ -52,7 +52,7 @@ _SPEC_FACTOR_NODE = "SpecFac=pow(NDotHMax, Shininess)"
 _SPEC_FACTOR_SMOOTH_NODE = "SpecFacSmooth=SpecFac*NDotLSpecCut"  # clamp it!
 _SPEC_MULT_NODE = "S=SpecularLightColor*SpecFacSmooth"  # goes to Specular Lighting output
 
-_SPEC_FLAT_NODE = "FlatFilter"
+_SPEC_FLAT_NODE = "SpecFlatFilter"
 
 
 def get_node_group():
@@ -155,15 +155,15 @@ def __create_group__():
         lighting_eval_g = bpy.data.node_groups.new(type="ShaderNodeTree", name=LIGHTING_EVALUATOR_G)
 
         # inputs defining
-        lighting_eval_g.inputs.new("NodeSocketVector", "Normal Vector")  # n_normal
-        lighting_eval_g.inputs.new("NodeSocketVector", "Incoming Vector")  # n_eye
-        lighting_eval_g.inputs.new("NodeSocketFloat", "Shininess")  # specular_exponent
-        lighting_eval_g.inputs.new("NodeSocketFloat", "Flat Lighting")  # flat lighting switch, should be 0 or 1
+        lighting_eval_g.interface.new_socket(in_out = "INPUT", socket_type = "NodeSocketVector", name = "Normal Vector",   description = "n_normal")
+        lighting_eval_g.interface.new_socket(in_out = "INPUT", socket_type = "NodeSocketVector", name = "Incoming Vector", description = "n_eye")
+        lighting_eval_g.interface.new_socket(in_out = "INPUT", socket_type = "NodeSocketFloat",  name = "Shininess",       description = "specular_exponent")
+        lighting_eval_g.interface.new_socket(in_out = "INPUT", socket_type = "NodeSocketFloat",  name = "Flat Lighting",   description = "Flat lighting switch, should be 0 or 1")
 
         # outputs defining
-        lighting_eval_g.outputs.new("NodeSocketColor", "Diffuse Lighting")  # final diffuse lighting
-        lighting_eval_g.outputs.new("NodeSocketColor", "Specular Lighting")  # final specular lighting
-        lighting_eval_g.outputs.new("NodeSocketVector", "Normal")  # bypassed normal, to have one access point to final normal
+        lighting_eval_g.interface.new_socket(in_out = "OUTPUT", socket_type = "NodeSocketColor",  name = "Diffuse Lighting",  description = "Final Diffuse Lighting")
+        lighting_eval_g.interface.new_socket(in_out = "OUTPUT", socket_type = "NodeSocketColor",  name = "Specular Lighting", description = "Final Specular Lighting")
+        lighting_eval_g.interface.new_socket(in_out = "OUTPUT", socket_type = "NodeSocketVector", name = "Normal",            description = "Bypassed normal, to have one access point to final normal")
 
     else:  # recreation
 
@@ -231,9 +231,10 @@ def __create_group__():
     diff_flat_mult_n.operation = "MULTIPLY"
     diff_flat_mult_n.inputs[1].default_value = (0.4,) * 3
 
-    diff_flat_n = lighting_eval_g.nodes.new("ShaderNodeMixRGB")
+    diff_flat_n = lighting_eval_g.nodes.new("ShaderNodeMix")
     diff_flat_n.name = diff_flat_n.label = _DIFF_FLAT_NODE
     diff_flat_n.location = (start_pos_x + pos_x_shift * 5, 400)
+    diff_flat_n.data_type = "RGBA"
     diff_flat_n.blend_type = "MIX"
 
     diff_amb_add_n = lighting_eval_g.nodes.new("ShaderNodeVectorMath")
@@ -285,11 +286,12 @@ def __create_group__():
     spec_mult_n.location = (start_pos_x + pos_x_shift * 8, -200)
     spec_mult_n.operation = "MULTIPLY"
 
-    spec_flat_n = lighting_eval_g.nodes.new("ShaderNodeMixRGB")
+    spec_flat_n = lighting_eval_g.nodes.new("ShaderNodeMix")
     spec_flat_n.name = spec_flat_n.label = _SPEC_FLAT_NODE
     spec_flat_n.location = (start_pos_x + pos_x_shift * 9, -200)
+    spec_flat_n.data_type = "RGBA"
     spec_flat_n.blend_type = "MIX"
-    spec_flat_n.inputs["Color2"].default_value = (0.0,) * 4
+    spec_flat_n.inputs["B"].default_value = (0.0,) * 4
 
     # group links
     # pass #-2
@@ -320,15 +322,15 @@ def __create_group__():
     lighting_eval_g.links.new(n_dot_h_n.inputs[1], input_n.outputs["Normal Vector"])
 
     # pass #4
-    lighting_eval_g.links.new(diff_flat_n.inputs["Fac"], input_n.outputs["Flat Lighting"])
-    lighting_eval_g.links.new(diff_flat_n.inputs["Color1"], diff_mult_n.outputs[0])
-    lighting_eval_g.links.new(diff_flat_n.inputs["Color2"], diff_flat_mult_n.outputs[0])
+    lighting_eval_g.links.new(diff_flat_n.inputs["Factor"], input_n.outputs["Flat Lighting"])
+    lighting_eval_g.links.new(diff_flat_n.inputs["A"], diff_mult_n.outputs[0])
+    lighting_eval_g.links.new(diff_flat_n.inputs["B"], diff_flat_mult_n.outputs[0])
 
     lighting_eval_g.links.new(n_dot_h_max_n.inputs[0], n_dot_h_n.outputs["Value"])
 
     # pass #5
     lighting_eval_g.links.new(diff_amb_add_n.inputs[0], light_amb_n.outputs["Color"])
-    lighting_eval_g.links.new(diff_amb_add_n.inputs[1], diff_flat_n.outputs["Color"])
+    lighting_eval_g.links.new(diff_amb_add_n.inputs[1], diff_flat_n.outputs["Result"])
 
     lighting_eval_g.links.new(n_dot_l_spec_cut_n.inputs[0], n_dot_l_n.outputs["Value"])
 
@@ -344,12 +346,12 @@ def __create_group__():
     lighting_eval_g.links.new(spec_mult_n.inputs[1], light_spec_n.outputs["Color"])
 
     # pass #8
-    lighting_eval_g.links.new(spec_flat_n.inputs["Fac"], input_n.outputs["Flat Lighting"])
-    lighting_eval_g.links.new(spec_flat_n.inputs["Color1"], spec_mult_n.outputs[0])
+    lighting_eval_g.links.new(spec_flat_n.inputs["Factor"], input_n.outputs["Flat Lighting"])
+    lighting_eval_g.links.new(spec_flat_n.inputs["A"], spec_mult_n.outputs[0])
 
     # pass: out
     lighting_eval_g.links.new(output_n.inputs["Diffuse Lighting"], diff_amb_add_n.outputs[0])
-    lighting_eval_g.links.new(output_n.inputs["Specular Lighting"], spec_flat_n.outputs["Color"])
+    lighting_eval_g.links.new(output_n.inputs["Specular Lighting"], spec_flat_n.outputs["Result"])
     lighting_eval_g.links.new(output_n.inputs["Normal"], input_n.outputs["Normal Vector"])
 
     # set default lighting

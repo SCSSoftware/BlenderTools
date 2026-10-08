@@ -207,7 +207,7 @@ def _get_sign_properties(section):
 def _get_spawn_properties(section):
     """Receives a Spawn section and returns its properties in its own variables.
     For any item that fails to be found, it returns None."""
-    spawn_name = spawn_position = spawn_rotation = spawn_type = None
+    spawn_name = spawn_position = spawn_rotation = spawn_type = spawn_flags = None
     for prop in section.props:
         if prop[0] in ("", "#"):
             pass
@@ -219,9 +219,11 @@ def _get_spawn_properties(section):
             spawn_rotation = prop[1]
         elif prop[0] == "Type":
             spawn_type = prop[1]
+        elif prop[0] == "Flags":
+            spawn_flags = prop[1]
         else:
             lprint('\nW Unknown property in "Spawn" data: "%s"!', prop[0])
-    return spawn_name, spawn_position, spawn_rotation, spawn_type
+    return spawn_name, spawn_position, spawn_rotation, spawn_type, spawn_flags
 
 
 def _get_t_light_properties(section):
@@ -450,12 +452,23 @@ def _create_spawn_locator(
         spawn_name,
         spawn_position,
         spawn_rotation,
-        spawn_type
+        spawn_type,
+        spawn_flags
 ):
     locator = _object_utils.create_locator_empty(spawn_name, spawn_position, spawn_rotation, (1, 1, 1), 0.1, 'Prefab')
     if locator:
         locator.scs_props.locator_prefab_type = 'Spawn Point'
         locator.scs_props.locator_prefab_spawn_type = str(spawn_type)
+
+        # flags for custom spawn type
+
+        # check if Spawn Type = Custom (9)
+        if locator.scs_props.locator_prefab_spawn_type == str(_PL_consts.PSP.CUSTOM):
+            locator.scs_props.locator_prefab_custom_depot_type = str(spawn_flags & _PL_consts.PSPCF.DEPOT_TYPE_MASK)
+            locator.scs_props.locator_prefab_custom_parking_difficulty = str(spawn_flags & _PL_consts.PSPCF.DIFFICULTY_MASK)
+            locator.scs_props.locator_prefab_custom_lenght = str(spawn_flags & _PL_consts.PSPCF.LENGHT_MASK)
+            locator.scs_props.locator_prefab_custom_rule = str(spawn_flags & _PL_consts.PSPCF.TRAILER_MASK)
+
     return locator
 
 
@@ -732,18 +745,23 @@ def load(filepath, terrain_points_trans):
             (spawn_name,
              spawn_position,
              spawn_rotation,
-             spawn_type) = _get_spawn_properties(section)
+             spawn_type,
+             spawn_flags) = _get_spawn_properties(section)
 
             if spawn_name is None:
                 spawn_name = str('Sign_Locator_' + str(spawn_index))
             else:
                 spawn_name = _name_utils.get_unique(spawn_name,  spawn_points_data.keys())
 
+            if spawn_flags is None:
+                spawn_flags = int(0)
+
             spawn_points_data[spawn_name] = (
                 spawn_index,
                 spawn_position,
                 spawn_rotation,
                 spawn_type,
+                spawn_flags,
             )
             spawn_index += 1
         elif section.type == 'Semaphore':  # former "TrafficLight"
@@ -915,6 +933,7 @@ def load(filepath, terrain_points_trans):
             spawn_points_data[name][1],
             spawn_points_data[name][2],
             spawn_points_data[name][3],
+            spawn_points_data[name][4], # sp_flags
         )
         if loc:
             _print_locator_result(loc, "Spawn Point", name)
