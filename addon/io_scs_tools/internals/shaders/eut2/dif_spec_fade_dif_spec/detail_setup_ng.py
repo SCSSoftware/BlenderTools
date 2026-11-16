@@ -20,6 +20,7 @@
 
 import bpy
 from io_scs_tools.consts import Material as _MAT_consts
+from io_scs_tools.utils import compat as _compat
 
 DETAIL_SETUP_G = _MAT_consts.node_group_prefix + "DetailStrengthGroup"
 
@@ -55,15 +56,15 @@ def __create_group__():
     detail_setup_g = bpy.data.node_groups.new(type="ShaderNodeTree", name=DETAIL_SETUP_G)
 
     # inputs defining
-    detail_setup_g.inputs.new("NodeSocketFloat", "Fade From")
-    detail_setup_g.inputs.new("NodeSocketFloat", "Fade Range")
-    detail_setup_g.inputs.new("NodeSocketFloat", "Blend Bias")
+    _compat.ng_new_socket(detail_setup_g, 'INPUT', "NodeSocketFloat", "Fade From")
+    _compat.ng_new_socket(detail_setup_g, 'INPUT', "NodeSocketFloat", "Fade Range")
+    _compat.ng_new_socket(detail_setup_g, 'INPUT', "NodeSocketFloat", "Blend Bias")
     input_n = detail_setup_g.nodes.new("NodeGroupInput")
     input_n.location = (start_pos_x, start_pos_y)
 
     # outputs defining
-    detail_setup_g.outputs.new("NodeSocketFloat", "Detail Strength")
-    detail_setup_g.outputs.new("NodeSocketFloat", "Blend Factor")
+    _compat.ng_new_socket(detail_setup_g, 'OUTPUT', "NodeSocketFloat", "Detail Strength")
+    _compat.ng_new_socket(detail_setup_g, 'OUTPUT', "NodeSocketFloat", "Blend Factor")
     output_n = detail_setup_g.nodes.new("NodeGroupOutput")
     output_n.location = (start_pos_x + pos_x_shift * 6, start_pos_y)
 

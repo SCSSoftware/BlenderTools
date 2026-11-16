@@ -30,6 +30,7 @@ from io_scs_tools.utils import animation as _animation_utils
 from io_scs_tools.utils import convert as _convert_utils
 from io_scs_tools.utils import path as _path_utils
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
+from io_scs_tools.utils import compat as _compat
 
 
 def _get_header(pia_container):
@@ -124,7 +125,7 @@ def _get_anim_channels(pia_container, section_name="BoneChannel"):
     return channels
 
 
-def _create_fcurves(anim_action, anim_group, anim_curve, rot_euler=True, types='LocRotSca'):
+def _create_fcurves(anim_action, anim_datablock, anim_group_name, anim_curve, rot_euler=True, types='LocRotSca'):
     """Creates animation curves for provided Action / Group (Bone).
 
     :return: Tuple of position vector, rotation quaternion and scaling vector
@@ -132,39 +133,26 @@ def _create_fcurves(anim_action, anim_group, anim_curve, rot_euler=True, types='
     """
     pos_fcurves = rot_fcurves = sca_fcurves = None
     if 'Loc' in types:
-        fcurve_pos_x = anim_action.fcurves.new(str(anim_curve + '.location'), index=0)
-        fcurve_pos_y = anim_action.fcurves.new(str(anim_curve + '.location'), index=1)
-        fcurve_pos_z = anim_action.fcurves.new(str(anim_curve + '.location'), index=2)
-        fcurve_pos_x.group = anim_group
-        fcurve_pos_y.group = anim_group
-        fcurve_pos_z.group = anim_group
+        fcurve_pos_x = _compat.action_new_fcurve(anim_action, anim_datablock, str(anim_curve + '.location'), 0, anim_group_name)
+        fcurve_pos_y = _compat.action_new_fcurve(anim_action, anim_datablock, str(anim_curve + '.location'), 1, anim_group_name)
+        fcurve_pos_z = _compat.action_new_fcurve(anim_action, anim_datablock, str(anim_curve + '.location'), 2, anim_group_name)
         pos_fcurves = (fcurve_pos_x, fcurve_pos_y, fcurve_pos_z)
     if 'Rot' in types:
         if rot_euler:
-            fcurve_rot_x = anim_action.fcurves.new(str(anim_curve + '.rotation_euler'), index=0)
-            fcurve_rot_y = anim_action.fcurves.new(str(anim_curve + '.rotation_euler'), index=1)
-            fcurve_rot_z = anim_action.fcurves.new(str(anim_curve + '.rotation_euler'), index=2)
-            fcurve_rot_x.group = anim_group
-            fcurve_rot_y.group = anim_group
-            fcurve_rot_z.group = anim_group
+            fcurve_rot_x = _compat.action_new_fcurve(anim_action, anim_datablock, str(anim_curve + '.rotation_euler'), 0, anim_group_name)
+            fcurve_rot_y = _compat.action_new_fcurve(anim_action, anim_datablock, str(anim_curve + '.rotation_euler'), 1, anim_group_name)
+            fcurve_rot_z = _compat.action_new_fcurve(anim_action, anim_datablock, str(anim_curve + '.rotation_euler'), 2, anim_group_name)
             rot_fcurves = (fcurve_rot_x, fcurve_rot_y, fcurve_rot_z)
         else:
-            fcurve_rot_w = anim_action.fcurves.new(str(anim_curve + '.rotation_quaternion'), index=0)
-            fcurve_rot_x = anim_action.fcurves.new(str(anim_curve + '.rotation_quaternion'), index=1)
-            fcurve_rot_y = anim_action.fcurves.new(str(anim_curve + '.rotation_quaternion'), index=2)
-            fcurve_rot_z = anim_action.fcurves.new(str(anim_curve + '.rotation_quaternion'), index=3)
-            fcurve_rot_w.group = anim_group
-            fcurve_rot_x.group = anim_group
-            fcurve_rot_y.group = anim_group
-            fcurve_rot_z.group = anim_group
+            fcurve_rot_w = _compat.action_new_fcurve(anim_action, anim_datablock, str(anim_curve + '.rotation_quaternion'), 0, anim_group_name)
+            fcurve_rot_x = _compat.action_new_fcurve(anim_action, anim_datablock, str(anim_curve + '.rotation_quaternion'), 1, anim_group_name)
+            fcurve_rot_y = _compat.action_new_fcurve(anim_action, anim_datablock, str(anim_curve + '.rotation_quaternion'), 2, anim_group_name)
+            fcurve_rot_z = _compat.action_new_fcurve(anim_action, anim_datablock, str(anim_curve + '.rotation_quaternion'), 3, anim_group_name)
             rot_fcurves = (fcurve_rot_w, fcurve_rot_x, fcurve_rot_y, fcurve_rot_z)
     if 'Sca' in types:
-        fcurve_sca_x = anim_action.fcurves.new(str(anim_curve + '.scale'), index=0)
-        fcurve_sca_y = anim_action.fcurves.new(str(anim_curve + '.scale'), index=1)
-        fcurve_sca_z = anim_action.fcurves.new(str(anim_curve + '.scale'), index=2)
-        fcurve_sca_x.group = anim_group
-        fcurve_sca_y.group = anim_group
-        fcurve_sca_z.group = anim_group
+        fcurve_sca_x = _compat.action_new_fcurve(anim_action, anim_datablock, str(anim_curve + '.scale'), 0, anim_group_name)
+        fcurve_sca_y = _compat.action_new_fcurve(anim_action, anim_datablock, str(anim_curve + '.scale'), 1, anim_group_name)
+        fcurve_sca_z = _compat.action_new_fcurve(anim_action, anim_datablock, str(anim_curve + '.scale'), 2, anim_group_name)
         sca_fcurves = (fcurve_sca_x, fcurve_sca_y, fcurve_sca_z)
     # print(' fcurve: %s' % str(fcurve))
     return pos_fcurves, rot_fcurves, sca_fcurves
@@ -277,7 +265,7 @@ def load(root_object, pia_files, armature, pis_filepath=None, bones=None):
                         streams = bone_channels[bone_name][2]
 
                         # CREATE ANIMATION GROUP
-                        anim_group = anim_action.groups.new(bone_name)
+                        anim_group_name = bone_name
                         armature.pose.bones[bone_name].rotation_mode = 'XYZ'  # Set rotation mode.
 
                         # use pose bone scale set on PIS import
@@ -288,7 +276,7 @@ def load(root_object, pia_files, armature, pis_filepath=None, bones=None):
                         # CREATE FCURVES
                         (pos_fcurves,
                          rot_fcurves,
-                         sca_fcurves) = _create_fcurves(anim_action, anim_group, str('pose.bones["' + bone_name + '"]'), rot_euler=True)
+                         sca_fcurves) = _create_fcurves(anim_action, armature, anim_group_name, str('pose.bones["' + bone_name + '"]'), rot_euler=True)
 
                         # GET BONE REST POSITION MATRIX
                         bone_rest_matrix_scs = bones[bone_name][1].transposed()
@@ -369,7 +357,7 @@ def load(root_object, pia_files, armature, pis_filepath=None, bones=None):
 
                         # CREATE ANIMATION GROUP
                         # anim_group = anim_action.groups.new(channel_name)
-                        anim_group = anim_action.groups.new('Location')
+                        anim_group_name = 'Location'
                         # armature.[channel_name].rotation_mode = 'XYZ' ## Set rotation mode.
                         # active_bone = armature.data.bones[channel_name]
                         # parent_bone = active_bone.parent
@@ -378,12 +366,9 @@ def load(root_object, pia_files, armature, pis_filepath=None, bones=None):
                         # pos_fcurves, rot_fcurves, sca_fcurves = _create_fcurves(anim_action, anim_group, anim_curve, rot_euler=True,
                         # types='LocRotSca')
                         # pos_fcurves, rot_fcurves, sca_fcurves = _create_fcurves(anim_action, anim_group, anim_curve, types='Loc')
-                        fcurve_pos_x = anim_action.fcurves.new('location', index=0)
-                        fcurve_pos_y = anim_action.fcurves.new('location', index=1)
-                        fcurve_pos_z = anim_action.fcurves.new('location', index=2)
-                        fcurve_pos_x.group = anim_group
-                        fcurve_pos_y.group = anim_group
-                        fcurve_pos_z.group = anim_group
+                        fcurve_pos_x = _compat.action_new_fcurve(anim_action, armature, 'location', 0, anim_group_name)
+                        fcurve_pos_y = _compat.action_new_fcurve(anim_action, armature, 'location', 1, anim_group_name)
+                        fcurve_pos_z = _compat.action_new_fcurve(anim_action, armature, 'location', 2, anim_group_name)
                         pos_fcurves = (fcurve_pos_x, fcurve_pos_y, fcurve_pos_z)
 
                         location = None

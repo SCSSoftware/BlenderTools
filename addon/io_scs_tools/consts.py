@@ -61,7 +61,7 @@ class Operators:
         """
         vg_name_prefix = ".scs_terrain_points_node:"
         """Name prefix of terrain points vertex group."""
-        vg_name_regex = "^" + vg_name_prefix.replace(".", "\\.") + "\d$"
+        vg_name_regex = "^" + vg_name_prefix.replace(".", "\\.") + r"\d$"
         """Regex for matching terrain points vertex groups names on export."""
 
     class View3DReport:

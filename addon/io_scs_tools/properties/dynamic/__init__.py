@@ -33,6 +33,10 @@ class DynamicProps:
 
     __registered_props = {}
 
+    __values = {}
+    """Runtime values of dynamic properties per scope. Kept in python as they shouldn't be saved anywhere
+    (NOTE: Blender 5.0+ add-on preferences don't support custom ID properties anymore)."""
+
     @staticmethod
     def __register_property__(scope, property_name):
         """Registered given property name for given class type.
@@ -80,17 +84,7 @@ class DynamicProps:
             """
             assert self
 
-            prefs = bpy.context.preferences.addons["io_scs_tools"].preferences
-
-            if scope not in prefs:
-                return default
-
-            scoped_prefs = prefs[scope]
-
-            if property_name not in scoped_prefs:
-                return default
-
-            return scoped_prefs[property_name]
+            return DynamicProps.__values.get(scope, {}).get(property_name, default)
 
         def setter(self, value):
             """Sets value to the property.
@@ -103,12 +97,7 @@ class DynamicProps:
             assert self
             assert isinstance(value, property_type)
 
-            prefs = bpy.context.preferences.addons["io_scs_tools"].preferences
-
-            if scope not in prefs:
-                prefs[scope] = {}
-
-            prefs[scope][property_name] = value
+            DynamicProps.__values.setdefault(scope, {})[property_name] = value
 
         # check for default value type
         assert isinstance(default, property_type)

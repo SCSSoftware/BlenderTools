@@ -20,6 +20,7 @@
 
 import bpy
 from io_scs_tools.consts import Material as _MAT_consts
+from io_scs_tools.utils import compat as _compat
 
 WINDOW_FINAL_UV_G = _MAT_consts.node_group_prefix + "WindowFinalUV"
 
@@ -50,13 +51,13 @@ def __create_node_group__():
     final_uv_g = bpy.data.node_groups.new(type="ShaderNodeTree", name=WINDOW_FINAL_UV_G)
 
     # inputs defining
-    final_uv_g.inputs.new("NodeSocketFloat", "UV")
-    final_uv_g.inputs.new("NodeSocketFloat", "Factor")
+    _compat.ng_new_socket(final_uv_g, 'INPUT', "NodeSocketFloat", "UV")
+    _compat.ng_new_socket(final_uv_g, 'INPUT', "NodeSocketFloat", "Factor")
     input_n = final_uv_g.nodes.new("NodeGroupInput")
     input_n.location = (0, 0)
 
     # outputs defining
-    final_uv_g.outputs.new("NodeSocketFloat", "Final UV")
+    _compat.ng_new_socket(final_uv_g, 'OUTPUT', "NodeSocketFloat", "Final UV")
     output_n = final_uv_g.nodes.new("NodeGroupOutput")
     output_n.location = (pos_x_shift * 6, 0)
 

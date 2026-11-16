@@ -20,6 +20,7 @@
 
 import bpy
 from io_scs_tools.consts import Material as _MAT_consts
+from io_scs_tools.utils import compat as _compat
 
 OUTPUT_SHADER_G = _MAT_consts.node_group_prefix + "OutputShaderGroup"
 
@@ -78,22 +79,21 @@ def __create_node_group__():
         output_shader_g = bpy.data.node_groups[OUTPUT_SHADER_G]
 
         # delete all inputs and outputs
-        output_shader_g.inputs.clear()
-        output_shader_g.outputs.clear()
+        _compat.ng_clear_sockets(output_shader_g)
 
         # delete all old nodes and links as they will be recreated now with actual version
         output_shader_g.nodes.clear()
 
     # inputs defining
-    output_shader_g.inputs.new("NodeSocketColor", "Color")
-    output_shader_g.inputs.new("NodeSocketFloat", "Alpha")
+    _compat.ng_new_socket(output_shader_g, 'INPUT', "NodeSocketColor", "Color")
+    _compat.ng_new_socket(output_shader_g, 'INPUT', "NodeSocketFloat", "Alpha")
 
     # always set to full opaque by default since this behaviour is expected by shaders
     # since this behaviour is epxected by effects from before.
-    output_shader_g.inputs['Alpha'].default_value = 1
+    _compat.ng_get_socket(output_shader_g, 'INPUT', 'Alpha').default_value = 1
 
     # outputs defining
-    output_shader_g.outputs.new("NodeSocketShader", "Shader")
+    _compat.ng_new_socket(output_shader_g, 'OUTPUT', "NodeSocketShader", "Shader")
 
     # node creation
     input_n = output_shader_g.nodes.new("NodeGroupInput")

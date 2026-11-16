@@ -20,6 +20,7 @@
 
 import bpy
 from io_scs_tools.consts import Material as _MAT_consts
+from io_scs_tools.utils import compat as _compat
 
 ASAFEW_G = _MAT_consts.node_group_prefix + "AlphaRemapGroup"
 
@@ -50,14 +51,14 @@ def __create_node_group__():
     asafew_g = bpy.data.node_groups.new(type="ShaderNodeTree", name=ASAFEW_G)
 
     # inputs defining
-    asafew_g.inputs.new("NodeSocketFloat", "Alpha")
-    asafew_g.inputs.new("NodeSocketFloat", "Factor1")
-    asafew_g.inputs.new("NodeSocketFloat", "Factor2")
+    _compat.ng_new_socket(asafew_g, 'INPUT', "NodeSocketFloat", "Alpha")
+    _compat.ng_new_socket(asafew_g, 'INPUT', "NodeSocketFloat", "Factor1")
+    _compat.ng_new_socket(asafew_g, 'INPUT', "NodeSocketFloat", "Factor2")
     input_n = asafew_g.nodes.new("NodeGroupInput")
     input_n.location = (0, 0)
 
     # outputs defining
-    asafew_g.outputs.new("NodeSocketFloat", "Weighted Alpha")
+    _compat.ng_new_socket(asafew_g, 'OUTPUT', "NodeSocketFloat", "Weighted Alpha")
     output_n = asafew_g.nodes.new("NodeGroupOutput")
     output_n.location = (185 * 3, 0)
 

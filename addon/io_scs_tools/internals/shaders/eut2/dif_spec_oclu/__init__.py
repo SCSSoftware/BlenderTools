@@ -21,6 +21,7 @@
 from io_scs_tools.consts import Mesh as _MESH_consts
 from io_scs_tools.internals.shaders.eut2.dif_spec import DifSpec
 from io_scs_tools.utils import material as _material_utils
+from io_scs_tools.utils import compat as _compat
 
 
 class DifSpecOclu(DifSpec):
@@ -71,7 +72,7 @@ class DifSpecOclu(DifSpec):
         oclu_tex_n.location = (start_pos_x + pos_x_shift, start_pos_y + 1200)
         oclu_tex_n.width = 140
 
-        oclu_sep_rgb_n = node_tree.nodes.new("ShaderNodeSeparateRGB")
+        oclu_sep_rgb_n = _compat.new_separate_rgb_node(node_tree.nodes)
         oclu_sep_rgb_n.name = oclu_sep_rgb_n.label = DifSpecOclu.OCLU_SEPARATE_RGB_NODE
         oclu_sep_rgb_n.location = (start_pos_x + pos_x_shift * 3, start_pos_y + 1200)
 
@@ -89,14 +90,14 @@ class DifSpecOclu(DifSpec):
         node_tree.links.new(oclu_tex_n.inputs["Vector"], sec_uvmap_n.outputs["UV"])
 
         # pass 1
-        node_tree.links.new(oclu_sep_rgb_n.inputs["Image"], oclu_tex_n.outputs["Color"])
+        node_tree.links.new(oclu_sep_rgb_n.inputs[0], oclu_tex_n.outputs["Color"])
 
         # pass 2
         node_tree.links.new(oclu_a_mix_n.inputs[0], base_tex_n.outputs["Alpha"])
-        node_tree.links.new(oclu_a_mix_n.inputs[1], oclu_sep_rgb_n.outputs["R"])
+        node_tree.links.new(oclu_a_mix_n.inputs[1], oclu_sep_rgb_n.outputs[0])
 
         node_tree.links.new(oclu_mix_n.inputs[0], base_tex_n.outputs["Color"])
-        node_tree.links.new(oclu_mix_n.inputs[1], oclu_sep_rgb_n.outputs["R"])
+        node_tree.links.new(oclu_mix_n.inputs[1], oclu_sep_rgb_n.outputs[0])
 
         # pass 3
         node_tree.links.new(spec_mult_n.inputs[1], oclu_a_mix_n.outputs["Value"])

@@ -20,6 +20,7 @@
 
 
 import bpy
+import gpu
 import os
 from bpy.props import StringProperty, BoolProperty, IntProperty
 from io_scs_tools.consts import Operators as _OP_consts
@@ -136,13 +137,13 @@ class SCS_TOOLS_OT_Show3DViewReport(bpy.types.Operator):
 
     @staticmethod
     def get_scs_banner_img_data(window):
-        """Loads image to blender data block, loads it to gl memory and gets bindcode address that can be used in
-        bgl module for image drawing.
+        """Loads image to blender data block, loads it to gl memory and gets GPU texture that can be used in
+        gpu module for image drawing.
 
         :param window: window for which we should get banner image
         :type window: bpy.type.Window
-        :return: (bindcode of scs banner image, width of scs banner image, height of scs banner image
-        :rtype: (int, int, int)
+        :return: (GPU texture of scs banner image, width of scs banner image, height of scs banner image
+        :rtype: (gpu.types.GPUTexture, int, int)
         """
 
         if SCS_TOOLS_OT_Show3DViewReport.has_controls(window):
@@ -161,12 +162,10 @@ class SCS_TOOLS_OT_Show3DViewReport(bpy.types.Operator):
 
             img = bpy.data.images[img_name]
 
-        # ensure that image is loaded in GPU memory aka has proper bindcode,
-        # we have to that each time because if operator is shown for long time blender might free it on it's own
-        if img.bindcode == 0:
-            img.gl_load()
+        # get GPU texture of the image (blender caches it on image and recreates it if it was freed in meantime)
+        texture = gpu.texture.from_image(img)
 
-        return img.bindcode, img.size[0], img.size[1]
+        return texture, img.size[0], img.size[1]
 
     @staticmethod
     def get_lines():

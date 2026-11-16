@@ -20,6 +20,7 @@
 
 import bpy
 from io_scs_tools.consts import Material as _MAT_consts
+from io_scs_tools.utils import compat as _compat
 
 FRESNEL_LEGACY_G = _MAT_consts.node_group_prefix + "FresnelLegacyGroup"
 
@@ -47,15 +48,15 @@ def __create_fresnel_group__():
     fresnel_g = bpy.data.node_groups.new(type="ShaderNodeTree", name=FRESNEL_LEGACY_G)
 
     # inputs defining
-    fresnel_g.inputs.new("NodeSocketFloat", "Scale")
-    fresnel_g.inputs.new("NodeSocketFloat", "Bias")
-    fresnel_g.inputs.new("NodeSocketVector", "Normal Vector")
-    fresnel_g.inputs.new("NodeSocketVector", "Reflection Normal Vector")
+    _compat.ng_new_socket(fresnel_g, 'INPUT', "NodeSocketFloat", "Scale")
+    _compat.ng_new_socket(fresnel_g, 'INPUT', "NodeSocketFloat", "Bias")
+    _compat.ng_new_socket(fresnel_g, 'INPUT', "NodeSocketVector", "Normal Vector")
+    _compat.ng_new_socket(fresnel_g, 'INPUT', "NodeSocketVector", "Reflection Normal Vector")
     input_n = fresnel_g.nodes.new("NodeGroupInput")
     input_n.location = (0, 0)
 
     # outputs defining
-    fresnel_g.outputs.new("NodeSocketFloat", "Fresnel Factor")
+    _compat.ng_new_socket(fresnel_g, 'OUTPUT', "NodeSocketFloat", "Fresnel Factor")
     output_n = fresnel_g.nodes.new("NodeGroupOutput")
     output_n.location = (185 * 5, 0)
 

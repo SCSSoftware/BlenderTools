@@ -20,6 +20,7 @@
 
 import bpy
 from io_scs_tools.consts import Material as _MAT_consts
+from io_scs_tools.utils import compat as _compat
 
 SCS_UVS_SEPARATE_G = _MAT_consts.node_group_prefix + "UVsSeparate"
 
@@ -49,13 +50,13 @@ def __create_node_group__():
     scs_uvs_separate_g = bpy.data.node_groups.new(type="ShaderNodeTree", name=SCS_UVS_SEPARATE_G)
 
     # inputs defining
-    scs_uvs_separate_g.inputs.new("NodeSocketVector", "UV")
+    _compat.ng_new_socket(scs_uvs_separate_g, 'INPUT', "NodeSocketVector", "UV")
     input_n = scs_uvs_separate_g.nodes.new("NodeGroupInput")
     input_n.location = (0, 0)
 
     # outputs defining
-    scs_uvs_separate_g.outputs.new("NodeSocketFloat", "U")
-    scs_uvs_separate_g.outputs.new("NodeSocketFloat", "V")
+    _compat.ng_new_socket(scs_uvs_separate_g, 'OUTPUT', "NodeSocketFloat", "U")
+    _compat.ng_new_socket(scs_uvs_separate_g, 'OUTPUT', "NodeSocketFloat", "V")
     output_n = scs_uvs_separate_g.nodes.new("NodeGroupOutput")
     output_n.location = (pos_x_shift * 4, 0)
 

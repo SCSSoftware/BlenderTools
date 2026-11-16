@@ -23,6 +23,7 @@ from io_scs_tools.consts import Material as _MAT_consts
 from io_scs_tools.consts import SCSLigthing as _LIGHTING_consts
 from io_scs_tools.internals.shaders.eut2.std_node_groups import fresnel_legacy_ng
 from io_scs_tools.internals.shaders.eut2.std_node_groups import fresnel_schlick_ng
+from io_scs_tools.utils import compat as _compat
 
 ADD_ENV_G = _MAT_consts.node_group_prefix + "AddEnvGroup"
 
@@ -117,28 +118,27 @@ def __create_node_group__():
         add_env_g = bpy.data.node_groups[ADD_ENV_G]
 
         # delete all inputs and outputs
-        add_env_g.inputs.clear()
-        add_env_g.outputs.clear()
+        _compat.ng_clear_sockets(add_env_g)
 
         # delete all old nodes and links as they will be recreated now with actual version
         add_env_g.nodes.clear()
 
     # inputs defining
-    add_env_g.inputs.new("NodeSocketFloat", "Fresnel Type")
-    add_env_g.inputs.new("NodeSocketFloat", "Fresnel Scale")
-    add_env_g.inputs.new("NodeSocketFloat", "Fresnel Bias")
-    add_env_g.inputs.new("NodeSocketVector", "Normal Vector")
-    add_env_g.inputs.new("NodeSocketVector", "Reflection Normal Vector")
-    add_env_g.inputs.new("NodeSocketFloat", "Apply Fresnel")
-    add_env_g.inputs.new("NodeSocketColor", "Reflection Texture Color")
-    add_env_g.inputs.new("NodeSocketFloat", "Base Texture Alpha")
-    add_env_g.inputs.new("NodeSocketColor", "Env Factor Color")
-    add_env_g.inputs.new("NodeSocketColor", "Specular Color")
-    add_env_g.inputs.new("NodeSocketColor", "Weighted Color")
-    add_env_g.inputs.new("NodeSocketFloat", "Strength Multiplier")
+    _compat.ng_new_socket(add_env_g, 'INPUT', "NodeSocketFloat", "Fresnel Type")
+    _compat.ng_new_socket(add_env_g, 'INPUT', "NodeSocketFloat", "Fresnel Scale")
+    _compat.ng_new_socket(add_env_g, 'INPUT', "NodeSocketFloat", "Fresnel Bias")
+    _compat.ng_new_socket(add_env_g, 'INPUT', "NodeSocketVector", "Normal Vector")
+    _compat.ng_new_socket(add_env_g, 'INPUT', "NodeSocketVector", "Reflection Normal Vector")
+    _compat.ng_new_socket(add_env_g, 'INPUT', "NodeSocketFloat", "Apply Fresnel")
+    _compat.ng_new_socket(add_env_g, 'INPUT', "NodeSocketColor", "Reflection Texture Color")
+    _compat.ng_new_socket(add_env_g, 'INPUT', "NodeSocketFloat", "Base Texture Alpha")
+    _compat.ng_new_socket(add_env_g, 'INPUT', "NodeSocketColor", "Env Factor Color")
+    _compat.ng_new_socket(add_env_g, 'INPUT', "NodeSocketColor", "Specular Color")
+    _compat.ng_new_socket(add_env_g, 'INPUT', "NodeSocketColor", "Weighted Color")
+    _compat.ng_new_socket(add_env_g, 'INPUT', "NodeSocketFloat", "Strength Multiplier")
 
     # outputs defining
-    add_env_g.outputs.new("NodeSocketColor", "Environment Addition Color")
+    _compat.ng_new_socket(add_env_g, 'OUTPUT', "NodeSocketColor", "Environment Addition Color")
 
     # node creation
     input_n = add_env_g.nodes.new("NodeGroupInput")

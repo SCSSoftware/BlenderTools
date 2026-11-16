@@ -21,6 +21,7 @@
 import bpy
 from io_scs_tools.internals.shaders.std_node_groups import animsheet_xfade_ng
 from io_scs_tools.consts import Material as _MAT_consts
+from io_scs_tools.utils import compat as _compat
 
 FADESHEET_COMPUTE_G = _MAT_consts.node_group_prefix + "FadesheetCompute"
 
@@ -77,23 +78,22 @@ def __create_node_group__():
         fadesheet_compute_g = bpy.data.node_groups[FADESHEET_COMPUTE_G]
 
         # delete all inputs and outputs
-        fadesheet_compute_g.inputs.clear()
-        fadesheet_compute_g.outputs.clear()
+        _compat.ng_clear_sockets(fadesheet_compute_g)
 
         # delete all old nodes and links as they will be recreated now with actual version
         fadesheet_compute_g.nodes.clear()
 
     # inputs defining
-    fadesheet_compute_g.inputs.new("NodeSocketFloat", "FPS")
-    fadesheet_compute_g.inputs.new("NodeSocketFloat", "FramesRow")
-    fadesheet_compute_g.inputs.new("NodeSocketFloat", "FramesTotal")
-    fadesheet_compute_g.inputs.new("NodeSocketVector", "FrameSize")
-    fadesheet_compute_g.inputs.new("NodeSocketVector", "UV")
+    _compat.ng_new_socket(fadesheet_compute_g, 'INPUT', "NodeSocketFloat", "FPS")
+    _compat.ng_new_socket(fadesheet_compute_g, 'INPUT', "NodeSocketFloat", "FramesRow")
+    _compat.ng_new_socket(fadesheet_compute_g, 'INPUT', "NodeSocketFloat", "FramesTotal")
+    _compat.ng_new_socket(fadesheet_compute_g, 'INPUT', "NodeSocketVector", "FrameSize")
+    _compat.ng_new_socket(fadesheet_compute_g, 'INPUT', "NodeSocketVector", "UV")
 
     # outputs defining
-    fadesheet_compute_g.outputs.new("NodeSocketVector", "UV0")
-    fadesheet_compute_g.outputs.new("NodeSocketVector", "UV1")
-    fadesheet_compute_g.outputs.new("NodeSocketFloat", "FrameBlend")
+    _compat.ng_new_socket(fadesheet_compute_g, 'OUTPUT', "NodeSocketVector", "UV0")
+    _compat.ng_new_socket(fadesheet_compute_g, 'OUTPUT', "NodeSocketVector", "UV1")
+    _compat.ng_new_socket(fadesheet_compute_g, 'OUTPUT', "NodeSocketFloat", "FrameBlend")
 
     # node creation
     input_n = fadesheet_compute_g.nodes.new("NodeGroupInput")

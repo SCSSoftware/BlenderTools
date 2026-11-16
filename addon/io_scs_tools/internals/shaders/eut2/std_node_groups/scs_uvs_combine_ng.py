@@ -20,6 +20,7 @@
 
 import bpy
 from io_scs_tools.consts import Material as _MAT_consts
+from io_scs_tools.utils import compat as _compat
 
 SCS_UVS_COMBINE_G = _MAT_consts.node_group_prefix + "UVsCombine"
 
@@ -49,13 +50,13 @@ def __create_node_group__():
     scs_uvs_combine_g = bpy.data.node_groups.new(type="ShaderNodeTree", name=SCS_UVS_COMBINE_G)
 
     # inputs defining
-    scs_uvs_combine_g.inputs.new("NodeSocketFloat", "U")
-    scs_uvs_combine_g.inputs.new("NodeSocketFloat", "V")
+    _compat.ng_new_socket(scs_uvs_combine_g, 'INPUT', "NodeSocketFloat", "U")
+    _compat.ng_new_socket(scs_uvs_combine_g, 'INPUT', "NodeSocketFloat", "V")
     input_n = scs_uvs_combine_g.nodes.new("NodeGroupInput")
     input_n.location = (0, 0)
 
     # outputs defining
-    scs_uvs_combine_g.outputs.new("NodeSocketVector", "Vector")
+    _compat.ng_new_socket(scs_uvs_combine_g, 'OUTPUT', "NodeSocketVector", "Vector")
     output_n = scs_uvs_combine_g.nodes.new("NodeGroupOutput")
     output_n.location = (pos_x_shift * 4, 0)
 

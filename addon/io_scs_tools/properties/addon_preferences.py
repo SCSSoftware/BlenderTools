@@ -34,6 +34,7 @@ from io_scs_tools.internals import shader_presets as _shader_presets
 from io_scs_tools.internals.callbacks import lighting_east_lock as _lighting_east_lock_callback
 from io_scs_tools.internals.containers import config as _config_container
 from io_scs_tools.properties.dynamic import DynamicProps as _DynamicProps
+from io_scs_tools.utils import compat as _compat
 from io_scs_tools.utils import material as _material_utils
 from io_scs_tools.utils import path as _path_utils
 from io_scs_tools.utils import view3d as _view3d_utils
@@ -319,7 +320,7 @@ class SCSGlobals(bpy.types.PropertyGroup):
         :return: set of writtable properties
         :rtype: set
         """
-        return set(self.keys()) - _DynamicProps.get_registered_members(_DynamicProps.Scopes.SCS_GLOBALS)
+        return set(_compat.rna_props_storage(self).keys()) - _DynamicProps.get_registered_members(_DynamicProps.Scopes.SCS_GLOBALS)
 
     # DYNAMIC PROPS - UPDATE LOCKS (FOR AVOIDANCE OF RECURSION)
     config_update_lock = _DynamicProps.register(_DynamicProps.Scopes.SCS_GLOBALS, "config_update_lock", bool, False)
@@ -331,7 +332,7 @@ class SCSGlobals(bpy.types.PropertyGroup):
         # otherwise textures might not be properly loaded from parent and parent sibling directories
         # (we assign property directly to prevent recursive property update calls)
         if self.scs_project_path:
-            self["scs_project_path"] = self.scs_project_path.rstrip("\\/")
+            _compat.rna_props_storage(self)["scs_project_path"] = self.scs_project_path.rstrip("\\/")
 
         _config_container.update_scs_project_path(self.scs_project_path)
         return None

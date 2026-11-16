@@ -20,6 +20,7 @@
 
 import bpy
 from io_scs_tools.consts import Material as _MAT_consts
+from io_scs_tools.utils import compat as _compat
 
 BLEND_FACTOR_G = _MAT_consts.node_group_prefix + "BlendFactor"
 
@@ -69,12 +70,12 @@ def __create_node_group__():
     blend_fac_g = bpy.data.node_groups.new(type="ShaderNodeTree", name=BLEND_FACTOR_G)
 
     # inputs defining
-    blend_fac_g.inputs.new("NodeSocketFloat", "Speed")
+    _compat.ng_new_socket(blend_fac_g, 'INPUT', "NodeSocketFloat", "Speed")
     input_n = blend_fac_g.nodes.new("NodeGroupInput")
     input_n.location = (start_pos_x - pos_x_shift, start_pos_y)
 
     # outputs defining
-    blend_fac_g.outputs.new("NodeSocketColor", "Factor")
+    _compat.ng_new_socket(blend_fac_g, 'OUTPUT', "NodeSocketColor", "Factor")
     output_n = blend_fac_g.nodes.new("NodeGroupOutput")
     output_n.location = (start_pos_x + pos_x_shift * 9, start_pos_y)
 

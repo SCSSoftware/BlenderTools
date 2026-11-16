@@ -25,6 +25,7 @@ from io_scs_tools.consts import Mesh as _MESH_consts
 from io_scs_tools.consts import VertexColorTools as _VCT_consts
 from io_scs_tools.utils.printout import lprint
 from io_scs_tools.utils import convert as _convert
+from io_scs_tools.utils import compat as _compat
 
 
 def make_points_to_weld_list(mesh_vertices, mesh_normals, mesh_rgb, mesh_rgba, equal_decimals_count):
@@ -311,11 +312,8 @@ def get_mesh_for_normals(mesh):
     new_mesh = mesh.copy()
 
     # if user is not using auto smooth, then apply it now just for the porpuse of proper normals split calculation.
-    if not new_mesh.use_auto_smooth:
-        new_mesh.use_auto_smooth = True
-        new_mesh.auto_smooth_angle = 3.14
-
-    new_mesh.calc_normals_split()
+    # NOTE: on Blender 4.1+ corner normals are always available, so nothing to do there
+    _compat.mesh_calc_split_normals(new_mesh)
 
     return new_mesh
 
@@ -327,7 +325,7 @@ def cleanup_mesh(mesh):
     :type mesh: bpy.types.Mesh
     """
 
-    mesh.free_normals_split()
+    _compat.mesh_free_split_normals(mesh)
     if mesh.users == 0:
         bpy.data.meshes.remove(mesh, do_unlink=True)
 

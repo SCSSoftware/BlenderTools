@@ -73,9 +73,12 @@ def save_scs_globals_to_blend():
 
     global_props = {}
 
+    from io_scs_tools.utils import compat as _compat
+
     scs_globals = get_scs_globals()
+    scs_globals_storage = _compat.rna_props_storage(scs_globals)
     for prop in scs_globals.get_writtable_keys():
-        global_props[prop] = scs_globals[prop]
+        global_props[prop] = scs_globals_storage[prop]
 
     world['scs_globals'] = global_props
 
@@ -91,6 +94,8 @@ def load_scs_globals_from_blend():
 
     global_props = world['scs_globals']
 
-    scs_globals = get_scs_globals()
+    from io_scs_tools.utils import compat as _compat
+
+    scs_globals_storage = _compat.rna_props_storage(get_scs_globals())
     for prop in global_props.keys():
-        scs_globals[prop] = global_props[prop]
+        scs_globals_storage[prop] = global_props[prop]

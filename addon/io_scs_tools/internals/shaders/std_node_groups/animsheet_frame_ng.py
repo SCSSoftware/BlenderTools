@@ -22,6 +22,7 @@ import bpy
 from io_scs_tools.internals.shaders.std_node_groups import animsheet_frame_idx_to_col_row_ng
 from io_scs_tools.internals.shaders.std_node_groups import animsheet_loop_frame_ng
 from io_scs_tools.consts import Material as _MAT_consts
+from io_scs_tools.utils import compat as _compat
 
 ANIMSHEET_FRAME_G = _MAT_consts.node_group_prefix + "AnimsheetFrame"
 
@@ -77,20 +78,19 @@ def __create_node_group__():
         animsheet_xfade_g = bpy.data.node_groups[ANIMSHEET_FRAME_G]
 
         # delete all inputs and outputs
-        animsheet_xfade_g.inputs.clear()
-        animsheet_xfade_g.outputs.clear()
+        _compat.ng_clear_sockets(animsheet_xfade_g)
 
         # delete all old nodes and links as they will be recreated now with actual version
         animsheet_xfade_g.nodes.clear()
 
     # inputs defining
-    animsheet_xfade_g.inputs.new("NodeSocketFloat", "FPS")
-    animsheet_xfade_g.inputs.new("NodeSocketFloat", "FramesTotal")
-    animsheet_xfade_g.inputs.new("NodeSocketFloat", "FramesRow")
+    _compat.ng_new_socket(animsheet_xfade_g, 'INPUT', "NodeSocketFloat", "FPS")
+    _compat.ng_new_socket(animsheet_xfade_g, 'INPUT', "NodeSocketFloat", "FramesTotal")
+    _compat.ng_new_socket(animsheet_xfade_g, 'INPUT', "NodeSocketFloat", "FramesRow")
 
     # outputs defining
-    animsheet_xfade_g.outputs.new("NodeSocketFloat", "FrameX")
-    animsheet_xfade_g.outputs.new("NodeSocketFloat", "FrameY")
+    _compat.ng_new_socket(animsheet_xfade_g, 'OUTPUT', "NodeSocketFloat", "FrameX")
+    _compat.ng_new_socket(animsheet_xfade_g, 'OUTPUT', "NodeSocketFloat", "FrameY")
 
     # node creation
     input_n = animsheet_xfade_g.nodes.new("NodeGroupInput")

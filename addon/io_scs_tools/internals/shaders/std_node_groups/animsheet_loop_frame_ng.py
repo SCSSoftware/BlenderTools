@@ -20,6 +20,7 @@
 
 import bpy
 from io_scs_tools.consts import Material as _MAT_consts
+from io_scs_tools.utils import compat as _compat
 
 ANIMSHEET_LOOP_FRAME_G = _MAT_consts.node_group_prefix + "AnimsheetLoopFrame"
 
@@ -78,18 +79,17 @@ def __create_node_group__():
         animsheet_loop_frame_g = bpy.data.node_groups[ANIMSHEET_LOOP_FRAME_G]
 
         # delete all inputs and outputs
-        animsheet_loop_frame_g.inputs.clear()
-        animsheet_loop_frame_g.outputs.clear()
+        _compat.ng_clear_sockets(animsheet_loop_frame_g)
 
         # delete all old nodes and links as they will be recreated now with actual version
         animsheet_loop_frame_g.nodes.clear()
 
     # inputs defining
-    animsheet_loop_frame_g.inputs.new("NodeSocketFloat", "FPS")
-    animsheet_loop_frame_g.inputs.new("NodeSocketFloat", "FramesTotal")
+    _compat.ng_new_socket(animsheet_loop_frame_g, 'INPUT', "NodeSocketFloat", "FPS")
+    _compat.ng_new_socket(animsheet_loop_frame_g, 'INPUT', "NodeSocketFloat", "FramesTotal")
 
     # outputs defining
-    animsheet_loop_frame_g.outputs.new("NodeSocketFloat", "LoopFrame")
+    _compat.ng_new_socket(animsheet_loop_frame_g, 'OUTPUT', "NodeSocketFloat", "LoopFrame")
 
     # node creation
     input_n = animsheet_loop_frame_g.nodes.new("NodeGroupInput")
