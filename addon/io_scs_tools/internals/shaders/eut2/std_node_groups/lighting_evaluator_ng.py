@@ -23,6 +23,7 @@ from math import cos, radians
 from io_scs_tools.consts import Material as _MAT_consts
 from io_scs_tools.consts import SCSLigthing as _LIGHTING_consts
 from io_scs_tools.utils import convert as _convert_utils
+from io_scs_tools.utils import compat as _compat
 
 LIGHTING_EVALUATOR_G = _MAT_consts.node_group_prefix + "LightingEvaluator"
 
@@ -155,15 +156,15 @@ def __create_group__():
         lighting_eval_g = bpy.data.node_groups.new(type="ShaderNodeTree", name=LIGHTING_EVALUATOR_G)
 
         # inputs defining
-        lighting_eval_g.inputs.new("NodeSocketVector", "Normal Vector")  # n_normal
-        lighting_eval_g.inputs.new("NodeSocketVector", "Incoming Vector")  # n_eye
-        lighting_eval_g.inputs.new("NodeSocketFloat", "Shininess")  # specular_exponent
-        lighting_eval_g.inputs.new("NodeSocketFloat", "Flat Lighting")  # flat lighting switch, should be 0 or 1
+        _compat.ng_new_socket(lighting_eval_g, 'INPUT', "NodeSocketVector", "Normal Vector")  # n_normal
+        _compat.ng_new_socket(lighting_eval_g, 'INPUT', "NodeSocketVector", "Incoming Vector")  # n_eye
+        _compat.ng_new_socket(lighting_eval_g, 'INPUT', "NodeSocketFloat", "Shininess")  # specular_exponent
+        _compat.ng_new_socket(lighting_eval_g, 'INPUT', "NodeSocketFloat", "Flat Lighting")  # flat lighting switch, should be 0 or 1
 
         # outputs defining
-        lighting_eval_g.outputs.new("NodeSocketColor", "Diffuse Lighting")  # final diffuse lighting
-        lighting_eval_g.outputs.new("NodeSocketColor", "Specular Lighting")  # final specular lighting
-        lighting_eval_g.outputs.new("NodeSocketVector", "Normal")  # bypassed normal, to have one access point to final normal
+        _compat.ng_new_socket(lighting_eval_g, 'OUTPUT', "NodeSocketColor", "Diffuse Lighting")  # final diffuse lighting
+        _compat.ng_new_socket(lighting_eval_g, 'OUTPUT', "NodeSocketColor", "Specular Lighting")  # final specular lighting
+        _compat.ng_new_socket(lighting_eval_g, 'OUTPUT', "NodeSocketVector", "Normal")  # bypassed normal, to have one access point to final normal
 
     else:  # recreation
 

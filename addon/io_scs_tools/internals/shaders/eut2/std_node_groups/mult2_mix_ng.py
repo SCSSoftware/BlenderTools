@@ -20,6 +20,7 @@
 
 import bpy
 from io_scs_tools.consts import Material as _MAT_consts
+from io_scs_tools.utils import compat as _compat
 
 MULT2_MIX_G = _MAT_consts.node_group_prefix + "Mult2MixGroup"
 
@@ -58,21 +59,21 @@ def __create_node_group__():
     mult2_mix_g = bpy.data.node_groups.new(type="ShaderNodeTree", name=MULT2_MIX_G)
 
     # inputs defining
-    mult2_mix_g.inputs.new("NodeSocketFloat", "Base Alpha")
-    mult2_mix_g.inputs.new("NodeSocketColor", "Base Color")
-    mult2_mix_g.inputs.new("NodeSocketFloat", "Mult Alpha")
-    mult2_mix_g.inputs.new("NodeSocketColor", "Mult Color")
+    _compat.ng_new_socket(mult2_mix_g, 'INPUT', "NodeSocketFloat", "Base Alpha")
+    _compat.ng_new_socket(mult2_mix_g, 'INPUT', "NodeSocketColor", "Base Color")
+    _compat.ng_new_socket(mult2_mix_g, 'INPUT', "NodeSocketFloat", "Mult Alpha")
+    _compat.ng_new_socket(mult2_mix_g, 'INPUT', "NodeSocketColor", "Mult Color")
     input_n = mult2_mix_g.nodes.new("NodeGroupInput")
     input_n.location = (start_pos_x - pos_x_shift, start_pos_y)
 
     # outputs defining
-    mult2_mix_g.outputs.new("NodeSocketFloat", "Mix Alpha")
-    mult2_mix_g.outputs.new("NodeSocketColor", "Mix Color")
+    _compat.ng_new_socket(mult2_mix_g, 'OUTPUT', "NodeSocketFloat", "Mix Alpha")
+    _compat.ng_new_socket(mult2_mix_g, 'OUTPUT', "NodeSocketColor", "Mix Color")
     output_n = mult2_mix_g.nodes.new("NodeGroupOutput")
     output_n.location = (start_pos_x + pos_x_shift * 6, start_pos_y)
 
     # nodes creation
-    separate_mult_n = mult2_mix_g.nodes.new("ShaderNodeSeparateRGB")
+    separate_mult_n = _compat.new_separate_rgb_node(mult2_mix_g.nodes)
     separate_mult_n.name = _SEPARATE_MULT_NODE
     separate_mult_n.label = _SEPARATE_MULT_NODE
     separate_mult_n.location = (start_pos_x + pos_x_shift, start_pos_y)
@@ -103,9 +104,9 @@ def __create_node_group__():
     alpha_mix_n.location = (start_pos_x + pos_x_shift, start_pos_y - 200)
 
     # links creation
-    mult2_mix_g.links.new(separate_mult_n.inputs["Image"], input_n.outputs["Mult Color"])
+    mult2_mix_g.links.new(separate_mult_n.inputs[0], input_n.outputs["Mult Color"])
 
-    mult2_mix_g.links.new(mult_green_scale_n.inputs[0], separate_mult_n.outputs["G"])
+    mult2_mix_g.links.new(mult_green_scale_n.inputs[0], separate_mult_n.outputs[1])
 
     mult2_mix_g.links.new(mult_green_mix_n.inputs["Fac"], input_n.outputs["Base Alpha"])
     mult2_mix_g.links.new(mult_green_mix_n.inputs["Color1"], mult_green_scale_n.outputs["Value"])

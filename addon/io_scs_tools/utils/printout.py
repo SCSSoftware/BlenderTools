@@ -122,7 +122,9 @@ class _ImmediateMsgHandler:
         self.__message = message
         self.__last_time = time()
 
-        bpy.ops.wm.redraw_timer(type='DRAW_WIN_SWAP', iterations=1)
+        # redraw is possible only when there is a window (e.g. not in background mode)
+        if bpy.ops.wm.redraw_timer.poll():
+            bpy.ops.wm.redraw_timer(type='DRAW_WIN_SWAP', iterations=1)
 
     def reset_message(self):
         """Resets current immediate message.

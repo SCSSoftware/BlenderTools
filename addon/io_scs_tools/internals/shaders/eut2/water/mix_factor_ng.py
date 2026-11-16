@@ -20,6 +20,7 @@
 
 import bpy
 from io_scs_tools.consts import Material as _MAT_consts
+from io_scs_tools.utils import compat as _compat
 
 MIX_FACTOR_G = _MAT_consts.node_group_prefix + "WaterMixFactorGroup"
 
@@ -55,15 +56,15 @@ def __create_group__():
     detail_setup_g = bpy.data.node_groups.new(type="ShaderNodeTree", name=MIX_FACTOR_G)
 
     # inputs defining
-    detail_setup_g.inputs.new("NodeSocketFloat", "Near Distance")
-    detail_setup_g.inputs.new("NodeSocketFloat", "Far Distance")
-    detail_setup_g.inputs.new("NodeSocketFloat", "Scramble Distance")
+    _compat.ng_new_socket(detail_setup_g, 'INPUT', "NodeSocketFloat", "Near Distance")
+    _compat.ng_new_socket(detail_setup_g, 'INPUT', "NodeSocketFloat", "Far Distance")
+    _compat.ng_new_socket(detail_setup_g, 'INPUT', "NodeSocketFloat", "Scramble Distance")
     input_n = detail_setup_g.nodes.new("NodeGroupInput")
     input_n.location = (start_pos_x, start_pos_y)
 
     # outputs defining
-    detail_setup_g.outputs.new("NodeSocketFloat", "Mix Factor")
-    detail_setup_g.outputs.new("NodeSocketFloat", "Scramble Mix Factor")
+    _compat.ng_new_socket(detail_setup_g, 'OUTPUT', "NodeSocketFloat", "Mix Factor")
+    _compat.ng_new_socket(detail_setup_g, 'OUTPUT', "NodeSocketFloat", "Scramble Mix Factor")
     output_n = detail_setup_g.nodes.new("NodeGroupOutput")
     output_n.location = (start_pos_x + pos_x_shift * 7, start_pos_y)
 

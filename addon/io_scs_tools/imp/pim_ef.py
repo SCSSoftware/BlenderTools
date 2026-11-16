@@ -40,6 +40,7 @@ from io_scs_tools.utils import convert as _convert_utils
 from io_scs_tools.utils import object as _object_utils
 from io_scs_tools.utils import mesh as _mesh_utils
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
+from io_scs_tools.utils import compat as _compat
 
 
 def _get_piece_properties(section):
@@ -316,31 +317,47 @@ def _create_piece(
     # NORMALS - has to be applied after bmesh creation as they are set directly to mesh
     if _get_scs_globals().import_use_normals:
 
-        mesh.create_normals_split()
+        if _compat.HAS_LEGACY_SPLIT_NORMALS:  # Blender < 4.1
 
-        # first set normals directly to loops
-        for poly_i, poly in enumerate(mesh.polygons):
+            mesh.create_normals_split()
 
-            for poly_loop_i, loop_i in enumerate(poly.loop_indices):
+            # first set normals directly to loops
+            for poly_i, poly in enumerate(mesh.polygons):
 
-                curr_n = _convert_utils.scs_to_blend_matrix() @ Vector(mesh_normals[poly_i][poly_loop_i])
-                mesh.loops[loop_i].normal[:] = curr_n
+                for poly_loop_i, loop_i in enumerate(poly.loop_indices):
 
-        # then we have to go trough very important step they say,
-        # as without validation we get wrong result for some normals
-        mesh.validate(clean_customdata=False)  # *Very* important to not remove lnors here!
+                    curr_n = _convert_utils.scs_to_blend_matrix() @ Vector(mesh_normals[poly_i][poly_loop_i])
+                    mesh.loops[loop_i].normal[:] = curr_n
 
-        # set polygons to use smooth representation
-        mesh.polygons.foreach_set("use_smooth", [True] * len(mesh.polygons))
+            # then we have to go trough very important step they say,
+            # as without validation we get wrong result for some normals
+            mesh.validate(clean_customdata=False)  # *Very* important to not remove lnors here!
 
-        # finally fill clnors from loops normals and apply them (taken from official Blenders scripts)
-        clnors = array.array('f', [0.0] * (len(mesh.loops) * 3))
-        mesh.loops.foreach_get("normal", clnors)
-        mesh.normals_split_custom_set(tuple(zip(*(iter(clnors),) * 3)))
-        mesh.use_auto_smooth = True
-        mesh.auto_smooth_angle = 3.14
+            # set polygons to use smooth representation
+            mesh.polygons.foreach_set("use_smooth", [True] * len(mesh.polygons))
 
-        mesh.free_normals_split()
+            # finally fill clnors from loops normals and apply them (taken from official Blenders scripts)
+            clnors = array.array('f', [0.0] * (len(mesh.loops) * 3))
+            mesh.loops.foreach_get("normal", clnors)
+            mesh.normals_split_custom_set(tuple(zip(*(iter(clnors),) * 3)))
+            _compat.mesh_enable_custom_normals(mesh)
+
+            mesh.free_normals_split()
+
+        else:  # Blender 4.1+: loop normals are read only, custom normals are set directly
+
+            mesh.validate(clean_customdata=False)
+
+            # set polygons to use smooth representation
+            mesh.polygons.foreach_set("use_smooth", [True] * len(mesh.polygons))
+
+            scs_to_blend_mat = _convert_utils.scs_to_blend_matrix()
+            clnors = [None] * len(mesh.loops)
+            for poly_i, poly in enumerate(mesh.polygons):
+                for poly_loop_i, loop_i in enumerate(poly.loop_indices):
+                    clnors[loop_i] = (scs_to_blend_mat @ Vector(mesh_normals[poly_i][poly_loop_i])).normalized()
+
+            mesh.normals_split_custom_set(clnors)
     else:
         # set polygons to use smooth representation only
         mesh.polygons.foreach_set("use_smooth", [True] * len(mesh.polygons))
@@ -439,7 +456,7 @@ def _create_piece(
                     import re
 
                     for alias in mesh_uv_aliases[used_mat_idx][uv_lay]:
-                        numbers = re.findall("\d+", alias)
+                        numbers = re.findall(r"\d+", alias)
                         number = numbers[len(numbers) - 1]
                         alias_mapping[number] = uv_lay
 
@@ -731,23 +748,8 @@ def load_pim_file(context, filepath, terrain_points_trans=None, preview_model=Fa
 
     if preview_model:
 
-        bases = []
-        # get the bases of newly created objects for override
-        for base in bpy.context.scene.object_bases:
-            if base.object in objects:
-                bases.append(base)
-
-        override = {
-            'window': bpy.context.window,
-            'screen': bpy.context.screen,
-            'blend_data': bpy.context.blend_data,
-            'scene': bpy.context.scene,
-            'region': None,
-            'area': None,
-            'active_object': objects[0],
-            'selected_editable_bases': bases
-        }
-        bpy.ops.object.join(override)
+        with bpy.context.temp_override(active_object=objects[0], selected_editable_objects=objects):
+            bpy.ops.object.join()
 
         return objects[0]
 

@@ -24,6 +24,7 @@ from io_scs_tools.internals.shaders.eut2.dif_spec_add_env import DifSpecAddEnv
 from io_scs_tools.utils import convert as _convert_utils
 from io_scs_tools.utils import material as _material_utils
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
+from io_scs_tools.utils import compat as _compat
 
 
 class Truckpaint(DifSpecAddEnv):
@@ -214,7 +215,7 @@ class Truckpaint(DifSpecAddEnv):
         paint_r_col_n.location = (start_pos_x + pos_x_shift, start_pos_y + 50)
 
         # node creation - level 2
-        paint_tex_sep = node_tree.nodes.new("ShaderNodeSeparateRGB")
+        paint_tex_sep = _compat.new_separate_rgb_node(node_tree.nodes)
         paint_tex_sep.name = paint_tex_sep.label = Truckpaint.PAINT_TEX_SEP_NODE
         paint_tex_sep.location = (start_pos_x + pos_x_shift * 3, start_pos_y + 650)
 
@@ -250,22 +251,22 @@ class Truckpaint(DifSpecAddEnv):
         node_tree.links.new(paint_tex_n.inputs['Vector'], paint_uv_map_n.outputs['UV'])
 
         # make links - level 1
-        node_tree.links.new(paint_tex_sep.inputs['Image'], paint_tex_n.outputs['Color'])
+        node_tree.links.new(paint_tex_sep.inputs[0], paint_tex_n.outputs['Color'])
 
         # make links - level 2
         node_tree.links.new(airbrush_mix_n.inputs['Fac'], paint_tex_n.outputs['Alpha'])
         node_tree.links.new(airbrush_mix_n.inputs['Color1'], paint_base_col_n.outputs['Color'])
         node_tree.links.new(airbrush_mix_n.inputs['Color2'], paint_tex_n.outputs['Color'])
 
-        node_tree.links.new(col_mask_b_mix_n.inputs['Fac'], paint_tex_sep.outputs['B'])
+        node_tree.links.new(col_mask_b_mix_n.inputs['Fac'], paint_tex_sep.outputs[2])
         node_tree.links.new(col_mask_b_mix_n.inputs['Color1'], paint_base_col_n.outputs['Color'])
         node_tree.links.new(col_mask_b_mix_n.inputs['Color2'], paint_b_col_n.outputs['Color'])
 
-        node_tree.links.new(col_mask_g_mix_n.inputs['Fac'], paint_tex_sep.outputs['G'])
+        node_tree.links.new(col_mask_g_mix_n.inputs['Fac'], paint_tex_sep.outputs[1])
         node_tree.links.new(col_mask_g_mix_n.inputs['Color1'], col_mask_b_mix_n.outputs['Color'])
         node_tree.links.new(col_mask_g_mix_n.inputs['Color2'], paint_g_col_n.outputs['Color'])
 
-        node_tree.links.new(col_mask_r_mix_n.inputs['Fac'], paint_tex_sep.outputs['R'])
+        node_tree.links.new(col_mask_r_mix_n.inputs['Fac'], paint_tex_sep.outputs[0])
         node_tree.links.new(col_mask_r_mix_n.inputs['Color1'], col_mask_g_mix_n.outputs['Color'])
         node_tree.links.new(col_mask_r_mix_n.inputs['Color2'], paint_r_col_n.outputs['Color'])
 

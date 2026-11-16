@@ -18,13 +18,13 @@
 
 # Copyright (C) 2013-2019: SCS Software
 
-import bgl
 import blf
 import gpu
 from array import array
 from gpu_extras.batch import batch_for_shader
 from mathutils import Vector
 from io_scs_tools.internals.open_gl.shaders import get_shader, ShaderTypes
+from io_scs_tools.utils import compat as _compat
 
 
 class _Buffer:
@@ -61,23 +61,23 @@ class _Buffer:
         # depending on type  setup callbacks executed before and after dispatching
         if buffer_type == _Buffer.Types.LINES:
 
-            self.__bgl_callback = bgl.glLineWidth
-            self.__bgl_callback_param_before = self.__draw_size
-            self.__bgl_callback_param_after = 1.0
+            self.__state_callback = gpu.state.line_width_set
+            self.__state_callback_param_before = self.__draw_size
+            self.__state_callback_param_after = 1.0
             self.__draw_type = 'LINES'
 
         elif buffer_type == _Buffer.Types.POINTS:
 
-            self.__bgl_callback = bgl.glPointSize
-            self.__bgl_callback_param_before = self.__draw_size
-            self.__bgl_callback_param_after = 1.0
+            self.__state_callback = gpu.state.point_size_set
+            self.__state_callback_param_before = self.__draw_size
+            self.__state_callback_param_after = 1.0
             self.__draw_type = 'POINTS'
 
         elif buffer_type == _Buffer.Types.TRIS:
 
-            self.__bgl_callback = lambda *args: None
-            self.__bgl_callback_param_before = None
-            self.__bgl_callback_param_after = None
+            self.__state_callback = lambda *args: None
+            self.__state_callback_param_before = None
+            self.__state_callback_param_after = None
             self.__draw_type = 'TRIS'
 
     def append_attr(self, attr_name, value):
@@ -114,13 +114,17 @@ class _Buffer:
         if self.__type == _Buffer.Types.TRIS and space_3d.shading.type == 'WIREFRAME':
             return
 
-        self.__bgl_callback(self.__bgl_callback_param_before)
+        self.__state_callback(self.__state_callback_param_before)
 
         # bind shader
         self.__shader.bind()
 
         # fill the uniforms to binded shader
         for uniform_name, uniform_type, uniform_data, uniform_length, uniform_count in uniforms:
+            # nothing to send (e.g. no clip planes), skip it
+            if uniform_count <= 0:
+                continue
+
             uniform_loc = self.__shader.uniform_from_name(uniform_name)
             if uniform_type == float:
                 self.__shader.uniform_vector_float(uniform_loc, uniform_data, uniform_length, uniform_count)
@@ -133,7 +137,7 @@ class _Buffer:
         batch = batch_for_shader(self.__shader, self.__draw_type, self.__data)
         batch.draw(self.__shader)
 
-        self.__bgl_callback(self.__bgl_callback_param_after)
+        self.__state_callback(self.__state_callback_param_after)
 
     def has_entries(self):
         """Checks if there is any antries in this buffer.
@@ -902,7 +906,7 @@ def draw_rect_2d(positions, color):
     :param color: RGBA of rectangle
     :type color: tuple(float, float, float, float)
     """
-    shader = gpu.shader.from_builtin('2D_UNIFORM_COLOR')
+    shader = _compat.get_builtin_shader('UNIFORM_COLOR')
     batch = batch_for_shader(
         shader, 'TRI_STRIP',
         {

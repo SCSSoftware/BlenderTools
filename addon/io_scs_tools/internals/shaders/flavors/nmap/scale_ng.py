@@ -20,6 +20,7 @@
 
 import bpy
 from io_scs_tools.consts import Material as _MAT_consts
+from io_scs_tools.utils import compat as _compat
 
 TSNMAP_SCALE_G = _MAT_consts.node_group_prefix + "TSNMapScaleGroup"
 
@@ -72,19 +73,19 @@ def __create_nmap_scale_group__():
     nmap_scale_g = bpy.data.node_groups.new(type="ShaderNodeTree", name=TSNMAP_SCALE_G)
 
     # inputs defining
-    nmap_scale_g.inputs.new("NodeSocketColor", "NMap Tex Color")
-    nmap_scale_g.inputs.new("NodeSocketVector", "Original Normal")
-    nmap_scale_g.inputs.new("NodeSocketVector", "Modified Normal")
+    _compat.ng_new_socket(nmap_scale_g, 'INPUT', "NodeSocketColor", "NMap Tex Color")
+    _compat.ng_new_socket(nmap_scale_g, 'INPUT', "NodeSocketVector", "Original Normal")
+    _compat.ng_new_socket(nmap_scale_g, 'INPUT', "NodeSocketVector", "Modified Normal")
     input_n = nmap_scale_g.nodes.new("NodeGroupInput")
     input_n.location = (0, 0)
 
     # outputs defining
-    nmap_scale_g.outputs.new("NodeSocketVector", "Normal")
+    _compat.ng_new_socket(nmap_scale_g, 'OUTPUT', "NodeSocketVector", "Normal")
     output_n = nmap_scale_g.nodes.new("NodeGroupOutput")
     output_n.location = (185 * 7, 0)
 
     # group nodes
-    separate_rgb_n = nmap_scale_g.nodes.new("ShaderNodeSeparateRGB")
+    separate_rgb_n = _compat.new_separate_rgb_node(nmap_scale_g.nodes)
     separate_rgb_n.name = separate_rgb_n.label = _NMAP_TEX_SEP_NODE
     separate_rgb_n.location = (185 * 1, 400)
 
@@ -135,10 +136,10 @@ def __create_nmap_scale_group__():
     green_mix_n.blend_type = "MIX"
 
     # group links
-    nmap_scale_g.links.new(separate_rgb_n.inputs['Image'], input_n.outputs['NMap Tex Color'])
+    nmap_scale_g.links.new(separate_rgb_n.inputs[0], input_n.outputs['NMap Tex Color'])
 
-    nmap_scale_g.links.new(red_math_sub_n.inputs[0], separate_rgb_n.outputs['R'])
-    nmap_scale_g.links.new(green_math_sub_n.inputs[0], separate_rgb_n.outputs['G'])
+    nmap_scale_g.links.new(red_math_sub_n.inputs[0], separate_rgb_n.outputs[0])
+    nmap_scale_g.links.new(green_math_sub_n.inputs[0], separate_rgb_n.outputs[1])
 
     nmap_scale_g.links.new(red_math_mult_n.inputs[0], red_math_sub_n.outputs[0])
     nmap_scale_g.links.new(green_math_mult_n.inputs[0], green_math_sub_n.outputs[0])

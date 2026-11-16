@@ -25,6 +25,7 @@
 
 import bpy
 from io_scs_tools.consts import Material as _MAT_consts
+from io_scs_tools.utils import compat as _compat
 
 LINEAR_TO_SRGB_G = _MAT_consts.node_group_prefix + "LinearToSRGB"
 
@@ -70,12 +71,12 @@ def __create_linear_to_srgb_group__():
 
     # outputs defining
     # inputs defining
-    lin_to_srgb_g.inputs.new("NodeSocketFloat", "Value")
+    _compat.ng_new_socket(lin_to_srgb_g, 'INPUT', "NodeSocketFloat", "Value")
     input_n = lin_to_srgb_g.nodes.new("NodeGroupInput")
     input_n.location = (start_pos_x - pos_x_shift, 0)
 
     # outputs defining
-    lin_to_srgb_g.outputs.new("NodeSocketFloat", "Value")
+    _compat.ng_new_socket(lin_to_srgb_g, 'OUTPUT', "NodeSocketFloat", "Value")
     output_n = lin_to_srgb_g.nodes.new("NodeGroupOutput")
     output_n.location = (start_pos_x + pos_x_shift * 7, 0)
 

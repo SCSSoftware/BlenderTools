@@ -24,6 +24,7 @@ from io_scs_tools.internals.shaders.eut2.std_node_groups import scs_uvs_combine_
 from io_scs_tools.internals.shaders.eut2.std_node_groups import scs_uvs_separate_ng
 from io_scs_tools.internals.shaders.eut2.window import window_offset_factor_ng
 from io_scs_tools.internals.shaders.eut2.window import window_final_uv_ng
+from io_scs_tools.utils import compat as _compat
 
 WINDOW_UV_OFFSET_G = _MAT_consts.node_group_prefix + "WindowUVOffsetGroup"
 
@@ -56,14 +57,14 @@ def __create_node_group__():
     uv_offset_g = bpy.data.node_groups.new(type="ShaderNodeTree", name=WINDOW_UV_OFFSET_G)
 
     # inputs defining
-    uv_offset_g.inputs.new("NodeSocketVector", "UV")
-    uv_offset_g.inputs.new("NodeSocketVector", "Normal")
-    uv_offset_g.inputs.new("NodeSocketVector", "Incoming")
+    _compat.ng_new_socket(uv_offset_g, 'INPUT', "NodeSocketVector", "UV")
+    _compat.ng_new_socket(uv_offset_g, 'INPUT', "NodeSocketVector", "Normal")
+    _compat.ng_new_socket(uv_offset_g, 'INPUT', "NodeSocketVector", "Incoming")
     input_n = uv_offset_g.nodes.new("NodeGroupInput")
     input_n.location = (0, 0)
 
     # outputs defining
-    uv_offset_g.outputs.new("NodeSocketVector", "UV Final")
+    _compat.ng_new_socket(uv_offset_g, 'OUTPUT', "NodeSocketVector", "UV Final")
     output_n = uv_offset_g.nodes.new("NodeGroupOutput")
     output_n.location = (pos_x_shift * 12, 0)
 

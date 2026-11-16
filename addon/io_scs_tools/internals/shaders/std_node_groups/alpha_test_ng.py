@@ -21,6 +21,7 @@
 import bpy
 from io_scs_tools.consts import Material as _MAT_consts
 from io_scs_tools.internals.shaders.std_node_groups import output_shader_ng
+from io_scs_tools.utils import compat as _compat
 
 ALPHA_TEST_G = _MAT_consts.node_group_prefix + "AlphaTestPass"
 
@@ -74,18 +75,17 @@ def __create_node_group__():
         alpha_test_g = bpy.data.node_groups[ALPHA_TEST_G]
 
         # delete all inputs and outputs
-        alpha_test_g.inputs.clear()
-        alpha_test_g.outputs.clear()
+        _compat.ng_clear_sockets(alpha_test_g)
 
         # delete all old nodes and links as they will be recreated now with actual version
         alpha_test_g.nodes.clear()
 
     # inputs defining
-    alpha_test_g.inputs.new("NodeSocketShader", "Shader")
-    alpha_test_g.inputs.new("NodeSocketFloat", "Alpha")
+    _compat.ng_new_socket(alpha_test_g, 'INPUT', "NodeSocketShader", "Shader")
+    _compat.ng_new_socket(alpha_test_g, 'INPUT', "NodeSocketFloat", "Alpha")
 
     # outputs defining
-    alpha_test_g.outputs.new("NodeSocketShader", "Shader")
+    _compat.ng_new_socket(alpha_test_g, 'OUTPUT', "NodeSocketShader", "Shader")
 
     # node creation
     input_n = alpha_test_g.nodes.new("NodeGroupInput")

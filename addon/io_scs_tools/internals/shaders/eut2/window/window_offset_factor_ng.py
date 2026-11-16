@@ -20,6 +20,7 @@
 
 import bpy
 from io_scs_tools.consts import Material as _MAT_consts
+from io_scs_tools.utils import compat as _compat
 
 WINDOW_OFFSET_FACTOR_G = _MAT_consts.node_group_prefix + "WindowOffsetFactor"
 
@@ -50,13 +51,13 @@ def __create_node_group__():
     offset_factor_g = bpy.data.node_groups.new(type="ShaderNodeTree", name=WINDOW_OFFSET_FACTOR_G)
 
     # inputs defining
-    offset_factor_g.inputs.new("NodeSocketFloat", "WndToEye Up")
-    offset_factor_g.inputs.new("NodeSocketFloat", "WndToEye Direction")
+    _compat.ng_new_socket(offset_factor_g, 'INPUT', "NodeSocketFloat", "WndToEye Up")
+    _compat.ng_new_socket(offset_factor_g, 'INPUT', "NodeSocketFloat", "WndToEye Direction")
     input_n = offset_factor_g.nodes.new("NodeGroupInput")
     input_n.location = (0, 0)
 
     # outputs defining
-    offset_factor_g.outputs.new("NodeSocketFloat", "Offset Factor")
+    _compat.ng_new_socket(offset_factor_g, 'OUTPUT', "NodeSocketFloat", "Offset Factor")
     output_n = offset_factor_g.nodes.new("NodeGroupOutput")
     output_n.location = (pos_x_shift * 6, 0)
 

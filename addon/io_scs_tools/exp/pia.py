@@ -27,6 +27,7 @@ from io_scs_tools.utils import convert as _convert_utils
 from io_scs_tools.utils import get_scs_globals as _get_scs_globals
 from io_scs_tools.utils.info import get_combined_ver_str
 from io_scs_tools.utils.printout import lprint
+from io_scs_tools.utils import compat as _compat
 from io_scs_tools.internals.structure import SectionData as _SectionData
 from io_scs_tools.internals.containers import pix as _pix_container
 
@@ -41,7 +42,7 @@ def _get_custom_channels(scs_animation, action):
     loc_curves = {}  # dictionary for storing "location" curves of action
 
     # get curves which are related to moving of armature object
-    for fcurve in action.fcurves:
+    for fcurve in _compat.action_get_fcurves(action):
         if fcurve.data_path == 'location':
             loc_curves[fcurve.array_index] = fcurve
 
@@ -103,7 +104,7 @@ def _get_bone_channels(scs_root_obj, armature, scs_animation, action, export_sca
     curves_per_bone = OrderedDict()  # store all the curves we are interested in per bone names
 
     for bone in armature.data.bones:
-        for fcurve in action.fcurves:
+        for fcurve in _compat.action_get_fcurves(action):
 
             # check if curve belongs to bone
             if '["' + bone.name + '"]' in fcurve.data_path:

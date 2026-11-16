@@ -19,7 +19,11 @@
 # Copyright (C) 2013-2019: SCS Software
 
 import bpy
-import console_python
+
+try:
+    import _console_python as console_python  # Blender 4.4+
+except ImportError:
+    import console_python
 from io_scs_tools.internals.open_gl import core as _gl_core
 from io_scs_tools.utils import view3d as _view3d_utils
 

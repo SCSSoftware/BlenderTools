@@ -308,11 +308,13 @@ def get_reflection_image(texture_path, report_invalid=False):
     camera.type = "PANO"
     camera.lens = 5
     camera.sensor_width = 32
-    camera.cycles.panorama_type = "EQUIRECTANGULAR"
-    camera.cycles.latitude_min = -pi * 0.5
-    camera.cycles.latitude_max = pi * 0.5
-    camera.cycles.longitude_min = pi
-    camera.cycles.longitude_max = -pi
+    # Blender 4.0+ has panorama settings directly on camera, before they were in cycles camera settings
+    panorama_settings = camera if hasattr(camera, "panorama_type") else camera.cycles
+    panorama_settings.panorama_type = "EQUIRECTANGULAR"
+    panorama_settings.latitude_min = -pi * 0.5
+    panorama_settings.latitude_max = pi * 0.5
+    panorama_settings.longitude_min = pi
+    panorama_settings.longitude_max = -pi
 
     cam_obj = bpy.data.objects.new(camera.name, camera)
     cam_obj.location = (0,) * 3

@@ -20,6 +20,7 @@
 
 import bpy
 from io_scs_tools.consts import Material as _MAT_consts
+from io_scs_tools.utils import compat as _compat
 
 WATER_STREAM_G = _MAT_consts.node_group_prefix + "WaterStream"
 
@@ -74,16 +75,16 @@ def __create_node_group__():
     water_stream_ng = bpy.data.node_groups.new(type="ShaderNodeTree", name=WATER_STREAM_G)
 
     # inputs defining
-    water_stream_ng.inputs.new("NodeSocketVector", "Yaw0")
-    water_stream_ng.inputs.new("NodeSocketFloat", "Speed0")
-    water_stream_ng.inputs.new("NodeSocketVector", "Yaw1")
-    water_stream_ng.inputs.new("NodeSocketFloat", "Speed1")
+    _compat.ng_new_socket(water_stream_ng, 'INPUT', "NodeSocketVector", "Yaw0")
+    _compat.ng_new_socket(water_stream_ng, 'INPUT', "NodeSocketFloat", "Speed0")
+    _compat.ng_new_socket(water_stream_ng, 'INPUT', "NodeSocketVector", "Yaw1")
+    _compat.ng_new_socket(water_stream_ng, 'INPUT', "NodeSocketFloat", "Speed1")
     input_n = water_stream_ng.nodes.new("NodeGroupInput")
     input_n.location = (start_pos_x - pos_x_shift, start_pos_y)
 
     # outputs defining
-    water_stream_ng.outputs.new("NodeSocketVector", "Stream0")
-    water_stream_ng.outputs.new("NodeSocketVector", "Stream1")
+    _compat.ng_new_socket(water_stream_ng, 'OUTPUT', "NodeSocketVector", "Stream0")
+    _compat.ng_new_socket(water_stream_ng, 'OUTPUT', "NodeSocketVector", "Stream1")
     output_n = water_stream_ng.nodes.new("NodeGroupOutput")
     output_n.location = (start_pos_x + pos_x_shift * 3, start_pos_y)
 

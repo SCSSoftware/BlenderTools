@@ -239,8 +239,8 @@ def apply_fixes_for_1_12():
                 bpy.data.objects.remove(obj)
 
         # TODO: use scenes.remove() once bug is resolved: https://developer.blender.org/T71422
-        override = {'scene': lighting_scene}
-        bpy.ops.scene.delete(override, 'EXEC_DEFAULT')
+        with bpy.context.temp_override(scene=lighting_scene):
+            bpy.ops.scene.delete('EXEC_DEFAULT')
 
         for col in bpy.data.collections:
             if col.users == 0:

@@ -45,6 +45,7 @@ from io_scs_tools.utils import get_scs_globals as _get_scs_globals
 from io_scs_tools.utils.printout import lprint
 from io_scs_tools.utils.property import get_default as _get_default
 from io_scs_tools.utils.property import get_filebrowser_display_type
+from io_scs_tools.utils import compat as _compat
 from io_scs_tools import exp as _export
 from io_scs_tools import imp as _import
 
@@ -125,15 +126,12 @@ class Export:
             """
             for area in bpy.context.screen.areas:
                 if area.type == "VIEW_3D":
-                    override = {
-                        'window': bpy.context.window,
-                        'screen': bpy.context.screen,
-                        'blend_data': bpy.context.blend_data,
-                        'scene': bpy.context.scene,
-                        'region': area.regions[5],
-                        'area': area
-                    }
-                    bpy.ops.view3d.view_orbit(override, angle=angle, type=rot_direction)
+                    region = next((reg for reg in area.regions if reg.type == 'WINDOW'), None)
+                    if region is None:
+                        continue
+
+                    with bpy.context.temp_override(window=bpy.context.window, screen=bpy.context.screen, area=area, region=region):
+                        bpy.ops.view3d.view_orbit(angle=angle, type=rot_direction)
 
         @staticmethod
         def execute_zoom(zoom_change):
@@ -711,7 +709,7 @@ class Animation:
 
                 # MOVE FRAMES
                 # print_fcurve = 13
-                for fcurve_i, fcurve in enumerate(action.fcurves):
+                for fcurve_i, fcurve in enumerate(_compat.action_get_fcurves(action)):
                     # if fcurve_i == print_fcurve: print('fcurve: %r - %s' % (str(fcurve.data_path), str(fcurve.range())))
                     for keyframe_i, keyframe in enumerate(fcurve.keyframe_points):
                         # if fcurve_i == print_fcurve: print('  %i keyframe: %s' % (keyframe_i, str(keyframe.co)))
@@ -776,7 +774,7 @@ class Animation:
 
                 # MOVE FRAMES
                 # print_fcurve = 13
-                for fcurve_i, fcurve in enumerate(action.fcurves):
+                for fcurve_i, fcurve in enumerate(_compat.action_get_fcurves(action)):
                     # if fcurve_i == print_fcurve: print('fcurve: %r - %s' % (str(fcurve.data_path), str(fcurve.range())))
                     for keyframe_i, keyframe in enumerate(fcurve.keyframe_points):
                         # if fcurve_i == print_fcurve: print('  %i keyframe: %s' % (keyframe_i, str(keyframe.co)))
@@ -1475,7 +1473,7 @@ class PaintjobTools:
                 return None
 
             # internally change project path for the sake of texture loading, path will be reset in finalize method call
-            _get_scs_globals()["scs_project_path"] = project_path
+            _compat.rna_props_storage(_get_scs_globals())["scs_project_path"] = project_path
 
             # import model
             _get_scs_globals().import_in_progress = True
@@ -1635,7 +1633,7 @@ class PaintjobTools:
             scs_globals.import_pia_file = self.old_import_pia
             scs_globals.import_pic_file = self.old_import_pic
             scs_globals.import_use_welding = self.old_import_use_welding
-            scs_globals["scs_project_path"] = self.old_scs_project_path  # set internally so initialization is not triggered
+            _compat.rna_props_storage(scs_globals)["scs_project_path"] = self.old_scs_project_path  # set internally so initialization is not triggered
 
             lprint("\nI Import from 'data.sii' took: %0.3f sec" % (time() - self.start_time), report_errors=True, report_warnings=True)
 
@@ -2800,7 +2798,7 @@ class PaintjobTools:
 
             # change dump level internally as we want this operator to report everything
             if int(_get_scs_globals().dump_level) < 4:
-                _get_scs_globals()["dump_level"] = 4
+                _compat.rna_props_storage(_get_scs_globals())["dump_level"] = 4
 
             lprint(prefix + message, report_errors=do_report, report_warnings=do_report)
 
@@ -2816,11 +2814,26 @@ class PaintjobTools:
             # ensure compositing and scene node tree
 
             context.scene.render.use_compositing = True
-            context.scene.use_nodes = True
 
             _X_SHIFT = 250
 
-            tree = context.scene.node_tree
+            if hasattr(context.scene, "compositing_node_group"):  # Blender 5.0+: compositor uses node group
+
+                tree_name = "SCS Paintjob Compositing"
+                if tree_name in bpy.data.node_groups:
+                    tree = bpy.data.node_groups[tree_name]
+                else:
+                    tree = bpy.data.node_groups.new(tree_name, "CompositorNodeTree")
+
+                _compat.ng_clear_sockets(tree)
+                _compat.ng_new_socket(tree, 'OUTPUT', "NodeSocketColor", "Image")
+                context.scene.compositing_node_group = tree
+
+            else:
+
+                context.scene.use_nodes = True
+                tree = context.scene.node_tree
+
             nodes = tree.nodes
             links = tree.links
 
@@ -2837,20 +2850,26 @@ class PaintjobTools:
 
             self.premul_node = nodes.new(type="CompositorNodePremulKey")
             self.premul_node.location = (0, 0)
-            self.premul_node.mapping = 'STRAIGHT_TO_PREMUL'
+            if hasattr(self.premul_node, "mapping"):
+                self.premul_node.mapping = 'STRAIGHT_TO_PREMUL'
+            else:  # Blender 5.0+: mapping is menu input socket
+                self.premul_node.inputs["Type"].default_value = 'To Premultiplied'
 
             self.translate_node = nodes.new(type="CompositorNodeTranslate")
             self.translate_node.location = (_X_SHIFT, 0)
 
-            self.viewer_node = nodes.new(type="CompositorNodeComposite")
+            try:
+                self.viewer_node = nodes.new(type="CompositorNodeComposite")
+                self.viewer_node.use_alpha = True
+            except RuntimeError:  # Blender 5.0+: composite node was replaced by group output
+                self.viewer_node = nodes.new(type="NodeGroupOutput")
             self.viewer_node.location = (_X_SHIFT * 2, 0)
-            self.viewer_node.use_alpha = True
 
             # create links
 
             links.new(self.premul_node.inputs["Image"], self.img_node.outputs["Image"])
             links.new(self.translate_node.inputs["Image"], self.premul_node.outputs["Image"])
-            links.new(self.viewer_node.inputs["Image"], self.translate_node.outputs["Image"])
+            links.new(self.viewer_node.inputs[0], self.translate_node.outputs["Image"])
 
         def export_texture(self, orig_img, tgas_dir_path, texture_portion):
             """Export given texture portion into given paintjob path.

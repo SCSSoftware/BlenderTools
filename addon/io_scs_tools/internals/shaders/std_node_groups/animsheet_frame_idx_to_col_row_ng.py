@@ -20,6 +20,7 @@
 
 import bpy
 from io_scs_tools.consts import Material as _MAT_consts
+from io_scs_tools.utils import compat as _compat
 
 ANIMSHEET_FRAME_IDX_TO_COL_ROW_G = _MAT_consts.node_group_prefix + "AnimsheetFrameIndexToColRow"
 
@@ -77,19 +78,18 @@ def __create_node_group__():
         animsheet_frame_idx_to_col_row_g = bpy.data.node_groups[ANIMSHEET_FRAME_IDX_TO_COL_ROW_G]
 
         # delete all inputs and outputs
-        animsheet_frame_idx_to_col_row_g.inputs.clear()
-        animsheet_frame_idx_to_col_row_g.outputs.clear()
+        _compat.ng_clear_sockets(animsheet_frame_idx_to_col_row_g)
 
         # delete all old nodes and links as they will be recreated now with actual version
         animsheet_frame_idx_to_col_row_g.nodes.clear()
 
     # inputs defining
-    animsheet_frame_idx_to_col_row_g.inputs.new("NodeSocketFloat", "FrameIndex")
-    animsheet_frame_idx_to_col_row_g.inputs.new("NodeSocketFloat", "FramesRow")
+    _compat.ng_new_socket(animsheet_frame_idx_to_col_row_g, 'INPUT', "NodeSocketFloat", "FrameIndex")
+    _compat.ng_new_socket(animsheet_frame_idx_to_col_row_g, 'INPUT', "NodeSocketFloat", "FramesRow")
 
     # outputs defining
-    animsheet_frame_idx_to_col_row_g.outputs.new("NodeSocketFloat", "ColIndex")
-    animsheet_frame_idx_to_col_row_g.outputs.new("NodeSocketFloat", "RowIndex")
+    _compat.ng_new_socket(animsheet_frame_idx_to_col_row_g, 'OUTPUT', "NodeSocketFloat", "ColIndex")
+    _compat.ng_new_socket(animsheet_frame_idx_to_col_row_g, 'OUTPUT', "NodeSocketFloat", "RowIndex")
 
     # node creation
     input_n = animsheet_frame_idx_to_col_row_g.nodes.new("NodeGroupInput")

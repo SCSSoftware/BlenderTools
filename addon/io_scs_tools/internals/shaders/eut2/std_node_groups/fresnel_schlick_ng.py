@@ -20,6 +20,7 @@
 
 import bpy
 from io_scs_tools.consts import Material as _MAT_consts
+from io_scs_tools.utils import compat as _compat
 
 FRESNEL_SCHLICK_G = _MAT_consts.node_group_prefix + "FresnelSchlickGroup"
 
@@ -49,14 +50,14 @@ def __create_fresnel_group__():
     pos_x_shift = 185
 
     # inputs defining
-    fresnel_g.inputs.new("NodeSocketFloat", "Bias")
-    fresnel_g.inputs.new("NodeSocketVector", "Normal Vector")
-    fresnel_g.inputs.new("NodeSocketVector", "Reflection Normal Vector")
+    _compat.ng_new_socket(fresnel_g, 'INPUT', "NodeSocketFloat", "Bias")
+    _compat.ng_new_socket(fresnel_g, 'INPUT', "NodeSocketVector", "Normal Vector")
+    _compat.ng_new_socket(fresnel_g, 'INPUT', "NodeSocketVector", "Reflection Normal Vector")
     input_n = fresnel_g.nodes.new("NodeGroupInput")
     input_n.location = (0, 0)
 
     # outputs defining
-    fresnel_g.outputs.new("NodeSocketFloat", "Fresnel Factor")
+    _compat.ng_new_socket(fresnel_g, 'OUTPUT', "NodeSocketFloat", "Fresnel Factor")
     output_n = fresnel_g.nodes.new("NodeGroupOutput")
     output_n.location = (pos_x_shift * 6, 0)
 

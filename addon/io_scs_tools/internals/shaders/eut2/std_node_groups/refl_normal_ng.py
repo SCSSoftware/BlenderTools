@@ -20,6 +20,7 @@
 
 import bpy
 from io_scs_tools.consts import Material as _MAT_consts
+from io_scs_tools.utils import compat as _compat
 
 REFL_NORMAL_G = _MAT_consts.node_group_prefix + "ReflectionNormalGroup"
 
@@ -47,13 +48,13 @@ def __create_refl_normal_group__():
     refl_normal_g = bpy.data.node_groups.new(type="ShaderNodeTree", name=REFL_NORMAL_G)
 
     # inputs defining
-    refl_normal_g.inputs.new("NodeSocketVector", "Incoming")
-    refl_normal_g.inputs.new("NodeSocketVector", "Normal")
+    _compat.ng_new_socket(refl_normal_g, 'INPUT', "NodeSocketVector", "Incoming")
+    _compat.ng_new_socket(refl_normal_g, 'INPUT', "NodeSocketVector", "Normal")
     input_n = refl_normal_g.nodes.new("NodeGroupInput")
     input_n.location = (0, 0)
 
     # outputs defining
-    refl_normal_g.outputs.new("NodeSocketVector", "Reflection Normal")
+    _compat.ng_new_socket(refl_normal_g, 'OUTPUT', "NodeSocketVector", "Reflection Normal")
     output_n = refl_normal_g.nodes.new("NodeGroupOutput")
     output_n.location = (185 * 7, 0)
 

@@ -251,7 +251,7 @@ class MaterialSCSTools(bpy.types.PropertyGroup):
 
                     custom_maps = material.scs_props.custom_tex_coord_maps
                     # force prescribed pattern for name ("tex_coord_X" where X is unsigned integer) and avoid duplicates
-                    if not re.match("\Atex_coord_\d+\Z", self.name) or len(_inventory.get_indices(custom_maps, self.name)) == 2:
+                    if not re.match(r"\Atex_coord_\d+\Z", self.name) or len(_inventory.get_indices(custom_maps, self.name)) == 2:
                         i = 0
                         new_name = "tex_coord_" + str(i)
                         while _inventory.get_index(custom_maps, new_name) != -1:

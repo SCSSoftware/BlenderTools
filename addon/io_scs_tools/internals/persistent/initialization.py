@@ -138,7 +138,7 @@ def init_scs_tools():
         from io_scs_tools.operators.wm import SCS_TOOLS_OT_ShowMessageInPopup
         bpy.utils.register_class(SCS_TOOLS_OT_ShowMessageInPopup)
 
-        bpy.ops.wm.scs_tools_show_message_in_popup(context, 'INVOKE_DEFAULT',
+        bpy.ops.wm.scs_tools_show_message_in_popup('INVOKE_DEFAULT',
                                                    is_modal=True,
                                                    title="SCS Blender Tools Initialization Problem",
                                                    message="\n\n" + message.replace("\t   ", "") + "\n\n",  # formatting for better visibility

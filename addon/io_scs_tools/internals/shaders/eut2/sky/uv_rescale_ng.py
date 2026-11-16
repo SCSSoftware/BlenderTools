@@ -21,6 +21,7 @@
 import bpy
 from io_scs_tools.consts import Material as _MAT_consts
 from io_scs_tools.internals.shaders.eut2.sky import texture_types
+from io_scs_tools.utils import compat as _compat
 
 SKY_UV_RESCALE_G = _MAT_consts.node_group_prefix + "SkyUVRescale"
 
@@ -58,20 +59,20 @@ def __create_node_group__():
     rescale_g = bpy.data.node_groups.new(type="ShaderNodeTree", name=SKY_UV_RESCALE_G)
 
     # inputs defining
-    rescale_g.inputs.new("NodeSocketFloat", "Rescale Enabled")
-    rescale_g.inputs.new("NodeSocketFloat", "V Scale Base A")
-    rescale_g.inputs.new("NodeSocketFloat", "V Scale Base B")
-    rescale_g.inputs.new("NodeSocketFloat", "V Scale Over A")
-    rescale_g.inputs.new("NodeSocketFloat", "V Scale Over B")
-    rescale_g.inputs.new("NodeSocketVector", "UV")
+    _compat.ng_new_socket(rescale_g, 'INPUT', "NodeSocketFloat", "Rescale Enabled")
+    _compat.ng_new_socket(rescale_g, 'INPUT', "NodeSocketFloat", "V Scale Base A")
+    _compat.ng_new_socket(rescale_g, 'INPUT', "NodeSocketFloat", "V Scale Base B")
+    _compat.ng_new_socket(rescale_g, 'INPUT', "NodeSocketFloat", "V Scale Over A")
+    _compat.ng_new_socket(rescale_g, 'INPUT', "NodeSocketFloat", "V Scale Over B")
+    _compat.ng_new_socket(rescale_g, 'INPUT', "NodeSocketVector", "UV")
     input_n = rescale_g.nodes.new("NodeGroupInput")
     input_n.location = (0, 0)
 
     # outputs defining
-    rescale_g.outputs.new("NodeSocketVector", "UV Base A")
-    rescale_g.outputs.new("NodeSocketVector", "UV Base B")
-    rescale_g.outputs.new("NodeSocketVector", "UV Over A")
-    rescale_g.outputs.new("NodeSocketVector", "UV Over B")
+    _compat.ng_new_socket(rescale_g, 'OUTPUT', "NodeSocketVector", "UV Base A")
+    _compat.ng_new_socket(rescale_g, 'OUTPUT', "NodeSocketVector", "UV Base B")
+    _compat.ng_new_socket(rescale_g, 'OUTPUT', "NodeSocketVector", "UV Over A")
+    _compat.ng_new_socket(rescale_g, 'OUTPUT', "NodeSocketVector", "UV Over B")
     output_n = rescale_g.nodes.new("NodeGroupOutput")
     output_n.location = (pos_x_shift * 9, 0)
 

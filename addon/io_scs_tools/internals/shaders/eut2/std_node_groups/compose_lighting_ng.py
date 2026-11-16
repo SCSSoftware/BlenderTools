@@ -23,6 +23,7 @@ from io_scs_tools.consts import Material as _MAT_consts
 from io_scs_tools.consts import SCSLigthing as _LIGHTING_consts
 from io_scs_tools.internals.shaders.std_node_groups import output_shader_ng
 from io_scs_tools.utils import convert as _convert_utils
+from io_scs_tools.utils import compat as _compat
 
 COMPOSE_LIGHTING_G = _MAT_consts.node_group_prefix + "ComposeLighting"
 
@@ -88,20 +89,20 @@ def __create_node_group__():
     compose_light_g = bpy.data.node_groups.new(type="ShaderNodeTree", name=COMPOSE_LIGHTING_G)
 
     # inputs defining
-    compose_light_g.inputs.new("NodeSocketFloat", "AddAmbient")
-    compose_light_g.inputs.new("NodeSocketColor", "Diffuse Color")
-    compose_light_g.inputs.new("NodeSocketColor", "Specular Color")
-    compose_light_g.inputs.new("NodeSocketColor", "Env Color")
-    compose_light_g.inputs.new("NodeSocketColor", "Diffuse Lighting")
-    compose_light_g.inputs.new("NodeSocketColor", "Specular Lighting")
-    compose_light_g.inputs.new("NodeSocketFloat", "Alpha")
+    _compat.ng_new_socket(compose_light_g, 'INPUT', "NodeSocketFloat", "AddAmbient")
+    _compat.ng_new_socket(compose_light_g, 'INPUT', "NodeSocketColor", "Diffuse Color")
+    _compat.ng_new_socket(compose_light_g, 'INPUT', "NodeSocketColor", "Specular Color")
+    _compat.ng_new_socket(compose_light_g, 'INPUT', "NodeSocketColor", "Env Color")
+    _compat.ng_new_socket(compose_light_g, 'INPUT', "NodeSocketColor", "Diffuse Lighting")
+    _compat.ng_new_socket(compose_light_g, 'INPUT', "NodeSocketColor", "Specular Lighting")
+    _compat.ng_new_socket(compose_light_g, 'INPUT', "NodeSocketFloat", "Alpha")
     input_n = compose_light_g.nodes.new("NodeGroupInput")
     input_n.location = (start_pos_x - pos_x_shift, 0)
 
     # outputs defining
-    compose_light_g.outputs.new("NodeSocketShader", "Shader")
-    compose_light_g.outputs.new("NodeSocketColor", "Color")
-    compose_light_g.outputs.new("NodeSocketFloat", "Alpha")
+    _compat.ng_new_socket(compose_light_g, 'OUTPUT', "NodeSocketShader", "Shader")
+    _compat.ng_new_socket(compose_light_g, 'OUTPUT', "NodeSocketColor", "Color")
+    _compat.ng_new_socket(compose_light_g, 'OUTPUT', "NodeSocketFloat", "Alpha")
     output_n = compose_light_g.nodes.new("NodeGroupOutput")
     output_n.location = (start_pos_x + pos_x_shift * 8, 0)
 

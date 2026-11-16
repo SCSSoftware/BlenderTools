@@ -20,6 +20,7 @@
 
 import bpy
 from io_scs_tools.consts import Material as _MAT_consts
+from io_scs_tools.utils import compat as _compat
 
 BLEND_ADD_G = _MAT_consts.node_group_prefix + "BlendAddPass"
 
@@ -74,17 +75,16 @@ def __create_node_group__():
         blend_add_g = bpy.data.node_groups[BLEND_ADD_G]
 
         # delete all inputs and outputs
-        blend_add_g.inputs.clear()
-        blend_add_g.outputs.clear()
+        _compat.ng_clear_sockets(blend_add_g)
 
         # delete all old nodes and links as they will be recreated now with actual version
         blend_add_g.nodes.clear()
 
     # inputs defining
-    blend_add_g.inputs.new("NodeSocketShader", "Shader")
+    _compat.ng_new_socket(blend_add_g, 'INPUT', "NodeSocketShader", "Shader")
 
     # outputs defining
-    blend_add_g.outputs.new("NodeSocketShader", "Shader")
+    _compat.ng_new_socket(blend_add_g, 'OUTPUT', "NodeSocketShader", "Shader")
 
     # node creation
     input_n = blend_add_g.nodes.new("NodeGroupInput")

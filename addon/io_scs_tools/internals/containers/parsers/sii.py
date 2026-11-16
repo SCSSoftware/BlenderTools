@@ -89,7 +89,7 @@ class _Tokenizer():
                 continue
 
             # Handle includes.
-            match = re.match('@include\s+"([^"]+)"', line_remainder)
+            match = re.match(r'@include\s+"([^"]+)"', line_remainder)
             if match:
 
                 included_lines = []
@@ -126,13 +126,13 @@ class _Tokenizer():
                 continue
 
             # Skip block comments.
-            if re.match('/\*.*$', line_remainder):
+            if re.match(r'/\*.*$', line_remainder):
                 self.current_pos += 2
                 self.skip_to_end_of_block_comment()
                 continue
 
             # Is this a identifier?
-            match = re.match('\w+', line_remainder)
+            match = re.match(r'\w+', line_remainder)
             if match:
                 self.current_pos += match.end(0)
                 return _Token('id', line_remainder[0:match.end(0)])
@@ -161,7 +161,7 @@ class _Tokenizer():
         line_remainder = self.input[self.current_line][self.current_pos:]
 
         # inline block comment
-        match = re.match('.*\*/', line_remainder)
+        match = re.match(r'.*\*/', line_remainder)
         if match:
             self.current_pos += match.end(0)
             return
